@@ -87,7 +87,7 @@ export const DistrictForecastRecords: React.FC = () => {
               onClick={() => setActiveTableHorizon('7_days')}
               className={`min-h-[44px] px-4 py-2 text-sm font-semibold cursor-pointer touch-manipulation ${
                 activeTableHorizon === '7_days'
-                  ? 'bg-nasa-blue text-white'
+                  ? 'bg-ap-primary text-white'
                   : 'bg-carbon-10 hover:bg-carbon-20 text-carbon-70'
               }`}
             >
@@ -97,7 +97,7 @@ export const DistrictForecastRecords: React.FC = () => {
               onClick={() => setActiveTableHorizon('15_days')}
               className={`min-h-[44px] px-4 py-2 text-sm font-semibold cursor-pointer touch-manipulation ${
                 activeTableHorizon === '15_days'
-                  ? 'bg-nasa-blue text-white'
+                  ? 'bg-ap-primary text-white'
                   : 'bg-carbon-10 hover:bg-carbon-20 text-carbon-70'
               }`}
             >
@@ -106,7 +106,7 @@ export const DistrictForecastRecords: React.FC = () => {
             <button
               onClick={handleDownloadTableCsv}
               title="Download specific 7 and 15-day hazard intelligence records as CSV"
-              className="inline-flex min-h-[44px] items-center gap-1.5 px-3.5 py-2 bg-nasa-blue text-white font-semibold text-sm cursor-pointer ml-1 touch-manipulation"
+              className="inline-flex min-h-[44px] items-center gap-1.5 px-3.5 py-2 bg-ap-primary text-white font-semibold text-sm cursor-pointer ml-1 touch-manipulation"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Download CSV</span>

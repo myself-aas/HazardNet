@@ -462,7 +462,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
             id="live-voice-district-select"
             value={district}
             onChange={(e) => handleDistrictChange(e.target.value)}
-            className="min-h-[44px] rounded-lg border border-carbon-30 bg-white px-3 py-2 text-xs font-medium text-carbon-80 focus:outline-none focus:ring-2 focus:ring-nasa-blue"
+            className="min-h-[44px] rounded-lg border border-carbon-30 bg-white px-3 py-2 text-xs font-medium text-carbon-80 focus:outline-none focus:ring-2 focus:ring-ap-primary"
           >
             {BANGLADESH_DISTRICTS.map(d => (
               <option key={d} value={d}>{d}</option>
@@ -477,7 +477,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
             id="live-voice-hazard-select"
             value={hazard}
             onChange={(e) => handleHazardChange(e.target.value)}
-            className="min-h-[44px] rounded-lg border border-carbon-30 bg-white px-3 py-2 text-xs font-medium text-carbon-80 focus:outline-none focus:ring-2 focus:ring-nasa-blue"
+            className="min-h-[44px] rounded-lg border border-carbon-30 bg-white px-3 py-2 text-xs font-medium text-carbon-80 focus:outline-none focus:ring-2 focus:ring-ap-primary"
           >
             <option value="Flood">Flood (BRRI Submergence)</option>
             <option value="Cyclone">Cyclone (Surge & Salinity)</option>
@@ -542,7 +542,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
                     }));
                   }
                 }}
-                className="min-h-[44px] rounded-full bg-carbon-10 px-3 py-2 text-xs text-carbon-70 transition-colors hover:bg-carbon-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue"
+                className="min-h-[44px] rounded-full bg-carbon-10 px-3 py-2 text-xs text-carbon-70 transition-colors hover:bg-carbon-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary"
               >
                 Which BRRI rice survives floods?
               </button>
@@ -555,7 +555,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
                     }));
                   }
                 }}
-                className="min-h-[44px] rounded-full bg-carbon-10 px-3 py-2 text-xs text-carbon-70 transition-colors hover:bg-carbon-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue"
+                className="min-h-[44px] rounded-full bg-carbon-10 px-3 py-2 text-xs text-carbon-70 transition-colors hover:bg-carbon-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary"
               >
                 Livestock medical emergency hotline
               </button>

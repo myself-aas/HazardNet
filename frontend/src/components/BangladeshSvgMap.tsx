@@ -83,7 +83,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
       <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3 pb-3 border-b border-carbon-20">
         <div>
           <div className="flex items-center gap-2">
-            <span className={`w-2.5 h-2.5 rounded-full bg-nasa-red ${lowBandwidth ? '' : 'animate-ping'}`}></span>
+            <span className={`w-2.5 h-2.5 rounded-full bg-ap-primary ${lowBandwidth ? '' : 'animate-ping'}`}></span>
             <h3 className="text-sm font-extrabold text-carbon-90 tracking-tight flex items-center gap-2">
               <span>Vector Spatial Heatmap</span>
             </h3>

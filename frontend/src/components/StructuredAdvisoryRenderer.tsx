@@ -184,7 +184,7 @@ export const StructuredAdvisoryRenderer: React.FC<StructuredAdvisoryRendererProp
         {/* Screen Interactive view */}
         <div className="screen-only">
           {impactExpanded ? (
-            <div className="bg-carbon-05 border border-carbon-20/90 rounded-2xl p-4 shadow-inner animate-in slide-in-from-top-2 fade-in duration-200">
+            <div className="bg-carbon-05 border border-carbon-20/90 rounded-2xl p-4 shadow-inner ap-enter-drop">
               <ReactMarkdown components={customComponents}>{impactMd}</ReactMarkdown>
             </div>
           ) : (

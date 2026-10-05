@@ -218,7 +218,7 @@ export function useMapMeasurements({
                 background: #ffffff;
                 border: 3px solid #c01f1f;
                 box-shadow: 0 4px 16px rgba(249, 168, 37, 0.6);
-                color: var(--color-nasa-red);
+                color: var(--ap-primary);
                 display: grid;
                 place-items: center;
                 cursor: pointer;

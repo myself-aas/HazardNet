@@ -83,7 +83,7 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
 // cannot overlap its neighbour, so the floor is met by geometry rather than by an invisible
 // layer on top of other targets.
 const linkClass =
-  'inline-flex min-h-[44px] min-w-[44px] items-center text-ap-caption font-medium text-carbon-80 no-underline transition-colors hover:text-nasa-blue-shade hover:underline';
+  'inline-flex min-h-[44px] min-w-[44px] items-center text-ap-caption font-medium text-carbon-80 no-underline transition-colors hover:text-ap-primary hover:underline';
 
 export const Footer: React.FC = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -112,7 +112,7 @@ export const Footer: React.FC = () => {
           <div className="flex flex-wrap items-center gap-3">
             <Link
               to="/download"
-              className="inline-flex min-h-[44px] items-center rounded-control bg-nasa-blue px-5 text-ap-caption font-semibold text-white no-underline transition-colors hover:bg-nasa-blue-shade"
+              className="inline-flex min-h-[44px] items-center rounded-control bg-ap-primary px-5 text-ap-caption font-semibold text-white no-underline transition-colors hover:bg-ap-primary"
             >
               Get the apps
             </Link>
@@ -187,7 +187,7 @@ export const Footer: React.FC = () => {
         <button
           type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-6 left-4 z-[var(--z-sticky)] flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-carbon-20 bg-white text-carbon-80 shadow-md transition-colors hover:bg-carbon-05 sm:left-6"
+          className="fixed bottom-6 left-4 z-[var(--ap-z-sticky)] flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-carbon-20 bg-white text-carbon-80 shadow-md transition-colors hover:bg-carbon-05 sm:left-6"
           title="Back to top"
           aria-label="Scroll to top"
         >

@@ -214,7 +214,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
       <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-carbon-20">
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2.5">
-            <span className="px-3 py-1 rounded-full text-xs font-mono font-black uppercase tracking-wider bg-nasa-red/10 text-nasa-red-shade border border-nasa-blue/20 shadow-2xs flex items-center gap-1.5">
+            <span className="px-3 py-1 rounded-full text-xs font-mono font-black uppercase tracking-wider bg-ap-primary/10 text-ap-primary border border-ap-primary/20 shadow-2xs flex items-center gap-1.5">
               National AI Overview Mode
             </span>
             <span className="text-carbon-30 hidden sm:inline">•</span>

@@ -60,7 +60,7 @@ export const HazardAlertStory: React.FC<HazardAlertStoryProps> = ({
         className="z-10 flex items-center justify-between border-b border-white/15 pb-6"
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-nasa-red flex items-center justify-center font-bold text-lg shadow-lg">
+          <div className="w-10 h-10 rounded-xl bg-ap-primary flex items-center justify-center font-bold text-lg shadow-lg">
             H
           </div>
           <div>

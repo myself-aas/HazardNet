@@ -193,7 +193,7 @@ export const Contact: React.FC = () => {
         </p>
         <p
           role="note"
-          className="border border-nasa-red bg-white p-3 text-xs font-semibold leading-relaxed text-nasa-red-shade"
+          className="border border-ap-primary bg-white p-3 text-xs font-semibold leading-relaxed text-ap-primary"
         >
           This is not an emergency channel and it is not monitored around the clock. In an emergency call{' '}
           <strong>999</strong>, and follow BMD, FFWC, DDM and local administration instructions.
@@ -231,7 +231,7 @@ export const Contact: React.FC = () => {
           </div>
 
           {errors.length > 0 && (
-            <div role="alert" className="border border-nasa-red bg-white p-4 text-xs text-nasa-red-shade">
+            <div role="alert" className="border border-ap-primary bg-white p-4 text-xs text-ap-primary">
               <p className="font-bold">Please fix the following before continuing:</p>
               <ul className="mt-1 list-disc pl-5">
                 {errors.map((problem) => (
@@ -509,9 +509,9 @@ export const Contact: React.FC = () => {
             </h2>
 
             <div className="space-y-3 text-xs">
-              <div className="p-3 bg-white border border-nasa-red space-y-1">
-                <span className="font-bold text-nasa-red-shade block">National emergency service</span>
-                <p className="font-mono text-sm font-bold text-nasa-red-shade">
+              <div className="p-3 bg-white border border-ap-primary space-y-1">
+                <span className="font-bold text-ap-primary block">National emergency service</span>
+                <p className="font-mono text-sm font-bold text-ap-primary">
                   <PhoneCall className="mr-1 inline h-4 w-4" aria-hidden="true" />999
                 </p>
               </div>

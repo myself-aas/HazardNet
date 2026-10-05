@@ -142,7 +142,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
             <h3 className="text-base sm:text-lg font-bold text-carbon-90">
               Grounding Intelligence Engine
             </h3>
-            <span className="text-xs bg-nasa-blue text-white font-mono uppercase px-2 py-0.5 rounded tracking-wide font-semibold">
+            <span className="text-xs bg-ap-primary text-white font-mono uppercase px-2 py-0.5 rounded tracking-wide font-semibold">
               gemini-3.5-flash
             </span>
           </div>
@@ -194,13 +194,13 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                   ? `Search emergency shelters, clinics, or DAE offices in ${districtName}...`
                   : `Search live weather warnings or river levels in ${districtName}...`
               }
-              className="w-full bg-carbon-05 border border-carbon-20 rounded-xl py-2 pl-9 pr-3 text-xs sm:text-sm text-carbon-90 placeholder-carbon-40 focus:outline-none focus:border-nasa-blue"
+              className="w-full bg-carbon-05 border border-carbon-20 rounded-xl py-2 pl-9 pr-3 text-xs sm:text-sm text-carbon-90 placeholder-carbon-40 focus:outline-none focus:border-ap-primary"
             />
           </div>
           <button
             type="submit"
             disabled={!customQuery.trim() || queryLoading}
-            className="px-4 py-2 bg-nasa-blue hover:bg-nasa-blue-shade disabled:opacity-40 text-white text-xs font-semibold rounded-xl flex items-center gap-1 cursor-pointer transition-colors"
+            className="px-4 py-2 bg-ap-primary hover:bg-ap-primary disabled:opacity-40 text-white text-xs font-semibold rounded-xl flex items-center gap-1 cursor-pointer transition-colors"
           >
             {queryLoading ? (
               <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -308,7 +308,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                   type="button"
                   onClick={fetchFacilities}
                   disabled={mapsLoading}
-                  className="text-xs text-carbon-60 hover:text-nasa-blue flex items-center gap-1 cursor-pointer"
+                  className="text-xs text-carbon-60 hover:text-ap-primary flex items-center gap-1 cursor-pointer"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${mapsLoading ? 'animate-spin' : ''}`} />
                   <span>Refresh</span>

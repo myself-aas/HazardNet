@@ -109,13 +109,16 @@ describe('primary action contrast (Session 1)', () => {
   });
 
   it('keeps the primary action on the token-defined foreground', () => {
-    // Whatever the ground, `--primary-foreground` must clear AA on crimson — this
-    // is the pairing the fix falls back to, so it has to stay true.
+    // Whatever the ground, the ink on the primary action must clear AA against
+    // it — this is the pairing the fix falls back to, so it has to stay true.
+    // The role was `--primary-foreground` while a shadcn-compatible alias layer
+    // existed; that layer is gone, and the Apple token it aliased is the only
+    // name for this now.
     const indexCss = readFileSync(join(ROOT, 'frontend/src/index.css'), 'utf8');
     const hdsCss = readFileSync(HDS, 'utf8');
     // The role lives in the token layer (apple.css) now; index.css only bridges it to Tailwind.
     const decl =
-      /--primary-foreground:\s*([^;]+);/.exec(hdsCss) || /--primary-foreground:\s*([^;]+);/.exec(indexCss);
+      /--ap-on-primary:\s*([^;]+);/.exec(hdsCss) || /--ap-on-primary:\s*([^;]+);/.exec(indexCss);
     expect(decl).not.toBeNull();
 
     // Follow `var(--x)` indirection across both stylesheets until a hex appears.

@@ -138,7 +138,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSelectDistrict, onToggleHeatma
   return (
     <>
       <header
-        className={`animate-in fade-in sticky top-0 z-[var(--z-nav)] flex h-14 select-none items-center pt-[env(safe-area-inset-top)] duration-300 sm:h-16 ${
+        className={`ap-enter sticky top-0 z-[var(--ap-z-nav)] flex h-14 select-none items-center pt-[env(safe-area-inset-top)] duration-300 sm:h-16 ${
           overHero
             ? 'border-b border-white/10 bg-black/25 text-white backdrop-blur-md'
             : 'border-b border-carbon-20 bg-white/95 text-carbon-80 shadow-xs backdrop-blur-md'

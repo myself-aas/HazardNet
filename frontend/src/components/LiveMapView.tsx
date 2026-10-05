@@ -1321,7 +1321,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       }
     >
       {!isFullScreen && (
-        <div className="shrink-0 z-[var(--z-sticky)] w-full flex flex-col bg-white border-b border-carbon-20">
+        <div className="shrink-0 z-[var(--ap-z-sticky)] w-full flex flex-col bg-white border-b border-carbon-20">
           <MapToolbar
             collapsed={isHeaderCollapsed}
             onCollapsedChange={setIsHeaderCollapsed}
@@ -1365,7 +1365,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="absolute inset-0 z-[var(--z-sticky)] p-6 bg-white flex flex-col justify-center"
+            className="absolute inset-0 z-[var(--ap-z-sticky)] p-6 bg-white flex flex-col justify-center"
           >
             <DataProcessingSkeleton
               title="PROCESSING SATELLITE TILES & HIGH-CONTRAST RASTER"
@@ -1410,7 +1410,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             data-testid="district-forecast-slot"
             /* `relative z-20` keeps the in-flow mobile card above the overlay HUD
                (its attribution bar and hazard-action cluster are absolute
-               `z-[var(--z-sticky)]` = 10 children of the `inset-0` stage overlay and
+               `z-[var(--ap-z-sticky)]` = 10 children of the `inset-0` stage overlay and
                used to swallow the card's primary action at phone widths). */
             className="relative z-20 lg:absolute lg:top-4 lg:right-4 lg:w-[clamp(280px,28vw,340px)] lg:max-w-[calc(100%-2rem)] max-w-full shrink-0 w-full border-t lg:border-t-0 border-carbon-20 bg-white"
           >
@@ -1433,7 +1433,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           } ${isHudVisible ? 'opacity-100' : 'opacity-0'}`}
         >
           {/* Active Advisory Tier Status Strip (TASK-005) */}
-          <div className="absolute top-4 left-4 z-[var(--z-sticky)] pointer-events-auto hidden md:block">
+          <div className="absolute top-4 left-4 z-[var(--ap-z-sticky)] pointer-events-auto hidden md:block">
             <StatusStrip counts={statusStripCounts} horizon={forecastHorizon} />
           </div>
 
@@ -1445,7 +1445,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className="absolute bottom-16 lg:bottom-auto lg:top-4 left-0 right-0 lg:left-auto lg:right-4 z-[var(--z-sticky)] pointer-events-auto lg:w-[clamp(280px,28vw,340px)] lg:max-w-[calc(100%-2rem)] max-w-full w-full"
+              className="absolute bottom-16 lg:bottom-auto lg:top-4 left-0 right-0 lg:left-auto lg:right-4 z-[var(--ap-z-sticky)] pointer-events-auto lg:w-[clamp(280px,28vw,340px)] lg:max-w-[calc(100%-2rem)] max-w-full w-full"
             >
               <div className="bg-white border border-carbon-20 p-4 text-carbon-80 flex flex-col gap-2">
                 <div className="flex items-start justify-between gap-2 border-b border-carbon-20 pb-2">
@@ -1507,7 +1507,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                       handleSelectDistrict(nearestDistrictData.district);
                       setInspectedPoint(null);
                     }}
-                    className="flex-1 min-h-[44px] py-2 bg-nasa-blue text-white font-semibold text-sm text-center touch-manipulation"
+                    className="flex-1 min-h-[44px] py-2 bg-ap-primary text-white font-semibold text-sm text-center touch-manipulation"
                   >
                     Focus {nearestDistrictData.district.name}
                   </button>
@@ -1532,7 +1532,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.2 }}
-              className="absolute top-4 left-4 right-4 lg:right-auto z-[var(--z-sticky)] pointer-events-auto lg:max-w-[320px] w-auto"
+              className="absolute top-4 left-4 right-4 lg:right-auto z-[var(--ap-z-sticky)] pointer-events-auto lg:max-w-[320px] w-auto"
             >
               <div className="bg-white text-carbon-90 border border-carbon-20 p-4 flex flex-col gap-2">
                 <div className="flex items-center justify-between border-b border-carbon-20 pb-2 text-xs font-bold">
@@ -1661,7 +1661,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           {(exportSuccessMsg || userLocationError) && (
             <div
               role="status"
-              className="absolute bottom-16 left-4 right-4 lg:right-auto lg:max-w-[320px] z-[var(--z-sticky)] pointer-events-auto bg-white border border-carbon-20 p-4 text-base text-carbon-90"
+              className="absolute bottom-16 left-4 right-4 lg:right-auto lg:max-w-[320px] z-[var(--ap-z-sticky)] pointer-events-auto bg-white border border-carbon-20 p-4 text-base text-carbon-90"
             >
               <div className="flex items-start gap-2">
                 <p className="flex-1 min-w-0">
@@ -1691,7 +1691,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           <AnimatePresence>
           {isFilterModalOpen && (
             <div
-              className="fixed inset-0 z-[var(--z-modal)] bg-carbon-black/30 flex items-end sm:items-center justify-center sm:p-4 pointer-events-auto"
+              className="fixed inset-0 z-[var(--ap-z-modal)] bg-carbon-black/30 flex items-end sm:items-center justify-center sm:p-4 pointer-events-auto"
               onClick={(e) => { if (e.target === e.currentTarget) setIsFilterModalOpen(false); }}
             >
               <motion.div
@@ -1733,7 +1733,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                         <button
                           type="button"
                           onClick={() => setSelectedDivision('All')}
-                          className="text-xs font-semibold text-nasa-blue hover:underline"
+                          className="text-xs font-semibold text-ap-primary hover:underline"
                         >
                           Clear
                         </button>
@@ -1771,8 +1771,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                         Hazards ({selectedHazards.length}/{HAZARD_LAYERS.length})
                       </span>
                       <div className="flex items-center gap-3 text-xs font-semibold">
-                        <button type="button" onClick={selectAllHazards} className="text-nasa-blue hover:underline">All</button>
-                        <button type="button" onClick={clearAllHazards} className="text-nasa-red hover:underline">None</button>
+                        <button type="button" onClick={selectAllHazards} className="text-ap-primary hover:underline">All</button>
+                        <button type="button" onClick={clearAllHazards} className="text-ap-primary hover:underline">None</button>
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -1838,7 +1838,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               drew hard-coded storm cells — data with no artifact behind it. */}
           <AnimatePresence>
           {isLayerModalOpen && (
-            <div className="fixed inset-0 z-[var(--z-modal)] bg-carbon-black/40 flex items-center justify-center p-4 pointer-events-auto">
+            <div className="fixed inset-0 z-[var(--ap-z-modal)] bg-carbon-black/40 flex items-center justify-center p-4 pointer-events-auto">
               <motion.div
                 initial={{ opacity: 0, scale: 0.97 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -2406,7 +2406,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               each with its licence and a pointer to the provider's terms. */}
           <AnimatePresence>
           {isAttributionOpen && (
-            <div className="fixed inset-0 z-[var(--z-modal)] bg-carbon-black/50 flex items-center justify-center p-4 pointer-events-auto">
+            <div className="fixed inset-0 z-[var(--ap-z-modal)] bg-carbon-black/50 flex items-center justify-center p-4 pointer-events-auto">
               <motion.div
                 initial={{ opacity: 0, scale: 0.97 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -2459,7 +2459,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               animate={{ opacity: 1, y: 0, x: "-50%" }}
               exit={{ opacity: 0, y: 20, x: "-50%" }}
               transition={{ duration: 0.3 }}
-              className="absolute bottom-20 sm:bottom-12 left-1/2 z-[var(--z-sticky)] pointer-events-auto flex items-center gap-2 max-w-[90vw]"
+              className="absolute bottom-20 sm:bottom-12 left-1/2 z-[var(--ap-z-sticky)] pointer-events-auto flex items-center gap-2 max-w-[90vw]"
             >
               <button
                 onClick={() => {
@@ -2487,11 +2487,11 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               on 2026-10-05 it became these three controls plus Leaflet's native zoom.
               On phones they sit above the bottom-center clear pill so the two never
               overlap. Opaque white, visible focus, no glass. */}
-          <div className="absolute bottom-32 sm:bottom-14 right-3 sm:right-5 z-[var(--z-sticky)] pointer-events-auto flex flex-col items-center gap-2.5">
+          <div className="absolute bottom-32 sm:bottom-14 right-3 sm:right-5 z-[var(--ap-z-sticky)] pointer-events-auto flex flex-col items-center gap-2.5">
             <button
               type="button"
               onClick={() => setIsFilterModalOpen(true)}
-              className="tap-target w-12 h-12 bg-white hover:bg-carbon-05 border border-carbon-20 text-carbon-80 flex items-center justify-center rounded-full shadow-md transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nasa-blue"
+              className="tap-target w-12 h-12 bg-white hover:bg-carbon-05 border border-carbon-20 text-carbon-80 flex items-center justify-center rounded-full shadow-md transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ap-primary"
               title="Filters"
               aria-label="Open district and hazard filters"
             >
@@ -2500,7 +2500,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             <button
               type="button"
               onClick={() => setIsLayerModalOpen(true)}
-              className="tap-target w-12 h-12 bg-white hover:bg-carbon-05 border border-carbon-20 text-carbon-80 flex items-center justify-center rounded-full shadow-md transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nasa-blue"
+              className="tap-target w-12 h-12 bg-white hover:bg-carbon-05 border border-carbon-20 text-carbon-80 flex items-center justify-center rounded-full shadow-md transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ap-primary"
               title="Map overlays"
               aria-label="Open map overlays"
             >
@@ -2509,9 +2509,9 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             <button
               type="button"
               onClick={handleCenterOnUserLocation}
-              className={`tap-target w-12 h-12 border flex items-center justify-center rounded-full shadow-md transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nasa-blue ${
+              className={`tap-target w-12 h-12 border flex items-center justify-center rounded-full shadow-md transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ap-primary ${
                 userGpsPos
-                  ? 'bg-nasa-blue text-white border-nasa-blue hover:bg-nasa-blue-shade'
+                  ? 'bg-ap-primary text-white border-ap-primary hover:bg-ap-primary'
                   : 'bg-white hover:bg-carbon-05 border-carbon-20 text-carbon-80'
               }`}
               title="Center the map on my location"
@@ -2526,13 +2526,13 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               the smallest readable size, with a soft shadow so it stays legible
               over any ground. Every character stays visible (map attribution is
               not collapsible), it just stops pretending to be chrome. */}
-          <div className="absolute bottom-1.5 left-2 z-[var(--z-sticky)] text-xs leading-snug text-carbon-60 [text-shadow:0_1px_2px_rgba(255,255,255,0.7),0_0_6px_rgba(255,255,255,0.5)] dark:[text-shadow:0_1px_2px_rgba(0,0,0,0.8),0_0_6px_rgba(0,0,0,0.6)] pointer-events-auto max-w-[calc(100%-7rem)]">
+          <div className="absolute bottom-1.5 left-2 z-[var(--ap-z-sticky)] text-xs leading-snug text-carbon-60 [text-shadow:0_1px_2px_rgba(255,255,255,0.7),0_0_6px_rgba(255,255,255,0.5)] dark:[text-shadow:0_1px_2px_rgba(0,0,0,0.8),0_0_6px_rgba(0,0,0,0.6)] pointer-events-auto max-w-[calc(100%-7rem)]">
             <p className="leading-snug">
               {MAP_LAYERS[activeLayer]?.attribution?.replace(/&copy;/g, '©').replace(/&mdash;/g, '—') || 'Map data © OpenStreetMap contributors'}
             </p>
           </div>
 
-          <div className="absolute bottom-2 right-16 z-[var(--z-sticky)] glass-pill px-4 py-2 text-xs font-mono font-semibold text-carbon-70 pointer-events-auto hidden lg:flex items-center gap-3 tabular-nums">
+          <div className="absolute bottom-2 right-16 z-[var(--ap-z-sticky)] glass-pill px-4 py-2 text-xs font-mono font-semibold text-carbon-70 pointer-events-auto hidden lg:flex items-center gap-3 tabular-nums">
             <span>Lat {currentCoords.lat.toFixed(4)}° N</span>
             <span>Lng {currentCoords.lng.toFixed(4)}° E</span>
             <span>Zoom {currentCoords.zoom}</span>
@@ -2582,7 +2582,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   }}
                   className={`min-h-[44px] px-3.5 rounded-full border text-xs font-semibold touch-manipulation transition-colors ${
  isAct
- ? 'bg-primary border-nasa-blue text-white '
+ ? 'bg-primary border-ap-primary text-white '
  : 'bg-white border-carbon-20 text-carbon-70 hover:text-carbon-90 hover:bg-carbon-10'
  }`}
                 >

@@ -72,7 +72,7 @@ export const FloatingControlBar: React.FC<FloatingControlBarProps> = ({
               aria-pressed={chip.active}
               className={`tap-target px-3 py-1.5 rounded-full text-xs font-sans font-semibold flex items-center gap-1.5 whitespace-nowrap transition-all ${
                 chip.active
-                  ? 'bg-nasa-blue text-white shadow-xs'
+                  ? 'bg-ap-primary text-white shadow-xs'
                   : 'bg-carbon-10 text-carbon-70 hover:bg-carbon-20 dark:hover:bg-carbon-70'
               }`}
             >

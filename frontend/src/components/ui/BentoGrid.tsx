@@ -83,7 +83,7 @@ export const BentoCard: React.FC<BentoCardProps> = ({
       {/* Header Row */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          {icon && <span className="text-nasa-blue text-lg">{icon}</span>}
+          {icon && <span className="text-ap-primary text-lg">{icon}</span>}
           <span className="font-heading font-medium text-xs text-carbon-60 uppercase tracking-wider">
             {title}
           </span>
@@ -118,7 +118,7 @@ export const BentoCard: React.FC<BentoCardProps> = ({
               initial={{ width: 0 }}
               animate={{ width: `${Math.min(100, Math.max(0, gaugePercent))}%` }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
-              className="h-full bg-nasa-blue rounded-full"
+              className="h-full bg-ap-primary rounded-full"
               style={{
                 backgroundColor:
                   gaugePercent > 75

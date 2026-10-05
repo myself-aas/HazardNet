@@ -483,113 +483,23 @@
 /* ─────────────────────────────────────────────────────────────────────────────
    7 · SEMANTIC LAYER
    Tier two of the token hierarchy: primitive (§1, --ap-n-50) → semantic
-   (--surface-card, --panel-border) → component (§9, .ap-card). A component
+   (§5-6, --ap-label, --ap-bg-canvas) → component (§9, .ap-card). A component
    never reaches past this layer for a raw value.
 
-   The legacy alias block that used to live here — every --hds-* and --hn-*
-   name from the four superseded systems, re-pointed at an Apple role — is gone.
-   All 173 call sites were rewritten to the --ap-* tokens they aliased, so the
-   indirection has no remaining readers.
+   There is no alias block here any more, and that is the point. Two
+   generations of them lived at this spot: first the --hds-* / --hn-* names
+   from the four superseded systems, then a smaller set (--severity-*,
+   --surface-*, --glass-*, --panel-*, --chart-*, --sidebar-*, --primary and
+   friends) kept for "shadcn compatibility". Every one pointed at an --ap-*
+   token, so the pixels were already Apple — but a second set of names for the
+   same values is a second vocabulary, and new code kept reaching for it. Of
+   the last 80, 52 had already gone dead without anyone noticing.
+
+   All remaining call sites now name the --ap-* token directly. Tailwind still
+   needs theme keys (--font-sans, --radius-lg, --color-*) to generate its
+   utilities; those live in ONE place, the `@theme inline` block in index.css,
+   and every value there is a var(--ap-*). That is the whole bridge.
    ───────────────────────────────────────────────────────────────────────────── */
-:root {
-
-  /* Dataviz — retained as DATA encodings, re-pointed onto the severity ramp
-     so charts read inside the Apple palette. */
-
-  /* Severity aliases */
-  --severity-low: var(--ap-sev-low);
-  --severity-low-solid: var(--ap-sev-low);
-  --severity-low-surface: var(--ap-sev-low-surface);
-  --severity-moderate: var(--ap-sev-moderate);
-  --severity-moderate-solid: var(--ap-sev-moderate);
-  --severity-moderate-surface: var(--ap-sev-moderate-surface);
-  --severity-high: var(--ap-sev-high);
-  --severity-high-solid: var(--ap-sev-high);
-  --severity-high-surface: var(--ap-sev-high-surface);
-  --severity-very-high: var(--ap-sev-very-high);
-  --severity-very-high-solid: var(--ap-sev-very-high);
-  --severity-very-high-surface: var(--ap-sev-very-high-surface);
-  --severity-extreme: var(--ap-sev-extreme);
-  --severity-extreme-solid: var(--ap-sev-extreme);
-  --severity-extreme-surface: var(--ap-sev-extreme-surface);
-  --severity-green: var(--ap-sev-low);
-  --severity-amber: var(--ap-sev-moderate);
-  --severity-red: var(--ap-sev-very-high);
-
-  /* Fonts */
-  --font-sans: var(--ap-font-text);
-  --font-sans-en: var(--ap-font-text);
-  --font-display: var(--ap-font-display);
-  --font-heading: var(--ap-font-display);
-  --font-brand: var(--ap-font-display);
-  --font-mono: var(--ap-font-mono);
-  --font-bengali: var(--ap-font-bengali);
-  --font-bengali-display: var(--ap-font-bengali);
-  --font-sans-bn: var(--ap-font-bengali);
-
-  /* Surfaces / panels / glass */
-  --surface-page: var(--ap-bg-canvas);
-  --surface-card: var(--ap-bg-canvas);
-  --surface-sunken: var(--ap-bg-grouped);
-  --surface-inverse: var(--ap-bg-inverse);
-  --panel-bg: var(--ap-bg-canvas);
-  --panel-border: var(--ap-separator-opaque);
-  --panel-radius: var(--ap-radius-lg);
-  --panel-shadow: var(--ap-elev-hairline);
-  --panel-blur: var(--ap-frosted-blur);
-  --glass-bg: var(--ap-frosted-bg);
-  --glass-blur: var(--ap-frosted-blur);
-  --glass-border: var(--ap-separator);
-  --glass-saturate: var(--ap-frosted-saturate);
-
-  /* shadcn-compatible core */
-  --primary: var(--ap-primary);
-  --primary-foreground: var(--ap-on-primary);
-  --primary-strong: var(--ap-primary);
-  --primary-strong-foreground: var(--ap-on-primary);
-  --success: var(--ap-success);
-  --success-foreground: var(--ap-canvas);
-  --success-surface: var(--ap-sev-low-surface);
-  --success-border: color-mix(in srgb, var(--ap-success) 35%, transparent);
-  --warning: var(--ap-warning);
-  --warning-foreground: var(--ap-canvas);
-  --warning-surface: var(--ap-sev-moderate-surface);
-  --warning-border: color-mix(in srgb, var(--ap-warning) 35%, transparent);
-  --info: var(--ap-info);
-  --info-foreground: var(--ap-canvas);
-  --info-surface: color-mix(in srgb, var(--ap-primary) 8%, var(--ap-canvas));
-
-  /* Charts — data encodings on the Apple ramp */
-  --chart-1: var(--ap-primary);
-  --chart-2: var(--ap-sev-low);
-  --chart-3: var(--ap-sev-moderate);
-  --chart-4: var(--ap-sev-high);
-  --chart-5: var(--ap-sev-extreme);
-
-  /* Sidebar */
-  --sidebar: var(--ap-bg-grouped);
-  --sidebar-foreground: var(--ap-label);
-  --sidebar-border: var(--ap-separator);
-  --sidebar-accent: var(--ap-bg-raised);
-  --sidebar-accent-foreground: var(--ap-label);
-  --sidebar-primary: var(--ap-primary);
-  --sidebar-primary-foreground: var(--ap-on-primary);
-  --sidebar-ring: var(--ap-focus-ring);
-
-  /* One z-scale. These now resolve to the Apple numbers. */
-  --z-base: var(--ap-z-base);
-  --z-content: var(--ap-z-content);
-  --z-map: var(--ap-z-map);
-  --z-sticky: var(--ap-z-sticky);
-  --z-nav: var(--ap-z-nav);
-  --z-dropdown: var(--ap-z-dropdown);
-  --z-overlay: var(--ap-z-overlay);
-  --z-modal: var(--ap-z-modal);
-  --z-popover: var(--ap-z-popover);
-  --z-tooltip: var(--ap-z-tooltip);
-  --z-toast: var(--ap-z-toast);
-  --z-a11y: var(--ap-z-a11y);
-}
 
 /* ─────────────────────────────────────────────────────────────────────────────
    8 · DENSITY TRACKS
@@ -852,6 +762,26 @@ svg.lucide {
 /* ─────────────────────────────────────────────────────────────────────────────
    11 · MOTION — the single documented interaction, and the reduced-motion floor.
    ───────────────────────────────────────────────────────────────────────────── */
+
+/* Entrance motion. DESIGN.md documents press and nothing else, so there is no
+   Apple-sanctioned "animate in" — but six surfaces (the nav, two modals, two
+   popovers, a disclosure) do appear rather than being present on load, and
+   something has to carry that. Previously it was `tw-animate-css`, which is the
+   shadcn/Radix motion vocabulary: a second easing curve, a second duration
+   scale, and a `@import` of a whole library for six call sites.
+   
+   These two classes are the Apple answer: the same `--ap-ease` and
+   `--ap-duration-base` the press interaction already uses, so entrance and
+   interaction share one curve. `-drop` is for things hanging off a trigger
+   (menus, popovers) — 4px, which is the shortest distance that still reads as
+   direction rather than as a glitch. Nothing else is offered on purpose; a
+   third entrance would be a third motion language. */
+@keyframes ap-enter      { from { opacity: 0; }                         to { opacity: 1; transform: none; } }
+@keyframes ap-enter-drop { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+.ap-enter      { animation: ap-enter      var(--ap-duration-base) var(--ap-ease) both; }
+.ap-enter-drop { animation: ap-enter-drop var(--ap-duration-base) var(--ap-ease) both; }
+
 @media (prefers-reduced-motion: reduce) {
   .ap-btn, .ap-btn:active { transition-duration: var(--ap-duration-press); transform: none; }
   *, *::before, *::after {

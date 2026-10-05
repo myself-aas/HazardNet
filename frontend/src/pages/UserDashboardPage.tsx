@@ -55,7 +55,7 @@ const PublicProfilePreview: React.FC = () => {
       actions={
         <Link
           to={profilePath(username)}
-          className="inline-flex min-h-[44px] items-center bg-nasa-blue px-4 py-2 text-base font-semibold text-white hover:bg-nasa-blue-shade touch-manipulation"
+          className="inline-flex min-h-[44px] items-center bg-ap-primary px-4 py-2 text-base font-semibold text-white hover:bg-ap-primary touch-manipulation"
         >
           Open live page
         </Link>
@@ -68,7 +68,7 @@ const PublicProfilePreview: React.FC = () => {
             {userProfile?.photoURL ? (
               <img src={userProfile.photoURL} alt="" className="h-16 w-16 rounded-full border-4 border-white object-cover" />
             ) : (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-white bg-nasa-red text-xl font-black text-white">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-white bg-ap-primary text-xl font-black text-white">
                 {(userProfile?.displayName || user?.email || 'U')[0].toUpperCase()}
               </div>
             )}

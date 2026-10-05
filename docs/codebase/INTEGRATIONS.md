@@ -29,7 +29,6 @@ where a credential is expected only in an environment variable, the variable nam
 | **Codecov** | CI service | Coverage upload for the backend and frontend flags | `CODECOV_TOKEN` | Low | `.github/workflows/ci.yml:69,121` |
 | **Prometheus + Grafana** | Monitoring | Scrapes `/metrics` (self-host) or `/api/metrics` (Vercel); alert rules and dashboards are committed | None (network-restricted expected — `monitoring/README.md`) | Medium | `backend/metrics.js`, `monitoring/prometheus.yml`, `monitoring/alerts.yml`, `docs/monitoring/grafana-dashboard.json` |
 | **ReliefWeb / GLIDE / FAO / WHO / IFRC / MoDMR** | Reference links (outbound only) | Event dossiers and institutional links resolved from a GLIDE code — **no request is made**, the URLs are constructed | None | Low | `backend/utils/glideResolver.js` |
-| **NASA HDS (`nasa/hds-core`)** | Vendored data (not runtime) | Design tokens vendored verbatim (commit `fdc4acf`, tag `0.10.0`, CC0-1.0) and compiled by `scripts/import_nasa_tokens.mjs` | n/a | Low | `data/design/nasa-hds/PROVENANCE.md`, `data/design/nasa-hds/tokens.json` |
 
 ### 2) Data Stores
 

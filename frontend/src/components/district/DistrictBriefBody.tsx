@@ -75,7 +75,7 @@ export const DistrictBriefBody: React.FC = () => {
   return (
     <>
       {/* 3. STICKY EXECUTIVE SECTION JUMP BAR */}
-      <div className="sticky top-[var(--navbar-height)] z-[var(--z-sticky)] bg-white border border-carbon-20 overflow-x-auto scrollbar-none screen-only">
+      <div className="sticky top-[var(--navbar-height)] z-[var(--ap-z-sticky)] bg-white border border-carbon-20 overflow-x-auto scrollbar-none screen-only">
         <div className="flex items-center gap-1 min-w-max text-sm font-semibold">
           <span className="px-3 text-carbon-60 font-mono text-xs uppercase font-bold">Jump:</span>
           {[
@@ -94,7 +94,7 @@ export const DistrictBriefBody: React.FC = () => {
               onClick={() => scrollToSection(sec.id)}
               className={`inline-flex min-h-[44px] items-center gap-2 px-3 py-2 cursor-pointer touch-manipulation ${
                 activeSection === sec.id
-                  ? 'bg-nasa-blue text-white font-semibold'
+                  ? 'bg-ap-primary text-white font-semibold'
                   : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
               }`}
             >
@@ -116,7 +116,7 @@ export const DistrictBriefBody: React.FC = () => {
       <section id="sec-impact" className="scroll-mt-[calc(var(--navbar-height)+8px)] space-y-4 pt-2">
         <div className="flex items-center justify-between border-b border-carbon-20 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-carbon-05 border border-carbon-20 flex items-center justify-center text-nasa-red-shade">
+            <div className="w-8 h-8 bg-carbon-05 border border-carbon-20 flex items-center justify-center text-ap-primary">
               <Users className="w-4 h-4" />
             </div>
             <div>
@@ -132,9 +132,9 @@ export const DistrictBriefBody: React.FC = () => {
           <div className="impact-metric-pill bg-white border border-carbon-20 p-5 space-y-3 hover:border-carbon-30 transition-all">
             <div className="flex items-center gap-3">
               <div className={`w-9 h-9 flex items-center justify-center shrink-0 ${
-                data.modelAssessment.riskCategory === 'High' ? 'bg-carbon-05 border border-rose-100 text-[var(--severity-red)]' :
-                data.modelAssessment.riskCategory === 'Moderate' ? 'bg-amber-50 border border-amber-100 text-[var(--severity-amber)]' :
-                'bg-carbon-05 border border-emerald-100 text-[var(--severity-green)]'
+                data.modelAssessment.riskCategory === 'High' ? 'bg-carbon-05 border border-rose-100 text-[var(--ap-sev-very-high)]' :
+                data.modelAssessment.riskCategory === 'Moderate' ? 'bg-amber-50 border border-amber-100 text-[var(--ap-sev-moderate)]' :
+                'bg-carbon-05 border border-emerald-100 text-[var(--ap-sev-low)]'
               }`}>
                 <Waves className="w-4 h-4 shrink-0" />
               </div>
@@ -149,16 +149,16 @@ export const DistrictBriefBody: React.FC = () => {
               <div className="flex items-center justify-between text-xs text-carbon-60">
                 <span>District Exposure</span>
                 <strong className={`font-bold ${
-                  data.modelAssessment.riskCategory === 'High' ? 'text-[var(--severity-red)]' :
-                  data.modelAssessment.riskCategory === 'Moderate' ? 'text-[var(--severity-amber)]' :
-                  'text-[var(--severity-green)]'
+                  data.modelAssessment.riskCategory === 'High' ? 'text-[var(--ap-sev-very-high)]' :
+                  data.modelAssessment.riskCategory === 'Moderate' ? 'text-[var(--ap-sev-moderate)]' :
+                  'text-[var(--ap-sev-low)]'
                 }`}>{data.impactAreaPercentage}%</strong>
               </div>
               <div className="w-full bg-carbon-10 h-2 rounded-sm overflow-hidden">
                 <div className={`h-full rounded-sm transition-all duration-700 ${
-                  data.modelAssessment.riskCategory === 'High' ? 'bg-[var(--severity-red)]' :
-                  data.modelAssessment.riskCategory === 'Moderate' ? 'bg-[var(--severity-amber)]' :
-                  'bg-[var(--severity-green)]'
+                  data.modelAssessment.riskCategory === 'High' ? 'bg-[var(--ap-sev-very-high)]' :
+                  data.modelAssessment.riskCategory === 'Moderate' ? 'bg-[var(--ap-sev-moderate)]' :
+                  'bg-[var(--ap-sev-low)]'
                 }`} style={{ width: `${data.impactAreaPercentage}%` }} />
               </div>
             </div>
@@ -240,7 +240,7 @@ export const DistrictBriefBody: React.FC = () => {
                 <strong className="font-bold text-carbon-80">{data.emergencyResponse.shelterCapacityUsedPercent}%</strong>
               </div>
               <div className="w-full bg-carbon-10 h-2 rounded-sm overflow-hidden">
-                <div className="bg-nasa-green h-full rounded-sm" style={{ width: `${data.emergencyResponse.shelterCapacityUsedPercent}%` }} />
+                <div className="bg-severity-low h-full rounded-sm" style={{ width: `${data.emergencyResponse.shelterCapacityUsedPercent}%` }} />
               </div>
             </div>
             <div className="text-xs text-carbon-60 truncate">
@@ -262,9 +262,9 @@ export const DistrictBriefBody: React.FC = () => {
             </h3>
           </div>
           <div className="flex flex-wrap items-center gap-3 text-xs font-mono min-w-0">
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-nasa-green" /> Low (0-33%)</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-severity-low" /> Low (0-33%)</span>
             <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-amber-500" /> Moderate (34-66%)</span>
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-nasa-red-shade" /> Critical (67-100%)</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-ap-primary" /> Critical (67-100%)</span>
           </div>
         </div>
 
@@ -285,7 +285,7 @@ export const DistrictBriefBody: React.FC = () => {
                 {/* Heatmap background intensity bar */}
                 <div
                   className={`absolute bottom-0 left-0 h-1 transition-all duration-500 ${
-                    isCrit ? 'bg-nasa-red-shade' : isHigh ? 'bg-amber-500' : 'bg-nasa-green'
+                    isCrit ? 'bg-ap-primary' : isHigh ? 'bg-amber-500' : 'bg-severity-low'
                   }`}
                   style={{ width: `${scorePct}%` }}
                 />
@@ -293,7 +293,7 @@ export const DistrictBriefBody: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-carbon-90 text-sm">{upazila.name}</span>
                   <span className={`px-2.5 py-0.5 rounded-sm text-xs font-mono font-black ${
-                    isCrit ? 'bg-nasa-red-shade text-white animate-pulse' :
+                    isCrit ? 'bg-ap-primary text-white animate-pulse' :
                     isHigh ? 'bg-amber-500 text-carbon-black' :
                     'bg-emerald-600 text-white'
                   }`}>
@@ -356,7 +356,7 @@ export const DistrictBriefBody: React.FC = () => {
                 <div className="bg-carbon-05 p-4 border border-carbon-20/80 space-y-1">
                   <span className="text-xs font-mono text-carbon-60 font-bold uppercase">{data.physicalSensorMetrics.primaryMetricName}</span>
                   <div className={`text-2xl font-black font-mono ${
-                    data.modelAssessment.riskCategory === 'High' ? 'text-nasa-red-shade' :
+                    data.modelAssessment.riskCategory === 'High' ? 'text-ap-primary' :
                     data.modelAssessment.riskCategory === 'Moderate' ? 'text-amber-600' :
                     'text-carbon-80'
                   }`}>
@@ -445,7 +445,7 @@ export const DistrictBriefBody: React.FC = () => {
             <div className="flex items-center gap-4 text-xs font-mono bg-carbon-05 p-3 border border-carbon-20/80">
               <div>
                 <div className="text-carbon-60">7-Day Peak Risk</div>
-                <div className="text-sm font-black text-nasa-red-shade">
+                <div className="text-sm font-black text-ap-primary">
                   {hazardTrendData.length ? Math.max(...hazardTrendData.map(d => Number(d[data.hazardType] || 0))) : "\u2014"} / 100
                 </div>
               </div>
@@ -509,7 +509,7 @@ export const DistrictBriefBody: React.FC = () => {
       <section id="sec-ai-overview" className="scroll-mt-[calc(var(--navbar-height)+8px)] space-y-4 pt-4 pagination-protected">
         <div className="flex items-center justify-between border-b border-carbon-20 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-carbon-05 border border-carbon-20 flex items-center justify-center text-nasa-blue">
+            <div className="w-8 h-8 bg-carbon-05 border border-carbon-20 flex items-center justify-center text-ap-primary">
               <Cpu className="w-4 h-4" />
             </div>
             <div>
@@ -521,7 +521,7 @@ export const DistrictBriefBody: React.FC = () => {
             <a
               href="#appendix-a"
               onClick={(e) => { e.preventDefault(); scrollToSection('appendix-a'); }}
-              className="text-xs text-nasa-blue-shade hover:text-carbon-90 font-mono font-bold inline-flex items-center gap-1 screen-only"
+              className="text-xs text-ap-primary hover:text-carbon-90 font-mono font-bold inline-flex items-center gap-1 screen-only"
             >
               <span>View Technical Appendix</span>
               <ExternalLink className="w-3 h-3" />
@@ -536,7 +536,7 @@ export const DistrictBriefBody: React.FC = () => {
           <div className="bg-white border border-carbon-20 p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-nasa-blue" />
+                <BarChart3 className="w-4 h-4 text-ap-primary" />
                 Hazard Probability Breakdown
               </h3>
               <span className="text-xs font-mono text-carbon-60">Total = 100%</span>
@@ -559,7 +559,7 @@ export const DistrictBriefBody: React.FC = () => {
                       viewport={{ once: true }}
                       transition={{ duration: 0.6, delay: i * 0.1 }}
                       className={`h-full rounded-sm ${
-                        i === 0 ? 'bg-nasa-blue' : i === 1 ? 'bg-nasa-orange' : 'bg-carbon-40'
+                        i === 0 ? 'bg-ap-primary' : i === 1 ? 'bg-severity-high' : 'bg-carbon-40'
                       }`}
                     />
                   </div>
@@ -714,7 +714,7 @@ export const DistrictBriefBody: React.FC = () => {
                     </div>
 
                     <span className={`px-2.5 py-1 text-xs font-mono font-black tracking-wide shrink-0 ${
-                      up.severityScore >= 0.8 ? 'bg-nasa-red-shade text-white' :
+                      up.severityScore >= 0.8 ? 'bg-ap-primary text-white' :
                       up.severityScore >= 0.5 ? 'bg-amber-500 text-carbon-black font-bold' :
                       'bg-carbon-10 text-carbon-70'
                     }`}>
@@ -735,7 +735,7 @@ export const DistrictBriefBody: React.FC = () => {
                       <div className="w-full bg-carbon-20 h-1.5 rounded-sm overflow-hidden">
                         <div
                           className={`h-full rounded-sm ${
-                            up.severityScore >= 0.8 ? 'bg-nasa-green' : up.severityScore >= 0.5 ? 'bg-amber-500' : 'bg-blue-500'
+                            up.severityScore >= 0.8 ? 'bg-severity-low' : up.severityScore >= 0.5 ? 'bg-amber-500' : 'bg-blue-500'
                           }`}
                           style={{ width: `${up.severityScore * 100}%` }}
                         />
@@ -803,7 +803,7 @@ export const DistrictBriefBody: React.FC = () => {
                           <div className="w-20 bg-carbon-10 h-2 rounded-sm overflow-hidden">
                             <div
                               className={`h-full rounded-sm ${
-                                up.severityScore >= 0.8 ? 'bg-nasa-green' : up.severityScore >= 0.5 ? 'bg-amber-500' : 'bg-blue-500'
+                                up.severityScore >= 0.8 ? 'bg-severity-low' : up.severityScore >= 0.5 ? 'bg-amber-500' : 'bg-blue-500'
                               }`}
                               style={{ width: `${up.severityScore * 100}%` }}
                             />
@@ -818,7 +818,7 @@ export const DistrictBriefBody: React.FC = () => {
                       </td>
                       <td className="py-4 px-5 text-right">
                         <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold font-mono ${
-                          up.severityScore >= 0.8 ? 'bg-nasa-red-shade text-white' :
+                          up.severityScore >= 0.8 ? 'bg-ap-primary text-white' :
                           up.severityScore >= 0.5 ? 'bg-amber-100 text-amber-900' :
                           'bg-carbon-10 text-carbon-70'
                         }`}>
@@ -1278,7 +1278,7 @@ export const DistrictBriefBody: React.FC = () => {
       <section id="sec-ops" className="scroll-mt-[calc(var(--navbar-height)+8px)] space-y-4 pt-4 pagination-protected">
         <div className="flex items-center justify-between border-b border-carbon-20 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-carbon-05 border border-carbon-20 flex items-center justify-center text-nasa-red-shade">
+            <div className="w-8 h-8 bg-carbon-05 border border-carbon-20 flex items-center justify-center text-ap-primary">
               <Radio className="w-4 h-4" />
             </div>
             <div>
@@ -1293,7 +1293,7 @@ export const DistrictBriefBody: React.FC = () => {
           {/* Logistics Summary with Standardized Color Coding */}
           <div className="bg-white border border-carbon-20 p-6 space-y-4">
             <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-nasa-red-shade" />
+              <Building2 className="w-4 h-4 text-ap-primary" />
               Emergency Relief & Resource Logistics
             </h3>
 
@@ -1342,7 +1342,7 @@ export const DistrictBriefBody: React.FC = () => {
               <div className="bg-carbon-05 p-4 border border-carbon-20/80 text-xs font-mono space-y-2">
                 <div className="flex justify-between items-center text-carbon-90 font-bold">
                   <span>Disaster Early Warning (BMD/FFWC):</span>
-                  <span className="text-nasa-red-shade text-sm">1090 (Toll Free)</span>
+                  <span className="text-ap-primary text-sm">1090 (Toll Free)</span>
                 </div>
                 <div className="flex justify-between items-center text-carbon-90 font-bold">
                   <span>National Emergency Police/Fire:</span>
@@ -1416,7 +1416,7 @@ export const DistrictBriefBody: React.FC = () => {
 
         <div className="bg-white border border-carbon-20 p-6 space-y-4 text-xs font-sans">
           <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-            <Bot className="w-4 h-4 text-nasa-blue" />
+            <Bot className="w-4 h-4 text-ap-primary" />
             What this brief reports
           </h3>
 

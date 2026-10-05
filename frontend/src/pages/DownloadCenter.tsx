@@ -270,7 +270,7 @@ export const DownloadCenter: React.FC = () => {
 
       {/* Hero Header */}
       <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 md:p-8 shadow-md relative overflow-hidden space-y-3">
-        <div className="absolute top-0 left-0 w-full h-1 bg-nasa-red"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-ap-primary"></div>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 rounded-full text-xs font-mono font-extrabold bg-amber-50 text-amber-900 border border-amber-300 uppercase tracking-wider shadow-2xs">
             Open Software Center
@@ -280,7 +280,7 @@ export const DownloadCenter: React.FC = () => {
         </div>
 
         <h1 className="text-2xl md:text-3xl font-brand font-black text-carbon-90 tracking-tight">
-          Hazard<span className="text-nasa-red-shade">Net</span> Multi-Platform Downloads
+          Hazard<span className="text-ap-primary">Net</span> Multi-Platform Downloads
         </h1>
         <p className="text-carbon-60 text-xs md:text-sm leading-relaxed max-w-3xl">
           Every artifact below is produced automatically by the HazardNet product repositories&apos; release

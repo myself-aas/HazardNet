@@ -194,7 +194,7 @@ export default function StoredForecastPanel({
           <button
             type="button"
             onClick={onRetry}
-            className="mt-6 inline-flex min-h-11 items-center justify-center bg-nasa-blue px-6 py-3 text-base font-semibold text-white hover:bg-nasa-blue-shade focus-visible:outline focus-visible:outline-offset-2"
+            className="mt-6 inline-flex min-h-11 items-center justify-center bg-ap-primary px-6 py-3 text-base font-semibold text-white hover:bg-ap-primary focus-visible:outline focus-visible:outline-offset-2"
           >
             {t('common.retry')}
           </button>

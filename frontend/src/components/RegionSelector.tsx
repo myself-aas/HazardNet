@@ -168,7 +168,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
               }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-16 pr-10 py-3.5 bg-carbon-05 border border-carbon-20 focus:border-nasa-blue focus:bg-white focus:ring-2 focus:ring-nasa-blue/20 rounded-2xl text-carbon-90 text-sm font-medium placeholder-carbon-40 focus:outline-none transition-all shadow-xs"
+              className="w-full pl-16 pr-10 py-3.5 bg-carbon-05 border border-carbon-20 focus:border-ap-primary focus:bg-white focus:ring-2 focus:ring-ap-primary/20 rounded-2xl text-carbon-90 text-sm font-medium placeholder-carbon-40 focus:outline-none transition-all shadow-xs"
             />
             {searchQuery && (
               <button
@@ -187,7 +187,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
             <select
               value={selectedDivisionFilter}
               onChange={(e) => setSelectedDivisionFilter(e.target.value)}
-              className="w-full px-4 py-3.5 bg-carbon-05 border border-carbon-20 focus:border-nasa-blue focus:bg-white focus:ring-2 focus:ring-nasa-blue/20 rounded-2xl text-carbon-90 text-sm font-semibold focus:outline-none cursor-pointer shadow-xs"
+              className="w-full px-4 py-3.5 bg-carbon-05 border border-carbon-20 focus:border-ap-primary focus:bg-white focus:ring-2 focus:ring-ap-primary/20 rounded-2xl text-carbon-90 text-sm font-semibold focus:outline-none cursor-pointer shadow-xs"
             >
               <option value="All">All 8 Divisions</option>
               {ALL_8_DIVISIONS.map((div) => (
@@ -208,7 +208,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
                 const selected = ALL_64_DISTRICTS.find((d) => d.id === e.target.value);
                 if (selected) onSelectDistrict(selected);
               }}
-              className="w-full px-4 py-3.5 bg-carbon-05 border border-carbon-20 text-carbon-90 font-bold rounded-2xl text-sm focus:outline-none cursor-pointer shadow-xs focus:ring-2 focus:ring-nasa-blue/20"
+              className="w-full px-4 py-3.5 bg-carbon-05 border border-carbon-20 text-carbon-90 font-bold rounded-2xl text-sm focus:outline-none cursor-pointer shadow-xs focus:ring-2 focus:ring-ap-primary/20"
             >
               {Object.keys(districtsByDivision).map((divName) => (
                 <optgroup key={divName} label={`--- ${divName} Division ---`} className="bg-carbon-10 text-carbon-60 font-mono">
@@ -347,7 +347,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
                 }}
                 className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 border min-h-[38px] ${
                   isSelected
-                    ? 'bg-primary text-carbon-90 border-nasa-blue shadow-xs scale-[1.02]'
+                    ? 'bg-primary text-carbon-90 border-ap-primary shadow-xs scale-[1.02]'
                     : 'bg-carbon-05 text-carbon-70 border-carbon-20 hover:text-carbon-90 hover:bg-carbon-10'
                 }`}
               >

@@ -80,13 +80,13 @@ export const DistrictOutlookCard: React.FC = () => {
                 </span>
                 <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-sm border text-xs font-mono font-extrabold ${riskStyles.bg}`}>
                   <span className={`w-2 h-2 rounded-full ${
-                    data.modelAssessment.riskCategory === 'High' ? 'bg-[var(--severity-red)] animate-pulse' :
-                    data.modelAssessment.riskCategory === 'Moderate' ? 'bg-[var(--severity-amber)]' : 'bg-[var(--severity-green)]'
+                    data.modelAssessment.riskCategory === 'High' ? 'bg-[var(--ap-sev-very-high)] animate-pulse' :
+                    data.modelAssessment.riskCategory === 'Moderate' ? 'bg-[var(--ap-sev-moderate)]' : 'bg-[var(--ap-sev-low)]'
                   }`} />
                   {data.modelAssessment.riskCategory} Risk Classification
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-sm bg-carbon-05 border border-carbon-20 text-nasa-blue-shade text-xs font-mono font-bold">
-                  <Bot className="w-3 h-3 text-nasa-blue" />
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-sm bg-carbon-05 border border-carbon-20 text-ap-primary text-xs font-mono font-bold">
+                  <Bot className="w-3 h-3 text-ap-primary" />
                   Model Score: {data.modelAssessment.confidenceLevel}% (uncalibrated)
                 </span>
               </div>
@@ -174,7 +174,7 @@ export const DistrictOutlookCard: React.FC = () => {
               </div>
               <div className="w-full bg-carbon-20 h-2 rounded-sm overflow-hidden">
                 <div
-                  className="h-full rounded-sm bg-nasa-green transition-all duration-700"
+                  className="h-full rounded-sm bg-severity-low transition-all duration-700"
                   style={{ width: `${data.modelAssessment.confidenceLevel}%` }}
                 />
               </div>

@@ -34,7 +34,7 @@ import { InfinityLoader } from '../../components/brand';
 const CATEGORIES = ['Remote Sensing', 'Field Deployment', 'Edge AI', 'Agronomy', 'Research', 'General'];
 
 const inputClass =
-  'w-full px-3.5 py-2.5 bg-carbon-05 border border-carbon-20 text-xs text-carbon-90 placeholder-carbon-40 font-medium transition-all focus:outline-none focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/40';
+  'w-full px-3.5 py-2.5 bg-carbon-05 border border-carbon-20 text-xs text-carbon-90 placeholder-carbon-40 font-medium transition-all focus:outline-none focus:border-ap-primary focus:ring-2 focus:ring-ap-primary/40';
 
 const autosaveKey = (id: string) => `hazardnet.blog.draft.${id}`;
 
@@ -325,11 +325,11 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
 
       {/* Editor header */}
       <div className="bg-white border border-carbon-20/90 p-5 relative overflow-hidden space-y-3">
-        <div aria-hidden="true" className="absolute top-0 left-0 w-full h-1 bg-nasa-red" />
+        <div aria-hidden="true" className="absolute top-0 left-0 w-full h-1 bg-ap-primary" />
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono font-bold text-carbon-60 uppercase tracking-wider">
-              <MaterialIcon name="doc" className="w-3.5 h-3.5 text-nasa-red-shade" />
+              <MaterialIcon name="doc" className="w-3.5 h-3.5 text-ap-primary" />
               Blog Studio · {mode === 'new' ? 'New article' : 'Editing'}
             </div>
             <h1 className="text-lg sm:text-xl font-black text-carbon-90 tracking-tight mt-1">
@@ -440,11 +440,11 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
           <div className="bg-white border border-carbon-20/90 p-5 space-y-4" data-testid="seo-panel">
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-xs font-black uppercase tracking-wider text-carbon-90 font-mono flex items-center gap-1.5">
-                <MaterialIcon name="search" className="w-4 h-4 text-nasa-red-shade" /> SEO &amp; Google Search Console
+                <MaterialIcon name="search" className="w-4 h-4 text-ap-primary" /> SEO &amp; Google Search Console
               </h3>
               <span
                 className={`rounded-full px-2.5 py-1 text-xs font-black ${
-                  seo.score >= 80 ? 'bg-carbon-05 text-carbon-80' : seo.score >= 50 ? 'bg-amber-50 text-amber-700' : 'bg-white text-nasa-red-shade'
+                  seo.score >= 80 ? 'bg-carbon-05 text-carbon-80' : seo.score >= 50 ? 'bg-amber-50 text-amber-700' : 'bg-white text-ap-primary'
                 }`}
                 data-testid="seo-score"
               >
@@ -530,7 +530,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                 type="checkbox"
                 checked={robotsNoIndex}
                 onChange={(e) => markDirty(setRobotsNoIndex)(e.target.checked)}
-                className="h-4 w-4 rounded border-carbon-30 accent-nasa-blue cursor-pointer"
+                className="h-4 w-4 rounded border-carbon-30 accent-ap-primary cursor-pointer"
               />
               <span className="text-xs font-semibold text-carbon-60">
                 Hide from search engines <span className="font-mono text-xs text-carbon-60">(meta robots: noindex, follow)</span>
@@ -541,7 +541,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
             <div className="border border-carbon-20 p-4 space-y-3" data-testid="faq-builder">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-bold text-carbon-80 flex items-center gap-1.5">
-                  <MaterialIcon name="faq" className="w-4 h-4 text-nasa-red-shade" /> FAQ section
+                  <MaterialIcon name="faq" className="w-4 h-4 text-ap-primary" /> FAQ section
                   <span className="text-xs font-medium text-carbon-60">(emits FAQPage schema for Google rich results)</span>
                 </p>
                 <button
@@ -568,7 +568,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                     <button
                       type="button"
                       onClick={() => markDirty(setFaqs)(faqs.filter((_, i) => i !== index))}
-                      className="shrink-0 border border-nasa-red p-2 text-rose-500 hover:bg-white cursor-pointer"
+                      className="shrink-0 border border-ap-primary p-2 text-rose-500 hover:bg-white cursor-pointer"
                       aria-label={`Remove FAQ ${index + 1}`}
                     >
                       <MaterialIcon name="delete" className="w-3.5 h-3.5" />

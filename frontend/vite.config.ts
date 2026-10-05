@@ -120,7 +120,7 @@ export default defineConfig(({ mode }) => {
   resolve: {
     // Mirrors the `@/*` -> `src/*` mapping in frontend/tsconfig.json. Vite does
     // not read tsconfig `paths`, so without this alias the build fails with
-    // "Rollup failed to resolve import '@/...'" on shadcn-generated components.
+    // "Rollup failed to resolve import '@/...'" on aliased imports.
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       '@hazardnet/design-system': fileURLToPath(new URL('../packages/design-system/src/index.ts', import.meta.url)),
@@ -172,8 +172,9 @@ export default defineConfig(({ mode }) => {
         // Vendor splitting: the heaviest third-party stacks get their own
         // long-cacheable chunks so the root chunk stays lean and repeat
         // visits only re-download what changed. (jspdf/html2canvas power the
-        // PDF export buttons; leaflet the maps; mui+emotion the design
-        // system; firebase auth/data; recharts the charts.)
+        // PDF export buttons; leaflet the maps; firebase auth/data;
+        // recharts the charts. The design system ships no vendor chunk — it
+        // is CSS custom properties plus Tailwind utilities, no runtime.)
         manualChunks(id) {
           if (!id.includes('node_modules')) return undefined;
           if (id.includes('node_modules/recharts')) return 'vendor-recharts';
@@ -181,13 +182,6 @@ export default defineConfig(({ mode }) => {
             return 'vendor-pdf';
           }
           if (id.includes('node_modules/leaflet')) return 'vendor-leaflet';
-          if (
-            id.includes('node_modules/@mui') ||
-            id.includes('node_modules/@emotion') ||
-            id.includes('node_modules/@base-ui')
-          ) {
-            return 'vendor-mui';
-          }
           if (id.includes('node_modules/firebase') || id.includes('node_modules/@firebase')) {
             return 'vendor-firebase';
           }

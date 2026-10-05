@@ -263,13 +263,13 @@ export const EvidenceCardExportButton: React.FC<EvidenceCardExportButtonProps> =
         onClick={onExport}
         disabled={state === 'working'}
         aria-busy={state === 'working'}
-        className="no-print inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 bg-nasa-blue px-3 py-2 text-sm font-semibold text-white hover:bg-nasa-blue-shade disabled:opacity-60 touch-manipulation"
+        className="no-print inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 bg-ap-primary px-3 py-2 text-sm font-semibold text-white hover:bg-ap-primary disabled:opacity-60 touch-manipulation"
       >
         <MaterialIcon name="download" className="text-base" aria-hidden="true" />
         {state === 'working' ? t('evidence.exporting') : t('evidence.exportPdf')}
       </button>
       {state === 'error' && (
-        <p role="alert" className="max-w-xs text-right text-sm font-semibold text-nasa-red-shade">
+        <p role="alert" className="max-w-xs text-right text-sm font-semibold text-ap-primary">
           {t('evidence.exportFailed')}
         </p>
       )}

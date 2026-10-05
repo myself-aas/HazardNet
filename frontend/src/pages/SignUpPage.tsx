@@ -20,7 +20,7 @@ import { parseAuthError } from '../lib/authErrors';
  */
 
 const inputClass =
-  'h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 placeholder-carbon-40 font-medium focus:border-nasa-blue focus:outline-none focus:ring-2 focus:ring-nasa-blue/40';
+  'h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 placeholder-carbon-40 font-medium focus:border-ap-primary focus:outline-none focus:ring-2 focus:ring-ap-primary/40';
 
 const describeError = (err: unknown): string => {
   const parsed = parseAuthError(err);
@@ -98,7 +98,7 @@ const SignUpPage: React.FC = () => {
               exit={{ opacity: 0, y: -5 }}
               role="alert"
               aria-live="polite"
-              className="flex items-start gap-2 border-l-2 border-nasa-red bg-white p-4 text-sm font-medium text-nasa-red-shade"
+              className="flex items-start gap-2 border-l-2 border-ap-primary bg-white p-4 text-sm font-medium text-ap-primary"
             >
               <span className="shrink-0 mt-0.5">
                 <MaterialIcon name="warning" className="w-4 h-4" />
@@ -131,7 +131,7 @@ const SignUpPage: React.FC = () => {
             aria-invalid={Boolean(fieldErrors.name)}
             className={inputClass}
           />
-          {fieldErrors.name && <p className="mt-1 text-sm font-semibold text-nasa-red-shade">{fieldErrors.name}</p>}
+          {fieldErrors.name && <p className="mt-1 text-sm font-semibold text-ap-primary">{fieldErrors.name}</p>}
         </div>
 
         <UsernameField
@@ -142,7 +142,7 @@ const SignUpPage: React.FC = () => {
           email={email}
         />
         {fieldErrors.username && (
-          <p className="-mt-2 text-sm font-semibold text-nasa-red-shade">{fieldErrors.username}</p>
+          <p className="-mt-2 text-sm font-semibold text-ap-primary">{fieldErrors.username}</p>
         )}
 
         <div>
@@ -162,7 +162,7 @@ const SignUpPage: React.FC = () => {
             aria-invalid={Boolean(fieldErrors.email)}
             className={inputClass}
           />
-          {fieldErrors.email && <p className="mt-1 text-sm font-semibold text-nasa-red-shade">{fieldErrors.email}</p>}
+          {fieldErrors.email && <p className="mt-1 text-sm font-semibold text-ap-primary">{fieldErrors.email}</p>}
         </div>
 
         <div>
@@ -186,14 +186,14 @@ const SignUpPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowPassword((value) => !value)}
-              className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-carbon-60 hover:text-carbon-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 cursor-pointer touch-manipulation"
+              className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-carbon-60 hover:text-carbon-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary/60 cursor-pointer touch-manipulation"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               <EyeToggleIcon isState={showPassword} size={20} duration={0} />
             </button>
           </div>
           {fieldErrors.password && (
-            <p className="mt-1 text-sm font-semibold text-nasa-red-shade">{fieldErrors.password}</p>
+            <p className="mt-1 text-sm font-semibold text-ap-primary">{fieldErrors.password}</p>
           )}
         </div>
 
@@ -203,28 +203,28 @@ const SignUpPage: React.FC = () => {
             type="checkbox"
             checked={acceptedTerms}
             onChange={(e) => setAcceptedTerms(e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-carbon-30 accent-nasa-blue cursor-pointer"
+            className="mt-0.5 h-4 w-4 rounded border-carbon-30 accent-ap-primary cursor-pointer"
           />
           <span className="text-sm leading-[1.62] text-carbon-60">
             I agree to the{' '}
-            <Link to="/terms" className="font-bold text-nasa-blue-shade hover:underline">
+            <Link to="/terms" className="font-bold text-ap-primary hover:underline">
               Terms
             </Link>{' '}
             and{' '}
-            <Link to="/privacy" className="font-bold text-nasa-blue-shade hover:underline">
+            <Link to="/privacy" className="font-bold text-ap-primary hover:underline">
               Privacy Policy
             </Link>
             , including weather-data processing for my district.
           </span>
         </label>
-        {fieldErrors.terms && <p className="-mt-2 text-sm font-semibold text-nasa-red-shade">{fieldErrors.terms}</p>}
+        {fieldErrors.terms && <p className="-mt-2 text-sm font-semibold text-ap-primary">{fieldErrors.terms}</p>}
 
         <button
           id="signup-page-submit-btn"
           data-testid="signup-submit-btn"
           type="submit"
           disabled={loading}
-          className="flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 bg-primary-strong px-6 py-3 text-base font-semibold text-white hover:bg-primary disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2 touch-manipulation"
+          className="flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 bg-primary-strong px-6 py-3 text-base font-semibold text-white hover:bg-primary disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary/60 focus-visible:ring-offset-2 touch-manipulation"
         >
           {loading ? (
             <>
@@ -254,7 +254,7 @@ const SignUpPage: React.FC = () => {
         Already have an account?{' '}
         <Link
           to={next && next !== '/' ? `/login?next=${encodeURIComponent(next)}` : '/login'}
-          className="font-extrabold text-nasa-blue-shade hover:text-nasa-blue hover:underline"
+          className="font-extrabold text-ap-primary hover:text-ap-primary hover:underline"
         >
           Sign in
         </Link>

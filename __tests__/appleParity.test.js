@@ -502,10 +502,53 @@ describe('the deleted systems stay deleted', () => {
     'frontend/src/styles/brand.css',
     'frontend/src/components/meridian/primitives.tsx',
     'frontend/src/design-system/tokens.ts',
+    // The generator config, not just the output. A stylesheet can be deleted
+    // and a system still reinstall itself: `components.json` told
+    // `npx shadcn add` to write components into src/ and tokens into
+    // index.css with a taupe base ramp. Deleting the CSS without deleting this
+    // is leaving the door open and taking the sign off it.
+    'frontend/components.json',
   ];
 
   test.each(GONE)('%s does not exist', (path) => {
     expect(existsSync(join(ROOT, path))).toBe(false);
+  });
+
+  test('no superseded vocabulary survives as a token alias', () => {
+    // The subtler half of "the deleted systems stay deleted". Four systems were
+    // removed as files while their NAMES lived on as aliases pointing at Apple
+    // tokens — --severity-*, --surface-*, --glass-*, --panel-*, --chart-*,
+    // --sidebar-*, --primary and friends. The pixels were already correct, so
+    // nothing failed and nobody noticed; 52 of the last 80 had gone dead.
+    //
+    // A second set of names for one set of values is a second vocabulary, and
+    // new code reaches for whichever it meets first. Tailwind theme keys are
+    // the one legitimate exception: utilities cannot be generated without
+    // them, they live only in index.css, and every value is a var(--ap-*).
+    const DEAD_PREFIX =
+      /^--(mrd|hds|hn|m3|md3|nasa|meridian|severity|surface|panel|glass|sidebar|chart|primary|secondary|success|warning|info|destructive|muted|popover|card|accent|input|foreground|background|border|subtle|spacesuit)(-|$)/;
+    const offenders = [];
+    for (const file of ['frontend/src/styles/apple.css', 'frontend/src/index.css']) {
+      const body = readFileSync(join(ROOT, file), 'utf8').replace(/\/\*[\s\S]*?\*\//g, ' ');
+      for (const m of body.matchAll(/(?:^|[;{])\s*(--[a-z0-9][\w-]*)\s*:/gm)) {
+        const name = m[1];
+        if (name.startsWith('--color-') || name.startsWith('--ap-')) continue;
+        if (DEAD_PREFIX.test(name)) offenders.push(`${file}: ${name}`);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  test('hazard identity never borrows the severity ramp', () => {
+    // Two encodings, two questions. Severity is ordinal ("how bad"), identity
+    // is categorical ("which kind"). hazardPalette.ts used to answer the second
+    // with the first's colours, so a flood was drawn in the chrome accent and a
+    // drought in extreme-severity red whatever their actual severity.
+    const palette = readFileSync(join(ROOT, 'frontend/src/lib/hazardPalette.ts'), 'utf8');
+    const map = palette.slice(palette.indexOf('HAZARD_COLOR_TOKENS'), palette.indexOf('};', palette.indexOf('HAZARD_COLOR_TOKENS')));
+    const tokens = [...map.matchAll(/var\((--ap-[\w-]+)\)/g)].map((m) => m[1]);
+    expect(tokens.length).toBeGreaterThan(0);
+    expect(tokens.filter((t) => !t.startsWith('--ap-haz-'))).toEqual([]);
   });
 
   test('there is exactly one stylesheet of tokens', () => {

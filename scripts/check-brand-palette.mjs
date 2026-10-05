@@ -58,7 +58,7 @@ const ALLOWED_HEX = new Set([
   '#0064e0', '#1a7bf5', '#3d93fa',
   // The wordmark's ink.
   '#0f1b26',
-  // Severity scale — semantic, asserted by __tests__/meridianContrast.test.js and the map suite.
+  // Severity scale — semantic, asserted by __tests__/appleParity.test.js and the map suite.
   '#16a34a', '#f59e0b', '#dc2626', '#dcfce7', '#fef3c7', '#fee2e2',
 ]);
 

@@ -21,7 +21,7 @@ export const ICON_SOURCE_VERSION = "1.48.0" as const;
 
 /**
  * One stroke weight for the whole app. Lucide's default is 2, which reads heavy next to
- * Meridian's hairlines (skill3 bans the thick-stroke look); at 1.75 the glyphs match the
+ * Apple's hairlines (skill3 bans the thick-stroke look); at 1.75 the glyphs match the
  * 1px border weight and stay legible at 14-16px.
  */
 export const ICON_STROKE = 1.75 as const;

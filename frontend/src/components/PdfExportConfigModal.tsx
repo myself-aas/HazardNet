@@ -284,7 +284,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="pdf-config-modal-title"
-      className="fixed inset-0 z-[10000] flex items-center justify-center p-3 sm:p-4 bg-carbon-black/80 backdrop-blur-sm animate-in fade-in duration-150"
+      className="fixed inset-0 z-[10000] flex items-center justify-center p-3 sm:p-4 bg-carbon-black/80 backdrop-blur-sm ap-enter"
     >
       {/* Modal Container */}
       <div

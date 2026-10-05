@@ -170,7 +170,7 @@ export default function ChatBot() {
     <>
       <AnimatePresence>
         {!isOpen && (
-          <div className="fixed bottom-20 right-4 z-[var(--z-overlay)] flex items-center sm:bottom-6 sm:right-6">
+          <div className="fixed bottom-20 right-4 z-[var(--ap-z-overlay)] flex items-center sm:bottom-6 sm:right-6">
             <motion.button
               key="ai-advisor-fab"
               id="launch-ai-advisor-fab"
@@ -183,7 +183,7 @@ export default function ChatBot() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 8 }}
               transition={{ duration: reduceMotion ? 0 : 0.18, ease: 'easeOut' }}
-              className="flex h-14 w-14 items-center justify-center rounded-full border border-white/30 bg-nasa-blue text-white shadow-lg transition-colors hover:bg-nasa-blue-shade focus:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue focus-visible:ring-offset-2"
+              className="flex h-14 w-14 items-center justify-center rounded-full border border-white/30 bg-ap-primary text-white shadow-lg transition-colors hover:bg-ap-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary focus-visible:ring-offset-2"
               aria-label="Open AI Advisor chat"
               aria-haspopup="dialog"
             >
@@ -203,7 +203,7 @@ export default function ChatBot() {
             animate={{ opacity: 1, y: 0 }}
             exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
             transition={{ duration: reduceMotion ? 0 : 0.18, ease: 'easeOut' }}
-            className="fixed inset-x-0 bottom-0 top-0 z-[var(--z-overlay)] flex h-dvh w-full max-w-full flex-col overflow-hidden border border-carbon-20 bg-white pb-[env(safe-area-inset-bottom)] shadow-xl sm:inset-auto sm:bottom-6 sm:right-6 sm:h-[640px] sm:max-h-[calc(100dvh-3rem)] sm:w-[min(480px,calc(100vw-3rem))] sm:rounded-2xl sm:pb-0"
+            className="fixed inset-x-0 bottom-0 top-0 z-[var(--ap-z-overlay)] flex h-dvh w-full max-w-full flex-col overflow-hidden border border-carbon-20 bg-white pb-[env(safe-area-inset-bottom)] shadow-xl sm:inset-auto sm:bottom-6 sm:right-6 sm:h-[640px] sm:max-h-[calc(100dvh-3rem)] sm:w-[min(480px,calc(100vw-3rem))] sm:rounded-2xl sm:pb-0"
             role="dialog"
             aria-modal="true"
             aria-label="HazardNet AI Advisor chat"
@@ -211,7 +211,7 @@ export default function ChatBot() {
             {chatMode === 'text' ? (
               <div className="flex shrink-0 items-center justify-between gap-3 border-b border-carbon-20 bg-white px-4 py-3">
                 <div className="flex min-w-0 items-center gap-2.5">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-nasa-blue">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-ap-primary">
                     <MessageSquare className="h-4 w-4" aria-hidden="true" />
                   </div>
                   <div className="min-w-0">
@@ -224,7 +224,7 @@ export default function ChatBot() {
                     id="tab-voice-mode-btn"
                     type="button"
                     onClick={() => setChatMode('voice')}
-                    className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg border border-carbon-20 px-3 text-sm font-medium text-carbon-80 transition-colors hover:bg-carbon-05 dark:hover:bg-carbon-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue"
+                    className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg border border-carbon-20 px-3 text-sm font-medium text-carbon-80 transition-colors hover:bg-carbon-05 dark:hover:bg-carbon-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary"
                     aria-label="Switch to Live Voice Advisor"
                   >
                     <Mic className="h-4 w-4" aria-hidden="true" />
@@ -236,7 +236,7 @@ export default function ChatBot() {
                   <button
                     type="button"
                     onClick={() => setIsOpen(false)}
-                    className="flex h-11 w-11 items-center justify-center rounded-lg text-carbon-60 transition-colors hover:bg-carbon-05 dark:hover:bg-carbon-70 hover:text-carbon-90 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue"
+                    className="flex h-11 w-11 items-center justify-center rounded-lg text-carbon-60 transition-colors hover:bg-carbon-05 dark:hover:bg-carbon-70 hover:text-carbon-90 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary"
                     aria-label="Close Assistant"
                   >
                     <X className="h-5 w-5" aria-hidden="true" />
@@ -275,36 +275,36 @@ export default function ChatBot() {
                             type="button"
                             disabled={loading}
                             onClick={() => sendMessage('Where is the nearest Upazila Agriculture Office (DAE) in Sunamganj?', 'maps')}
-                            className="inline-flex min-h-[44px] max-w-full items-center gap-2 rounded-full border border-carbon-20 bg-white px-3 text-left text-xs font-medium text-carbon-80 transition-colors hover:border-nasa-blue/50 hover:bg-blue-50 dark:hover:bg-carbon-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue disabled:opacity-50"
+                            className="inline-flex min-h-[44px] max-w-full items-center gap-2 rounded-full border border-carbon-20 bg-white px-3 text-left text-xs font-medium text-carbon-80 transition-colors hover:border-ap-primary/50 hover:bg-blue-50 dark:hover:bg-carbon-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary disabled:opacity-50"
                           >
-                            <MapPin className="h-4 w-4 shrink-0 text-nasa-blue" aria-hidden="true" />
+                            <MapPin className="h-4 w-4 shrink-0 text-ap-primary" aria-hidden="true" />
                             <span>Find a DAE office</span>
                           </button>
                           <button
                             type="button"
                             disabled={loading}
                             onClick={() => sendMessage("Locate cyclone and flood shelters near Cox's Bazar", 'maps')}
-                            className="inline-flex min-h-[44px] max-w-full items-center gap-2 rounded-full border border-carbon-20 bg-white px-3 text-left text-xs font-medium text-carbon-80 transition-colors hover:border-nasa-blue/50 hover:bg-blue-50 dark:hover:bg-carbon-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue disabled:opacity-50"
+                            className="inline-flex min-h-[44px] max-w-full items-center gap-2 rounded-full border border-carbon-20 bg-white px-3 text-left text-xs font-medium text-carbon-80 transition-colors hover:border-ap-primary/50 hover:bg-blue-50 dark:hover:bg-carbon-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary disabled:opacity-50"
                           >
-                            <MapPin className="h-4 w-4 shrink-0 text-nasa-blue" aria-hidden="true" />
+                            <MapPin className="h-4 w-4 shrink-0 text-ap-primary" aria-hidden="true" />
                             <span>Find a cyclone shelter</span>
                           </button>
                           <button
                             type="button"
                             disabled={loading}
                             onClick={() => sendMessage('Latest Bangladesh flood situation and river danger levels today', 'search')}
-                            className="inline-flex min-h-[44px] max-w-full items-center gap-2 rounded-full border border-carbon-20 bg-white px-3 text-left text-xs font-medium text-carbon-80 transition-colors hover:border-nasa-blue/50 hover:bg-blue-50 dark:hover:bg-carbon-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue disabled:opacity-50"
+                            className="inline-flex min-h-[44px] max-w-full items-center gap-2 rounded-full border border-carbon-20 bg-white px-3 text-left text-xs font-medium text-carbon-80 transition-colors hover:border-ap-primary/50 hover:bg-blue-50 dark:hover:bg-carbon-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary disabled:opacity-50"
                           >
-                            <Search className="h-4 w-4 shrink-0 text-nasa-blue" aria-hidden="true" />
+                            <Search className="h-4 w-4 shrink-0 text-ap-primary" aria-hidden="true" />
                             <span>Latest flood situation</span>
                           </button>
                           <button
                             type="button"
                             disabled={loading}
                             onClick={() => sendMessage('Current BMD cyclone and severe weather bulletins', 'search')}
-                            className="inline-flex min-h-[44px] max-w-full items-center gap-2 rounded-full border border-carbon-20 bg-white px-3 text-left text-xs font-medium text-carbon-80 transition-colors hover:border-nasa-blue/50 hover:bg-blue-50 dark:hover:bg-carbon-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue disabled:opacity-50"
+                            className="inline-flex min-h-[44px] max-w-full items-center gap-2 rounded-full border border-carbon-20 bg-white px-3 text-left text-xs font-medium text-carbon-80 transition-colors hover:border-ap-primary/50 hover:bg-blue-50 dark:hover:bg-carbon-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary disabled:opacity-50"
                           >
-                            <Search className="h-4 w-4 shrink-0 text-nasa-blue" aria-hidden="true" />
+                            <Search className="h-4 w-4 shrink-0 text-ap-primary" aria-hidden="true" />
                             <span>Current BMD bulletins</span>
                           </button>
                         </div>
@@ -322,7 +322,7 @@ export default function ChatBot() {
                                 type="button"
                                 disabled={loading}
                                 onClick={() => sendMessage(question)}
-                                className="flex min-h-[44px] w-full items-center rounded-xl border border-carbon-20 bg-white px-3 py-2 text-left text-sm text-carbon-80 transition-colors hover:bg-carbon-05 dark:hover:bg-carbon-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue disabled:opacity-50"
+                                className="flex min-h-[44px] w-full items-center rounded-xl border border-carbon-20 bg-white px-3 py-2 text-left text-sm text-carbon-80 transition-colors hover:bg-carbon-05 dark:hover:bg-carbon-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary disabled:opacity-50"
                               >
                                 {question}
                               </button>
@@ -367,7 +367,7 @@ export default function ChatBot() {
                         {message.facilities && message.facilities.length > 0 ? (
                           <section className="overflow-hidden rounded-xl border border-carbon-20 bg-white" aria-label={`Nearby places, ${message.facilities.length} results`}>
                             <div className="flex items-center gap-2 border-b border-carbon-20 px-3 py-2 text-xs font-semibold text-carbon-80">
-                              <MapPin className="h-4 w-4 text-nasa-blue" aria-hidden="true" />
+                              <MapPin className="h-4 w-4 text-ap-primary" aria-hidden="true" />
                               <span>Nearby places ({message.facilities.length})</span>
                             </div>
                             <div className="divide-y divide-carbon-10">
@@ -382,7 +382,7 @@ export default function ChatBot() {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     aria-label={`View ${facility.title} on Google Maps`}
-                                    className="inline-flex min-h-[44px] shrink-0 items-center gap-1 rounded-lg px-2 text-xs font-medium text-nasa-blue underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue"
+                                    className="inline-flex min-h-[44px] shrink-0 items-center gap-1 rounded-lg px-2 text-xs font-medium text-ap-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary"
                                   >
                                     <span>Map</span>
                                     <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
@@ -396,7 +396,7 @@ export default function ChatBot() {
                         {message.groundingSources && message.groundingSources.length > 0 ? (
                           <section className="overflow-hidden rounded-xl border border-carbon-20 bg-white" aria-label={`Web sources, ${message.groundingSources.length} results`}>
                             <div className="flex items-center gap-2 border-b border-carbon-20 px-3 py-2 text-xs font-semibold text-carbon-80">
-                              <Search className="h-4 w-4 text-nasa-blue" aria-hidden="true" />
+                              <Search className="h-4 w-4 text-ap-primary" aria-hidden="true" />
                               <span>Sources ({message.groundingSources.length})</span>
                             </div>
                             <div className="divide-y divide-carbon-10">
@@ -407,7 +407,7 @@ export default function ChatBot() {
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   aria-label={`Open source: ${source.title}`}
-                                  className="flex min-h-[44px] items-center justify-between gap-3 px-3 py-2 text-sm text-carbon-80 transition-colors hover:bg-carbon-05 dark:hover:bg-carbon-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-nasa-blue"
+                                  className="flex min-h-[44px] items-center justify-between gap-3 px-3 py-2 text-sm text-carbon-80 transition-colors hover:bg-carbon-05 dark:hover:bg-carbon-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ap-primary"
                                 >
                                   <span className="min-w-0 truncate font-medium">{source.title}</span>
                                   <span className="inline-flex shrink-0 items-center gap-1 text-xs text-carbon-60">
@@ -430,9 +430,9 @@ export default function ChatBot() {
                   {loading ? (
                     <div className="flex items-center gap-2 px-1 py-2 text-sm text-carbon-60" role="status" aria-live="polite">
                       {reduceMotion ? (
-                        <Search className="h-4 w-4 text-nasa-blue" aria-hidden="true" />
+                        <Search className="h-4 w-4 text-ap-primary" aria-hidden="true" />
                       ) : (
-                        <Loader2 className="h-4 w-4 animate-spin text-nasa-blue" aria-hidden="true" />
+                        <Loader2 className="h-4 w-4 animate-spin text-ap-primary" aria-hidden="true" />
                       )}
                       <span>{groundingMode === 'maps' ? 'Looking for nearby places…' : groundingMode === 'search' ? 'Checking current sources…' : 'Preparing an answer…'}</span>
                     </div>
@@ -450,7 +450,7 @@ export default function ChatBot() {
                         aria-label="Answer sources"
                         value={groundingMode}
                         onChange={(event) => chooseGroundingMode(event.target.value as 'auto' | 'maps' | 'search')}
-                        className="min-h-[44px] max-w-[160px] rounded-lg border border-carbon-20 bg-white px-2.5 text-sm text-carbon-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue"
+                        className="min-h-[44px] max-w-[160px] rounded-lg border border-carbon-20 bg-white px-2.5 text-sm text-carbon-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary"
                       >
                         <option value="auto">Automatic</option>
                         <option value="maps">Nearby places</option>
@@ -465,7 +465,7 @@ export default function ChatBot() {
                       <button
                         type="button"
                         onClick={requestLocation}
-                        className="inline-flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium text-carbon-70 transition-colors hover:bg-carbon-05 dark:hover:bg-carbon-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue"
+                        className="inline-flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium text-carbon-70 transition-colors hover:bg-carbon-05 dark:hover:bg-carbon-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary"
                         aria-label="Enable location for nearby results"
                       >
                         <MapPin className="h-4 w-4" aria-hidden="true" /> Location
@@ -488,13 +488,13 @@ export default function ChatBot() {
                         onKeyDown={handleKeyDown}
                         placeholder="Ask about hazards, farming, or local services…"
                         aria-describedby="chat-input-help"
-                        className="max-h-32 min-h-[48px] w-full resize-y rounded-xl border border-carbon-20 bg-carbon-05 py-3 pl-3.5 pr-14 text-sm leading-relaxed text-carbon-90 dark:text-white placeholder:text-carbon-60 dark:placeholder:text-carbon-50 focus:border-nasa-blue focus:outline-none focus:ring-2 focus:ring-nasa-blue/20"
+                        className="max-h-32 min-h-[48px] w-full resize-y rounded-xl border border-carbon-20 bg-carbon-05 py-3 pl-3.5 pr-14 text-sm leading-relaxed text-carbon-90 dark:text-white placeholder:text-carbon-60 dark:placeholder:text-carbon-50 focus:border-ap-primary focus:outline-none focus:ring-2 focus:ring-ap-primary/20"
                         rows={1}
                       />
                       <button
                         type="submit"
                         disabled={!input.trim() || loading}
-                        className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg bg-nasa-blue text-white transition-colors hover:bg-nasa-blue-shade focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"
+                        className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg bg-ap-primary text-white transition-colors hover:bg-ap-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"
                         aria-label="Send message"
                         title="Send message"
                       >

@@ -55,7 +55,7 @@ const ForgotPasswordPage: React.FC = () => {
 
         {!isSubmitted ? (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="border-l-2 border-nasa-orange bg-white p-4">
+            <div className="border-l-2 border-severity-high bg-white p-4">
               <p className="text-base leading-[1.62] text-carbon-70">
                 Enter your registered HazardNet email address and we'll send you instructions to reset your password.
               </p>
@@ -68,7 +68,7 @@ const ForgotPasswordPage: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -5 }}
                   role="alert"
-                  className="flex items-start gap-2 border-l-2 border-nasa-red bg-white p-4 text-sm font-medium text-nasa-red-shade"
+                  className="flex items-start gap-2 border-l-2 border-ap-primary bg-white p-4 text-sm font-medium text-ap-primary"
                 >
                   <span className="shrink-0"><MaterialIcon name="warning" className="w-4 h-4 inline-block mr-1" /></span>
                   <span>{error}</span>
@@ -92,7 +92,7 @@ const ForgotPasswordPage: React.FC = () => {
                 placeholder="user@example.com"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 placeholder-carbon-40 font-medium focus:border-nasa-blue focus:outline-none focus:ring-2 focus:ring-nasa-blue/40"
+                className="h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 placeholder-carbon-40 font-medium focus:border-ap-primary focus:outline-none focus:ring-2 focus:ring-ap-primary/40"
               />
             </div>
 
@@ -118,11 +118,11 @@ const ForgotPasswordPage: React.FC = () => {
             <div className="text-center text-xs text-carbon-60 pt-2 space-y-1.5 border-t border-carbon-20">
               <p>
                 Remembered your password?{' '}
-                <Link to="/login" className="text-nasa-blue-shade hover:underline font-extrabold">Log In</Link>
+                <Link to="/login" className="text-ap-primary hover:underline font-extrabold">Log In</Link>
               </p>
               <p>
                 Need an account?{' '}
-                <Link to="/signup" className="text-nasa-blue-shade hover:underline font-extrabold">Sign Up</Link>
+                <Link to="/signup" className="text-ap-primary hover:underline font-extrabold">Sign Up</Link>
               </p>
             </div>
           </form>

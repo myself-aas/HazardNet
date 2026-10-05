@@ -31,9 +31,14 @@ function cx(...parts: Array<string | false | null | undefined | 0>): string {
    Buttons
 
    DESIGN.md documents five button grammars and they differ by SHAPE and WEIGHT,
-   not by hue. `intent` is therefore a grammar selector. The legacy Meridian
-   names ('ink' | 'hazard' | 'interactive' | 'outline' | 'quiet') are accepted
-   and mapped, so no call site has to change in the same commit as the import.
+   not by hue. `intent` is therefore a grammar selector.
+
+   The superseded system's intent names ('ink' | 'hazard' | 'interactive' |
+   'outline' | 'quiet') used to be accepted here and quietly mapped, so that
+   call sites did not have to change in the same commit as the import. That
+   migration is finished — one call site was still using the old vocabulary,
+   and it now names the grammar it wants. The shim is gone, because an API that
+   accepts two sets of names for the same five things is two APIs.
    ──────────────────────────────────────────────────────────────────────────── */
 
 export type AppleIntent =
@@ -43,15 +48,6 @@ export type AppleIntent =
   | 'pearl' /* pearl capsule — card-level secondary                  */
   | 'hero' /* oversized light-weight pill — store hero              */
   | 'icon'; /* 44×44 circle over imagery                            */
-
-/** Meridian intents, mapped onto Apple grammars. Kept so the migration is mechanical. */
-const LEGACY_INTENT: Record<string, AppleIntent> = {
-  ink: 'primary',
-  hazard: 'primary',
-  interactive: 'primary',
-  outline: 'secondary',
-  quiet: 'pearl',
-};
 
 export type AppleSize = 'sm' | 'md' | 'lg';
 
@@ -71,14 +67,12 @@ const SIZE_CLASS: Record<AppleSize, string> = {
   lg: 'px-7 text-ap-body',
 };
 
-function resolveIntent(intent: string | undefined): AppleIntent {
-  if (!intent) return 'primary';
-  if (intent in INTENT_CLASS) return intent as AppleIntent;
-  return LEGACY_INTENT[intent] ?? 'primary';
+function resolveIntent(intent: AppleIntent | undefined): AppleIntent {
+  return intent && intent in INTENT_CLASS ? intent : 'primary';
 }
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  intent?: AppleIntent | 'ink' | 'hazard' | 'interactive' | 'outline' | 'quiet';
+  intent?: AppleIntent;
   size?: AppleSize;
   /** Stretch to the container. Apple's hero CTAs do this below 640px. */
   block?: boolean;
@@ -100,7 +94,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 });
 
 export interface ButtonLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
-  intent?: AppleIntent | 'ink' | 'hazard' | 'interactive' | 'outline' | 'quiet';
+  intent?: AppleIntent;
   size?: AppleSize;
   block?: boolean;
 }

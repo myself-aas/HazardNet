@@ -1,7 +1,7 @@
 /**
- * Native Meridian button primitive.
+ * Native Apple button primitive.
  *
- * Primary navigation actions use Meridian ink; blue is reserved for on-page
+ * Primary navigation actions use Apple ink; blue is reserved for on-page
  * interaction; crimson is reserved for danger. Compact labels can use a smaller
  * type role, but every visible button keeps a 48dp minimum target and is free
  * to grow for Dynamic Type.

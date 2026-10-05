@@ -8,7 +8,7 @@ export type MapViewMode = 'map' | 'table';
 const chip = (active: boolean) =>
   `min-h-[44px] px-3.5 py-2 rounded-full border text-xs font-semibold whitespace-nowrap touch-manipulation transition-colors ${
     active
-      ? 'bg-nasa-blue text-white border-nasa-blue shadow-sm'
+      ? 'bg-ap-primary text-white border-ap-primary shadow-sm'
       : 'bg-white text-carbon-70 border-carbon-20 hover:bg-carbon-05 hover:text-carbon-90'
   }`;
 
@@ -129,7 +129,7 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
     <>
       <div className="p-2 lg:px-4 lg:py-2 bg-white flex flex-col lg:flex-row lg:items-center justify-between gap-2 rounded-2xl shadow-sm">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="px-3.5 min-h-[44px] bg-nasa-blue text-white flex items-center justify-center font-semibold text-xs shrink-0 uppercase tracking-wide rounded-full">
+          <div className="px-3.5 min-h-[44px] bg-ap-primary text-white flex items-center justify-center font-semibold text-xs shrink-0 uppercase tracking-wide rounded-full">
             GIS
           </div>
           <div className="min-w-0">
@@ -159,7 +159,7 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
             type="button"
             onClick={onExport}
             disabled={exporting}
-            className="min-h-[44px] px-4 py-2 bg-nasa-blue hover:bg-nasa-blue-shade text-white text-xs font-semibold flex items-center gap-2 touch-manipulation disabled:opacity-50 rounded-full transition-colors"
+            className="min-h-[44px] px-4 py-2 bg-ap-primary hover:bg-ap-primary text-white text-xs font-semibold flex items-center gap-2 touch-manipulation disabled:opacity-50 rounded-full transition-colors"
             title="Export visible map as an image"
           >
             <MaterialIcon name="photo_camera" className="w-4 h-4" />

@@ -83,7 +83,7 @@ export const DataProcessingSkeleton: React.FC<DataProcessingSkeletonProps> = ({
 
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-mono font-extrabold uppercase tracking-widest text-nasa-red-shade bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+              <span className="text-xs font-mono font-extrabold uppercase tracking-widest text-ap-primary bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
                 Loading
               </span>
               <span className="text-xs font-mono text-carbon-60">Forecasts · map layers</span>
@@ -232,7 +232,7 @@ export const DataProcessingSkeleton: React.FC<DataProcessingSkeletonProps> = ({
             role="progressbar"
             aria-label="Loading forecast data"
           >
-            <div className="h-full w-1/3 bg-nasa-red rounded-full cyber-skeleton-shimmer" />
+            <div className="h-full w-1/3 bg-ap-primary rounded-full cyber-skeleton-shimmer" />
           </div>
           <span className="text-carbon-60 font-bold font-mono">loading</span>
         </div>

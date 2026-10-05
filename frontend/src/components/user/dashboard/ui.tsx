@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
  */
 
 export const inputClass =
-  'h-12 w-full rounded-sm border border-carbon-20 bg-white px-4 py-3 text-base text-carbon-90 placeholder-carbon-40 font-medium focus:border-nasa-blue focus:outline-none focus:ring-2 focus:ring-nasa-blue/30 disabled:bg-carbon-05 disabled:text-carbon-60';
+  'h-12 w-full rounded-sm border border-carbon-20 bg-white px-4 py-3 text-base text-carbon-90 placeholder-carbon-40 font-medium focus:border-ap-primary focus:outline-none focus:ring-2 focus:ring-ap-primary/30 disabled:bg-carbon-05 disabled:text-carbon-60';
 
 export const Card: React.FC<{
   title?: string;
@@ -53,7 +53,7 @@ export const Field: React.FC<{
     </label>
     {children}
     {hint && !error && <p className="mt-1 text-base leading-[1.62] text-carbon-60">{hint}</p>}
-    {error && <p className="mt-1 text-sm font-semibold text-nasa-red-shade">{error}</p>}
+    {error && <p className="mt-1 text-sm font-semibold text-ap-primary">{error}</p>}
   </div>
 );
 
@@ -208,8 +208,8 @@ export const ToggleField: React.FC<{
       role="switch"
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 ${
-        checked ? 'bg-nasa-green' : 'bg-carbon-30'
+      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary/60 ${
+        checked ? 'bg-severity-low' : 'bg-carbon-30'
       }`}
     >
       <motion.span
@@ -256,7 +256,7 @@ export const SaveBar: React.FC<{
           type="button"
           onClick={onSave}
           disabled={!dirty || saving}
-          className="inline-flex min-h-[44px] items-center gap-2 bg-nasa-blue px-6 py-2 text-base font-semibold text-white hover:bg-nasa-blue-shade disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer touch-manipulation"
+          className="inline-flex min-h-[44px] items-center gap-2 bg-ap-primary px-6 py-2 text-base font-semibold text-white hover:bg-ap-primary disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer touch-manipulation"
         >
           {saving && <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/40 border-t-white" />}
           {saving ? 'Saving…' : label}

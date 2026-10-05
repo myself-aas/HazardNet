@@ -134,7 +134,7 @@ export const DistrictAlertTable: React.FC<DistrictAlertTableProps> = ({
                       <button
                         type="button"
                         onClick={() => onSelectDistrict(row.district)}
-                        className="inline-flex min-h-[44px] items-center underline decoration-dotted underline-offset-4 text-nasa-blue-shade touch-manipulation"
+                        className="inline-flex min-h-[44px] items-center underline decoration-dotted underline-offset-4 text-ap-primary touch-manipulation"
                       >
                         {row.district}
                       </button>
@@ -219,7 +219,7 @@ export const DistrictAlertTable: React.FC<DistrictAlertTableProps> = ({
                       <button
                         type="button"
                         onClick={() => onSelectDistrict(row.district)}
-                        className="min-h-[44px] underline decoration-dotted underline-offset-4 text-nasa-blue-shade touch-manipulation"
+                        className="min-h-[44px] underline decoration-dotted underline-offset-4 text-ap-primary touch-manipulation"
                       >
                         {row.district}
                       </button>

@@ -110,10 +110,10 @@ export const UsernameField: React.FC<UsernameFieldProps> = ({
   }, [value, currentUsername, checkUsernameAvailability]);
 
   const statusStyles: Record<UsernameStatus, { ring: string; icon: string; text: string; iconClass: string }> = {
-    idle: { ring: 'focus-within:border-nasa-blue focus-within:ring-nasa-blue/40', icon: '', text: 'text-carbon-60', iconClass: '' },
-    invalid: { ring: 'border-nasa-red focus-within:ring-nasa-red/30', icon: 'error', text: 'text-nasa-red-shade', iconClass: 'text-nasa-red' },
-    checking: { ring: 'focus-within:border-nasa-blue focus-within:ring-nasa-blue/40', icon: 'hourglass_top', text: 'text-carbon-60', iconClass: 'text-carbon-60' },
-    available: { ring: 'border-nasa-green focus-within:ring-nasa-green/30', icon: 'check_circle', text: 'text-carbon-80', iconClass: 'text-nasa-green' },
+    idle: { ring: 'focus-within:border-ap-primary focus-within:ring-ap-primary/40', icon: '', text: 'text-carbon-60', iconClass: '' },
+    invalid: { ring: 'border-ap-primary focus-within:ring-ap-primary/30', icon: 'error', text: 'text-ap-primary', iconClass: 'text-ap-primary' },
+    checking: { ring: 'focus-within:border-ap-primary focus-within:ring-ap-primary/40', icon: 'hourglass_top', text: 'text-carbon-60', iconClass: 'text-carbon-60' },
+    available: { ring: 'border-severity-low focus-within:ring-severity-low/30', icon: 'check_circle', text: 'text-carbon-80', iconClass: 'text-severity-low' },
     taken: { ring: 'border-orange-300 focus-within:ring-orange-200', icon: 'error', text: 'text-orange-700', iconClass: 'text-orange-500' },
   };
   const style = statusStyles[status];
@@ -192,7 +192,7 @@ export const UsernameField: React.FC<UsernameFieldProps> = ({
                     key={suggestion}
                     type="button"
                     onClick={() => onChange(suggestion)}
-                    className="min-h-[44px] rounded-sm border border-carbon-20 bg-white px-3 py-2 text-base font-semibold text-carbon-70 hover:border-nasa-blue hover:bg-carbon-05 cursor-pointer touch-manipulation"
+                    className="min-h-[44px] rounded-sm border border-carbon-20 bg-white px-3 py-2 text-base font-semibold text-carbon-70 hover:border-ap-primary hover:bg-carbon-05 cursor-pointer touch-manipulation"
                   >
                     @{suggestion}
                   </button>

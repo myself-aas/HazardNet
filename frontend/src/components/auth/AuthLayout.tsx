@@ -26,7 +26,7 @@ export interface AuthLayoutProps {
 const BackToHome: React.FC<{ className?: string }> = ({ className = '' }) => (
   <Link
     to="/"
-    className={`inline-flex min-h-[44px] items-center gap-1.5 px-3 py-2 text-sm font-semibold text-nasa-blue-shade touch-manipulation ${className}`}
+    className={`inline-flex min-h-[44px] items-center gap-1.5 px-3 py-2 text-sm font-semibold text-ap-primary touch-manipulation ${className}`}
   >
     <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back to HazardNet
   </Link>
@@ -43,7 +43,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ mode, title, subtitle, c
         <HazardNetBrand size="sm" />
         <BackToHome />
       </div>
-      <div aria-hidden="true" className="h-0.5 bg-nasa-red" />
+      <div aria-hidden="true" className="h-0.5 bg-ap-primary" />
     </div>
 
     <main id="main-content" tabIndex={-1} className="flex-1 flex items-start sm:items-center justify-center px-4 sm:px-8 lg:px-12 py-8 sm:py-12">
@@ -62,11 +62,11 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ mode, title, subtitle, c
         </div>
         <p className="mt-4 text-center text-xs text-carbon-60 lg:hidden">
           HazardNet · Multi-hazard early warning ·{' '}
-          <Link to="/terms" className="text-nasa-blue-shade underline-offset-4 hover:underline">
+          <Link to="/terms" className="text-ap-primary underline-offset-4 hover:underline">
             Terms
           </Link>{' '}
           ·{' '}
-          <Link to="/privacy" className="text-nasa-blue-shade underline-offset-4 hover:underline">
+          <Link to="/privacy" className="text-ap-primary underline-offset-4 hover:underline">
             Privacy
           </Link>
         </p>

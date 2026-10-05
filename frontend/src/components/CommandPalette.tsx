@@ -412,7 +412,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="fixed inset-0 z-[var(--z-overlay)] bg-carbon-black/40 flex items-start justify-center pt-12 sm:pt-20 px-4"
+              className="fixed inset-0 z-[var(--ap-z-overlay)] bg-carbon-black/40 flex items-start justify-center pt-12 sm:pt-20 px-4"
               onClick={(e) => {
                 if (e.target === e.currentTarget) setIsOpen(false);
               }}
@@ -432,7 +432,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               >
                 {/* Header / Search Input */}
                 <div className="relative flex items-center px-4 py-3 border-b border-carbon-20 bg-carbon-05">
-                  <MaterialIcon name="search" className="text-xl text-nasa-red-shade ml-1 shrink-0" />
+                  <MaterialIcon name="search" className="text-xl text-ap-primary ml-1 shrink-0" />
 
                   <input
                     ref={inputRef}
@@ -550,7 +550,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                             <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-xs font-mono font-semibold bg-carbon-10 border border-carbon-20 text-carbon-60">
                               {item.category}
                             </span>
-                            <span className="text-nasa-red-shade text-xs font-mono font-bold">SELECT</span>
+                            <span className="text-ap-primary text-xs font-mono font-bold">SELECT</span>
                           </div>
                         </div>
                       );
@@ -577,7 +577,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                     </span>
                   </div>
                   <span className="font-brand font-black text-carbon-90 hidden sm:inline">
-                    Hazard<span className="text-nasa-red-shade">Net</span> Search
+                    Hazard<span className="text-ap-primary">Net</span> Search
                   </span>
                 </div>
               </motion.div>

@@ -103,7 +103,7 @@ export const UserAvatarField: React.FC<{ size?: number; editable?: boolean }> = 
           />
         ) : (
           <div
-            className="flex h-full w-full items-center justify-center rounded-full bg-nasa-red text-white"
+            className="flex h-full w-full items-center justify-center rounded-full bg-ap-primary text-white"
             style={{ fontSize: size * 0.36 }}
           >
             <span className="font-black">{initial}</span>
@@ -123,7 +123,7 @@ export const UserAvatarField: React.FC<{ size?: number; editable?: boolean }> = 
               type="button"
               disabled={busy}
               onClick={() => fileInputRef.current?.click()}
-              className="inline-flex min-h-[44px] items-center gap-1.5 bg-nasa-blue px-4 py-2 text-base font-semibold text-white hover:bg-nasa-blue-shade disabled:opacity-50 cursor-pointer touch-manipulation"
+              className="inline-flex min-h-[44px] items-center gap-1.5 bg-ap-primary px-4 py-2 text-base font-semibold text-white hover:bg-ap-primary disabled:opacity-50 cursor-pointer touch-manipulation"
             >
               <MaterialIcon name="photo_camera" size={15} />
               {photoURL ? 'Replace photo' : 'Upload photo'}

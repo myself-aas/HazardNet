@@ -1,5 +1,5 @@
 /**
- * Card primitive — shared Meridian card radius, hairline border, optional severity edge.
+ * Card primitive — shared Apple card radius, hairline border, optional severity edge.
  *
  * Severity is paired with icon + text and never relies on color alone.
  */

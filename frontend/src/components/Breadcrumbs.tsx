@@ -62,7 +62,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ customItems }) => {
               {isLast || !item.path ? (
                 <span className="font-bold text-carbon-90">{item.label}</span>
               ) : (
-                <Link to={item.path} className="text-carbon-60 hover:text-nasa-red-shade font-medium transition-colors">
+                <Link to={item.path} className="text-carbon-60 hover:text-ap-primary font-medium transition-colors">
                   {item.label}
                 </Link>
               )}

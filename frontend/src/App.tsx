@@ -323,14 +323,14 @@ const AppContent: React.FC = () => {
           the content. Visible only while focused. */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[var(--z-a11y)] focus:bg-carbon-90 focus:px-4 focus:py-3 focus:text-base focus:font-semibold focus:text-white"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[var(--ap-z-a11y)] focus:bg-carbon-90 focus:px-4 focus:py-3 focus:text-base focus:font-semibold focus:text-white"
       >
         Skip to main content
       </a>
 
       {!['/terms', '/privacy'].some((p) => location.pathname.startsWith(p)) && !isAuthPage && (
         <div
-          className={`z-[var(--z-nav)] pointer-events-auto w-full ${
+          className={`z-[var(--ap-z-nav)] pointer-events-auto w-full ${
             isHomePage ? 'absolute top-0 left-0 right-0' : 'sticky top-0'
           }`}
         >

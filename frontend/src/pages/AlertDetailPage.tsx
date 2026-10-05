@@ -133,7 +133,7 @@ export const AlertDetailPage: React.FC = () => {
           <button
             type="button"
             onClick={() => window.print()}
-            className="no-print inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 bg-nasa-blue px-3 py-2 text-sm font-semibold text-white touch-manipulation"
+            className="no-print inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 bg-ap-primary px-3 py-2 text-sm font-semibold text-white touch-manipulation"
           >
             <MaterialIcon name="print" className="text-base" aria-hidden="true" />
             {t('common.print')}

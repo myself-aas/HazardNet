@@ -139,7 +139,7 @@ export const ThirtyDayTrendChart: React.FC<ThirtyDayTrendChartProps> = ({
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-carbon-20 pb-5">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
-            <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-nasa-red/10 text-nasa-red-shade border border-nasa-blue/20 shadow-2xs">
+            <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-ap-primary/10 text-ap-primary border border-ap-primary/20 shadow-2xs">
               30-Day Historical Telemetry
             </span>
             <span className="text-carbon-30">•</span>

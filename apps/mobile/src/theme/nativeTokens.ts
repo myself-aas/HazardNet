@@ -66,7 +66,7 @@ export { spacing };
 export const NATIVE_FONT_SCALE_MAX = 0;
 
 /**
- * React Native translation of Meridian's named type roles. Display3 is fixed
+ * React Native translation of Apple's named type roles. Display3 is fixed
  * at Apple's 34pt Large Title on native; the web's clamp remains fluid. Body,
  * callout, subhead and caption sizes follow the shared Apple scale.
  */

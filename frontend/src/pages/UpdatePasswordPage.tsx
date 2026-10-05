@@ -40,7 +40,7 @@ export default function UpdatePasswordPage() {
   }
 
   const inputClass =
-    'mt-1.5 h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 outline-none focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/40'
+    'mt-1.5 h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 outline-none focus:border-ap-primary focus:ring-2 focus:ring-ap-primary/40'
 
   return (
     <AuthLayout
@@ -50,17 +50,17 @@ export default function UpdatePasswordPage() {
     >
       {status ? (
         <div role="status" className="space-y-4 text-center">
-          <p className="border-l-2 border-nasa-blue bg-white p-4 text-sm font-medium text-carbon-80">
+          <p className="border-l-2 border-ap-primary bg-white p-4 text-sm font-medium text-carbon-80">
             {status}
           </p>
-          <Link to="/login" className="font-bold text-nasa-blue-shade hover:underline">
+          <Link to="/login" className="font-bold text-ap-primary hover:underline">
             Return to sign in
           </Link>
         </div>
       ) : (
         <form onSubmit={submit} className="space-y-4">
           {error && (
-            <p role="alert" className="border-l-2 border-nasa-red bg-white p-4 text-sm font-medium text-nasa-red-shade">
+            <p role="alert" className="border-l-2 border-ap-primary bg-white p-4 text-sm font-medium text-ap-primary">
               {error}
             </p>
           )}

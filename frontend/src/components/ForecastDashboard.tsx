@@ -606,7 +606,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                 footer: (
                   <button
                     onClick={() => setActiveSheetItem(item)}
-                    className="min-h-[44px] font-extrabold text-nasa-blue"
+                    className="min-h-[44px] font-extrabold text-ap-primary"
                   >
                     Inspect Sheet
                   </button>
@@ -687,7 +687,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                             e.stopPropagation();
                             setActiveSheetItem(item);
                           }}
-                          className="text-nasa-blue font-extrabold text-xs hover:underline cursor-pointer min-h-[44px] px-2"
+                          className="text-ap-primary font-extrabold text-xs hover:underline cursor-pointer min-h-[44px] px-2"
                         >
                           Inspect Sheet
                         </button>
@@ -721,7 +721,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                   onSelectDistrict(String(activeSheetItem.district_id));
                   setActiveSheetItem(null);
                 }}
-                className="px-5 py-2.5 rounded-xl bg-nasa-blue text-white font-sans font-semibold text-xs hover:bg-nasa-blue-shade shadow-xs min-h-[44px]"
+                className="px-5 py-2.5 rounded-xl bg-ap-primary text-white font-sans font-semibold text-xs hover:bg-ap-primary shadow-xs min-h-[44px]"
               >
                 View on Live GIS Map
               </button>

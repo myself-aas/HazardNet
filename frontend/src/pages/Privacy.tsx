@@ -59,7 +59,7 @@ export const Privacy: React.FC = () => {
         <section className="space-y-2">
           <h2 className="text-sm font-bold text-carbon-90">4. Contact Our Privacy Lead</h2>
           <p>
-            If you have questions regarding data privacy or wish to request data removal, contact us via our <Link to="/contact" className="font-bold text-nasa-blue-shade underline underline-offset-4">Contact Page</Link> or view our <Link to="/terms" className="font-bold text-nasa-blue-shade underline underline-offset-4">Terms of Service</Link>.
+            If you have questions regarding data privacy or wish to request data removal, contact us via our <Link to="/contact" className="font-bold text-ap-primary underline underline-offset-4">Contact Page</Link> or view our <Link to="/terms" className="font-bold text-ap-primary underline underline-offset-4">Terms of Service</Link>.
           </p>
         </section>
 

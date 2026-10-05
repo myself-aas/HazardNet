@@ -13,7 +13,7 @@ export const getHazardIcon = (hazard: string) => {
     case 'Cold Wave':
       return <Snowflake className="w-5 h-5 text-indigo-600" />;
     default:
-      return <CloudLightning className="w-5 h-5 text-nasa-blue" />;
+      return <CloudLightning className="w-5 h-5 text-ap-primary" />;
   }
 };
 
@@ -21,24 +21,24 @@ export const getRiskColor = (risk: string) => {
   if (risk === 'High') {
     return {
       bg: 'bg-carbon-05 border-carbon-20 text-rose-800',
-      badge: 'bg-[var(--severity-red)] text-white',
-      bar: 'bg-[var(--severity-red)]',
-      text: 'text-[var(--severity-red)]',
+      badge: 'bg-[var(--ap-sev-very-high)] text-white',
+      bar: 'bg-[var(--ap-sev-very-high)]',
+      text: 'text-[var(--ap-sev-very-high)]',
     };
   }
   if (risk === 'Moderate') {
     return {
       bg: 'bg-amber-50 border-amber-200 text-amber-900',
-      badge: 'bg-[var(--severity-amber)] text-carbon-black font-bold',
-      bar: 'bg-[var(--severity-amber)]',
-      text: 'text-[var(--severity-amber)]',
+      badge: 'bg-[var(--ap-sev-moderate)] text-carbon-black font-bold',
+      bar: 'bg-[var(--ap-sev-moderate)]',
+      text: 'text-[var(--ap-sev-moderate)]',
     };
   }
   return {
     bg: 'bg-carbon-05 border-carbon-20 text-emerald-900',
-    badge: 'bg-[var(--severity-green)] text-white',
-    bar: 'bg-[var(--severity-green)]',
-    text: 'text-[var(--severity-green)]',
+    badge: 'bg-[var(--ap-sev-low)] text-white',
+    bar: 'bg-[var(--ap-sev-low)]',
+    text: 'text-[var(--ap-sev-low)]',
   };
 };
 

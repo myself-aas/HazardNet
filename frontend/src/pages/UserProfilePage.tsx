@@ -239,7 +239,7 @@ export const UserProfilePage: React.FC = () => {
                 className="h-16 w-16 sm:h-24 sm:w-24 rounded-full object-cover border border-carbon-20 shrink-0"
               />
             ) : (
-              <div className="h-16 w-16 sm:h-24 sm:w-24 rounded-full bg-nasa-red text-white font-black text-lg flex items-center justify-center shrink-0">
+              <div className="h-16 w-16 sm:h-24 sm:w-24 rounded-full bg-ap-primary text-white font-black text-lg flex items-center justify-center shrink-0">
                 {(displayName || 'U')[0].toUpperCase()}
               </div>
             )}
@@ -258,7 +258,7 @@ export const UserProfilePage: React.FC = () => {
             {publicUsername && (
               <Link
                 to={profilePath(publicUsername)}
-                className="min-h-[44px] px-3 py-2 text-base font-semibold text-nasa-blue-shade hover:bg-carbon-05 rounded-sm border border-carbon-20 flex items-center gap-1 touch-manipulation"
+                className="min-h-[44px] px-3 py-2 text-base font-semibold text-ap-primary hover:bg-carbon-05 rounded-sm border border-carbon-20 flex items-center gap-1 touch-manipulation"
               >
                 Public page /u/{publicUsername}
               </Link>
@@ -277,7 +277,7 @@ export const UserProfilePage: React.FC = () => {
           
           {saveMessage && (
             <div className={`p-3 text-xs font-bold border ${
-              saveMessage.includes('updated') ? 'bg-carbon-05 text-carbon-80 border-carbon-20' : 'bg-white text-nasa-red-shade border-nasa-red'
+              saveMessage.includes('updated') ? 'bg-carbon-05 text-carbon-80 border-carbon-20' : 'bg-white text-ap-primary border-ap-primary'
             }`}>
               {saveMessage}
             </div>
@@ -302,13 +302,13 @@ export const UserProfilePage: React.FC = () => {
                     onClick={() => setUserRole(roleKey)}
                     className={`min-h-[44px] p-3 text-left border transition-all flex items-center gap-2.5 touch-manipulation tap-target ${
                       isSelected
-                        ? 'bg-amber-50 text-nasa-red-shade border-nasa-blue font-bold'
+                        ? 'bg-amber-50 text-ap-primary border-ap-primary font-bold'
                         : 'bg-white text-carbon-70 border-carbon-20 hover:border-carbon-40'
                     }`}
                   >
                     <div className="flex-1 min-w-0">
                       <div className="text-xs font-bold truncate">{item.label}</div>
-                      <div className={`text-xs truncate ${isSelected ? 'text-nasa-red-shade' : 'text-carbon-60'}`}>
+                      <div className={`text-xs truncate ${isSelected ? 'text-ap-primary' : 'text-carbon-60'}`}>
                         {item.tag}
                       </div>
                     </div>
@@ -381,7 +381,7 @@ export const UserProfilePage: React.FC = () => {
             </div>
 
             {locResult && (
-              <div className="bg-white border border-carbon-20 p-3 text-xs space-y-2 animate-in fade-in">
+              <div className="bg-white border border-carbon-20 p-3 text-xs space-y-2 ap-enter">
                 <div className="flex items-center justify-between font-bold text-carbon-90">
                   <span>Method: {locResult.method.toUpperCase()}</span>
                   <span>Nearest: {locResult.nearestDistrict.name} ({locResult.distanceKm.toFixed(1)} km away)</span>
@@ -471,7 +471,7 @@ export const UserProfilePage: React.FC = () => {
                       setHomeDistrictId('');
                       try { localStorage.removeItem('hazardnet_home_district'); } catch { /* best-effort */ }
                     }}
-                    className="w-full py-2 px-3 bg-white hover:bg-white text-nasa-red-shade border border-nasa-red font-bold text-xs transition-colors cursor-pointer"
+                    className="w-full py-2 px-3 bg-white hover:bg-white text-ap-primary border border-ap-primary font-bold text-xs transition-colors cursor-pointer"
                   >
                     Clear Home District
                   </button>
@@ -501,9 +501,9 @@ export const UserProfilePage: React.FC = () => {
                     </div>
                   </div>
                   <span className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-black border ${
-                    currentDistrictObj.risk === 'High' ? 'bg-nasa-red/20 text-nasa-red border-nasa-red/40' :
+                    currentDistrictObj.risk === 'High' ? 'bg-ap-primary/20 text-ap-primary border-ap-primary/40' :
                     currentDistrictObj.risk === 'Moderate' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' :
-                    'bg-nasa-green/20 text-emerald-300 border-emerald-500/40'
+                    'bg-severity-low/20 text-emerald-300 border-emerald-500/40'
                   }`}>
                     {currentDistrictObj.risk} Risk ({severityScorePct}% Severity)
                   </span>
@@ -555,7 +555,7 @@ export const UserProfilePage: React.FC = () => {
                 type="text"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-nasa-blue"
+                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-ap-primary"
               />
             </div>
 
@@ -566,7 +566,7 @@ export const UserProfilePage: React.FC = () => {
                 placeholder="+880 1712-345678"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-nasa-blue"
+                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-ap-primary"
               />
             </div>
 
@@ -577,7 +577,7 @@ export const UserProfilePage: React.FC = () => {
                 placeholder="e.g. DAE Rangpur / Self Farm"
                 value={organization}
                 onChange={(e) => setOrganization(e.target.value)}
-                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-nasa-blue"
+                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-ap-primary"
               />
             </div>
 
@@ -589,7 +589,7 @@ export const UserProfilePage: React.FC = () => {
                 min="0"
                 value={farmSizeHectares}
                 onChange={(e) => setFarmSizeHectares(parseFloat(e.target.value) || 0)}
-                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-nasa-blue"
+                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-ap-primary"
               />
             </div>
 
@@ -599,7 +599,7 @@ export const UserProfilePage: React.FC = () => {
                 type="text"
                 value={primaryDivision}
                 onChange={(e) => setPrimaryDivision(e.target.value)}
-                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-nasa-blue"
+                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-ap-primary"
               />
             </div>
 
@@ -609,7 +609,7 @@ export const UserProfilePage: React.FC = () => {
                 type="text"
                 value={primaryDistrict}
                 onChange={(e) => setPrimaryDistrict(e.target.value)}
-                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-nasa-blue"
+                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-ap-primary"
               />
             </div>
 
@@ -620,7 +620,7 @@ export const UserProfilePage: React.FC = () => {
                 placeholder="e.g. Boro Paddy, Aman Rice, Jute, Potato, Maize"
                 value={targetCrops}
                 onChange={(e) => setTargetCrops(e.target.value)}
-                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-nasa-blue"
+                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-ap-primary"
               />
             </div>
           </div>
@@ -679,7 +679,7 @@ export const UserProfilePage: React.FC = () => {
                 type="button"
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="min-h-[44px] px-3.5 py-2 bg-white hover:bg-white text-nasa-red-shade hover:text-nasa-red-shade font-bold rounded-sm border border-nasa-red text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0 touch-manipulation tap-target"
+                className="min-h-[44px] px-3.5 py-2 bg-white hover:bg-white text-ap-primary hover:text-ap-primary font-bold rounded-sm border border-ap-primary text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0 touch-manipulation tap-target"
               >
                 {isLoggingOut ? (
                   <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -738,7 +738,7 @@ export const UserProfilePage: React.FC = () => {
                   type="button"
                   onClick={handleLogout}
                   disabled={isLoggingOut}
-                  className="min-h-[44px] px-3.5 py-2 bg-white hover:bg-white text-nasa-red-shade font-bold border border-nasa-red text-xs cursor-pointer transition-colors disabled:opacity-50 touch-manipulation tap-target inline-flex items-center justify-center"
+                  className="min-h-[44px] px-3.5 py-2 bg-white hover:bg-white text-ap-primary font-bold border border-ap-primary text-xs cursor-pointer transition-colors disabled:opacity-50 touch-manipulation tap-target inline-flex items-center justify-center"
                   title="Sign out and clear local state"
                 >
                   {isLoggingOut ? 'Signing Out...' : 'Sign Out'}
@@ -748,7 +748,7 @@ export const UserProfilePage: React.FC = () => {
             <button
               type="submit"
               disabled={isSaving}
-              className="inline-flex min-h-[44px] items-center px-6 py-2 bg-nasa-blue hover:bg-nasa-blue-shade text-white font-semibold text-base disabled:opacity-50 cursor-pointer touch-manipulation"
+              className="inline-flex min-h-[44px] items-center px-6 py-2 bg-ap-primary hover:bg-ap-primary text-white font-semibold text-base disabled:opacity-50 cursor-pointer touch-manipulation"
             >
               {isSaving ? 'Saving to Firestore...' : 'Save Profile Changes'}
             </button>

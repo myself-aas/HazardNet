@@ -43,7 +43,7 @@ export const RequireSuperAdmin: React.FC<{ children: React.ReactNode }> = ({ chi
   if (!isPrimarySuperAdmin(user.email)) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 text-center px-4" role="alert">
-        <ShieldAlert className="h-8 w-8 text-nasa-red-shade" aria-hidden="true" />
+        <ShieldAlert className="h-8 w-8 text-ap-primary" aria-hidden="true" />
         <h1 className="text-xl font-black text-carbon-90">Superadmins only</h1>
         <p className="text-sm text-carbon-60 max-w-md leading-relaxed">
           Blog publishing is restricted to HazardNet&apos;s primary superadmins. You are signed in as{' '}

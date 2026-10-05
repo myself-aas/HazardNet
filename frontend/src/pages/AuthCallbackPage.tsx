@@ -156,13 +156,13 @@ export default function AuthCallbackPage() {
   const resolved = explanation ?? describeOAuthError(params.errorDescription ?? params.error)
   return (
     <Shell>
-      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-carbon-05 text-nasa-red-shade">
+      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-carbon-05 text-ap-primary">
         <X className="h-6 w-6" aria-hidden="true" />
       </span>
       <p className="text-sm font-bold text-carbon-80">Sign-in could not complete</p>
-      <div className="max-w-md border border-nasa-red bg-white p-3 text-left">
-        <p className="text-xs font-extrabold text-nasa-red-shade">{resolved.title}</p>
-        <p className="mt-0.5 text-xs font-medium leading-relaxed text-nasa-red-shade">{resolved.hint}</p>
+      <div className="max-w-md border border-ap-primary bg-white p-3 text-left">
+        <p className="text-xs font-extrabold text-ap-primary">{resolved.title}</p>
+        <p className="mt-0.5 text-xs font-medium leading-relaxed text-ap-primary">{resolved.hint}</p>
       </div>
       <div className="flex items-center gap-2">
         <Link

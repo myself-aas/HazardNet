@@ -109,7 +109,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
         initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.15 }}
-        className="fixed inset-0 h-dvh bg-carbon-black/40 z-[var(--z-overlay)]"
+        className="fixed inset-0 h-dvh bg-carbon-black/40 z-[var(--ap-z-overlay)]"
         onClick={onClose}
         {...({ inert: true } as Record<string, unknown>)}
       />
@@ -126,7 +126,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
         initial={reduceMotion ? { x: 0 } : { x: '100%' }}
         animate={{ x: 0 }}
         transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-        className="fixed inset-y-0 right-0 z-[var(--z-overlay)] flex w-full max-w-[380px] select-none flex-col overflow-hidden border-l border-carbon-20 bg-white font-sans text-carbon-80"
+        className="fixed inset-y-0 right-0 z-[var(--ap-z-overlay)] flex w-full max-w-[380px] select-none flex-col overflow-hidden border-l border-carbon-20 bg-white font-sans text-carbon-80"
       >
         {/* brand · close — the only two things in the header row */}
         <div className="flex shrink-0 items-center justify-between px-4 pb-3 pt-[max(1rem,env(safe-area-inset-top))]">
@@ -171,7 +171,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
               aria-busy={isLocating || undefined}
               className={tileClass}
             >
-              <MaterialIcon name="location_on" className="h-6 w-6 text-nasa-blue" />
+              <MaterialIcon name="location_on" className="h-6 w-6 text-ap-primary" />
               <span>Locate</span>
             </button>
             <button
@@ -185,19 +185,19 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
             >
               <MaterialIcon
                 name={isSubscribed ? 'notifications_active' : 'notifications'}
-                className={`h-6 w-6 ${isSubscribed ? 'text-nasa-blue' : 'text-carbon-90'}`}
+                className={`h-6 w-6 ${isSubscribed ? 'text-ap-primary' : 'text-carbon-90'}`}
               />
               <span>Alerts</span>
               <span
                 aria-hidden="true"
-                className={`-mt-1 text-xs font-medium ${isSubscribed ? 'text-nasa-blue-shade' : 'text-carbon-60'}`}
+                className={`-mt-1 text-xs font-medium ${isSubscribed ? 'text-ap-primary' : 'text-carbon-60'}`}
               >
                 {isSubscribed ? 'On' : 'Off'}
               </span>
             </button>
             {showInstall ? (
               <button type="button" onClick={install} className={tileClass}>
-                <MaterialIcon name="install_mobile" className="h-6 w-6 text-nasa-blue" />
+                <MaterialIcon name="install_mobile" className="h-6 w-6 text-ap-primary" />
                 <span>Install</span>
               </button>
             ) : (
@@ -242,13 +242,13 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                         aria-current={isActive ? 'page' : undefined}
                         className={`flex min-h-[48px] items-center gap-2.5 rounded-xl px-3 text-ap-caption no-underline transition-colors duration-150 touch-manipulation ${
                           isActive
-                            ? 'bg-nasa-blue-tint/15 font-bold text-nasa-blue-shade'
+                            ? 'bg-ap-primary-on-dark/15 font-bold text-ap-primary'
                             : 'font-semibold text-carbon-80 hover:bg-carbon-05'
                         }`}
                       >
                         <MaterialIcon
                           name={item.icon}
-                          className={`h-[18px] w-[18px] shrink-0 ${isActive ? 'text-nasa-blue' : 'text-carbon-60'}`}
+                          className={`h-[18px] w-[18px] shrink-0 ${isActive ? 'text-ap-primary' : 'text-carbon-60'}`}
                         />
                         <span className="truncate">{item.title}</span>
                       </Link>
@@ -273,7 +273,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                 className="flex min-h-[48px] min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-xl px-2 text-left transition-colors duration-150 hover:bg-carbon-05 touch-manipulation"
                 title="Profile"
               >
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-nasa-blue text-sm font-bold text-white">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ap-primary text-sm font-bold text-white">
                   {initial}
                 </span>
                 <span className="truncate text-ap-caption font-semibold text-carbon-90">Profile</span>
@@ -293,7 +293,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                 to="/login"
                 data-testid="drawer-signin-link"
                 onClick={onClose}
-                className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-nasa-blue text-ap-caption font-semibold text-white no-underline transition-colors duration-150 hover:bg-nasa-blue-shade touch-manipulation"
+                className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-ap-primary text-ap-caption font-semibold text-white no-underline transition-colors duration-150 hover:bg-ap-primary touch-manipulation"
               >
                 Sign in
               </Link>

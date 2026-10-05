@@ -1,7 +1,7 @@
 /**
  * HazardNet native theme.
  *
- * Meridian is the semantic source for surfaces, labels, controls and type. The
+ * Apple is the semantic source for surfaces, labels, controls and type. The
  * native layer only adds device-specific surface treatment (OLED) and maps
  * HazardNet's four operational alert classes onto the shared severity palette.
  */
@@ -143,7 +143,7 @@ function makeTheme(mode: ThemeMode): Theme {
     surfaceTint: oled ? '#0b0e11' : roles.backgroundGrouped,
     textPrimary: roles.label,
     textSecondary: roles.labelSecondary,
-    // Meridian's tertiary label is a 14px+ role. Native metadata is 12px, so
+    // Apple's tertiary label is a 14px+ role. Native metadata is 12px, so
     // it deliberately uses the AA/AAA secondary role instead of that weaker tint.
     textMuted: roles.labelSecondary,
     textOnColor: dark ? INK : WHITE,

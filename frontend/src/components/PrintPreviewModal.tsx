@@ -246,7 +246,7 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
         role="dialog"
         aria-modal="true"
         aria-labelledby="print-preview-modal-title"
-        className="print-preview-modal-root fixed inset-0 z-[9999] flex flex-col bg-carbon-black/90 backdrop-blur-md animate-in fade-in duration-200"
+        className="print-preview-modal-root fixed inset-0 z-[9999] flex flex-col bg-carbon-black/90 backdrop-blur-md ap-enter"
       >
         {/* 1. TOP CONTROL TOOLBAR */}
         <div className="print-preview-toolbar screen-only flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-2.5 bg-carbon-90 border-b border-carbon-80 text-carbon-05 shrink-0 shadow-lg">
@@ -378,7 +378,7 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
             {/* Trigger Native Print (Primary Action) */}
             <button
               onClick={handleNativePrint}
-              className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-primary hover:bg-nasa-red-tint text-white text-xs font-black transition-all shadow-md cursor-pointer hover:scale-102 active:scale-98"
+              className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-primary hover:bg-ap-primary-tint text-white text-xs font-black transition-all shadow-md cursor-pointer hover:scale-102 active:scale-98"
               title="Trigger Browser Print Dialog (Ctrl+P)"
             >
               <Printer className="w-4 h-4 text-white shrink-0" />
