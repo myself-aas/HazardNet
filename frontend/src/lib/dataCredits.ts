@@ -43,6 +43,13 @@ export const DATA_CREDITS: Record<string, DataCredit> = {
     href: 'https://www.kaggle.com/datasets/ashifahmedshuvo/hazardnet-weekly-forecasts',
     licence: 'CC BY-NC 4.0',
   },
+  gibs: {
+    id: 'gibs',
+    label:
+      "Recent imagery: We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS)",
+    href: 'https://gibs.earthdata.nasa.gov',
+    licence: 'NASA GIBS / EOSDIS terms (imagery is NASA, free to use)',
+  },
 } as const;
 
 /** Resolve ids to credits, dropping unknown ids rather than rendering blanks. */

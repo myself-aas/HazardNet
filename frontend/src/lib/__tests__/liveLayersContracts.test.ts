@@ -55,4 +55,24 @@ describe('live-map layer table', () => {
     // Unknown ids drop out instead of rendering blank rows.
     expect(activeCredits(['osm', 'no-such-source'])).toHaveLength(1);
   });
+
+  it('declares the true-colour satellite row with NRT freshness and GIBS credit', () => {
+    const row = LIVE_LAYERS.find((l) => l.id === 'overlay-truecolor');
+    expect(row).toBeDefined();
+    expect(row?.section).toBe('overlays');
+    expect(row?.kind).toBe('toggle');
+    expect(row?.freshness?.cadence).toMatch(/4 h/);
+    expect(row?.creditIds).toEqual(['gibs']);
+    expect(row?.lowBandwidthDefaultOff).toBe(true);
+    expect(row?.caption?.length ?? 0).toBeGreaterThan(0);
+  });
+
+  it('registers the NASA GIBS acknowledgement as the imagery credit', () => {
+    const gibs = DATA_CREDITS.gibs;
+    expect(gibs).toBeDefined();
+    expect(gibs.label).toContain('Global Imagery Browse Services');
+    expect(gibs.label).toContain('ESDIS');
+    expect(gibs.href).toContain('gibs.earthdata.nasa.gov');
+    expect(activeCredits(['gibs'])).toHaveLength(1);
+  });
 });

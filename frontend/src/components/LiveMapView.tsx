@@ -32,6 +32,21 @@ import { useLiveDistricts } from '../hooks/useForecasts';
 import { type ForecastHorizon } from '../lib/forecasts';
 import { LIVE_LAYERS, LIVE_SECTIONS } from '../lib/liveLayers';
 import { activeCredits } from '../lib/dataCredits';
+import {
+  ConcurrencyGate,
+  GIBS_MAX_IN_FLIGHT,
+  GIBS_STATUS_URL,
+  GIBS_TILE_MAX_NATIVE_ZOOM,
+  GIBS_TILE_SUBDOMAINS,
+  GIBS_TRUECOLOR,
+  gibsDateCandidates,
+  gibsTileUrl,
+  resolveTrueColorPlan,
+  stepGibsDate,
+  type TrueColorPlan,
+} from '../lib/gibs';
+import { GibsTileLayer } from './map/gibsTileLayer';
+import { mapFreshnessLabel } from '../lib/mapFreshness';
 
 export type { DistrictGeo, PathAnalysisResult, MapLayerKey };
 export const liveDistrictsData: DistrictGeo[] = ALL_64_DISTRICTS;
@@ -253,15 +268,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
     .map((h) => h.name)
     .join(', ') || 'Baseline Vector Boundaries';
 
-  // What the attribution lightbox lists: exactly the credits of what is on
-  // screen. The basemap credit follows the ground; the forecast credit appears
-  // only while an overlay that draws the forecast product is switched on.
-  const attributionCreditIds: string[] =
-    activeLayer === 'esriSatellite' ? ['esri'] : ['osm', 'opentopomap'];
-  if (isRiverLayerActive || isHeatmapActive || isClusteringActive) {
-    attributionCreditIds.push('forecasts');
-  }
-  const attributionList = activeCredits(attributionCreditIds);
+  // Attribution derivation lives below the overlay state (it reads it).
 
   // Overlay rows read the liveLayers table; this map binds each table row to
   // the component state that actually drives the Leaflet layer.
@@ -271,6 +278,148 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
     'overlay-cluster': { value: isClusteringActive, set: setIsClusteringActive },
     'overlay-contrast': { value: isHighContrastBoost, set: setIsHighContrastBoost },
   };
+
+  // True-colour satellite (Phase C). The row's freshness chip, date control and
+  // attribution all key off this small state machine:
+  //   idle -> loading -> ready (Terra, or VIIRS SNPP when Terra fails: L1)
+  //                  -> unavailable (both failed: L4, with the NASA status link)
+  // "newest available" means exactly that: the newest UTC date the probe found,
+  // never "live". Stepping back is an honest archive step, never a re-render.
+  const [isTrueColorActive, setIsTrueColorActive] = useState<boolean>(false);
+  const [trueColorStatus, setTrueColorStatus] = useState<'idle' | 'loading' | 'ready' | 'unavailable'>('idle');
+  const [trueColorPlan, setTrueColorPlan] = useState<TrueColorPlan | null>(null);
+  const [trueColorOffset, setTrueColorOffset] = useState<number>(0);
+  const [trueColorOpacity, setTrueColorOpacity] = useState<number>(80);
+  const [isTrueColorExpanded, setIsTrueColorExpanded] = useState<boolean>(false);
+  const gibsGateRef = useRef<ConcurrencyGate | null>(null);
+  if (gibsGateRef.current === null) {
+    gibsGateRef.current = new ConcurrencyGate(GIBS_MAX_IN_FLIGHT);
+  }
+  const gibsLayerRef = useRef<GibsTileLayer | null>(null);
+  const trueColorDateIso = trueColorPlan ? stepGibsDate(trueColorPlan.dateIso, trueColorOffset) : null;
+
+  // What the attribution lightbox lists: exactly the credits of what is on
+  // screen. The basemap credit follows the ground; the forecast credit appears
+  // only while an overlay that draws the forecast product is switched on; the
+  // GIBS credit only while the true-colour overlay is actually rendering.
+  const attributionCreditIds: string[] =
+    activeLayer === 'esriSatellite' ? ['esri'] : ['osm', 'opentopomap'];
+  if (isRiverLayerActive || isHeatmapActive || isClusteringActive) {
+    attributionCreditIds.push('forecasts');
+  }
+  if (isTrueColorActive && trueColorStatus === 'ready') {
+    attributionCreditIds.push('gibs');
+  }
+  const attributionList = activeCredits(attributionCreditIds);
+
+  // Ladder probe: when the overlay turns on, find the newest UTC date Terra
+  // answers for; if Terra cannot answer any of the last three days, ask VIIRS
+  // SNPP (L1); if neither answers, L4 UNAVAILABLE. Turning the overlay off and
+  // on again re-probes (a fresh L0 success is the only way back up the ladder).
+  useEffect(() => {
+    if (!isTrueColorActive) {
+      setTrueColorStatus('idle');
+      setTrueColorPlan(null);
+      setTrueColorOffset(0);
+      return;
+    }
+    let cancelled = false;
+    setTrueColorStatus('loading');
+    resolveTrueColorPlan(gibsDateCandidates(), { gate: gibsGateRef.current ?? undefined }).then((plan) => {
+      if (cancelled) return;
+      if (!plan) {
+        setTrueColorPlan(null);
+        setTrueColorStatus('unavailable');
+        setIsTrueColorExpanded(true);
+        return;
+      }
+      setTrueColorPlan(plan);
+      setTrueColorOffset(0);
+      setTrueColorStatus('ready');
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isTrueColorActive]);
+
+  // The tile layer itself: rebuilt whenever source or advertised date changes,
+  // opacity applied live. Imagery layers stay neutral in dark mode (no filter
+  // class), and removal always releases the gate.
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    const gate = gibsGateRef.current;
+    if (!map || !gate || !isTrueColorActive || trueColorStatus !== 'ready' || !trueColorPlan || !trueColorDateIso) {
+      if (gibsLayerRef.current) {
+        if (map && map.hasLayer(gibsLayerRef.current)) map.removeLayer(gibsLayerRef.current);
+        gibsLayerRef.current = null;
+      }
+      return;
+    }
+    const layer = new GibsTileLayer(gibsTileUrl(trueColorPlan.source.gibsLayer, trueColorDateIso), {
+      gate,
+      subdomains: GIBS_TILE_SUBDOMAINS,
+      maxNativeZoom: GIBS_TILE_MAX_NATIVE_ZOOM,
+      maxZoom: 12,
+      opacity: trueColorOpacity / 100,
+      crossOrigin: true,
+      className: 'hn-tile-gibsTrueColor',
+    });
+
+    // Runtime watchdog, same shape as the basemap one: a run of tile errors with
+    // no successful load means the provider stopped answering after the probe.
+    // Terra gets one L1 demotion to VIIRS SNPP on the same date; after that the
+    // row shows the distinct UNAVAILABLE state. Tiles never silently fake it.
+    let errors = 0;
+    let sawLoad = false;
+    let demoted = false;
+    const planAtWatch = trueColorPlan;
+    const onTileError = () => {
+      if (sawLoad || demoted) return;
+      errors += 1;
+      if (errors < 8) return;
+      demoted = true;
+      if (planAtWatch.source.id === 'modis-terra') {
+        setTrueColorPlan({ source: GIBS_TRUECOLOR[1], dateIso: planAtWatch.dateIso, degraded: true });
+      } else {
+        setTrueColorStatus('unavailable');
+        setIsTrueColorExpanded(true);
+      }
+    };
+    const onTilesLoad = () => {
+      errors = 0;
+      sawLoad = true;
+    };
+    layer.on('tileerror', onTileError);
+    layer.on('load', onTilesLoad);
+
+    layer.addTo(map);
+    gibsLayerRef.current = layer;
+    return () => {
+      layer.cancelGibsQueue();
+      if (map.hasLayer(layer)) map.removeLayer(layer);
+      if (gibsLayerRef.current === layer) gibsLayerRef.current = null;
+    };
+    // Opacity intentionally not in deps: applied via setOpacity below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isTrueColorActive, trueColorStatus, trueColorPlan, trueColorDateIso]);
+
+  useEffect(() => {
+    const layer = gibsLayerRef.current;
+    if (layer) layer.setOpacity(trueColorOpacity / 100);
+  }, [trueColorOpacity]);
+
+  // GEV rule: the gate pauses when the tab is hidden (no background GIBS
+  // traffic) and resumes on return. Running downloads finish; queued ones wait.
+  useEffect(() => {
+    const onVisibility = () => {
+      const gate = gibsGateRef.current;
+      if (!gate) return;
+      if (document.visibilityState === 'hidden') gate.pause();
+      else gate.resume();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, []);
 
   const {
     generateMapSnapshot,
@@ -1515,12 +1664,164 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   </p>
                   <ul className="flex flex-col" role="group" aria-labelledby="map-layers-title">
                     {LIVE_LAYERS.filter((l) => l.section === 'overlays').map((def) => {
+                      if (def.id === 'overlay-truecolor') {
+                        // True-colour satellite row (Phase C): freshness chip,
+                        // expandable date + opacity controls, honest states only.
+                        const isActive = isTrueColorActive;
+                        const isUnavailable = trueColorStatus === 'unavailable';
+                        const chipLabel = !isActive
+                          ? 'Off'
+                          : isUnavailable
+                            ? mapFreshnessLabel({ kind: 'unavailable' })
+                            : trueColorOffset > 0 && trueColorDateIso
+                              ? trueColorDateIso
+                              : mapFreshnessLabel({ kind: 'nrt', lag: def.freshness?.cadence ?? '4 h' });
+                        const chipAmber = isActive && !isUnavailable && trueColorOffset === 0;
+                        return (
+                          <li key={def.id} className="py-2.5">
+                            <div className="flex items-center justify-between gap-3 min-h-[52px]">
+                              <span className="flex items-center gap-3">
+                                <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-50 dark:text-carbon-40 shrink-0" />
+                                <span className="flex flex-col">
+                                  <span className="text-[15px] font-semibold text-carbon-80 dark:text-carbon-10">{def.name}</span>
+                                  {def.caption ? (
+                                    <span className="text-xs text-carbon-40 dark:text-carbon-50">{def.caption}</span>
+                                  ) : null}
+                                </span>
+                              </span>
+                              <span className="flex items-center gap-1.5">
+                                {isActive || isUnavailable ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => setIsTrueColorExpanded(!isTrueColorExpanded)}
+                                    aria-expanded={isTrueColorExpanded}
+                                    aria-label={isTrueColorExpanded ? 'Hide satellite controls' : 'Show satellite controls'}
+                                    className="tap-target w-11 h-11 rounded-full text-carbon-50 dark:text-carbon-40 hover:bg-carbon-10 dark:hover:bg-carbon-80 flex items-center justify-center transition-colors"
+                                  >
+                                    <MaterialIcon name={isTrueColorExpanded ? 'expand_less' : 'expand_more'} className="w-5 h-5" />
+                                  </button>
+                                ) : null}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setIsTrueColorActive(!isActive);
+                                    if (isActive) setIsTrueColorExpanded(false);
+                                  }}
+                                  aria-pressed={isActive}
+                                  title={
+                                    isUnavailable
+                                      ? 'GIBS is not answering right now. See the NASA Earthdata status page.'
+                                      : isActive
+                                        ? 'Turn true-colour satellite imagery off'
+                                        : 'Show the newest available true-colour satellite imagery'
+                                  }
+                                  className={`min-h-[40px] px-4 rounded-full text-xs font-bold uppercase tracking-wide transition-colors ${
+                                    chipAmber
+                                      ? 'bg-amber-100 text-amber-900 border border-amber-200 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-900'
+                                      : isActive && !isUnavailable
+                                        ? 'bg-carbon-90 text-white dark:bg-white dark:text-carbon-90'
+                                        : 'bg-carbon-10 text-carbon-50 dark:bg-carbon-80 dark:text-carbon-40'
+                                  }`}
+                                >
+                                  {chipLabel}
+                                </button>
+                              </span>
+                            </div>
+
+                            {isUnavailable ? (
+                              <p className="text-xs leading-[1.62] text-carbon-50 dark:text-carbon-40 pl-8 pt-1">
+                                Satellite imagery is not answering right now. Try again in a few minutes, or check{' '}
+                                <a
+                                  href={GIBS_STATUS_URL}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="underline underline-offset-2 text-carbon-80 dark:text-carbon-10"
+                                >
+                                  NASA Earthdata status
+                                </a>
+                                .
+                              </p>
+                            ) : null}
+
+                            {isActive && isTrueColorExpanded && trueColorStatus === 'ready' && trueColorPlan && trueColorDateIso ? (
+                              <div className="mt-2 pl-8 flex flex-col gap-3">
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => setTrueColorOffset(Math.min(2, trueColorOffset + 1))}
+                                    disabled={trueColorOffset >= 2}
+                                    aria-label="One day earlier"
+                                    className="tap-target w-11 h-11 rounded-full bg-carbon-10 dark:bg-carbon-80 text-carbon-70 dark:text-carbon-20 flex items-center justify-center disabled:opacity-40 transition-colors"
+                                  >
+                                    <MaterialIcon name="chevron_left" className="w-5 h-5" />
+                                  </button>
+                                  <span className="flex flex-col items-center min-w-[132px]">
+                                    <span className="text-sm font-bold text-carbon-90 dark:text-white tabular-nums">{trueColorDateIso}</span>
+                                    <span className="text-xs text-carbon-40 dark:text-carbon-50">
+                                      {trueColorOffset === 0 ? 'Newest available' : `${trueColorOffset} ${trueColorOffset === 1 ? 'day' : 'days'} earlier`}
+                                    </span>
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setTrueColorOffset(Math.max(0, trueColorOffset - 1))}
+                                    disabled={trueColorOffset <= 0}
+                                    aria-label="One day newer"
+                                    className="tap-target w-11 h-11 rounded-full bg-carbon-10 dark:bg-carbon-80 text-carbon-70 dark:text-carbon-20 flex items-center justify-center disabled:opacity-40 transition-colors"
+                                  >
+                                    <MaterialIcon name="chevron_right" className="w-5 h-5" />
+                                  </button>
+                                </div>
+                                <label className="flex flex-col gap-1.5">
+                                  <span className="flex items-center justify-between text-xs text-carbon-50 dark:text-carbon-40">
+                                    <span>Imagery opacity</span>
+                                    <span className="font-semibold tabular-nums">{trueColorOpacity}%</span>
+                                  </span>
+                                  <input
+                                    type="range"
+                                    min={0}
+                                    max={100}
+                                    step={5}
+                                    value={trueColorOpacity}
+                                    onChange={(e) => setTrueColorOpacity(Number(e.target.value))}
+                                    aria-label="Imagery opacity"
+                                    className="w-full accent-carbon-90 dark:accent-white min-h-[44px]"
+                                  />
+                                </label>
+                                <p className="text-xs leading-[1.62] text-carbon-50 dark:text-carbon-40">
+                                  {trueColorPlan.source.name} · {trueColorPlan.source.resolution} · usually available{' '}
+                                  {trueColorPlan.source.typicalLag} after the satellite pass.
+                                  {trueColorPlan.degraded
+                                    ? ' MODIS Terra is not answering right now, so this shows VIIRS SNPP instead.'
+                                    : ''}
+                                </p>
+                                <p className="text-xs leading-[1.62] text-carbon-40 dark:text-carbon-50">
+                                  What this is: a true-colour photograph of Bangladesh from space on the date above. What it
+                                  is not: a live feed. Imagery arrives a few hours after acquisition and clouds can hide the
+                                  ground.
+                                </p>
+                              </div>
+                            ) : null}
+
+                            {isActive && isTrueColorExpanded && trueColorStatus === 'loading' ? (
+                              <p className="text-xs leading-[1.62] text-carbon-50 dark:text-carbon-40 pl-8 pt-2">
+                                Finding the newest available imagery.
+                              </p>
+                            ) : null}
+                          </li>
+                        );
+                      }
+
                       const toggle = overlayToggles[def.id];
                       return (
                         <li key={def.id} className="flex items-center justify-between gap-3 py-2.5 min-h-[52px]">
-                          <span className="flex items-center gap-3 text-[15px] font-semibold text-carbon-80 dark:text-carbon-10">
-                            <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-50 dark:text-carbon-40" />
-                            {def.name}
+                          <span className="flex items-center gap-3">
+                            <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-50 dark:text-carbon-40 shrink-0" />
+                            <span className="flex flex-col">
+                              <span className="text-[15px] font-semibold text-carbon-80 dark:text-carbon-10">{def.name}</span>
+                              {def.caption ? (
+                                <span className="text-xs text-carbon-40 dark:text-carbon-50">{def.caption}</span>
+                              ) : null}
+                            </span>
                           </span>
                           <button
                             type="button"

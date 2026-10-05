@@ -30,6 +30,8 @@ export interface LiveLayerDef {
    */
   freshness?: { cadence: string };
   lowBandwidthDefaultOff?: boolean;
+  /** Optional one-line qualifier under the row name (kept honest, kept short). */
+  caption?: string;
 }
 
 export const LIVE_SECTIONS: { id: LiveSectionId; label: string }[] = [
@@ -88,6 +90,17 @@ export const LIVE_LAYERS: LiveLayerDef[] = [
     icon: 'contrast',
     kind: 'toggle',
     creditIds: [],
+  },
+  {
+    id: 'overlay-truecolor',
+    section: 'overlays',
+    name: 'True-colour satellite',
+    icon: 'public',
+    kind: 'toggle',
+    creditIds: ['gibs'],
+    freshness: { cadence: '~4 h' },
+    lowBandwidthDefaultOff: true,
+    caption: 'Heavy imagery · newest available, never live',
   },
 ];
 
