@@ -1,83 +1,88 @@
 {
-  "why": [
-    "Ledger for criterion 1 of the mobile-conversion acceptance list (docs/audits/2026-10-03-frontend-design-system-audit.md \u00a75.5):",
-    "\"no page renders a table as its primary content below 768px; every table has a card-stack alternative.\"",
-    "status \"converted\"    - the tables that carry content below md render through components/ui/CardStackTable;",
-    "                        the table itself is now `hidden md:block`. `remaining` counts tables in the same file",
-    "                        that stay tables, with the reason.",
-    "status \"cardStacked\"  - the file already had a phone card list; the table is the md+ branch.",
-    "status \"allowListed\"  - a table that is not the phone view of its content, with the reason it may stay one.",
-    "Every entry is asserted against a live scan of frontend/src by __tests__/tableStack.test.js, so a new table or",
-    "a removed conversion fails the suite instead of quietly shipping a sideways scroll."
-  ],
-  "convertedWithoutComponent": [
-    "components/district/DistrictBriefBody.tsx: the event log became a key/value card grid below md (one row per card).",
-    "components/status/FreshnessPanel.tsx: the source table became a definition list below md."
-  ],
-  "entries": {
-    "components/DisasterDetailModalUI.tsx": {
-      "tables": 1,
-      "status": "allowListed",
-      "reason": "print sheet inside a modal; the modal body above it carries the same fields as cards."
-    },
-    "components/DistrictVulnerabilityTable.tsx": {
-      "tables": 1,
-      "status": "converted"
-    },
-    "components/ForecastDashboard.tsx": {
-      "tables": 1,
-      "status": "converted"
-    },
-    "components/HistoricalHazardCatalog.tsx": {
-      "tables": 1,
-      "status": "converted"
-    },
-    "components/NationalOverview.tsx": {
-      "tables": 1,
-      "status": "converted"
-    },
-    "components/WeatherPanel.tsx": {
-      "tables": 1,
-      "status": "converted"
-    },
-    "components/alerts/DistrictAlertTable.tsx": {
-      "tables": 2,
-      "status": "cardStacked",
-      "reason": "the phone view is the card list above the table and the table wrapper is `hidden ... md:block`; only the wider-screen table remains."
-    },
-    "components/district/DistrictBriefBody.tsx": {
-      "tables": 2,
-      "status": "converted",
-      "remaining": 1,
-      "remainingReason": "the upazila section's default view is already the card grid; this table is the explicit Table toggle, holding the same rows."
-    },
-    "components/district/DistrictForecastRecords.tsx": {
-      "tables": 1,
-      "status": "converted"
-    },
-    "components/map/MapDistrictTable.tsx": {
-      "tables": 1,
-      "status": "allowListed",
-      "reason": "the console's second view of the same rows: the primary view below md is the map, and this table is reached through the 44px Map/Table toggle. Its phone equivalent IS the map."
-    },
-    "components/status/FreshnessPanel.tsx": {
-      "tables": 3,
-      "status": "converted",
-      "remaining": 2,
-      "remainingReason": "the coverage-horizon table is two columns (Horizon, Units) and the provenance table is text that already wraps; neither scrolls at 320px, so they stay tables in both themes."
-    },
-    "pages/AdvisoriesPage.tsx": {
-      "tables": 1,
-      "status": "allowListed",
-      "reason": "the screen view is already a card list above this table; the table itself is the print protocol sheet (print-table classes), which only exists on paper."
-    },
-    "pages/DivisionDetailPage.tsx": {
-      "tables": 2,
-      "status": "converted"
-    },
-    "pages/HazardDetailPage.tsx": {
-      "tables": 2,
-      "status": "converted"
-    }
+ "why": [
+  "Ledger for criterion 1 of the mobile-conversion acceptance list (docs/audits/2026-10-03-frontend-design-system-audit.md \u00a75.5):",
+  "\"no page renders a table as its primary content below 768px; every table has a card-stack alternative.\"",
+  "status \"converted\"    - the tables that carry content below md render through components/ui/CardStackTable;",
+  "                        the table itself is now `hidden md:block`. `remaining` counts tables in the same file",
+  "                        that stay tables, with the reason.",
+  "status \"cardStacked\"  - the file already had a phone card list; the table is the md+ branch.",
+  "status \"allowListed\"  - a table that is not the phone view of its content, with the reason it may stay one.",
+  "Every entry is asserted against a live scan of frontend/src by __tests__/tableStack.test.js, so a new table or",
+  "a removed conversion fails the suite instead of quietly shipping a sideways scroll."
+ ],
+ "convertedWithoutComponent": [
+  "components/district/DistrictBriefBody.tsx: the event log became a key/value card grid below md (one row per card).",
+  "components/status/FreshnessPanel.tsx: the source table became a definition list below md."
+ ],
+ "entries": {
+  "components/DisasterDetailModalUI.tsx": {
+   "tables": 1,
+   "status": "allowListed",
+   "reason": "print sheet inside a modal; the modal body above it carries the same fields as cards."
+  },
+  "components/DistrictVulnerabilityTable.tsx": {
+   "tables": 1,
+   "status": "converted"
+  },
+  "components/ForecastDashboard.tsx": {
+   "tables": 1,
+   "status": "converted"
+  },
+  "components/HistoricalHazardCatalog.tsx": {
+   "tables": 1,
+   "status": "converted"
+  },
+  "components/NationalOverview.tsx": {
+   "tables": 1,
+   "status": "converted"
+  },
+  "components/WeatherPanel.tsx": {
+   "tables": 1,
+   "status": "converted"
+  },
+  "components/alerts/DistrictAlertTable.tsx": {
+   "tables": 2,
+   "status": "cardStacked",
+   "reason": "the phone view is the card list above the table and the table wrapper is `hidden ... md:block`; only the wider-screen table remains."
+  },
+  "components/district/DistrictBriefBody.tsx": {
+   "tables": 2,
+   "status": "converted",
+   "remaining": 1,
+   "remainingReason": "the upazila section's default view is already the card grid; this table is the explicit Table toggle, holding the same rows."
+  },
+  "components/district/DistrictForecastRecords.tsx": {
+   "tables": 1,
+   "status": "converted"
+  },
+  "components/map/MapDistrictTable.tsx": {
+   "tables": 1,
+   "status": "allowListed",
+   "reason": "the console's second view of the same rows: the primary view below md is the map, and this table is reached through the 44px Map/Table toggle. Its phone equivalent IS the map."
+  },
+  "components/status/FreshnessPanel.tsx": {
+   "tables": 3,
+   "status": "converted",
+   "remaining": 2,
+   "remainingReason": "the coverage-horizon table is two columns (Horizon, Units) and the provenance table is text that already wraps; neither scrolls at 320px, so they stay tables in both themes."
+  },
+  "pages/AdvisoriesPage.tsx": {
+   "tables": 1,
+   "status": "allowListed",
+   "reason": "the screen view is already a card list above this table; the table itself is the print protocol sheet (print-table classes), which only exists on paper."
+  },
+  "pages/DivisionDetailPage.tsx": {
+   "tables": 2,
+   "status": "converted"
+  },
+  "pages/HazardDetailPage.tsx": {
+   "tables": 2,
+   "status": "converted"
+  },
+  "pages/HistoricalCatalogPage.tsx": {
+   "tables": 1,
+   "status": "cardStacked",
+   "reason": "the Pearson matrix renders as a phone card list of pair values below md and the table only from md up; a 4x4 numeric matrix would otherwise scroll sideways at 390px."
   }
+ }
 }

@@ -1,0 +1,32 @@
+{
+  "metrics": [
+    {
+      "metric": "Total Unique Events",
+      "value": "3324",
+      "numeric": 3324
+    },
+    {
+      "metric": "Unique Districts",
+      "value": "64",
+      "numeric": 64
+    },
+    {
+      "metric": "Date Range Start",
+      "value": "2000-05-02"
+    },
+    {
+      "metric": "Date Range End",
+      "value": "2026-07-05"
+    },
+    {
+      "metric": "Mean Severity Score",
+      "value": "1.0",
+      "numeric": 1
+    },
+    {
+      "metric": "Total Validated Affected",
+      "value": "0.0",
+      "numeric": 0
+    }
+  ]
+}

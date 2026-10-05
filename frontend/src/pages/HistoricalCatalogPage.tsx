@@ -9,12 +9,25 @@ import { GlideResourcePopover } from '../components/GlideResourcePopover';
 import { EventReportModal, DisasterMasterEvent } from '../components/EventReportModal';
 import { DataStateEmpty, DataStateError, DataStateLoading } from '../components/ui/DataState';
 
+type BaselineMetric = { metric: string; value: string; numeric?: number };
+type CorrelationMatrix = { variables: string[]; matrix: (number | null)[][] };
+type GeeValidation = {
+  gee_rows: number;
+  catalog_rows: number;
+  matched: number;
+  mismatched: number;
+  sample_mismatches: { id: string; field: string }[];
+} | null;
+
 type HistoricalData = {
   masterEvents: DisasterMasterEvent[];
   vulnerability: DistrictVulnerabilityRecord[];
   trends: TemporalTrendRecord[];
   distribution: HazardDistributionRecord[];
   catalog: HistoricalHazardRecord[];
+  baseline: { metrics: BaselineMetric[] };
+  correlations: CorrelationMatrix;
+  geeValidation: GeeValidation;
 };
 
 async function fetchHistoricalData(): Promise<HistoricalData> {
@@ -24,6 +37,9 @@ async function fetchHistoricalData(): Promise<HistoricalData> {
     'temporal-trends',
     'hazard-distribution',
     'hazard-catalog-index',
+    'national-summary',
+    'correlations',
+    'gee-validation',
   ];
   const responses = await Promise.all(
     paths.map(async (name) => {
@@ -39,6 +55,11 @@ async function fetchHistoricalData(): Promise<HistoricalData> {
     trends: responses[2] as TemporalTrendRecord[],
     distribution: responses[3] as HazardDistributionRecord[],
     catalog: responses[4] as HistoricalHazardRecord[],
+    baseline: (responses[5] as { metrics?: BaselineMetric[] }).metrics
+      ? (responses[5] as { metrics: BaselineMetric[] })
+      : { metrics: [] },
+    correlations: (responses[6] as CorrelationMatrix) ?? { variables: [], matrix: [] },
+    geeValidation: (responses[7] as GeeValidation) ?? null,
   };
 }
 
@@ -164,6 +185,95 @@ export const HistoricalCatalogPage: React.FC = () => {
             </div>
           </div>
         </header>
+
+        {data.baseline.metrics.length > 0 && (
+          <section
+            aria-label="National baseline statistics"
+            className="bg-white border border-carbon-20 rounded-2xl p-4 sm:p-5"
+          >
+            <div className="flex flex-wrap items-baseline justify-between gap-2 mb-4">
+              <h2 className="text-base font-bold text-carbon-90 tracking-tight">National baseline</h2>
+              <span className="text-xs font-mono text-carbon-60">2000 to 2026 · general summary stats</span>
+            </div>
+            <dl className="grid grid-cols-2 lg:grid-cols-6 gap-3">
+              {data.baseline.metrics.map((m) => (
+                <div key={m.metric} className="bg-carbon-05 border border-carbon-10 rounded-xl px-3 py-2.5">
+                  <dt className="text-xs text-carbon-60 leading-snug">{m.metric}</dt>
+                  <dd className="text-sm font-bold font-mono text-carbon-90 tabular-nums mt-0.5">{m.value}</dd>
+                </div>
+              ))}
+            </dl>
+            <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-5">
+              {data.correlations.variables.length > 0 && (
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wide text-carbon-60 mb-2">
+                    Statistical correlations (Pearson)
+                  </h3>
+                  <ul className="md:hidden flex flex-col gap-2 mb-3">
+                    {data.correlations.matrix.map((row, i) =>
+                      row.map((cell, j) =>
+                        cell == null || i <= j ? null : (
+                          <li
+                            key={`${i}-${j}`}
+                            className="flex items-center justify-between gap-3 bg-carbon-05 border border-carbon-10 rounded-xl px-3 py-2 text-xs font-mono tabular-nums"
+                          >
+                            <span className="text-carbon-70">
+                              {data.correlations.variables[i].replace(/_/g, ' ')} and{' '}
+                              {data.correlations.variables[j].replace(/_/g, ' ')}
+                            </span>
+                            <span className="font-bold text-carbon-90">{cell.toFixed(2)}</span>
+                          </li>
+                        ),
+                      ),
+                    )}
+                  </ul>
+                  <div className="hidden md:block">
+                  <table className="w-full text-xs font-mono tabular-nums">
+                    <thead>
+                      <tr>
+                        <th className="text-left py-1 pr-2 font-semibold text-carbon-60"></th>
+                        {data.correlations.variables.map((v) => (
+                          <th key={v} className="text-right py-1 pl-2 font-semibold text-carbon-60">
+                            {v.replace(/_/g, ' ')}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.correlations.matrix.map((row, i) => (
+                        <tr key={data.correlations.variables[i]} className="border-t border-carbon-10">
+                          <th className="text-left py-1 pr-2 font-semibold text-carbon-70">
+                            {data.correlations.variables[i].replace(/_/g, ' ')}
+                          </th>
+                          {row.map((cell, j) => (
+                            <td key={j} className="text-right py-1 pl-2 text-carbon-80">
+                              {cell == null ? '·' : cell.toFixed(2)}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  </div>
+                </div>
+              )}
+              {data.geeValidation && (
+                <div className="text-xs leading-relaxed text-carbon-70">
+                  <h3 className="text-xs font-bold uppercase tracking-wide text-carbon-60 mb-2">
+                    GEE export cross-check
+                  </h3>
+                  <p>
+                    {data.geeValidation.gee_rows} hand-off rows were compared against the{' '}
+                    {data.geeValidation.catalog_rows} row clean archive: {data.geeValidation.matched} agree
+                    on GLIDE, district, hazard and observation window; {data.geeValidation.mismatched} carry
+                    drift, mostly revised GLIDE numbers. The drift is reported by gee-validation.json and is
+                    never silently absorbed into the catalog.
+                  </p>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
 
         {archiveIsEmpty && (
           <DataStateEmpty

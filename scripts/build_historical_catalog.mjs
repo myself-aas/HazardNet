@@ -87,6 +87,7 @@ export function parseCsv(text) {
 
 export function locateSourceDirectory() {
   const candidates = [
+    path.resolve(process.cwd(), 'data', 'historical-sources'),
     path.resolve(process.cwd(), 'manuscript', 'kaggle-notebooks', '1-HazardNet_BGD_climatic_hazards', '1-HazardNet_BGD_climatic_hazards'),
     path.resolve(process.cwd(), 'kaggle-notebooks', '1-HazardNet_BGD_climatic_hazards', '1-HazardNet_BGD_climatic_hazards'),
     path.resolve(process.cwd(), 'manuscript', 'kaggle-notebooks', '1-HazardNet_BGD_climatic_hazards'),
@@ -218,8 +219,91 @@ export function buildHistoricalCatalog(options = {}) {
     summary: (row[12] || '').slice(0, 200),
   }));
 
+  // 6. Ingest hazardnet_general_summary_stats.csv — the national baseline
+  // headline stats the PRD promises (Metric,Value pairs). Values stay as
+  // authored strings; a numeric twin is added when the value parses, so the
+  // UI can render tabular figures without re-parsing prose.
+  const statsPath = path.join(sourceDir, 'hazardnet_general_summary_stats.csv');
+  let nationalSummary = { metrics: [] };
+  if (fs.existsSync(statsPath)) {
+    const statsRows = parseCsv(fs.readFileSync(statsPath, 'utf8'));
+    nationalSummary = {
+      metrics: statsRows.slice(1)
+        .filter((row) => row[0])
+        .map((row) => {
+          const numeric = Number(row[1]);
+          return {
+            metric: row[0],
+            value: row[1] ?? '',
+            ...(Number.isFinite(numeric) && row[1] !== '' ? { numeric } : {}),
+          };
+        }),
+    };
+  }
+
+  // 7. Ingest hazardnet_statistical_correlations.csv — a Pearson matrix over
+  // Severity_Score / Validated_Affected / Latitude / Longitude. Empty upper
+  // triangle cells become null; the UI renders the lower triangle only.
+  const corrPath = path.join(sourceDir, 'hazardnet_statistical_correlations.csv');
+  let correlations = { variables: [], matrix: [] };
+  if (fs.existsSync(corrPath)) {
+    const corrRows = parseCsv(fs.readFileSync(corrPath, 'utf8'));
+    const variables = corrRows[0].slice(1).filter(Boolean);
+    correlations = {
+      variables,
+      matrix: corrRows.slice(1).filter((row) => row[0]).map((row) =>
+        variables.map((_, colIdx) => {
+          const cell = (row[colIdx + 1] ?? '').trim();
+          if (cell === '') return null;
+          const num = Number(cell);
+          return Number.isFinite(num) ? num : null;
+        }),
+      ),
+    };
+  }
+
+  // 8. Cross-validate HazardNet_Events_For_GEE.csv against the 3,062-row
+  // archive: same schema, so every GEE hand-off row must agree with the
+  // catalog on GLIDE, district, hazard and the GEE observation window.
+  // Drift is reported, never silently absorbed.
+  const geePath = path.join(sourceDir, 'HazardNet_Events_For_GEE.csv');
+  let geeValidation = null;
+  if (fs.existsSync(geePath)) {
+    const geeRows = parseCsv(fs.readFileSync(geePath, 'utf8')).slice(1);
+    const byId = new Map(hazardCatalogIndex.map((row) => [row.id, row]));
+    let matched = 0;
+    const mismatches = [];
+    for (const row of geeRows) {
+      const [id, glide, date, district, lat, lng, hazard, geeStart, geeEnd] = row;
+      const twin = byId.get(id);
+      if (!twin) {
+        mismatches.push({ id, field: 'missing_in_catalog' });
+        continue;
+      }
+      const drift =
+        twin.glide !== glide ? 'glide'
+        : twin.district !== district ? 'district'
+        : twin.hazard_type !== hazard ? 'hazard_type'
+        : twin.gee_start !== geeStart ? 'gee_start'
+        : twin.gee_end !== geeEnd ? 'gee_end'
+        : null;
+      if (drift) mismatches.push({ id, field: drift });
+      else matched += 1;
+    }
+    geeValidation = {
+      gee_rows: geeRows.length,
+      catalog_rows: hazardCatalogIndex.length,
+      matched,
+      mismatched: mismatches.length,
+      sample_mismatches: mismatches.slice(0, 10),
+    };
+  }
+
   // Write all artifacts to outputDir
   const artifacts = [
+    { filename: 'national-summary.json', data: nationalSummary },
+    { filename: 'correlations.json', data: correlations },
+    ...(geeValidation ? [{ filename: 'gee-validation.json', data: geeValidation }] : []),
     { filename: 'districts-vulnerability.json', data: districtsVulnerability },
     { filename: 'temporal-trends.json', data: temporalTrends },
     { filename: 'hazard-distribution.json', data: hazardDistribution },

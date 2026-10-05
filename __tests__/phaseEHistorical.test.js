@@ -118,6 +118,36 @@ describe('TASK-015: Analytical Datasets & Bundling Pipeline Integrity', () => {
     assert.ok(first.hazard_type, 'Record must have hazard_type');
     assert.ok(first.date, 'Record must have date');
   });
+
+  test('national-summary.json carries the headline stats with numeric twins', () => {
+    const data = JSON.parse(fs.readFileSync(path.join(dataDir, 'national-summary.json'), 'utf8'));
+    assert.ok(data.metrics.length >= 4, 'Must carry the headline metrics');
+    const names = data.metrics.map((m) => m.metric);
+    assert.ok(names.includes('Total Unique Events'), 'headline event count present');
+    assert.ok(names.includes('Unique Districts'), 'district count present');
+    const events = data.metrics.find((m) => m.metric === 'Total Unique Events');
+    assert.equal(events.numeric, 3324, 'raw occurrence count is 3,324');
+  });
+
+  test('correlations.json is a square matrix over its declared variables', () => {
+    const data = JSON.parse(fs.readFileSync(path.join(dataDir, 'correlations.json'), 'utf8'));
+    assert.ok(data.variables.length >= 2, 'Must declare its variables');
+    assert.equal(data.matrix.length, data.variables.length, 'matrix rows equal variables');
+    for (const row of data.matrix) {
+      assert.equal(row.length, data.variables.length, 'matrix is square');
+    }
+    const lat = data.variables.indexOf('Latitude');
+    const lng = data.variables.indexOf('Longitude');
+    if (lat >= 0 && lng >= 0) {
+      assert.ok(Math.abs(data.matrix[lat][lng] - data.matrix[lng][lat]) < 1e-9, 'symmetric pair');
+    }
+  });
+
+  test('gee-validation.json accounts for every GEE hand-off row', () => {
+    const data = JSON.parse(fs.readFileSync(path.join(dataDir, 'gee-validation.json'), 'utf8'));
+    assert.equal(data.matched + data.mismatched, data.gee_rows, 'matched plus mismatched equals GEE rows');
+    assert.ok(data.gee_rows >= data.catalog_rows, 'GEE export is the raw twin of the clean archive');
+  });
 });
 
 describe('TASK-016: Multilateral GLIDE Link Resolver & REST API', () => {

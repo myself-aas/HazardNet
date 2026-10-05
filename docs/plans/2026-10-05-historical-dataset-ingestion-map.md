@@ -54,28 +54,41 @@ CSV change must be followed by `npm run build:events-summary`.
 - Client: `frontend/src/lib/eventsClient.ts`, `frontend/src/lib/glide.ts`.
 - UI: `HistoricalHazardCatalog.tsx` (catalog browse + filters), `EventReportModal.tsx` (narrative, affected, GEE window, report links), `GlideResourcePopover.tsx` (branded external resource badges), `DistrictBriefBody.tsx` (district vulnerability + events), `DivisionDetailPage.tsx`, `HazardDetailPage.tsx`.
 
-## 4 · Ingestion gaps for the three un-ingested files
+## 4 · Ingestion gaps — shipped 2026-10-05
 
-1. `hazardnet_general_summary_stats.csv` — PRD line 326 promises national
-   baseline headline stats. Ingest in `build_historical_catalog.mjs` as a
-   sixth source → new `national-summary.json`; extend
-   `/api/v1/historical/summary` to merge it; surface in the catalog header.
-2. `hazardnet_statistical_correlations.csv` — new artifact
-   `correlations.json`; surface as a compact matrix/rows section in
-   `HistoricalHazardCatalog.tsx` (colour never the only carrier, role tokens).
-3. `HazardNet_Events_For_GEE.csv` — export-oriented twin of the master rows
-   (GEE windows/footprints). Commit under `backend/data/historical/` as the
-   reproducible GEE hand-off; use it in the builder to **validate** the
-   master's `gee_start/gee_end` columns (warn on drift) rather than shipping
-   it to the client.
+The sources were committed by the owner to `data/historical-sources/` on
+`main` (GitHub upload survived the sandbox resets that kept wiping
+`/home/user/uploads`). The eight analysis CSVs are vendored on this branch at
+the same path; the two 62 MB `HazardNet_Final_Production_Dataset*.csv`
+exports, `hazardnet_with_severity.csv` and `district_climatology_baselines.csv`
+stay on `main` only — analysis inputs, not product payloads.
 
-## 5 · Ingestion pass (next commit, needs the CSVs re-attached)
+`locateSourceDirectory()` now checks `data/historical-sources` first, so the
+pipeline is reproducible in-repo: `node scripts/build_historical_catalog.mjs`
+rebuilds all artifacts byte-identical to the previously committed ones
+(3,062 / 64 / 70 / 26 / 10), and `npm run build:events-summary` stays in sync.
 
-1. Commit the eight CSVs to `backend/data/historical/` (the only
-   non-ignored `locateSourceDirectory()` candidate).
-2. Run `node scripts/build_historical_catalog.mjs`; verify the logged row
-   counts (3,062 / 64 / 70) and diff the five artifacts.
-3. Run `npm run build:events-summary` to keep the summary artifact in sync.
-4. Add the two new artifacts + API fields with tests; keep the honesty
-   rules (no invented figures; unreadable source ⇒ explanatory sentence).
-5. Gates: jest, `check:events-summary`, tokens/prose/design; build; preview.
+New ingestion passes in the builder, each with a committed artifact, an API
+route and contract tests:
+
+1. `hazardnet_general_summary_stats.csv` → `national-summary.json`
+   (Metric/Value pairs with numeric twins) → `GET /api/v1/historical/national`.
+2. `hazardnet_statistical_correlations.csv` → `correlations.json`
+   (Pearson matrix, empty upper triangle as null) →
+   `GET /api/v1/historical/correlations`.
+3. `HazardNet_Events_For_GEE.csv` → `gee-validation.json`: every hand-off row
+   cross-checked against the clean archive on GLIDE, district, hazard and GEE
+   window; drift is reported (`matched` + `mismatched` = `gee_rows`), never
+   absorbed → `GET /api/v1/historical/gee-validation`.
+
+The frontend surfaces all three in `HistoricalCatalogPage` as a
+"National baseline" section (metric cells, lower-triangle correlation table,
+honest cross-check sentence), fed by the committed artifacts the same way the
+rest of the page reads.
+
+## 5 · Runbook
+
+1. Edit a CSV in `data/historical-sources/`.
+2. `node scripts/build_historical_catalog.mjs`
+3. `npm run build:events-summary`
+4. `npx jest __tests__/phaseEHistorical.test.js`, gates, build.

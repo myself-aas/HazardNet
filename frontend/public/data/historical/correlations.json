@@ -1,0 +1,34 @@
+{
+  "variables": [
+    "Severity_Score",
+    "Validated_Affected",
+    "Latitude",
+    "Longitude"
+  ],
+  "matrix": [
+    [
+      null,
+      null,
+      null,
+      null
+    ],
+    [
+      null,
+      null,
+      null,
+      null
+    ],
+    [
+      null,
+      null,
+      1,
+      -0.4537380509669084
+    ],
+    [
+      null,
+      null,
+      -0.4537380509669084,
+      1
+    ]
+  ]
+}
