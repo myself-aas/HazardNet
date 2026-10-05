@@ -48,7 +48,10 @@ const contrast = (a, b) => {
 
 /** The two dark scopes apple.css §5 declares, read separately so neither can rot. */
 function darkBlocks() {
-  const media = /@media \(prefers-color-scheme: dark\) \{\s*:root:not\(\[data-theme='light'\]\) \{([\s\S]*?)\n  \}/.exec(appleCss);
+  // `\n {2}\}` rather than two literal spaces before the closing brace: the two
+  // spaces are the indentation of apple.css's closing brace, and writing them
+  // literally trips ESLint's `no-regex-spaces` in the 0-error lint gate.
+  const media = /@media \(prefers-color-scheme: dark\) \{\s*:root:not\(\[data-theme='light'\]\) \{([\s\S]*?)\n {2}\}/.exec(appleCss);
   const explicit = /\[data-theme='dark'\],\n\.dark \{([\s\S]*?)\n\}/.exec(appleCss);
   return { media: media?.[1] ?? '', explicit: explicit?.[1] ?? '' };
 }

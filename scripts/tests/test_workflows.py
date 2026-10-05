@@ -328,5 +328,41 @@ def test_daily_advisory_ingest_refreshes_alerts_and_freshness() -> None:
     )
 
 
+def test_probe_failure_codes_are_not_doubled() -> None:
+    """A probe that cannot connect must report `000`, never `000000`.
+
+    `curl -w '%{http_code}'` writes its own `000` to stdout *before* exiting
+    non-zero, so a `|| echo 000` fallback appended a second one. Every sorted
+    URL the sitemap probe could not reach was annotated "HTTP 000000" — a status
+    code that does not exist — and the run read as a server fault rather than
+    the DNS failure it was. The fallback must assign the variable
+    (`|| code=000`), which also lets the sitemap probe name the no-response case
+    as *unreachable* instead of quoting a code.
+    """
+    for path in WORKFLOWS:
+        text = path.read_text(encoding="utf-8")
+        doubled = [
+            line.strip()
+            for line in text.splitlines()
+            if "|| echo 000" in line and not line.strip().startswith("#")
+        ]
+        assert not doubled, (
+            f"{path.name}: curl already prints 000 through -w, so `|| echo 000` "
+            f"reports '000000'. Assign instead (`|| code=000`): {doubled}"
+        )
+
+    site_health = ROOT / ".github" / "workflows" / "site-health.yml"
+    doc = load(site_health)
+    probe_job = (doc.get("jobs") or {}).get("probe")
+    assert probe_job is not None, "site-health.yml is missing the 'probe' job"
+    sitemap_steps = [step for step in steps(probe_job) if step.get("id") == "sitemap"]
+    assert sitemap_steps, "site-health.yml is missing the sitemap probe step"
+    sitemap_run = run_of(sitemap_steps[0])
+    assert '= "000"' in sitemap_run and "unreachable" in sitemap_run, (
+        "the sitemap probe must distinguish an unreachable host (no response) from "
+        "a served-but-not-200 URL — 'HTTP 000' alone sends triage to the wrong layer"
+    )
+
+
 if __name__ == "__main__":  # pragma: no cover
     sys.exit(pytest.main([__file__, "-v"]))

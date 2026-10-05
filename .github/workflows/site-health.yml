@@ -223,9 +223,18 @@ jobs:
           # retrospectives), so the loop is parallel: sequential curl at up to 30 s each could
           # outlast the job. Every URL is still checked — no sampling — and the per-request
           # timeout is short because these are static files behind a CDN.
+          # `code=000` in the failure branch rather than `|| echo 000`: curl writes its own
+          # `000` through -w before exiting non-zero, so the fallback *appended* a second
+          # one and every unreachable URL was reported as "HTTP 000000" — a number that
+          # does not exist, which sent triage looking for a server bug when the real
+          # finding was that the listed host does not answer at all (2026-10-05:
+          # www.hazardnet.live is NXDOMAIN, docs/ops/owner-actions.md Action 16).
           check_one() {
-            code=$(curl -sSL --max-redirs 5 -o /dev/null -w '%{http_code}' --max-time 15 "$1" || echo 000)
-            if [ "$code" != "200" ]; then
+            local code
+            code=$(curl -sSL --max-redirs 5 -o /dev/null -w '%{http_code}' --max-time 15 "$1" 2>/dev/null) || code=000
+            if [ "$code" = "000" ]; then
+              echo "$1 → unreachable: no response (DNS/TLS/connection failure) — listed in sitemap.xml"
+            elif [ "$code" != "200" ]; then
               echo "$1 → HTTP $code (listed in sitemap.xml but not served)"
             fi
           }
@@ -315,7 +324,7 @@ jobs:
           set -uo pipefail
           FAILED=0
 
-          CODE=$(curl -sSL --max-redirs 5 -o /tmp/status.html -w '%{http_code}' --max-time 30 "$SITE_URL/status" || echo 000)
+          CODE=$(curl -sSL --max-redirs 5 -o /tmp/status.html -w '%{http_code}' --max-time 30 "$SITE_URL/status" 2>/dev/null) || CODE=000
           echo "/status HTTP $CODE"
           if [ "$CODE" != "200" ]; then
             echo "::error::/status returned HTTP $CODE — the public status page is not being served."
@@ -325,7 +334,7 @@ jobs:
             FAILED=1
           fi
 
-          ACODE=$(curl -sSL --max-redirs 5 -o /tmp/freshness.json -w '%{http_code}' --max-time 30 "$SITE_URL/data/freshness.json" || echo 000)
+          ACODE=$(curl -sSL --max-redirs 5 -o /tmp/freshness.json -w '%{http_code}' --max-time 30 "$SITE_URL/data/freshness.json" 2>/dev/null) || ACODE=000
           echo "/data/freshness.json HTTP $ACODE"
           if [ "$ACODE" != "200" ] || ! jq -e . /tmp/freshness.json >/dev/null 2>&1; then
             echo "::error::/data/freshness.json is not served (HTTP $ACODE) — the status page has no data to render."
@@ -363,7 +372,7 @@ jobs:
           set -uo pipefail
           FAILED=0
 
-          CODE=$(curl -sSL --max-redirs 5 -o /tmp/content-index.json -w '%{http_code}' --max-time 30 "$SITE_URL/data/content-index.json" || echo 000)
+          CODE=$(curl -sSL --max-redirs 5 -o /tmp/content-index.json -w '%{http_code}' --max-time 30 "$SITE_URL/data/content-index.json" 2>/dev/null) || CODE=000
           echo "/data/content-index.json HTTP $CODE"
           if [ "$CODE" != "200" ] || ! jq -e . /tmp/content-index.json >/dev/null 2>&1; then
             echo "::error::/data/content-index.json is not served (HTTP $CODE) — the probe cannot verify the content pages."
@@ -396,7 +405,7 @@ jobs:
           echo "checking $(wc -l < /tmp/content-sample-unique.txt) generated paths"
           while read -r path; do
             [ -z "$path" ] && continue
-            code=$(curl -sSL --max-redirs 5 -o /tmp/page-body -w '%{http_code}' --max-time 30 "$SITE_URL$path" || echo 000)
+            code=$(curl -sSL --max-redirs 5 -o /tmp/page-body -w '%{http_code}' --max-time 30 "$SITE_URL$path" 2>/dev/null) || code=000
             if [ "$code" != "200" ]; then
               echo "::error::$path → HTTP $code (generated content path not served)"
               FAILED=1
