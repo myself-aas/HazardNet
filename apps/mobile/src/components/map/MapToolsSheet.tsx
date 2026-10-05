@@ -113,7 +113,7 @@ export function MapToolsSheet({
       <VStack space={4}>
         <HStack space={12} align="center" justify="space-between">
           <Title3>Map layers</Title3>
-          <Pressable accessibilityRole="button" accessibilityLabel="Close map layers" onPress={onClose} hitSlop={8}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Close map layers" onPress={onClose} hitSlop={10}>
             <Icon name="X" size="control" color={theme.colors.textSecondary} />
           </Pressable>
         </HStack>

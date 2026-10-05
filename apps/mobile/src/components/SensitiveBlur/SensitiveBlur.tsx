@@ -20,7 +20,7 @@ import { AppState, StyleSheet, View } from 'react-native';
 import { useTheme } from '../../theme/ThemeProvider';
 
 export function SensitiveBlur({ children }: { children: React.ReactNode }) {
-  const { theme, resolvedMode } = useTheme();
+  const { theme } = useTheme();
   const [obscured, setObscured] = useState(false);
 
   useEffect(() => {
@@ -41,7 +41,7 @@ export function SensitiveBlur({ children }: { children: React.ReactNode }) {
           style={[
             StyleSheet.absoluteFill,
             {
-              backgroundColor: resolvedMode === 'oled' ? '#000' : theme.colors.background as string,
+              backgroundColor: theme.colors.background as string,
               opacity: 1,
               zIndex: 9999,
             },

@@ -18,9 +18,15 @@ module.exports = {
   ],
   testPathIgnorePatterns: ['/node_modules/', '/dist/', '/.expo/', '/.turbo/'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
-  modulePaths: ['<rootDir>/node_modules', '<rootDir>/../../node_modules'],
-  moduleDirectories: ['node_modules', path.resolve(__dirname, 'node_modules'), path.resolve(__dirname, '../../node_modules')],
+  // Use Node/Jest's normal upward node_modules resolution so each dependency can resolve its
+  // own compatible `pretty-format` version. Global module paths here shadowed Jest 29's nested
+  // version with React Native's v26 copy and crashed before any native tests could run.
+  moduleDirectories: ['node_modules'],
   moduleNameMapper: {
+    // Keep renderer, testing library and app components on Expo's pinned React 18.2 instance.
+    // The web workspace uses React 18.3.1, so relying on workspace hoisting causes invalid hooks.
+    '^react$': '<rootDir>/node_modules/react',
+    '^react-test-renderer$': '<rootDir>/node_modules/react-test-renderer',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@hazardnet/core$': '<rootDir>/../../packages/core/src/index.ts',
     '^@hazardnet/core/(.*)$': '<rootDir>/../../packages/core/src/$1',

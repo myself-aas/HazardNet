@@ -203,7 +203,7 @@ export function AdvisoryDetailScreen() {
                       accessibilityLabel={`Call ${contact.agencyName} on ${contact.hotline}`}
                     >
                       <HStack space={8} align="center">
-                        <Icon name="PhoneCall" size="meta" color={theme.colors.primaryAction} />
+                        <Icon name="PhoneCall" size="meta" color={theme.colors.interactive} />
                         <Body>{contact.hotline}</Body>
                       </HStack>
                     </Pressable>

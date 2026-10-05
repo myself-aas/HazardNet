@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useCallback } from 'react';
 import L from 'leaflet';
 import { ALL_64_DISTRICTS, DistrictData } from '../data/bangladeshDistricts';
+import { iconMarkup } from '../lib/iconMarkup';
 
 export type DistrictGeo = DistrictData;
 
@@ -217,14 +218,12 @@ export function useMapMeasurements({
                 background: #ffffff;
                 border: 3px solid #f64137;
                 box-shadow: 0 4px 16px rgba(249, 168, 37, 0.6);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 13px;
-                font-weight: 900;
+                color: var(--color-nasa-red);
+                display: grid;
+                place-items: center;
                 cursor: pointer;
               ">
-                📏
+                ${iconMarkup('Ruler', { size: 16 })}
               </div>
             `,
             className: 'measure-midpoint-icon',
@@ -244,7 +243,7 @@ export function useMapMeasurements({
             <div style="padding: 10px; font-family: var(--hds-font-family-heading); color: #17171b; min-width: 250px; max-width: 290px;">
               <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #d1d1d1; padding-bottom: 6px; margin-bottom: 8px;">
                 <strong style="font-size: 12px; color: #17171b; font-weight: 900; display: flex; align-items: center; gap: 4px;">
-                  📏 Path Measurement
+                  ${iconMarkup('Ruler', { size: 14 })} Path Measurement
                 </strong>
                 <span style="font-size: 12px; font-weight: 900; background: #f64137; color: #ffffff; padding: 2px 8px; border-radius: 9999px;">
                   ${analysis.totalDistanceKm.toFixed(1)} km
@@ -253,9 +252,9 @@ export function useMapMeasurements({
               
               <div style="font-size: 12px; line-height: 1.6; color: #444447;">
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; font-weight: 800; color: #17171b; background: #f6f6f6; padding: 6px 8px; border-radius: 8px; border: 1px solid #d1d1d1;">
-                  <span style="color: #0284c7;">📍 ${escapeHtml(analysis.startDistrict?.name || 'P1')}</span>
-                  <span style="color: #77777a;">➔</span>
-                  <span style="color: #d97706;">🎯 ${escapeHtml(analysis.endDistrict?.name || 'P2')}</span>
+                  <span style="color: #0284c7; display: inline-flex; align-items: center; gap: 3px;">${iconMarkup('MapPin', { size: 14 })} ${escapeHtml(analysis.startDistrict?.name || 'P1')}</span>
+                  <span style="color: #77777a; display: inline-flex; align-items: center;">${iconMarkup('ArrowRight', { size: 14 })}</span>
+                  <span style="color: #d97706; display: inline-flex; align-items: center; gap: 3px;">${iconMarkup('Crosshair', { size: 14 })} ${escapeHtml(analysis.endDistrict?.name || 'P2')}</span>
                 </div>
                 
                 <div style="margin-top: 8px; display: flex; align-items: center; justify-content: space-between;">
@@ -270,8 +269,8 @@ export function useMapMeasurements({
                   <div style="margin-top: 4px; display: flex; flex-wrap: wrap; gap: 4px;">
                     ${
                       analysis.hazardsDetected.length > 0
-                        ? analysis.hazardsDetected.map(h => `<span style="font-size: 12px; font-weight: 800; background: #fef3c7; color: #b45309; border: 1px solid #fde68a; padding: 1px 6px; border-radius: 4px;">⚠️ ${escapeHtml(h)}</span>`).join('')
-                        : '<span style="font-size: 12px; color: #16a34a; font-weight: 700;">✓ Low Hazard Risk</span>'
+                        ? analysis.hazardsDetected.map(h => `<span style="font-size: 12px; font-weight: 800; background: #fef3c7; color: #b45309; border: 1px solid #fde68a; padding: 1px 6px; border-radius: 4px;">${iconMarkup('AlertTriangle', { size: 13 })} ${escapeHtml(h)}</span>`).join('')
+                        : `<span style="font-size: 12px; color: #16a34a; font-weight: 700;">${iconMarkup('CheckCircle2', { size: 13 })} Low Hazard Risk</span>`
                     }
                   </div>
                 </div>

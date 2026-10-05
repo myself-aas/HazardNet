@@ -11,12 +11,11 @@ import {
   Copy,
   Check,
   ExternalLink,
-  Layers,
   MapPin,
-  Satellite,
   Compass,
 } from "lucide-react";
 import L from "leaflet";
+import { iconMarkup } from "../../lib/iconMarkup";
 
 export interface LocationMapProps {
   location?: string;
@@ -32,34 +31,19 @@ export interface LocationMapProps {
   defaultZoom?: number;
 }
 
-type MiniMapLayer = "satellite" | "streets" | "dark" | "topo";
+// One basemap, same rule as the live map (useLeafletMap.MAP_LAYERS): the location
+// preview ships one ground, like the live console. The four-provider switcher
+// behind this record was deleted on 2026-10-05 with the rest of the basemap
+// pickers; the ground moved to OpenTopoMap the same day OSM's tile servers
+// started IP-blocking this deployment (see useLeafletMap.MAP_LAYERS).
+type MiniMapLayer = "streets";
 
 const MINI_MAP_LAYERS: Record<
   MiniMapLayer,
   { name: string; url: string; subdomains?: string; maxZoom: number; label: string }
 > = {
-  satellite: {
-    name: "HD Satellite",
-    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    maxZoom: 19,
-    label: "Sat",
-  },
   streets: {
-    name: "OpenStreetMap",
-    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    subdomains: "abc",
-    maxZoom: 19,
-    label: "Street",
-  },
-  dark: {
-    name: "Dark GIS",
-    url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-    subdomains: "abcd",
-    maxZoom: 19,
-    label: "Dark",
-  },
-  topo: {
-    name: "Topographic",
+    name: "OpenTopoMap",
     url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
     subdomains: "abc",
     maxZoom: 17,
@@ -102,10 +86,9 @@ export function LocationMap({
 }: LocationMapProps) {
   const [targetLat, targetLng] = parseLatLng(lat, lng, coordinates);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
-  const [activeLayerKey, setActiveLayerKey] = useState<MiniMapLayer>("satellite");
+  const [activeLayerKey] = useState<MiniMapLayer>("streets");
   const [currentZoom, setCurrentZoom] = useState<number>(defaultZoom);
   const [copied, setCopied] = useState<boolean>(false);
-  const [isLayerMenuOpen, setIsLayerMenuOpen] = useState<boolean>(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -154,7 +137,7 @@ export function LocationMap({
             <div style="position: absolute; inset: -8px; border-radius: 50%; background: ${riskColor}; opacity: 0.4;" class="radar-ping-ring"></div>
             <div style="position: absolute; inset: -2px; border-radius: 50%; background: ${riskColor}; opacity: 0.75;" class="radar-ping-ring"></div>
             <div style="position: relative; width: 22px; height: 22px; border-radius: 50%; background: #ffffff; border: 3px solid ${riskColor}; box-shadow: 0 2px 10px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; color: ${riskColor}; font-size: 12px; font-weight: 900;">
-              ●
+              ${iconMarkup('Circle', { size: 12, color: riskColor })}
             </div>
           </div>
         `,
@@ -333,7 +316,7 @@ export function LocationMap({
 
         {/* Top HUD Controls Overlay */}
         <div className="absolute top-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
-          {/* Layer Selector & Indicator */}
+          {/* Basemap indicator — single OpenStreetMap ground, no switcher */}
           <div className="flex items-center gap-1 bg-carbon-black/80 backdrop-blur-md px-2 py-1 rounded-full border border-carbon-70/80 shadow-xs pointer-events-auto">
             <span
               className="w-2 h-2 rounded-full animate-pulse"
@@ -342,29 +325,6 @@ export function LocationMap({
             <span className="text-xs font-mono font-bold tracking-tight text-carbon-20">
               {MINI_MAP_LAYERS[activeLayerKey].label}
             </span>
-
-            {/* Quick Layer Switch Toggle */}
-            <div className="flex items-center gap-0.5 ml-1 border-l border-carbon-70 pl-1">
-              {(["satellite", "streets", "dark"] as MiniMapLayer[]).map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setActiveLayerKey(key);
-                  }}
-                  className={`px-1.5 py-0.5 rounded text-xs font-bold transition-all cursor-pointer ${
-                    activeLayerKey === key
-                      ? "bg-amber-400 text-carbon-black shadow-xs"
-                      : "text-carbon-60 hover:text-white"
-                  }`}
-                  aria-label={`Switch to ${MINI_MAP_LAYERS[key].name}`}
-                  title={MINI_MAP_LAYERS[key].name}
-                >
-                  {MINI_MAP_LAYERS[key].label}
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* Right Action Icons: Zoom, Recenter, Expand */}

@@ -8,6 +8,7 @@
 
 import { useTheme } from '../theme/ThemeProvider';
 import type { AlertItemType } from '@hazardnet/core';
+import type { IconName } from '@hazardnet/design-system';
 
 export type SeverityVisual = {
   color: string;
@@ -15,7 +16,7 @@ export type SeverityVisual = {
   edge: string;
   label: string;
   shortLabel: string;
-  icon: string;
+  icon: IconName;
   // English confidence label per confidence bins (mobile-color-system rule).
   confidenceLabel: (confidence: number) => string;
 };
@@ -44,27 +45,27 @@ export function useSeverityVisual(level: AlertItemType['level']): SeverityVisual
   switch (level) {
     case 'SEVERE':
       return {
-        color: theme.colors.severe, bg: theme.colors.severeBg, edge: theme.colors.severe,
-        label: 'SEVERE', shortLabel: 'Severe', icon: '!',
+        color: theme.colors.severe, bg: theme.colors.severeBg, edge: theme.colors.severeSolid,
+        label: 'SEVERE', shortLabel: 'Severe', icon: 'AlertTriangle',
         confidenceLabel,
       };
     case 'WARNING':
       return {
-        color: theme.colors.warning, bg: theme.colors.warningBg, edge: theme.colors.warning,
-        label: 'WARNING', shortLabel: 'Warning', icon: '!',
+        color: theme.colors.warning, bg: theme.colors.warningBg, edge: theme.colors.warningSolid,
+        label: 'WARNING', shortLabel: 'Warning', icon: 'AlertTriangle',
         confidenceLabel,
       };
     case 'WATCH':
       return {
-        color: theme.colors.watch, bg: theme.colors.watchBg, edge: theme.colors.watch,
-        label: 'WATCH', shortLabel: 'Watch', icon: '◉',
+        color: theme.colors.watch, bg: theme.colors.watchBg, edge: theme.colors.watchSolid,
+        label: 'WATCH', shortLabel: 'Watch', icon: 'Eye',
         confidenceLabel,
       };
     case 'NO_ALERT':
     default:
       return {
-        color: theme.colors.allClear, bg: theme.colors.allClearBg, edge: theme.colors.allClear,
-        label: 'ALL CLEAR', shortLabel: 'All clear', icon: '✓',
+        color: theme.colors.allClear, bg: theme.colors.allClearBg, edge: theme.colors.allClearSolid,
+        label: 'ALL CLEAR', shortLabel: 'All clear', icon: 'CheckCircle2',
         confidenceLabel,
       };
   }

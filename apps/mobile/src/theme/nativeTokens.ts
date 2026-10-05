@@ -1,23 +1,28 @@
 /**
- * Native-specific design tokens for HazardNet Mobile.
+ * Native-specific implementation values for HazardNet Mobile.
  *
- * Color values come from @hazardnet/design-system/tokens. These tokens add
- * mobile-only layout/spacing/typography values: 44pt/48dp minimum touch targets,
- * native type scale mapped to SF Pro / Roboto roles, safe-area-aware spacing.
+ * Semantic color roles and the type-scale decisions come from Meridian. This
+ * file only translates those roles into React Native units and adds layout
+ * values that belong to a device shell: touch targets, safe areas and spacing.
  */
 
-import { HDS_NASA_TOKENS, MERIDIAN_RADIUS_ROLES } from '@hazardnet/design-system';
+import { HDS_NASA_TOKENS, MERIDIAN_RADIUS_ROLES, MERIDIAN_TYPE_SCALE } from '@hazardnet/design-system';
 
-const { colors, spacing } = HDS_NASA_TOKENS;
+const { spacing } = HDS_NASA_TOKENS;
 
-/** Minimum touch-target size per platform HIG. */
-export const TOUCH_MIN = 48; // dp/pt — Android requires 48dp; iOS 44pt, but we use 48 to be safe on both.
+/**
+ * Meridian's web floor is 44 CSS px, Apple's touch-target floor is 44 pt, and
+ * Android's is 48 dp. Native controls use the stricter cross-platform 48 unit
+ * floor; only the iOS tab-bar row uses Apple's compact 49 pt system height.
+ */
+export const TOUCH_MIN = 48;
 export const TAB_BAR_HEIGHT_IOS = 49;
-export const TAB_BAR_HEIGHT_ANDROID = 80; // Material 3 bottom navigation
+export const TAB_BAR_HEIGHT_ANDROID = 80;
 export const NAV_BAR_HEIGHT = 44;
-export const HEADER_LARGE_TITLE_IOS = 56;
+export const HEADER_LARGE_TITLE_IOS = 34;
 export const BOTTOM_SHEET_HANDLE_HEIGHT = 24;
 
+/** Extra hit area around compact, visible controls; it does not change layout. */
 export const HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 };
 
 export const BORDER_WIDTHS = {
@@ -34,15 +39,9 @@ export const MOTION = {
 } as const;
 
 /**
- * Radius roles, frozen to the web's scale (P1-2 / backlog 4 of the 2026-10-03 audit).
- *
- * This used to pin `control` and `chip` to 2px while the web role tokens were 8-28px, which is
- * the visible reason the phone and the browser looked like two different products. The roles now
- * come from `MERIDIAN_RADIUS_ROLES`, so a corner is the same corner on both platforms, and
- * `__tests__/designTokensParity.test.js` compares the two sides per role.
- *
- * `sheetIndicator` is the grab handle, not a surface: it stays a capsule (the same shape 2px
- * produced on the 4px bar it is drawn as).
+ * Radius roles are shared with the web scale. The native editorial shell uses
+ * the same 16-unit card and pill-control roles; the web console can opt into
+ * the tighter control radius through its track scope.
  */
 export const NATIVE_RADIUS = {
   none: 0,
@@ -56,32 +55,69 @@ export const NATIVE_RADIUS = {
   sheetIndicator: MERIDIAN_RADIUS_ROLES.pill,
 } as const;
 
-export { colors, spacing };
-
-export const NATIVE_FONT_SCALE_MAX = 1.5;
+export { spacing };
 
 /**
- * Typography roles (mapped to SF Pro on iOS, Roboto on Android at runtime).
- * We declare numeric sizes/weights/line-heights here; the platform font
- * family is applied via the Text primitive's Platform.select().
+ * Do not cap Dynamic Type / Android font scaling. Layout controls must grow
+ * with the user's system setting rather than clipping the warning they need
+ * to read. React Native's 0 value means no maximum multiplier.
  */
+export const NATIVE_FONT_SCALE_MAX = 0;
+
+/**
+ * React Native translation of Meridian's named type roles. Display3 is fixed
+ * at Apple's 34pt Large Title on native; the web's clamp remains fluid. Body,
+ * callout, subhead and caption sizes follow the shared Meridian scale.
+ */
+const pxFromRem = (value: string): number => {
+  const match = /^([\d.]+)rem$/.exec(value);
+  return match ? Number(match[1]) * 16 : 0;
+};
+
+function nativeRole(name: keyof typeof MERIDIAN_TYPE_SCALE, sizeOverride?: number) {
+  const role = MERIDIAN_TYPE_SCALE[name];
+  const size = sizeOverride ?? pxFromRem(role.size);
+  const weight = role.weight >= 600 ? '600' : role.weight >= 500 ? '500' : '400';
+  return {
+    size,
+    weight,
+    lineHeight: Math.round(size * role.line),
+    letterSpacing: Number.parseFloat(role.tracking) * size,
+  } as const;
+}
+
+/** Native role names mapped to the canonical web scale (display3 is fixed at 34pt). */
+export const NATIVE_TYPE_ROLE_MAP = {
+  displayLarge: 'display3',
+  displaySmall: 'title1',
+  title1: 'title1',
+  title2: 'title2',
+  title3: 'title3',
+  body: 'body',
+  bodyBold: 'body',
+  callout: 'callout',
+  subhead: 'subhead',
+  caption: 'caption',
+  metadata: 'caption',
+} as const;
+
 export const TYPE_ROLES = {
-  displayLarge: { size: 34, weight: '700' as const, lineHeight: 40, letterSpacing: -0.5 },
-  displaySmall: { size: 28, weight: '700' as const, lineHeight: 34, letterSpacing: -0.3 },
-  title1: { size: 22, weight: '700' as const, lineHeight: 28, letterSpacing: 0 },
-  title2: { size: 20, weight: '600' as const, lineHeight: 25, letterSpacing: 0 },
-  title3: { size: 17, weight: '600' as const, lineHeight: 22, letterSpacing: -0.2 },
-  body: { size: 16, weight: '400' as const, lineHeight: 22, letterSpacing: -0.1 },
-  bodyBold: { size: 16, weight: '600' as const, lineHeight: 22, letterSpacing: -0.1 },
-  callout: { size: 15, weight: '400' as const, lineHeight: 21, letterSpacing: 0 },
-  subhead: { size: 14, weight: '500' as const, lineHeight: 19, letterSpacing: 0 },
-  caption: { size: 12, weight: '400' as const, lineHeight: 16, letterSpacing: 0 },
-  metadata: { size: 12, weight: '500' as const, lineHeight: 16, letterSpacing: 0.5 },
-  mono: { size: 13, weight: '400' as const, lineHeight: 18, letterSpacing: 0 },
+  displayLarge: nativeRole('display3', 34),
+  displaySmall: nativeRole('title1'),
+  title1: nativeRole('title1'),
+  title2: nativeRole('title2'),
+  title3: nativeRole('title3'),
+  body: nativeRole('body'),
+  bodyBold: { ...nativeRole('body'), weight: '600' as const },
+  callout: nativeRole('callout'),
+  subhead: nativeRole('subhead'),
+  caption: nativeRole('caption'),
+  metadata: { ...nativeRole('caption'), weight: '500' as const },
+  mono: { size: 13, weight: '400' as const, lineHeight: 20, letterSpacing: 0 },
 } as const;
 
 export const SEVERITY_EDGE_WIDTH = 3;
 export const CARD_PADDING = 16;
 export const SCREEN_H_PADDING = 16;
 export const BANNER_HEIGHT = 48;
-export const SHEET_CORNER_RADIUS = 0; // NASA HDS: no rounded corners on sheets
+export const SHEET_CORNER_RADIUS = NATIVE_RADIUS.sheet;

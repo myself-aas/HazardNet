@@ -1,4 +1,5 @@
 import MaterialIcon from "./MaterialIcon";
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFirebaseConnectivity, RTDBConnectionStatus } from '../hooks/useFirebaseConnectivity';
@@ -155,8 +156,13 @@ export const FirebaseRealtimeStatus: React.FC<FirebaseRealtimeStatusProps> = ({
             onClick={() => setShowTelemetry(!showTelemetry)}
             className="p-1.5 text-xs text-carbon-60 hover:text-carbon-90 bg-white hover:bg-carbon-10 border border-carbon-20 rounded-lg transition-colors cursor-pointer"
             title="Toggle Connection Telemetry Details"
+            aria-label={showTelemetry ? 'Hide connection telemetry details' : 'Show connection telemetry details'}
           >
-            {showTelemetry ? '▲' : '▼'}
+            {showTelemetry ? (
+              <ChevronUp className="h-4 w-4" aria-hidden="true" />
+            ) : (
+              <ChevronDown className="h-4 w-4" aria-hidden="true" />
+            )}
           </button>
         </div>
       </div>

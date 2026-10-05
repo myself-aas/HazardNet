@@ -3,161 +3,82 @@ import L from 'leaflet';
 import 'leaflet.markercluster';
 import { isValidLatLng, detectExactPinpointLocation, getDistrictBoundaryCoordinates } from '../services/geolocationService';
 import { DistrictData } from '../data/bangladeshDistricts';
-import { tileCacheService } from '../services/tileCacheService';
 
+/**
+ * One basemap, deliberately. The console used to offer six tile providers behind a
+ * picker (and a "+" menu), and the choice changed nothing the reader needed: every
+ * HazardNet layer draws on top of whichever ground is underneath. A single basemap
+ * has no picker.
+ *
+ * 2026-10-05 (provider change): the ground moved from `tile.openstreetmap.org` to
+ * OpenTopoMap. OSM's own tile servers were IP-blocking this deployment's requests
+ * (its "Access blocked" interstitial) because an earlier build bulk-downloaded their
+ * tiles — an IP block persists and cannot be lifted from code. OpenTopoMap renders
+ * OpenStreetMap data on separate infrastructure, needs no API key, and is free for
+ * on-demand use, so the map renders again while staying policy-compliant: tiles are
+ * still loaded on demand through a plain L.tileLayer and the browser HTTP cache only.
+ * Attribution keeps the OSM copyright ODbL requires, plus the OpenTopoMap style credit.
+ */
 export const MAP_LAYERS = {
-  esriSatellite: {
-    name: 'Esri World Imagery (HD Satellite)',
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics · map lines delineate study areas and do not necessarily depict accepted national boundaries',
-    maxZoom: 19,
-  },
-  esriClarity: {
-    name: 'Esri Clarity (Ultra HD Vivid Satellite)',
-    url: 'https://clarity.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/WMTS/1.0.0/default/default/GoogleMapsCompatible/{z}/{y}/{x}',
-    attribution: 'Tiles &copy; Esri Clarity · map lines delineate study areas and do not necessarily depict accepted national boundaries',
-    maxZoom: 19,
-  },
-  cartoDark: {
-    name: 'High Contrast Dark GIS',
-    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    attribution: '&copy; CARTO &copy; OpenStreetMap · map lines delineate study areas and do not necessarily depict accepted national boundaries',
-    maxZoom: 19,
-  },
-  osmStandard: {
-    name: 'OpenStreetMap (Street & Topo)',
-    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: '&copy; OpenStreetMap contributors · map lines delineate study areas and do not necessarily depict accepted national boundaries',
-    maxZoom: 19,
-  },
-  esriShadedRelief: {
-    name: 'Esri 3D Terrain Relief',
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'Tiles &copy; Esri · map lines delineate study areas and do not necessarily depict accepted national boundaries',
-    maxZoom: 17,
-  },
   topoMap: {
-    name: 'OpenTopoMap (Contours & Elevation)',
+    name: 'OpenTopoMap (OpenStreetMap data)',
     url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-    attribution: 'Map data: &copy; OpenStreetMap contributors, SRTM · map lines delineate study areas and do not necessarily depict accepted national boundaries',
+    attribution: 'Map data &copy; OpenStreetMap contributors, SRTM · Map style &copy; OpenTopoMap (CC-BY-SA) · map lines delineate study areas and do not necessarily depict accepted national boundaries',
     maxZoom: 17,
+  },
+  esriSatellite: {
+    name: 'Esri World Imagery (satellite)',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'Powered by Esri &mdash; Source: Esri, Maxar, Earthstar Geographics and the GIS User Community',
+    maxZoom: 18,
   },
 };
 
 export type MapLayerKey = keyof typeof MAP_LAYERS;
 
-/** Layers that require a decent connection: they are imagery, not vector geometry. */
-const RASTER_IMAGERY_LAYERS: MapLayerKey[] = ['esriSatellite', 'esriClarity', 'esriShadedRelief'];
-
 /**
  * Layer actually used for a request (Phase 5: low-bandwidth mode).
  *
- * The dashboard's default basemap is Esri World Imagery — a raster tile per 256 px
- * per zoom level, which on a 2G connection is the single heaviest thing the page
- * loads and the thing most likely to leave a user staring at a grey grid. When
- * low-bandwidth mode is on (`useBandwidthMode` sets `data-low-bandwidth` on `<html>`,
- * plus `save-data`/`effectiveType` signals), an imagery layer falls back to the
- * vector-ish street basemap: same geographic information, a fraction of the bytes.
- *
- * A non-imagery choice by the user is always respected; only the expensive defaults
- * are substituted.
+ * With a single basemap there is nothing to substitute — the function stays because
+ * callers read the map through it, and so the day a second provider is ever argued
+ * for, the low-bandwidth rule is already wired where it belongs.
  */
-export function effectiveMapLayer(requested: MapLayerKey, lowBandwidth?: boolean | null): MapLayerKey {
-  const low = lowBandwidth ?? (
-    typeof document !== 'undefined' && document.documentElement.dataset.lowBandwidth === 'true'
-  );
-  if (!low) return requested;
-  if (!RASTER_IMAGERY_LAYERS.includes(requested)) return requested;
-  return 'osmStandard';
+export function effectiveMapLayer(requested: MapLayerKey, _lowBandwidth?: boolean | null): MapLayerKey {
+  return requested;
 }
 
-// Custom Leaflet TileLayer subclass that checks IndexedDB first, caches network tiles on fetch, and handles offline mode gracefully
-export function createCachedTileLayer(url: string, layerId: string, options: L.TileLayerOptions = {}): L.TileLayer {
-  const CachedLayer = (L.TileLayer as any).extend({
-    createTile(coords: any, done: (error?: any, tile?: HTMLElement) => void) {
-      const tile = document.createElement('img');
-      L.DomEvent.on(tile, 'load', L.Util.bind((this as any)._tileOnLoad, this, done, tile));
-      L.DomEvent.on(tile, 'error', L.Util.bind((this as any)._tileOnError, this, done, tile));
-
-      if (this.options.crossOrigin || this.options.crossOrigin === '') {
-        tile.crossOrigin = this.options.crossOrigin === true ? '' : this.options.crossOrigin;
-      }
-      tile.alt = '';
-      tile.setAttribute('role', 'presentation');
-
-      const tileUrl = this.getTileUrl(coords);
-      const tileKey = tileCacheService.getTileKey(layerId, coords.z, coords.x, coords.y);
-
-      // 1. Check IndexedDB store first
-      tileCacheService
-        .getTileBlob(tileKey)
-        .then((blob) => {
-          if (blob) {
-            const objectUrl = URL.createObjectURL(blob);
-            tile.src = objectUrl;
-            const cleanUp = () => {
-              URL.revokeObjectURL(objectUrl);
-              tile.removeEventListener('load', cleanUp);
-              tile.removeEventListener('error', cleanUp);
-            };
-            tile.addEventListener('load', cleanUp);
-            tile.addEventListener('error', cleanUp);
-          } else {
-            // 2. Fetch from network & cache in IndexedDB in background
-            fetch(tileUrl, {
-              mode: 'cors',
-              headers: { Accept: 'image/webp,image/png,image/jpeg,image/*;q=0.8' },
-            })
-              .then((response) => {
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                return response.blob();
-              })
-              .then((newBlob) => {
-                tileCacheService.saveTileBlob(tileKey, tileUrl, layerId, coords.z, coords.x, coords.y, newBlob);
-                const objectUrl = URL.createObjectURL(newBlob);
-                tile.src = objectUrl;
-                const cleanUp = () => {
-                  URL.revokeObjectURL(objectUrl);
-                  tile.removeEventListener('load', cleanUp);
-                  tile.removeEventListener('error', cleanUp);
-                };
-                tile.addEventListener('load', cleanUp);
-                tile.addEventListener('error', cleanUp);
-              })
-              .catch(() => {
-                // Fallback directly to regular tile URL in case CORS fetch fails or offline
-                tile.src = tileUrl;
-              });
-          }
-        })
-        .catch(() => {
-          tile.src = tileUrl;
-        });
-
-      return tile;
-    },
-  });
-
-  return new CachedLayer(url, {
-    ...options,
-    crossOrigin: true,
-  });
-}
+/* Tiles are requested by Leaflet's stock L.tileLayer and nothing else. The IndexedDB
+   tile store was deleted on 2026-10-05: it fetched every tile twice (once to persist,
+   once to display) and backed a bulk pre-cache of all of Bangladesh, which is exactly
+   what the OpenStreetMap tile usage policy forbids for volunteer-run servers
+   (osm.wiki/blocked). The browser's own HTTP cache is the only cache now, attribution
+   stays visible under the map, and heavy or offline use belongs to a dedicated tile
+   provider rather than to this service. */
 
 export interface UseLeafletMapOptions {
   onMapClick?: (lat: number, lng: number) => void;
   onAutoLocateDistrict?: (district: DistrictData) => void;
   autoLocateEnabled?: boolean;
-  /** When true, imagery rasters fall back to OSM (see `effectiveMapLayer`). */
+  /** Low-bandwidth mode (Phase 5). With the single OSM basemap there is no heavier
+      provider to fall back from; the flag stays in the contract for the overlays. */
   lowBandwidth?: boolean;
+  /**
+   * Phase B (2026-10-05): fired when a basemap's tiles stop arriving (a run of
+   * tile errors with no successful load). LiveMapView uses it to step the
+   * satellite ground back to the street map and tell the user why. The hook
+   * never switches layers itself; the component owns that state.
+   */
+  onBasemapDegraded?: (layerKey: MapLayerKey) => void;
 }
 
 export function useLeafletMap(
   mapContainerRef: React.RefObject<HTMLDivElement | null>,
-  activeLayer: MapLayerKey = 'esriSatellite',
+  activeLayer: MapLayerKey = 'topoMap',
   options: UseLeafletMapOptions = {}
 ) {
   const { onMapClick, onAutoLocateDistrict, autoLocateEnabled = true, lowBandwidth = false } = options;
+  const onBasemapDegradedRef = useRef(options.onBasemapDegraded);
+  onBasemapDegradedRef.current = options.onBasemapDegraded;
 
   const mapInstanceRef = useRef<L.Map | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
@@ -166,7 +87,6 @@ export function useLeafletMap(
   const heatLayerRef = useRef<L.HeatLayer | null>(null);
   const measureGroupRef = useRef<L.LayerGroup | null>(null);
   const riverGroupRef = useRef<L.LayerGroup | null>(null);
-  const radarGroupRef = useRef<L.LayerGroup | null>(null);
   const inspectGroupRef = useRef<L.LayerGroup | null>(null);
 
   const [currentCoords, setCurrentCoords] = useState<{ lat: number; lng: number; zoom: number }>({
@@ -198,18 +118,24 @@ export function useLeafletMap(
     const map = L.map(mapContainerRef.current, {
       center: [23.8103, 90.4125],
       zoom: 7,
-      zoomControl: false,
+      // Native zoom stays: the "+" hazard-actions menu that carried zoom in/out was
+      // deleted on 2026-10-05 (one control per job). Leaflet's control is keyboard-
+      // reachable and its targets are widened to 44px in index.css.
+      zoomControl: true,
       attributionControl: false,
     });
 
     const baseLayerKey = effectiveMapLayer(activeLayer, lowBandwidth);
-    const config = MAP_LAYERS[baseLayerKey] || MAP_LAYERS.osmStandard;
-    const tileLayer = createCachedTileLayer(config.url, baseLayerKey, {
+    const config = MAP_LAYERS[baseLayerKey] || MAP_LAYERS.topoMap;
+    // Plain L.tileLayer: Leaflet requests each tile once and the browser's HTTP cache
+    // does the rest. No IndexedDB persistence, no pre-cache — that is what keeps this
+    // page inside the OpenStreetMap tile usage policy.
+    const tileLayer = L.tileLayer(config.url, {
       maxZoom: config.maxZoom,
       opacity: 1.0,
       crossOrigin: true,
-      // Names the layer in the DOM (`hn-tile-osmStandard`) so the dark theme can
-      // invert the light vector basemaps and leave satellite imagery alone.
+      // Names the layer in the DOM (`hn-tile-topoMap`) so the dark theme can
+      // regrade the basemap without touching the tiles themselves.
       className: `hn-tile-${baseLayerKey}`,
     }).addTo(map);
 
@@ -298,7 +224,6 @@ export function useLeafletMap(
 
     const measureGroup = L.layerGroup().addTo(map);
     const riverGroup = L.layerGroup().addTo(map);
-    const radarGroup = L.layerGroup().addTo(map);
     const inspectGroup = L.layerGroup().addTo(map);
 
     const updateCoords = () => {
@@ -323,7 +248,6 @@ export function useLeafletMap(
     clusterGroupRef.current = clusterGroup;
     measureGroupRef.current = measureGroup;
     riverGroupRef.current = riverGroup;
-    radarGroupRef.current = radarGroup;
     inspectGroupRef.current = inspectGroup;
 
     // Automatic location request on first launch
@@ -401,7 +325,6 @@ export function useLeafletMap(
       clusterGroupRef.current = null;
       measureGroupRef.current = null;
       riverGroupRef.current = null;
-      radarGroupRef.current = null;
       inspectGroupRef.current = null;
     };
   }, [mapContainerRef, autoLocateEnabled]);
@@ -411,13 +334,13 @@ export function useLeafletMap(
     if (!mapInstanceRef.current) return;
     setIsProcessingData(true);
     const baseLayerKey = effectiveMapLayer(activeLayer, lowBandwidth);
-    const config = MAP_LAYERS[baseLayerKey] || MAP_LAYERS.osmStandard;
+    const config = MAP_LAYERS[baseLayerKey] || MAP_LAYERS.topoMap;
 
     if (tileLayerRef.current) {
       mapInstanceRef.current.removeLayer(tileLayerRef.current);
     }
 
-    const newTileLayer = createCachedTileLayer(config.url, baseLayerKey, {
+    const newTileLayer = L.tileLayer(config.url, {
       maxZoom: config.maxZoom,
       opacity: 1.0,
       crossOrigin: true,
@@ -428,6 +351,25 @@ export function useLeafletMap(
       (newTileLayer as any).bringToBack();
     }
     tileLayerRef.current = newTileLayer;
+
+    // Degraded-tile watchdog: a run of tile errors with no successful load means
+    // the provider is not answering this client (an outage or an IP block). Eight
+    // consecutive failures is the threshold; a single clean load resets it.
+    let errors = 0;
+    let degraded = false;
+    const onTileError = () => {
+      if (degraded) return;
+      errors += 1;
+      if (errors >= 8) {
+        degraded = true;
+        onBasemapDegradedRef.current?.(baseLayerKey);
+      }
+    };
+    const onTilesLoad = () => {
+      errors = 0;
+    };
+    newTileLayer.on('tileerror', onTileError);
+    newTileLayer.on('load', onTilesLoad);
 
     const timer = setTimeout(() => {
       setIsProcessingData(false);
@@ -487,7 +429,6 @@ export function useLeafletMap(
     heatLayerRef,
     measureGroupRef,
     riverGroupRef,
-    radarGroupRef,
     inspectGroupRef,
     currentCoords,
     setCurrentCoords,

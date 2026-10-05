@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FileText } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Check, ChevronDown, ChevronRight, ExternalLink, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 import MaterialIcon from '../../components/MaterialIcon';
 import Breadcrumbs from '../../components/Breadcrumbs';
@@ -46,7 +46,11 @@ const SeoCheckRow: React.FC<{ passed: boolean; label: string; advice: string }> 
         passed ? 'bg-emerald-100 text-carbon-80' : 'bg-amber-100 text-amber-700'
       }`}
     >
-      {passed ? '✓' : '!'}
+      {passed ? (
+        <Check className="h-3.5 w-3.5" aria-hidden="true" />
+      ) : (
+        <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
+      )}
     </span>
     <span className={`text-xs leading-relaxed ${passed ? 'text-carbon-60 line-through decoration-carbon-30' : 'font-semibold text-carbon-70'}`}>
       {label}
@@ -333,7 +337,9 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
             </h1>
             {publishedSlug && (
               <Link to={`/blogs/${publishedSlug}`} className="text-xs font-bold font-mono text-amber-700 hover:underline">
-                Live at /blogs/{publishedSlug} ↗
+                <span className="inline-flex items-center gap-1.5">
+                  Live at /blogs/{publishedSlug} <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                </span>
               </Link>
             )}
           </div>
@@ -342,7 +348,9 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               to="/dashboard/blog"
               className="px-3.5 py-2 border border-carbon-20 bg-white text-xs font-black text-carbon-70 hover:bg-carbon-10"
             >
-              ← All articles
+              <span className="inline-flex items-center gap-1.5">
+                <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" /> All articles
+              </span>
             </Link>
             <button
               type="button"
@@ -534,7 +542,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               <div className="flex items-center justify-between">
                 <p className="text-xs font-bold text-carbon-80 flex items-center gap-1.5">
                   <MaterialIcon name="faq" className="w-4 h-4 text-nasa-red-shade" /> FAQ section
-                  <span className="text-xs font-medium text-carbon-60">(emits FAQPage schema → Google rich results)</span>
+                  <span className="text-xs font-medium text-carbon-60">(emits FAQPage schema for Google rich results)</span>
                 </p>
                 <button
                   type="button"
@@ -587,7 +595,9 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                 className="flex w-full items-center justify-between px-1 py-1.5 text-xs font-black text-carbon-60 hover:text-carbon-90 cursor-pointer"
               >
                 <span>SEO checklist ({seo.passedCount}/{seo.checks.length} passed · {seo.wordCount} words)</span>
-                <span aria-hidden="true">{showSeoTips ? '▾' : '▸'}</span>
+                <span aria-hidden="true">
+                  {showSeoTips ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                </span>
               </button>
               {showSeoTips && (
                 <ul className="mt-2 space-y-1.5 bg-carbon-05 p-3.5" data-testid="seo-checklist">

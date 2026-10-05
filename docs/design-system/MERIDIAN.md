@@ -1,7 +1,7 @@
 # HazardNet Meridian Design System (HDS v3.0)
 
-> Supersedes **HDS v2.2** (`frontend/DESIGN_SYSTEM.md`), which stays in place for
-> the surfaces still migrating.
+> Supersedes **HDS v2.2** (`frontend/DESIGN_SYSTEM.md`). That path is now a short
+> implementation guide pointing here, not a parallel specification.
 >
 > **Source of truth for values:** [`packages/design-system/src/meridian.ts`](../../packages/design-system/src/meridian.ts)
 > **Web token layer:** [`frontend/src/styles/meridian.css`](../../frontend/src/styles/meridian.css)
@@ -236,11 +236,12 @@ monitor with no breakpoint edits.
 **Font stacks are open source only, and every family in them is either bundled or a platform
 face.** Latin is the platform UI face (`system-ui, -apple-system, 'Segoe UI', Roboto`), data is the
 platform mono stack, and Bengali is `'Noto Sans Bengali', 'Hind Siliguri'` — the one webfont this
-bundle ships (`@fontsource/noto-sans-bengali`, 400 + 700; `families.bengali` and
-`MERIDIAN_FONTS.bengali` both carry it). The instrument/Plus Jakarta/Anek Bangla/Baloo Da 2 names
-are gone from the code: none of them was ever bundled, so their only effect was that a machine with
-one installed rendered a different product. `frontend/src/styles/meridian.css` mirrors
-`MERIDIAN_FONTS` verbatim and `__tests__/meridianParity.test.js` fails if the two drift.
+bundle ships (`@fontsource/noto-sans-bengali`, Bengali-script regular 400 WOFF2; browsers
+synthesize bold; `families.bengali` and `MERIDIAN_FONTS.bengali` both carry it). The
+instrument/Plus Jakarta/Anek Bangla/Baloo Da 2 names are gone from the code: none of them was ever
+bundled, so their only effect was that a machine with one installed rendered a different product.
+`frontend/src/styles/meridian.css` mirrors `MERIDIAN_FONTS` verbatim and
+`__tests__/meridianParity.test.js` fails if the two drift.
 
 ### 4.3 Geometry
 
@@ -308,8 +309,8 @@ Apple's spring physics expressed as web curves.
 | `ambient` | 14000ms | background motion |
 
 Curves: `out` `cubic-bezier(0.16,1,0.3,1)` · `standard` `cubic-bezier(0.2,0,0.2,1)` ·
-`emphasized` `cubic-bezier(0.2,0,0,1)` · `spring` `cubic-bezier(0.34,1.56,0.64,1)`
-(small values only — large surfaces wobble).
+`emphasized` `cubic-bezier(0.2,0,0,1)` · `spring` `cubic-bezier(0.2,0,0,1)`
+(the product curve passes through its target without a bounce; native surfaces should use platform springs with Reduce Motion honored).
 
 **Only `opacity`, `transform` and `filter` animate.** Never `width`, `height`,
 `top` or `left`, which trigger layout on every frame.
@@ -385,6 +386,7 @@ theme pass `tone="onDark"` so a card never inherits near-black ink on a near-bla
 | The radius scale is frozen: a new step or role fails | `designTokensParity.test.js`, `nasaTokens.test.js` |
 | Dark mode covers every colour family in use, or declares the exception | `darkTheme.test.js` |
 | Every ink × surface pair clears WCAG in the dark theme | `darkTheme.test.js` |
+| Native semantic colors, status contrast, 48dp button floor and accessibility preferences | `apps/mobile/__tests__/nativeMeridianParity.test.tsx` |
 | Table cards replace the table below `md`; the ledger has no unlisted `<table>` | `tableStack.test.js` |
 | One icon family, one stroke, one registry, no emoji, `MaterialIcon` shrinking only | `iconFamily.test.js` |
 | No authored type below 12px (SVG user units excepted, in place) | `designTypography.test.js` |
@@ -408,29 +410,38 @@ Both were real, and neither was visible by eye.
 
 ---
 
-## 7 · Migration status
+## 7 · Migration status (reviewed 2026-10-04)
 
-Meridian is **additive**. The existing NASA-HDS-derived layer in
-`frontend/src/index.css` is untouched: 6,386 palette-family uses and several
-asserting tests depend on those names, and `npm run check:tokens` still passes
-at its ≥90% gate. Meridian adds roles above it; `meridian.css` is imported last
-so equal-specificity rules resolve to Meridian.
+Meridian remains **additive**. The NASA-HDS-derived aliases in
+`frontend/src/index.css` are intentionally retained while their consumers are
+migrated. `npm run check:tokens` remains the ratchet for that compatibility
+layer; Meridian roles are imported after the NASA layer.
 
-**Migrated**
+**Implemented**
 
-- Token layer — `packages/design-system/src/meridian.ts`, `frontend/src/styles/meridian.css`
-- Primitives — `Button`, `ButtonLink`, `Card`, `Eyebrow`, `SectionHeading`,
-  `SeverityBadge`, `Figure`, `PillTabs`, `ProvenanceNote`, `StateBlock`
-- Motion and theme hooks — `useReveal`, `useScrollProgress`, `useScrolledPast`,
-  `useMeridianTheme`, `usePrefersReducedMotion`
-- Hazard and severity artwork — `frontend/public/hazard-glyphs.svg`,
-  `HazardGlyph.tsx`
-- Surfaces — the front door hero (type scale, dual-primary CTAs, figures) and
-  the navbar (glass chrome)
+- Shared tokens, severity roles and both web themes —
+  `packages/design-system/src/meridian.ts`, `frontend/src/styles/meridian.css`
+- Web editorial primitives and front-door hierarchy; responsive header and
+  dark/light role handling.
+- Native theme mapping, shared type-role translation, three color modes,
+  increase-contrast support, native `Text` / `Button` / `Card` / `Chip`
+  primitives, safe-area-aware tab geometry, and the generated shared icon set.
+- Web table-to-card fallbacks and native alert/map/list patterns retain the
+  existing product routes and data states.
 
-**Not yet migrated** — the remaining console surfaces (`/live`, analytics,
-alerts table), the footer, auth, and the mobile shells. Each is a mechanical
-pass once a surface declares its track; the tokens and primitives are ready.
+**Still in progress**
+
+- The `.mrd-track-console` rules are defined but no current route applies the
+  track class. Most operational pages still combine Meridian aliases with
+  legacy NASA-HDS/Tailwind components; a screen-by-screen migration and density
+  regression pass remains open.
+- Web `MaterialIcon` is a frozen legacy set with existing importers. New code
+  uses the shared Lucide registry; retire legacy call sites gradually, without
+  adding another family.
+- Native layout and theme contracts need device checks at extreme Dynamic Type,
+  VoiceOver/TalkBack, Bengali script fallback, notched safe areas and Android
+  navigation modes. `apps/mobile` is a product app, not yet proof of a completed
+  native port of every web route.
 
 ---
 
@@ -466,14 +477,22 @@ import { HazardGlyph } from './components/meridian/HazardGlyph';
 
 ## 9 · React Native parity
 
-| Web | React Native | Note |
+The Expo app has its own native renderer, not a web CSS shim. Keep shared
+semantic intent and documented platform differences; do not expect CSS pixels,
+web layouts or native points to match numerically in every role.
+
+| Web / shared contract | React Native implementation | Note |
 |---|---|---|
-| `--mrd-tap-min: 44px` | `minHeight: 44, minWidth: 44` / `hitSlop` | 48 on Android |
-| `.mrd-btn-ink` | `<Button intent="ink">` on `Pressable` | keep the dual-primary rule |
-| `--mrd-font-text` | the platform UI face - nothing to preload | the Bengali face is the only one that ships |
-| `--mrd-font-bengali` | `NotoSansBengali-Regular` | line-height 1.65 floor |
-| `.mrd-glass` | `@react-native-community/blur` | chrome only, never behind data |
-| `useReveal` | `react-native-reanimated` + `IntersectionObserver` equivalent | fail open under reduce |
-| `.mrd-track-console` | a `track` prop on the surface root | not a per-component variant |
-| icon registry (`ICON_PATHS`) | `apps/mobile/src/components/Icon.tsx` | same glyph data, same 1.75 stroke, same 24px grid |
-| `CardStackTable` phone card | the list row itself | there is no `<table>` to port: the card *is* the native shape, which is why it is the phone branch |
+| `MERIDIAN_THEMES` semantic roles | `apps/mobile/src/theme/theme.ts` | Light/dark use shared surface, ink, label, separator and interactive roles; OLED is a native surface variant. |
+| `MERIDIAN_SEVERITY` + policy statuses | Native text, surface, solid-fill and on-fill roles | Text and fill are separate so map colors do not become low-contrast labels. |
+| 44px web / 44pt iOS / 48dp Android touch floors | `TOUCH_MIN = 48`; `Button` uses a flexible 48 minimum | Compact chips retain a surrounding hit area; distinguish visual bounds from effective target. |
+| `.mrd-btn-ink` | `<Button variant="primary">` | Native uses `Pressable`, ink fill and pill geometry; hazard uses a separate danger role. |
+| `MERIDIAN_TYPE_SCALE` | `TYPE_ROLES` in `nativeTokens.ts` | 17pt body; platform system fonts; no app-imposed Dynamic Type maximum. Large Text and Bold Text preferences apply to native text roles. |
+| Bengali web font | Native OS Bengali fallback today | The app does not bundle Noto Sans Bengali; verify shaping and line-height on both platforms before claiming type parity. |
+| `mrd-glass` | Opaque/tinted native surfaces | No blur layer over the map; blur would cost compositing performance and legibility on low-end devices. |
+| Web reduced-motion contract | Native animations | Respect both system Reduce Motion and the in-app preference before adding or changing motion; device verification remains open. |
+| Shared icon registry (`ICON_PATHS`) | `apps/mobile/src/components/Icon.tsx` | Same glyph data, stroke and 24-unit grid. Use the accessible control label, not a text glyph as an icon. |
+| `CardStackTable` phone card | Native list/card rows | Preserve all columns as labelled values; never hide information in horizontal-only scrolling. |
+| Web header / drawer | Native Today, Alerts, Map, Saved and More tabs | Five working destinations; tab layout includes device bottom insets. |
+
+The shared contract tests are supplemented by `apps/mobile/__tests__/nativeMeridianParity.test.tsx` for theme parity, status contrast, button touch floors and accessibility preference behavior.

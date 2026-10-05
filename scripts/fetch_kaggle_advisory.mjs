@@ -23,21 +23,31 @@
  *    so the workflow can skip the ingest and say which of the two happened.
  *  - **Retries belong here.** Kaggle's scheduler is not punctual to the minute; a 05:30 UTC
  *    cron can beat the notebook. `--wait-minutes` polls instead of failing.
+ *  - **Age is measured here, not downstream.** "Newer than the last ingest" is not the same as
+ *    "fresh enough to publish": on 2026-10-04 the public file was a 2026-09-29 publication, so
+ *    it *was* newer than the committed 2026-09-16 run and *was* already 119 h old. The fetch
+ *    said fresh, the ingest then rejected it as `STALE_DATA` — a correct red with the wrong
+ *    attribution, and the last step that could have said "the notebook has not run" said
+ *    nothing. `--max-age-hours` (default 36, the same gate `validate_advisory_csv.mjs` applies)
+ *    now decides staleness here, so a stale publication exits 2 and the workflow reports it as
+ *    the schedule miss it is. `--force` still overrides both.
  *
  * Exit codes:
- *   0  fetched, and the CSV is newer than what is committed → run the ingest
- *   2  fetched, but the CSV is identical or older → skip the ingest, warn (not an error)
+ *   0  fetched, newer than what is committed, and inside the age gate → run the ingest
+ *   2  fetched, but identical/older than the last ingest, or already past the age gate →
+ *      skip the ingest, warn (the scheduled run still fails loudly at the workflow level)
  *   1  nothing could be fetched, or the CSV is unusable → fail the job
  *
  * Usage:
  *   node scripts/fetch_kaggle_advisory.mjs --out /tmp/advisory-ingest [--wait-minutes 90]
- *                                          [--attempts 3] [--force] [--quiet]
+ *                                          [--attempts 3] [--max-age-hours 36] [--force] [--quiet]
  *
  * Environment:
  *   KAGGLE_USERNAME / KAGGLE_KEY   credentials (Basic auth on the API; the CLI reads kaggle.json)
  *   KAGGLE_DATASET                 default `myself-aas/hazardnet-weekly-forecasts`
  *   KAGGLE_KERNEL                  default `8-hazardnet-advisory` (legacy fallback)
  *   ADVISORY_CSV_NAME              default `hazardnet_advisories_latest.csv`
+ *   ADVISORY_MAX_AGE_HOURS         default 36 (flag wins)
  *   KAGGLE_API_BASE                default `https://www.kaggle.com` (point elsewhere to test)
  *
  * Flags mirror the env vars: `--dataset`, `--kernel`, `--api-base`, `--manifest`,
@@ -58,6 +68,12 @@ const DEFAULT_CSV_NAME = 'hazardnet_advisories_latest.csv';
 // `myself-aas/...` slug that had been inferred from the notebook namespace.
 const DEFAULT_DATASET = 'ashifahmedshuvo/hazardnet-weekly-forecasts';
 const DEFAULT_API_BASE = 'https://www.kaggle.com';
+/**
+ * The default age gate, in hours. Kept equal to `validate_advisory_csv.mjs`'s default on
+ * purpose: the two must agree, or the fetch reports "fresh" for a file the ingest will refuse.
+ * `__tests__/fetchKaggleAdvisory.test.js` reads the validator's default to keep them pinned.
+ */
+export const DEFAULT_MAX_AGE_HOURS = 36;
 
 export const EXIT = { OK: 0, FAILED: 1, UNCHANGED: 2 };
 
@@ -131,6 +147,19 @@ export function parseGeneratedAt(value) {
   const normalised = value.trim().replace(' ', 'T');
   const stamp = Date.parse(`${normalised}${/[zZ]|[+-]\d\d:?\d\d$/.test(normalised) ? '' : 'Z'}`);
   return Number.isFinite(stamp) ? new Date(stamp).toISOString() : null;
+}
+
+/**
+ * How old is the run the file carries, in hours? `null` when the CSV has no parseable
+ * `generated_at` — an unknown age must not be reported as either fresh or stale.
+ *
+ * Measured against the notebook's own clock (`generated_at`), not the download time: a file
+ * fetched today that was generated five days ago is five days old.
+ */
+export function publicationAge(generatedAt, now = Date.now()) {
+  const stamp = parseGeneratedAt(generatedAt);
+  if (!stamp) return null;
+  return (now - Date.parse(stamp)) / 3_600_000;
 }
 
 /**
@@ -296,6 +325,15 @@ async function main() {
   const key = process.env.KAGGLE_KEY || '';
   const waitMinutes = Number(args['wait-minutes'] || 0);
   const attempts = Number(args.attempts || 3);
+  const maxAgeHours = Number(
+    args['max-age-hours'] || process.env.ADVISORY_MAX_AGE_HOURS || DEFAULT_MAX_AGE_HOURS,
+  );
+  if (!Number.isFinite(maxAgeHours) || maxAgeHours <= 0) {
+    process.stderr.write(
+      `❌ --max-age-hours must be a positive number of hours (got ${args['max-age-hours'] ?? process.env.ADVISORY_MAX_AGE_HOURS}).\n`,
+    );
+    process.exit(EXIT.FAILED);
+  }
 
   mkdirSync(outDir, { recursive: true });
   const csvPath = join(outDir, fileName);
@@ -357,16 +395,29 @@ async function main() {
       break;
     }
     const fresh = args.force ? true : isNewerThan(state, manifest);
-    state.newer = fresh;
+    const ageHours = publicationAge(info.generatedAt);
+    // A publication can be newer than the last ingest and still be too old to publish. The
+    // ingest rejects it as STALE_DATA; deciding it here means the workflow can say "the
+    // notebook has not run" instead of skipping four downstream steps on an opaque error.
+    const stale = !args.force && ageHours !== null && ageHours > maxAgeHours;
+    const actionable = fresh && !stale;
+    state.newer = actionable;
+    state.stale = stale;
+    state.age_hours = ageHours === null ? null : Number(ageHours.toFixed(2));
+    state.max_age_hours = maxAgeHours;
     state.via = result.via;
-    log?.(`[fetch] round ${round}: ${info.rows} rows · generated_at ${info.generatedAt ?? 'unknown'} · sha256 ${sha256.slice(0, 12)}… · via ${result.via}`);
+    log?.(`[fetch] round ${round}: ${info.rows} rows · generated_at ${info.generatedAt ?? 'unknown'}`
+      + ` · age ${state.age_hours === null ? 'unknown' : `${state.age_hours} h`}`
+      + ` · sha256 ${sha256.slice(0, 12)}… · via ${result.via}`);
     writeFileSync(join(outDir, 'fetch-report.json'), JSON.stringify(state, null, 2));
 
-    if (fresh || !deadline || Date.now() >= deadline) {
+    if (actionable || !deadline || Date.now() >= deadline) {
       result = { ok: true, state };
       break;
     }
-    log?.(`[fetch] not newer than the committed run (${manifest?.generated_at ?? 'no manifest'}); waiting for the daily notebook…`);
+    log?.(stale
+      ? `[fetch] the published run is ${state.age_hours} h old (gate ${maxAgeHours} h); waiting for the daily notebook…`
+      : `[fetch] not newer than the committed run (${manifest?.generated_at ?? 'no manifest'}); waiting for the daily notebook…`);
     await sleep(60_000);
   }
 
@@ -377,12 +428,21 @@ async function main() {
   }
 
   if (!result.state.newer) {
-    process.stdout.write(`⏭️  Advisory CSV unchanged since ${manifest?.generated_at ?? 'the last ingest'} — skipping ingest.\n`);
-    process.stdout.write(`    If the Kaggle notebook is scheduled daily, check its last successful run.\n`);
+    if (result.state.stale) {
+      process.stdout.write(
+        `⏭️  Advisory CSV is past the ${maxAgeHours} h ingest gate: the published run is ${result.state.age_hours} h old (generated ${result.state.generatedAt}).\n`,
+      );
+      process.stdout.write(
+        '    The ingest would reject it as STALE_DATA; check the Kaggle notebook\'s last successful run.\n',
+      );
+    } else {
+      process.stdout.write(`⏭️  Advisory CSV unchanged since ${manifest?.generated_at ?? 'the last ingest'} — skipping ingest.\n`);
+      process.stdout.write('    If the Kaggle notebook is scheduled daily, check its last successful run.\n');
+    }
     process.exit(EXIT.UNCHANGED);
   }
 
-  process.stdout.write(`✅ Fetched ${result.state.rows} advisory rows (generated ${result.state.generatedAt}) via ${result.state.via}\n`);
+  process.stdout.write(`✅ Fetched ${result.state.rows} advisory rows (generated ${result.state.generatedAt}, ${result.state.age_hours} h old) via ${result.state.via}\n`);
   process.exit(EXIT.OK);
 }
 

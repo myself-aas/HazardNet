@@ -152,9 +152,8 @@ export const HazardsPage: React.FC = () => {
     return () => { mounted = false; };
   }, [reloadNonce]);
 
-  // `fetchEventsSummary` answers with a built-in default when neither the API nor the committed
-  // artifact responds; `source: 'fallback'` is this deployment saying "no archive is loaded", which
-  // is a state to show, not numbers to print (audit P2-3: every page owes an empty state).
+  // `source: 'fallback'` means neither the API nor the committed summary artifact answered. Keep
+  // the catalogue visible, but show the archive's empty state instead of claiming statistics.
   const archiveLoaded = summary !== null && summary.source !== 'fallback';
 
   const hazardsList: HazardCardData[] = HAZARDS_CATALOG.map(h => {

@@ -25,6 +25,8 @@ import { useSeverityVisual, formatAge } from '../../lib/severity';
 import { highestAlert, getExtrasFor } from '../../lib/mockAlerts';
 import { TodaySkeleton } from '../../design-system/LoadingSkeleton';
 import { Button } from '../../design-system/Button';
+import { Icon } from '../../components/Icon';
+import { useTheme } from '../../theme/ThemeProvider';
 import { SCREEN_H_PADDING } from '../../theme/nativeTokens';
 import { ListEmptyState } from '../../design-system/EmptyState';
 import { AlertRow } from '../../components/alerts/AlertRow';
@@ -34,10 +36,9 @@ import { useSavedPlaces } from '../../hooks/useSavedPlaces';
 import { divisionForPoint } from '../../lib/geo/divisions';
 import { hasSeenLocationEducation, markLocationEducationSeen } from '../../components/map/LocationPermissionEducationSheet';
 
-const ARROW = '\u2192';
-
 export function TodayScreen() {
   const nav = useNavigation<any>();
+  const { theme } = useTheme();
   const { data: alerts, isLoading, isError, refetch, isRefetching, dataUpdatedAt } = useAlerts();
   const setBanner = useAppStateStore((s) => s.setBanner);
   const { permission, coords, locating, requestPermission, getCurrentLocation, openSettings } = useLocation();
@@ -126,8 +127,8 @@ export function TodayScreen() {
     : 'secondary';
 
   const ctaLabel = top && (top.level === 'SEVERE' || top.level === 'WARNING')
-    ? 'See instructions ' + ARROW
-    : top ? ('View alert ' + ARROW) : '';
+    ? 'See instructions'
+    : top ? 'View alert' : '';
 
   const topMeta = top
     ? Math.round(top.severity_score * 100) + '% severity · ' + top.district_name
@@ -151,8 +152,13 @@ export function TodayScreen() {
               <HStack space={8} align="center">
                 <Title1>{activeDivision}</Title1>
                 <Chip
-                  label={locDotState === 'locating' ? 'Locating…' : locDotState === 'showing' ? '📍 You' : locDotState === 'denied' ? '⍉ Denied' : 'National'}
-                  severity={locDotState === 'showing' ? 'info' : locDotState === 'denied' ? 'severe' : null}
+                  label={locDotState === 'locating' ? 'Locating…' : locDotState === 'showing' ? 'You' : locDotState === 'denied' ? 'Location denied' : 'National'}
+                  severity={locDotState === 'showing' ? 'info' : locDotState === 'denied' ? 'warning' : null}
+                  leadingIcon={locDotState === 'showing'
+                    ? <Icon name="MapPin" size="meta" color={theme.colors.interactive} />
+                    : locDotState === 'denied'
+                      ? <Icon name="ShieldAlert" size="meta" color={theme.colors.severe} />
+                      : undefined}
                 />
               </HStack>
               <Button
@@ -172,7 +178,7 @@ export function TodayScreen() {
                 <SeverityBadge level={(top && top.level) || 'NO_ALERT'} />
                 <Metadata color="textMuted">{topMeta}</Metadata>
               </HStack>
-              <DisplayLarge color={sev.color} style={{ lineHeight: 42 }}>{heroText}</DisplayLarge>
+              <DisplayLarge color={sev.color}>{heroText}</DisplayLarge>
               <Body>{heroBody}</Body>
 
               <VStack space={8}>
@@ -181,6 +187,15 @@ export function TodayScreen() {
                     variant={ctaVariant as any}
                     size="lg"
                     label={ctaLabel}
+                    trailingIcon={<Icon
+                      name="ArrowRight"
+                      size="meta"
+                      color={ctaVariant === 'danger'
+                        ? theme.colors.dangerActionText
+                        : ctaVariant === 'primary'
+                          ? theme.colors.primaryActionText
+                          : theme.colors.textPrimary}
+                    />}
                     onPress={() => openAlert(top.id)}
                     accessibilityHint="Opens details for the highest-severity alert"
                   />
@@ -204,7 +219,13 @@ export function TodayScreen() {
                 ))}
               </VStack>
               {alerts.length > 3 ? (
-                <Button variant="ghost" size="sm" label={'See all ' + alerts.length + ' alerts ' + ARROW} onPress={() => nav.navigate('Alerts')} />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  label={'See all ' + alerts.length + ' alerts'}
+                  trailingIcon={<Icon name="ArrowRight" size="meta" color={theme.colors.interactive} />}
+                  onPress={() => nav.navigate('Alerts')}
+                />
               ) : null}
             </VStack>
           ) : (
@@ -228,7 +249,8 @@ export function TodayScreen() {
                 {EMERGENCY_CONTACTS.slice(0, 1).map((c) => (
                   <Chip
                     key={c.number}
-                    label={'\u260E ' + c.number + ' (' + c.label + ')'}
+                    label={`${c.number} (${c.label})`}
+                    leadingIcon={<Icon name="PhoneCall" size="meta" color={theme.colors.severe} />}
                     severity="severe"
                     onPress={() => { safeOpenUrl('tel:' + c.number, 'emergency').catch(() => {}); }}
                   />

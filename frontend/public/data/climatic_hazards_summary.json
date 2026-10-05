@@ -1,0 +1,616 @@
+{
+  "totalEvents": 3062,
+  "yearRange": [
+    2000,
+    2026
+  ],
+  "totalDistricts": 64,
+  "totalDivisions": 8,
+  "totalHazards": 9,
+  "topDistricts": [
+    {
+      "district": "Bandarban",
+      "count": 52,
+      "division": "Chittagong"
+    },
+    {
+      "district": "Bhola",
+      "count": 51,
+      "division": "Barisal"
+    },
+    {
+      "district": "Cox's Bazar",
+      "count": 51,
+      "division": "Chittagong"
+    },
+    {
+      "district": "Lalmonirhat",
+      "count": 51,
+      "division": "Rangpur"
+    },
+    {
+      "district": "Gaibandha",
+      "count": 50,
+      "division": "Rangpur"
+    },
+    {
+      "district": "Jamalpur",
+      "count": 50,
+      "division": "Mymensingh"
+    },
+    {
+      "district": "Kurigram",
+      "count": 50,
+      "division": "Rangpur"
+    },
+    {
+      "district": "Sirajganj",
+      "count": 50,
+      "division": "Rajshahi"
+    },
+    {
+      "district": "Sunamganj",
+      "count": 50,
+      "division": "Sylhet"
+    },
+    {
+      "district": "Sylhet",
+      "count": 50,
+      "division": "Sylhet"
+    },
+    {
+      "district": "Barguna",
+      "count": 49,
+      "division": "Barisal"
+    },
+    {
+      "district": "Bogra",
+      "count": 49,
+      "division": "Rajshahi"
+    },
+    {
+      "district": "Feni",
+      "count": 49,
+      "division": "Chittagong"
+    },
+    {
+      "district": "Netrokona",
+      "count": 49,
+      "division": "Mymensingh"
+    },
+    {
+      "district": "Nilphamari",
+      "count": 49,
+      "division": "Rangpur"
+    },
+    {
+      "district": "Noakhali",
+      "count": 49,
+      "division": "Chittagong"
+    },
+    {
+      "district": "Patuakhali",
+      "count": 49,
+      "division": "Barisal"
+    },
+    {
+      "district": "Tangail",
+      "count": 49,
+      "division": "Dhaka"
+    },
+    {
+      "district": "Bagerhat",
+      "count": 48,
+      "division": "Khulna"
+    },
+    {
+      "district": "Barishal",
+      "count": 48,
+      "division": "Barisal"
+    },
+    {
+      "district": "Brahmanbaria",
+      "count": 48,
+      "division": "Chittagong"
+    },
+    {
+      "district": "Chattogram",
+      "count": 48,
+      "division": "Chittagong"
+    },
+    {
+      "district": "Faridpur",
+      "count": 48,
+      "division": "Dhaka"
+    },
+    {
+      "district": "Habiganj",
+      "count": 48,
+      "division": "Sylhet"
+    },
+    {
+      "district": "Khulna",
+      "count": 48,
+      "division": "Khulna"
+    },
+    {
+      "district": "Naogaon",
+      "count": 48,
+      "division": "Rajshahi"
+    },
+    {
+      "district": "Pirojpur",
+      "count": 48,
+      "division": "Barisal"
+    },
+    {
+      "district": "Rajshahi",
+      "count": 48,
+      "division": "Rajshahi"
+    },
+    {
+      "district": "Rangamati",
+      "count": 48,
+      "division": "Chittagong"
+    },
+    {
+      "district": "Rangpur",
+      "count": 48,
+      "division": "Rangpur"
+    },
+    {
+      "district": "Chuadanga",
+      "count": 47,
+      "division": "Khulna"
+    },
+    {
+      "district": "Cumilla",
+      "count": 47,
+      "division": "Chittagong"
+    },
+    {
+      "district": "Dhaka",
+      "count": 47,
+      "division": "Dhaka"
+    },
+    {
+      "district": "Dinajpur",
+      "count": 47,
+      "division": "Rangpur"
+    },
+    {
+      "district": "Gazipur",
+      "count": 47,
+      "division": "Dhaka"
+    },
+    {
+      "district": "Gopalganj",
+      "count": 47,
+      "division": "Dhaka"
+    },
+    {
+      "district": "Jhenaidah",
+      "count": 47,
+      "division": "Khulna"
+    },
+    {
+      "district": "Joypurhat",
+      "count": 47,
+      "division": "Rajshahi"
+    },
+    {
+      "district": "Khagrachhari",
+      "count": 47,
+      "division": "Chittagong"
+    },
+    {
+      "district": "Kushtia",
+      "count": 47,
+      "division": "Khulna"
+    },
+    {
+      "district": "Lakshmipur",
+      "count": 47,
+      "division": "Chittagong"
+    },
+    {
+      "district": "Madaripur",
+      "count": 47,
+      "division": "Dhaka"
+    },
+    {
+      "district": "Magura",
+      "count": 47,
+      "division": "Khulna"
+    },
+    {
+      "district": "Manikganj",
+      "count": 47,
+      "division": "Dhaka"
+    },
+    {
+      "district": "Meherpur",
+      "count": 47,
+      "division": "Khulna"
+    },
+    {
+      "district": "Moulvibazar",
+      "count": 47,
+      "division": "Sylhet"
+    },
+    {
+      "district": "Mymensingh",
+      "count": 47,
+      "division": "Mymensingh"
+    },
+    {
+      "district": "Natore",
+      "count": 47,
+      "division": "Rajshahi"
+    },
+    {
+      "district": "Pabna",
+      "count": 47,
+      "division": "Rajshahi"
+    },
+    {
+      "district": "Panchagarh",
+      "count": 47,
+      "division": "Rangpur"
+    },
+    {
+      "district": "Rajbari",
+      "count": 47,
+      "division": "Dhaka"
+    },
+    {
+      "district": "Satkhira",
+      "count": 47,
+      "division": "Khulna"
+    },
+    {
+      "district": "Shariatpur",
+      "count": 47,
+      "division": "Dhaka"
+    },
+    {
+      "district": "Sherpur",
+      "count": 47,
+      "division": "Mymensingh"
+    },
+    {
+      "district": "Thakurgaon",
+      "count": 47,
+      "division": "Rangpur"
+    },
+    {
+      "district": "Chandpur",
+      "count": 46,
+      "division": "Chittagong"
+    },
+    {
+      "district": "Chapainawabganj",
+      "count": 46,
+      "division": "Rajshahi"
+    },
+    {
+      "district": "Jashore",
+      "count": 46,
+      "division": "Khulna"
+    },
+    {
+      "district": "Jhalokati",
+      "count": 46,
+      "division": "Barisal"
+    },
+    {
+      "district": "Kishoreganj",
+      "count": 46,
+      "division": "Dhaka"
+    },
+    {
+      "district": "Munshiganj",
+      "count": 46,
+      "division": "Dhaka"
+    },
+    {
+      "district": "Narail",
+      "count": 46,
+      "division": "Khulna"
+    },
+    {
+      "district": "Narayanganj",
+      "count": 46,
+      "division": "Dhaka"
+    },
+    {
+      "district": "Narsingdi",
+      "count": 46,
+      "division": "Dhaka"
+    }
+  ],
+  "hazardBreakdown": [
+    {
+      "hazard": "Flood",
+      "count": 890,
+      "percentage": 29.1
+    },
+    {
+      "hazard": "Tropical Cyclone",
+      "count": 709,
+      "percentage": 23.2
+    },
+    {
+      "hazard": "Severe Local Storm",
+      "count": 514,
+      "percentage": 16.8
+    },
+    {
+      "hazard": "Flash Flood",
+      "count": 334,
+      "percentage": 10.9
+    },
+    {
+      "hazard": "Cold Wave",
+      "count": 322,
+      "percentage": 10.5
+    },
+    {
+      "hazard": "Earthquake",
+      "count": 128,
+      "percentage": 4.2
+    },
+    {
+      "hazard": "Fire",
+      "count": 65,
+      "percentage": 2.1
+    },
+    {
+      "hazard": "Drought",
+      "count": 64,
+      "percentage": 2.1
+    },
+    {
+      "hazard": "Heat Wave",
+      "count": 36,
+      "percentage": 1.2
+    }
+  ],
+  "divisionBreakdown": [
+    {
+      "division": "Barisal",
+      "count": 291,
+      "percentage": 9.5
+    },
+    {
+      "division": "Chittagong",
+      "count": 532,
+      "percentage": 17.4
+    },
+    {
+      "division": "Dhaka",
+      "count": 610,
+      "percentage": 19.9
+    },
+    {
+      "division": "Khulna",
+      "count": 470,
+      "percentage": 15.3
+    },
+    {
+      "division": "Mymensingh",
+      "count": 193,
+      "percentage": 6.3
+    },
+    {
+      "division": "Rajshahi",
+      "count": 382,
+      "percentage": 12.5
+    },
+    {
+      "division": "Rangpur",
+      "count": 389,
+      "percentage": 12.7
+    },
+    {
+      "division": "Sylhet",
+      "count": 195,
+      "percentage": 6.4
+    }
+  ],
+  "yearlyTrend": [
+    {
+      "year": 2000,
+      "count": 256
+    },
+    {
+      "year": 2001,
+      "count": 0
+    },
+    {
+      "year": 2002,
+      "count": 257
+    },
+    {
+      "year": 2003,
+      "count": 192
+    },
+    {
+      "year": 2004,
+      "count": 128
+    },
+    {
+      "year": 2005,
+      "count": 192
+    },
+    {
+      "year": 2006,
+      "count": 256
+    },
+    {
+      "year": 2007,
+      "count": 384
+    },
+    {
+      "year": 2008,
+      "count": 128
+    },
+    {
+      "year": 2009,
+      "count": 261
+    },
+    {
+      "year": 2010,
+      "count": 73
+    },
+    {
+      "year": 2011,
+      "count": 129
+    },
+    {
+      "year": 2012,
+      "count": 3
+    },
+    {
+      "year": 2013,
+      "count": 2
+    },
+    {
+      "year": 2014,
+      "count": 12
+    },
+    {
+      "year": 2015,
+      "count": 67
+    },
+    {
+      "year": 2016,
+      "count": 74
+    },
+    {
+      "year": 2017,
+      "count": 128
+    },
+    {
+      "year": 2018,
+      "count": 64
+    },
+    {
+      "year": 2019,
+      "count": 12
+    },
+    {
+      "year": 2020,
+      "count": 64
+    },
+    {
+      "year": 2021,
+      "count": 65
+    },
+    {
+      "year": 2022,
+      "count": 64
+    },
+    {
+      "year": 2023,
+      "count": 69
+    },
+    {
+      "year": 2024,
+      "count": 164
+    },
+    {
+      "year": 2025,
+      "count": 15
+    },
+    {
+      "year": 2026,
+      "count": 3
+    }
+  ],
+  "monthlyDistribution": [
+    {
+      "month": 1,
+      "monthName": "January",
+      "count": 320
+    },
+    {
+      "month": 2,
+      "monthName": "February",
+      "count": 0
+    },
+    {
+      "month": 3,
+      "monthName": "March",
+      "count": 194
+    },
+    {
+      "month": 4,
+      "monthName": "April",
+      "count": 170
+    },
+    {
+      "month": 5,
+      "monthName": "May",
+      "count": 720
+    },
+    {
+      "month": 6,
+      "monthName": "June",
+      "count": 407
+    },
+    {
+      "month": 7,
+      "monthName": "July",
+      "count": 462
+    },
+    {
+      "month": 8,
+      "monthName": "August",
+      "count": 209
+    },
+    {
+      "month": 9,
+      "monthName": "September",
+      "count": 192
+    },
+    {
+      "month": 10,
+      "monthName": "October",
+      "count": 256
+    },
+    {
+      "month": 11,
+      "monthName": "November",
+      "count": 130
+    },
+    {
+      "month": 12,
+      "monthName": "December",
+      "count": 2
+    }
+  ],
+  "activeForecastsCount": 127,
+  "forecastDistrictsCount": 64,
+  "byDivision": {
+    "Barisal": 291,
+    "Chittagong": 532,
+    "Dhaka": 610,
+    "Khulna": 470,
+    "Mymensingh": 193,
+    "Rajshahi": 382,
+    "Rangpur": 389,
+    "Sylhet": 195
+  },
+  "byHazard": {
+    "Flood": 890,
+    "Tropical Cyclone": 709,
+    "Severe Local Storm": 514,
+    "Flash Flood": 334,
+    "Cold Wave": 322,
+    "Earthquake": 128,
+    "Fire": 65,
+    "Drought": 64,
+    "Heat Wave": 36
+  }
+}

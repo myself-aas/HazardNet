@@ -1,45 +1,11 @@
-// Service Worker for offline mode, Web Push Notifications, and GIS map tiles.
+// Service Worker for offline mode and Web Push Notifications.
+// Unshipped reference copy (the browser loads public/serviceWorker.js). Map
+// tiles are deliberately not intercepted anywhere: persisting OpenStreetMap
+// tiles violates the volunteer-run tile servers' usage policy
+// (osm.wiki/Tile_usage_policy).
 
 // Invalidate old app bundles containing the withdrawn research presentation.
 const CACHE_NAME = 'hazardnet-offline-v3';
-const TILE_CACHE_NAME = 'hazardnet-tiles-v1';
-const MAX_TILE_CACHE_ITEMS = 1200;
-
-// Helper to check if request is a map tile URL
-function isMapTileRequest(url: URL): boolean {
-  const href = url.href.toLowerCase();
-  const path = url.pathname.toLowerCase();
-  return (
-    href.includes('arcgisonline.com') ||
-    href.includes('maptiles.arcgis.com') ||
-    href.includes('cartocdn.com') ||
-    href.includes('tile.openstreetmap.org') ||
-    href.includes('tile.opentopomap.org') ||
-    href.includes('stamen-tiles') ||
-    href.includes('/mapserver/tile/') ||
-    href.includes('/wmts/') ||
-    href.includes('/dark_all/') ||
-    href.includes('/light_all/') ||
-    href.includes('/rastertiles/') ||
-    Boolean(path.match(/\/\d+\/\d+\/\d+/))
-  );
-}
-
-// Trim tile cache to keep storage usage bounded
-async function trimTileCache() {
-  try {
-    const cache = await caches.open(TILE_CACHE_NAME);
-    const keys = await cache.keys();
-    if (keys.length > MAX_TILE_CACHE_ITEMS) {
-      const deleteCount = keys.length - MAX_TILE_CACHE_ITEMS;
-      for (let i = 0; i < deleteCount; i++) {
-        await cache.delete(keys[i]);
-      }
-    }
-  } catch (e) {
-    // Ignore cache trim errors
-  }
-}
 
 self.addEventListener('install', () => {
   (self as any).skipWaiting();
@@ -49,7 +15,7 @@ self.addEventListener('activate', (event: any) => {
   event.waitUntil(
     caches.keys().then((keys) => Promise.all(
       keys
-        .filter((key) => key !== CACHE_NAME && key !== TILE_CACHE_NAME)
+        .filter((key) => key !== CACHE_NAME)
         .map((key) => caches.delete(key))
     )).then(() => (self as any).clients.claim())
   );
@@ -157,91 +123,16 @@ self.addEventListener('sync', (event: any) => {
   }
 });
 
-// Helper to query IndexedDB tile store from ServiceWorker
-async function getTileFromIndexedDB(tileUrl: string): Promise<Blob | null> {
-  if (typeof indexedDB === 'undefined') return null;
-  return new Promise((resolve) => {
-    try {
-      const req = indexedDB.open('hazardnet_tile_cache_db', 1);
-      req.onsuccess = (e: any) => {
-        const db = e.target.result;
-        if (!db.objectStoreNames.contains('tiles')) {
-          resolve(null);
-          return;
-        }
-        const tx = db.transaction('tiles', 'readonly');
-        const store = tx.objectStore('tiles');
-        const cursorReq = store.openCursor();
-        cursorReq.onsuccess = (ev: any) => {
-          const cursor = ev.target.result;
-          if (cursor) {
-            if (cursor.value && cursor.value.url === tileUrl && cursor.value.blob) {
-              resolve(cursor.value.blob);
-              return;
-            }
-            cursor.continue();
-          } else {
-            resolve(null);
-          }
-        };
-        cursorReq.onerror = () => resolve(null);
-      };
-      req.onerror = () => resolve(null);
-    } catch {
-      resolve(null);
-    }
-  });
-}
-
 self.addEventListener('fetch', (event: any) => {
   const request = event.request;
   const url = new URL(request.url);
 
-  // Handle map tile requests with Cache-First & IndexedDB emergency fallback strategy
-  if (isMapTileRequest(url)) {
-    event.respondWith(
-      caches.open(TILE_CACHE_NAME).then(async (cache) => {
-        const cachedResponse = await cache.match(request);
-
-        // Fetch tile from network to update cache in background when online
-        const networkFetch = fetch(request)
-          .then((networkResponse) => {
-            if (networkResponse && (networkResponse.status === 200 || networkResponse.type === 'opaque')) {
-              cache.put(request, networkResponse.clone());
-              trimTileCache();
-            }
-            return networkResponse;
-          })
-          .catch(() => null);
-
-        // Return cached tile instantly if present (Cache-First)
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-
-        // Check IndexedDB tile store if Cache API misses
-        const idbBlob = await getTileFromIndexedDB(request.url);
-        if (idbBlob) {
-          const idbResponse = new Response(idbBlob, {
-            headers: {
-              'Content-Type': idbBlob.type || 'image/png',
-              'X-Source': 'HazardNet-IndexedDB-Emergency-Cache',
-            },
-          });
-          cache.put(request, idbResponse.clone());
-          return idbResponse;
-        }
-
-        // Wait for network response if not cached
-        const networkResponse = await networkFetch;
-        if (networkResponse) {
-          return networkResponse;
-        }
-
-        // Fallback for offline & uncached tile
-        return new Response('', { status: 504, statusText: 'Tile Unavailable Offline' });
-      })
-    );
+  // Cross-origin map tiles: never intercept, never cache (osm.wiki/Tile_usage_policy).
+  const tilePathLike = /\/\d+\/\d+\/\d+/.test(url.pathname);
+  if (
+    url.origin !== (self as any).location.origin &&
+    (url.hostname.includes('openstreetmap') || tilePathLike)
+  ) {
     return;
   }
 

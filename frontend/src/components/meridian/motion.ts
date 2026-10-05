@@ -159,12 +159,37 @@ export function useScrolledPast(offset = 24): boolean {
    ──────────────────────────────────────────────────────────────────────────── */
 
 export type MeridianThemeName = 'light' | 'dark' | 'system';
+export type ResolvedTheme = 'light' | 'dark';
 
 const STORAGE_KEY = 'hazardnet.theme';
 
 function systemTheme(): 'light' | 'dark' {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return 'light';
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+/**
+ * The theme actually in effect on `<html>` right now — what the CSS is painting.
+ *
+ * Read from the DOM rather than from React state so it works for anything rendered outside the
+ * hook's tree (the prerendered HTML, a portal, a component that never sees `useMeridianTheme`),
+ * and so a test can put the document in dark mode and assert what a component does with it.
+ * `useResolvedTheme` below is the live version: it also hears about a change of theme, including
+ * the OS flipping while the document is open.
+ */
+export function readAppliedTheme(): ResolvedTheme {
+  if (typeof document === 'undefined') return 'light';
+  const root = document.documentElement;
+  const attribute = root.getAttribute('data-mrd-theme');
+  if (attribute === 'dark' || attribute === 'light') return attribute;
+  return root.classList.contains('dark') ? 'dark' : 'light';
+}
+
+/** Subscribers to the resolved theme, so one hook instance can tell every other one. */
+const themeListeners = new Set<(theme: ResolvedTheme) => void>();
+
+function announceTheme(theme: ResolvedTheme) {
+  for (const listener of themeListeners) listener(theme);
 }
 
 /**
@@ -200,6 +225,9 @@ export function useMeridianTheme() {
       root.setAttribute('data-mrd-theme', resolvedTheme);
       root.classList.toggle('dark', resolvedTheme === 'dark');
       root.style.colorScheme = resolvedTheme;
+      // Everything that renders theme-dependent artwork (the brand lockup is the one today)
+      // subscribes here rather than re-reading the attribute on every render.
+      announceTheme(resolvedTheme);
     };
 
     apply(theme);
@@ -224,4 +252,27 @@ export function useMeridianTheme() {
 
   const resolved: 'light' | 'dark' = theme === 'system' ? systemTheme() : theme;
   return { theme, setTheme: select, resolved } as const;
+}
+
+/**
+ * The theme in effect, as React state: `<HazardNetBrand variant="auto">` and anything else that
+ * ships different *artwork* per theme reads this, because CSS can re-point a colour but it
+ * cannot repaint an `<img src>`.
+ *
+ * Rendered before the theme is applied (prerendered HTML, first paint) it answers `light`, the
+ * same default the document has — so nothing flashes a white lockup onto a light page.
+ */
+export function useResolvedTheme(): ResolvedTheme {
+  const [resolved, setResolved] = useState<ResolvedTheme>(readAppliedTheme);
+
+  useEffect(() => {
+    setResolved(readAppliedTheme());
+    const listener = (theme: ResolvedTheme) => setResolved(theme);
+    themeListeners.add(listener);
+    return () => {
+      themeListeners.delete(listener);
+    };
+  }, []);
+
+  return resolved;
 }

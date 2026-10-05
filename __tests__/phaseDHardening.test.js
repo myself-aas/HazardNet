@@ -66,11 +66,15 @@ describe('TASK-012: Accessibility + Performance Pass (TRD §7.5, §9.1, §13)', 
   test('AlertLevelBadge defines WCAG 2.2 AA compliant contrast colors and role="status"', () => {
     const badgeCode = fs.readFileSync(path.resolve(process.cwd(), 'frontend', 'src', 'components', 'alerts', 'AlertLevelBadge.tsx'), 'utf8');
     assert.ok(badgeCode.includes('role="status"'), 'AlertLevelBadge must render role="status"');
-    // High-contrast tokens
-    assert.ok(badgeCode.includes('#15803D') || badgeCode.includes('text-[#15803D]'), 'NORMAL tier uses accessible dark green');
-    assert.ok(badgeCode.includes('#854D0E') || badgeCode.includes('text-[#854D0E]'), 'WATCH tier uses accessible dark yellow');
-    assert.ok(badgeCode.includes('#9A3412') || badgeCode.includes('text-[#9A3412]'), 'WARNING tier uses accessible dark amber');
-    assert.ok(badgeCode.includes('#991B1B') || badgeCode.includes('text-[#991B1B]'), 'SEVERE tier uses accessible dark crimson');
+    // High-contrast tokens. The pills name the ramp by ROLE (50 surface / 300
+    // border / 700 ink) so index.css and styles/dark.css resolve each tier to an
+    // AA pair in BOTH themes — the earlier hand-picked hex + dark: twins read
+    // Tailwind's stock palette and collapsed to tone-on-tone in dark mode
+    // (e.g. `rose-950` resolved to the bright crimson tint as a ground).
+    assert.ok(badgeCode.includes('text-emerald-700'), 'NORMAL tier uses the role ink (emerald-700, AA on its 50 surface in both themes)');
+    assert.ok(badgeCode.includes('text-yellow-700'), 'WATCH tier uses the role ink (yellow-700, AA on its 50 surface in both themes)');
+    assert.ok(badgeCode.includes('text-amber-700'), 'WARNING tier uses the role ink (amber-700, AA on its 50 surface in both themes)');
+    assert.ok(badgeCode.includes('text-rose-700'), 'SEVERE tier uses the role ink (rose-700, AA on its 50 surface in both themes)');
   });
 
   test('DistrictDetailPanel includes accessible dialog/region and ARIA labeling', () => {

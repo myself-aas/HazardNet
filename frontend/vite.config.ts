@@ -155,6 +155,16 @@ export default defineConfig(({ mode }) => {
       }
     }
   },
+  /*
+   * `vite preview` serves the built app for the E2E suite and for anyone reviewing a
+   * production bundle, but it applies the same host allow-list as the dev server: without
+   * this it answers 403 "Blocked request. This host is not allowed" to a sandbox preview
+   * URL, i.e. the reviewer gets a blank page while `curl 127.0.0.1:3000` looks fine.
+   * Same list as `server.allowedHosts` above, for the same reason.
+   */
+  preview: {
+    allowedHosts: ['.e2b.app'],
+  },
   build: {
     chunkSizeWarningLimit: 1000, // increase limit (KB) if needed
     rollupOptions: {

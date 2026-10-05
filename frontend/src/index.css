@@ -3,8 +3,15 @@
    every var(--hds-*) consumer resolves. Source and rules; data/design/nasa-hds/PROVENANCE.md */
 @import "./styles/nasa-hds.css";
 @import "./styles/hero-media.css";
-@import "@fontsource/noto-sans-bengali/400.css";
-@import "@fontsource/noto-sans-bengali/700.css";
+/* One Bengali-only regular WOFF2 face; platform fonts render Latin, and browsers synthesize bold.
+   Omitting the legacy WOFF fallback avoids precaching a second, larger copy of the same glyphs. */
+@font-face {
+  font-family: 'Noto Sans Bengali';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('@fontsource/noto-sans-bengali/files/noto-sans-bengali-bengali-400-normal.woff2') format('woff2');
+}
 
 @import "tailwindcss";
 @import "./styles/brand.css" layer(components);
@@ -74,13 +81,10 @@ html, body {
   border-color: var(--hn-hud-border);
   color: var(--hds-color-carbon-10);
 }
-/* Edge-first typography fallback.
- *
- * The checked-in artifact is intentionally empty until the font subsetting job has
- * produced valid WOFF2 files below the 50 KB budget. Keeping the declarations
- * system-local in the meantime is safer than shipping an unsubsetted font or
- * making a runtime CDN request. The stacks are metric-aware and render text
- * immediately while optional local faces are unavailable.
+/* Edge-first typography contract: Latin UI stays on platform system faces. Bengali localization
+ * loads one bundled Bengali-script WOFF2 weight (regular); bold is synthesized. That keeps the
+ * non-system face useful for the target script without shipping unused Latin/extended subsets,
+ * duplicate weights, or a runtime CDN request. `npm run check:fonts` measures this local payload.
  */
 /* ==========================================================================
    HAZARDNET DESIGN SYSTEM — Token Architecture (three layers)
@@ -346,7 +350,6 @@ html, body {
   --panel-blur: var(--hn-glass-blur);
   --panel-shadow: var(--hn-shadow-card);
   --hero-glow-blur-primary: 90px;   /* tokenized hero orbital glow — was blur-[90px] arbitrary */
-  --hero-glow-blur-secondary: 100px;/* tokenized secondary atmospheric glow — was blur-[100px] arbitrary */
   --hero-glass-blur: 8px;          /* hero glass legibility blur — maps to Tailwind backdrop-blur-md; centralises hero blur surface */
   --control-min-size: 44px; /* minimum touch target (iOS HIG / WCAG 2.5.8) */
   --navbar-height: calc(3.5rem + env(safe-area-inset-top, 0px));
@@ -629,16 +632,6 @@ html {
 .map-tile-high-contrast .leaflet-tile {
   filter: brightness(1.12) contrast(1.28) saturate(1.35) !important;
   image-rendering: -webkit-optimize-contrast;
-}
-
-/* Keep decorative telemetry out of the mobile reading flow. It is intentionally
-   hidden below 640px so the editorial eyebrow and language controls never compete
-   with the hero copy or sit beneath the sticky header. */
-@media (max-width: 639px) {
-  [aria-label="Telemetry HUD container"],
-  [data-interactive-name="Telemetry HUD container"] {
-    display: none !important;
-  }
 }
 
 @keyframes radarPing {

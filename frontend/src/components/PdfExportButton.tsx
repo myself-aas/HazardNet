@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileDown, Printer, Loader2, ChevronDown, Eye, Sliders } from 'lucide-react';
+import { FileDown, FileText, Printer, Loader2, ChevronDown, Eye, Sliders } from 'lucide-react';
 import { exportElementToPdf, PdfFilenameContext, formatFilenameWithPlaceholders } from '../utils/pdfExport';
 import { PrintPreviewModal } from './PrintPreviewModal';
 import { PdfExportConfigModal } from './PdfExportConfigModal';
@@ -93,7 +93,7 @@ export const PdfExportButton: React.FC<PdfExportButtonProps> = ({
           toast.success(`Official PDF exported as "${evaluated}"!`, {
             id: toastId,
             duration: 4000,
-            icon: '📄',
+            icon: <FileText className="h-4 w-4" aria-hidden="true" />,
           });
         },
         onError: (err) => {

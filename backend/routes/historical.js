@@ -38,6 +38,9 @@ function loadHistoricalDatasets() {
     distribution: readJson('hazard-distribution.json', []),
     masterEvents: readJson('events-master.json', []),
     catalogIndex: readJson('hazard-catalog-index.json', []),
+    nationalSummary: readJson('national-summary.json', { metrics: [] }),
+    correlations: readJson('correlations.json', { variables: [], matrix: [] }),
+    geeValidation: readJson('gee-validation.json', null),
   };
 
   return cachedHistoricalData;
@@ -64,6 +67,34 @@ router.get('/summary', (req, res) => {
     temporal_range: '2000-2026',
     data_source: 'HazardNet_BGD_climatic_hazards',
   });
+});
+
+/**
+ * GET /api/v1/historical/national
+ * The national baseline headline stats (hazardnet_general_summary_stats.csv).
+ */
+router.get('/national', (req, res) => {
+  const data = loadHistoricalDatasets();
+  res.json({ ok: true, metrics: data.nationalSummary.metrics ?? [] });
+});
+
+/**
+ * GET /api/v1/historical/correlations
+ * Pearson matrix over severity/affected/lat/lon (hazardnet_statistical_correlations.csv).
+ */
+router.get('/correlations', (req, res) => {
+  const data = loadHistoricalDatasets();
+  res.json({ ok: true, variables: data.correlations.variables ?? [], matrix: data.correlations.matrix ?? [] });
+});
+
+/**
+ * GET /api/v1/historical/gee-validation
+ * Cross-check of the GEE hand-off export against the clean archive.
+ */
+router.get('/gee-validation', (req, res) => {
+  const data = loadHistoricalDatasets();
+  if (!data.geeValidation) return res.status(404).json({ ok: false, error: 'gee-validation artifact not built' });
+  res.json({ ok: true, ...data.geeValidation });
 });
 
 /**

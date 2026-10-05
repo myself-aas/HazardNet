@@ -24,6 +24,38 @@ import { FrontDoor } from '../FrontDoor';
 import siteRoutes from '../../content/site-routes.json';
 import { resetLanguageForTests } from '../../lib/i18n';
 
+/**
+ * The blog lives in Firestore; the front door reads it through the same module the blog page
+ * uses. The mock stands in for the store the way Blogs.dedicatedPages.test.tsx does, with one
+ * published article so the new "Newest from the blog" section has something to render.
+ */
+jest.mock('../../lib/blogArticles', () => ({
+  listPublishedArticles: async () => ({
+    data: [
+      {
+        id: 'post-1',
+        slug: 'monsoon-outlook-test',
+        title: 'Monsoon outlook test post',
+        excerpt: 'An excerpt used only by the front door test.',
+        contentHtml: '<p>Body copy.</p>',
+        coverImageUrl: null,
+        category: 'Field notes',
+        tags: [],
+        status: 'published',
+        authorId: null,
+        authorEmail: 'desk@hazardnet.live',
+        authorName: 'HazardNet desk',
+        createdAt: '2026-10-01T00:00:00.000Z',
+        updatedAt: '2026-10-01T00:00:00.000Z',
+        publishedAt: '2026-10-02T00:00:00.000Z',
+      },
+    ],
+    error: null,
+    localDemo: true,
+  }),
+  readingTimeMinutes: () => 4,
+}));
+
 expect.extend(toHaveNoViolations);
 
 const front = siteRoutes.routes.find((route) => route.path === '/');
@@ -90,14 +122,18 @@ describe('the front door', () => {
   it('reads the committed artifacts for its live panels', async () => {
     renderPage();
 
-    const card = await screen.findByTestId('front-door-run-visual');
-    await waitFor(() => expect(within(card).getByText(/60 \/ 64/)).toBeInTheDocument());
-    expect(within(card).getByText(/coverage status: partial/)).toBeInTheDocument();
-
-    const strip = screen.getByTestId('front-door-status-strip');
-    // The alert artifact this deployment ships publishes nothing and says why.
-    expect(within(strip).getByText(/No alert is published at the moment of this read/)).toBeInTheDocument();
+    const strip = await screen.findByTestId('front-door-status-strip');
+    // The alert artifact this deployment ships publishes nothing and says why. Awaited,
+    // because the strip reads the snapshot over fetch and renders its reading state first.
+    expect(await within(strip).findByText(/No alert is published at the moment of this read/)).toBeInTheDocument();
     expect(within(strip).getByText(/withheld 74 of them from publication/)).toBeInTheDocument();
+
+    // The run card moved to /last-run on 2026-10-05: the hero reaches it as a hyperlink,
+    // and the card itself is no longer part of this page.
+    expect(document.querySelector('[data-testid="last-run-visual"]')).toBeNull();
+    const hero = document.querySelector('header.mrd-on-dark') as HTMLElement;
+    expect(hero).not.toBeNull();
+    expect(Array.from(hero.querySelectorAll('a[href="/last-run"]')).length).toBeGreaterThanOrEqual(1);
   });
 
   it("resolves the ledger's review dates instead of printing a reference", async () => {
@@ -149,6 +185,35 @@ describe('the front door', () => {
     }
   });
 
+  it('keeps the hero simple: one scrim, one primary action, no second frame', async () => {
+    renderPage();
+    await screen.findByTestId('front-door-status-strip');
+    const hero = document.querySelector('header.mrd-on-dark') as HTMLElement;
+    expect(hero).not.toBeNull();
+
+    // The run card left the hero for /last-run on 2026-10-05: it is not rendered here,
+    // and the hero reaches it only as a hyperlink.
+    expect(hero.querySelector('[data-testid="last-run-visual"]')).toBeNull();
+    expect(Array.from(hero.querySelectorAll('a[href="/last-run"]')).length).toBeGreaterThanOrEqual(1);
+
+    // One flat scrim over the photograph. It was a `from-black/70 to-black/60` gradient, which
+    // put the authority sentence at the weak end of its own surface (2.45:1 over a bright frame
+    // at the old `to-black/35`); a single `bg-carbon-black/65` clears that everywhere on the card.
+    const card = hero.querySelector('h1')!.closest('div') as HTMLElement;
+    expect(card.className).toContain('bg-carbon-black/65');
+    expect(card.className).not.toMatch(/from-black\//);
+
+    // One primary action in the hero, and it is the navigation one. The other two destinations
+    // are text links (the 2026-10-03 audit's L-P1-1: three equal-weight buttons read as none).
+    // `mrd-btn` is the primitive's own marker; the hero renders exactly one of them.
+    const buttons = Array.from(hero.querySelectorAll('a.mrd-btn'));
+    expect(buttons.map((link) => link.getAttribute('href'))).toEqual(['/live']);
+
+    // The language switch carries its own chip; the glass frame that used to wrap it was a box
+    // inside a box. Nothing else in the hero draws a translucent surface.
+    expect(hero.querySelectorAll('.bg-carbon-90\\/40').length).toBe(0);
+  });
+
   it('renders the Bengali editorial copy, and writes the language on the document', async () => {
     renderPage();
 
@@ -177,8 +242,10 @@ describe('the front door', () => {
 
   it('has no accessibility violations in either language', async () => {
     const english = renderPage();
-    await screen.findByTestId('front-door-run-visual');
-    await waitFor(() => expect(english.container.textContent).toMatch(/60 \/ 64/));
+    await screen.findByTestId('front-door-status-strip');
+    // Awaited on the trust strip's coverage figure: the run card that used to carry it
+    // moved to /last-run, and this asserts the page's own live data has landed.
+    await waitFor(() => expect(english.container.textContent).toMatch(/60 of 64 districts/));
     expect(await axe(english.container)).toHaveNoViolations();
 
     // Unmounted before the second render: two mounted front doors would share every id and
@@ -191,7 +258,30 @@ describe('the front door', () => {
         <FrontDoor />
       </MemoryRouter>,
     );
-    await waitFor(() => expect(bengali.container.textContent).toMatch(/৬০ \/ ৬৪/));
+    await waitFor(() => expect(bengali.container.textContent).toMatch(/৬৪টির মধ্যে ৬০টি জেলা/));
     expect(await axe(bengali.container)).toHaveNoViolations();
+  });
+
+  it('shows the products section: eight hazard classes and both horizons', async () => {
+    const { container, unmount } = renderPage();
+    await waitFor(() => expect(screen.getByText('Monsoon outlook test post')).toBeInTheDocument());
+    const heading = screen.getByRole('heading', { name: 'Products' });
+    expect(heading).toBeInTheDocument();
+    // The eight classes come from the same methodology file the /hazards page reads.
+    expect(container.textContent).toContain('Tropical Cyclone');
+    expect(container.textContent).toContain('Cold Wave');
+    expect(container.textContent).toContain('7-day outlook');
+    expect(container.textContent).toContain('15-day outlook');
+    expect(container.querySelectorAll('a[href^="/hazards/"]').length).toBeGreaterThanOrEqual(8);
+    unmount();
+  });
+
+  it('shows the newest blog posts with a link into the blog', async () => {
+    const { unmount } = renderPage();
+    const post = await screen.findByText('Monsoon outlook test post');
+    expect(post.closest('a')).toHaveAttribute('href', '/blogs/monsoon-outlook-test');
+    expect(screen.getByRole('heading', { name: 'Newest from the blog' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Read all posts/ })).toHaveAttribute('href', '/blogs');
+    unmount();
   });
 });

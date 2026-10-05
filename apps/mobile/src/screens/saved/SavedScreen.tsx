@@ -131,6 +131,8 @@ export function SavedScreen() {
                 onPress={() => nav.navigate('SavedPlaceDetail', { id: p.id })}
                 onLongPress={() => confirmRemove(p.id, p.label)}
                 accessibilityRole="button"
+                accessibilityLabel={`${p.label}. ${p.notifications.enabled ? 'Alerts on' : 'Alerts off'}`}
+                accessibilityHint="Opens place settings. Long press to remove."
                 style={({ pressed }) => ({ paddingVertical: 14, opacity: pressed ? 0.6 : 1 })}
               >
                 <HStack space={12} align="center" justify="space-between">
@@ -146,7 +148,7 @@ export function SavedScreen() {
                   </Box>
                   <Chip
                     label={p.notifications.enabled ? 'Alerts on' : 'Off'}
-                    severity={p.notifications.enabled ? 'severe' : null}
+                    severity={p.notifications.enabled ? 'info' : null}
                   />
                 </HStack>
               </Pressable>

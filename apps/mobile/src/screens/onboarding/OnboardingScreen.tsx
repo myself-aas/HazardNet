@@ -12,35 +12,41 @@ import React, { useCallback, useState } from 'react';
 import { Dimensions, Pressable } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Screen } from '../../components/Screen';
-import { NATIVE_RADIUS } from '../../theme/nativeTokens';
+import { NATIVE_RADIUS, TOUCH_MIN } from '../../theme/nativeTokens';
 import { Box, VStack, HStack } from '../../design-system/primitives';
-import { Title1, DisplayLarge, Body, Caption } from '../../design-system/Text';
+import { Title1, Body, Caption } from '../../design-system/Text';
 import { Button } from '../../design-system/Button';
 import { useTheme } from '../../theme/ThemeProvider';
 import { track } from '../../lib/telemetry';
+import { Icon } from '../../components/Icon';
+import type { IconName } from '@hazardnet/design-system';
 
 const KEY = 'hazardnet:onboarding:v1';
 const { width: SCREEN_W } = Dimensions.get('window');
 
 interface Slide {
-  emoji: string;
+  icon: IconName;
+  iconTone: 'interactive' | 'severe';
   headline: string;
   body: string;
 }
 
 const SLIDES: Slide[] = [
   {
-    emoji: '⚠️',
+    icon: 'CloudRain',
+    iconTone: 'interactive',
     headline: 'Multi-hazard alerts for Bangladesh',
     body: 'HazardNet delivers warnings for floods, cyclones, cold waves, heat waves, nor\'westers, drought, and fire. Across all 64 districts. Data loads offline so you are never without alerts.',
   },
   {
-    emoji: 'ℹ️',
+    icon: 'ShieldAlert',
+    iconTone: 'severe',
     headline: 'Not an official warning service',
     body: 'HazardNet supplements (never replaces) official bulletins from BMD, FFWC, DAE and local authorities. During emergencies follow official instructions and call 999.',
   },
   {
-    emoji: '🔔',
+    icon: 'Bell',
+    iconTone: 'interactive',
     headline: 'Save places, get alerts',
     body: 'Save home, work, and the places you care about to get alerts specific to them. Notifications appear on your lock screen. Your location stays on this device.',
   },
@@ -77,9 +83,13 @@ export function OnboardingScreen({ onDone }: { onDone: () => void }) {
       <Box flex={1} py={24}>
         <Box w={SCREEN_W} px={24} justify="center" flex={1}>
           <VStack space={24}>
-            <DisplayLarge style={{ fontSize: 80, lineHeight: 96 }}>{slide.emoji}</DisplayLarge>
+            <Icon
+              name={slide.icon}
+              size={80}
+              color={slide.iconTone === 'severe' ? theme.colors.severe : theme.colors.interactive}
+            />
             <Title1>{slide.headline}</Title1>
-            <Body color="textSecondary" style={{ fontSize: 17, lineHeight: 26 }}>{slide.body}</Body>
+            <Body color="textSecondary">{slide.body}</Body>
           </VStack>
         </Box>
 
@@ -90,7 +100,7 @@ export function OnboardingScreen({ onDone }: { onDone: () => void }) {
                 key={i}
                 style={{
                   width: 8, height: 8, borderRadius: NATIVE_RADIUS.chip,
-                  backgroundColor: i === idx ? theme.colors.primaryAction as string : theme.colors.hairline as string,
+                  backgroundColor: i === idx ? theme.colors.interactive : theme.colors.hairline,
                 }}
               />
             ))}
@@ -98,9 +108,16 @@ export function OnboardingScreen({ onDone }: { onDone: () => void }) {
 
           <VStack space={10}>
             <Button variant="primary" size="lg" label={isLast ? 'Get started' : 'Continue'} onPress={next} />
-            <Pressable onPress={skip} accessibilityRole="button" style={({ pressed }) => ({ paddingVertical: 10, opacity: pressed ? 0.5 : 1 })}>
-              <Caption align="center" color="textMuted">{isLast ? '' : 'Skip'}</Caption>
-            </Pressable>
+            {!isLast ? (
+              <Pressable
+                onPress={skip}
+                accessibilityRole="button"
+                accessibilityLabel="Skip onboarding"
+                style={({ pressed }) => ({ minHeight: TOUCH_MIN, justifyContent: 'center', opacity: pressed ? 0.5 : 1 })}
+              >
+                <Caption align="center" color="textMuted">Skip</Caption>
+              </Pressable>
+            ) : null}
           </VStack>
         </Box>
       </Box>

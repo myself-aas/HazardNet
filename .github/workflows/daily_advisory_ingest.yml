@@ -101,7 +101,13 @@ jobs:
           # than fail, but stay well inside the job's timeout-minutes. Wrap in an `if`: GitHub
           # invokes bash with `-e`, and a bare exit code 2 would terminate the step before the
           # branch below can distinguish unchanged from failed.
-          if node scripts/fetch_kaggle_advisory.mjs --out "$OUT" --wait-minutes 12; then
+          #
+          # --max-age-hours: the same gate `validate_advisory_csv.mjs` applies in the ingest
+          # step. Without it the fetch called a week-old publication "fresh" (it was newer than
+          # the committed run), the ingest then failed with STALE_DATA, and four downstream
+          # steps — including the artifact commit and the deploy trigger — were skipped while
+          # the failure looked like an ingest bug. Age is decided here, once.
+          if node scripts/fetch_kaggle_advisory.mjs --out "$OUT" --wait-minutes 12 --max-age-hours 36; then
             code=0
           else
             code=$?
@@ -114,15 +120,24 @@ jobs:
               ;;
             2)
               # Fetched fine, but the file is not newer than what is already committed —
-              # i.e. the Kaggle schedule did not produce a new run. This is a real
-              # finding, not a no-op: it is annotated, summarised and reported to Slack.
+              # or it is newer yet already older than the 36 h ingest gate. Either way the
+              # Kaggle schedule did not produce a run the pipeline can publish. This is a
+              # real finding, not a no-op: it is annotated, summarised and reported to Slack.
               echo "fetched=true"  >> "$GITHUB_OUTPUT"
               echo "fresh=false"   >> "$GITHUB_OUTPUT"
-              echo "::warning::Advisory CSV fetched but unchanged since the last ingest — the Kaggle schedule did not produce a new run today."
+              AGE=$(jq -r '.age_hours // "unknown"' "$OUT/fetch-report.json" 2>/dev/null || echo unknown)
+              if [ "$AGE" != "unknown" ] && [ "${AGE%%.*}" -gt 36 ]; then
+                echo "::warning::Advisory CSV fetched but ${AGE} h old — past the 36 h ingest gate, so the Kaggle notebook has not published a run the pipeline can use."
+                HEADLINE="### ⏭️ No advisory run inside the 36 h gate (published run is ${AGE} h old)"
+              else
+                echo "::warning::Advisory CSV fetched but unchanged since the last ingest — the Kaggle schedule did not produce a new run today."
+                HEADLINE="### ⏭️ No new advisory run"
+              fi
               {
-                echo "### ⏭️ No new advisory run"
+                echo "$HEADLINE"
                 echo
-                echo "The fetch succeeded, but the CSV is identical to the one already ingested."
+                echo "The fetch succeeded, but the CSV cannot be ingested: it is either identical to the"
+                echo "one already ingested, or older than the 36 h staleness gate the ingest enforces."
                 echo
                 echo "Check the notebook's last successful run on Kaggle (schedule: daily)."
               } >> "$GITHUB_STEP_SUMMARY"
@@ -138,7 +153,7 @@ jobs:
               # operational notification is red. A manual rehearsal can legitimately be
               # unchanged and remains a successful no-op.
               if [ "${{ github.event_name }}" = "schedule" ]; then
-                echo "::error::Scheduled Kaggle advisory publication is unchanged."
+                echo "::error::Scheduled Kaggle advisory publication is unchanged or past the 36 h ingest gate — the notebook did not produce a publishable run today."
                 exit 1
               fi
               ;;

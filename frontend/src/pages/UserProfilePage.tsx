@@ -1,4 +1,5 @@
 import MaterialIcon from "../components/MaterialIcon";
+import { Loader2, LogOut, Mail } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -680,7 +681,11 @@ export const UserProfilePage: React.FC = () => {
                 disabled={isLoggingOut}
                 className="min-h-[44px] px-3.5 py-2 bg-white hover:bg-white text-nasa-red-shade hover:text-nasa-red-shade font-bold rounded-sm border border-nasa-red text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0 touch-manipulation tap-target"
               >
-                <span>{isLoggingOut ? 'refresh' : '🚪'}</span>
+                {isLoggingOut ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                ) : (
+                  <LogOut className="h-4 w-4" aria-hidden="true" />
+                )}
                 <span>{isLoggingOut ? 'Signing Out...' : 'Log Out & Clear Local State'}</span>
               </button>
             </div>
@@ -704,7 +709,11 @@ export const UserProfilePage: React.FC = () => {
                   disabled={isSendingReset}
                   className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold rounded-sm border border-amber-200 text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0"
                 >
-                  <span>{isSendingReset ? 'refresh' : 'mail'}</span>
+                  {isSendingReset ? (
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                  ) : (
+                    <Mail className="h-4 w-4" aria-hidden="true" />
+                  )}
                   <span>{isSendingReset ? 'Sending...' : 'Send Password Reset Email'}</span>
                 </button>
               </div>

@@ -1,0 +1,48 @@
+{
+  "gee_rows": 3324,
+  "catalog_rows": 3062,
+  "matched": 2870,
+  "mismatched": 454,
+  "sample_mismatches": [
+    {
+      "id": "Event_0513",
+      "field": "glide"
+    },
+    {
+      "id": "Event_0514",
+      "field": "glide"
+    },
+    {
+      "id": "Event_0515",
+      "field": "glide"
+    },
+    {
+      "id": "Event_0516",
+      "field": "glide"
+    },
+    {
+      "id": "Event_0517",
+      "field": "glide"
+    },
+    {
+      "id": "Event_0518",
+      "field": "glide"
+    },
+    {
+      "id": "Event_0519",
+      "field": "glide"
+    },
+    {
+      "id": "Event_0520",
+      "field": "glide"
+    },
+    {
+      "id": "Event_0521",
+      "field": "glide"
+    },
+    {
+      "id": "Event_0522",
+      "field": "glide"
+    }
+  ]
+}

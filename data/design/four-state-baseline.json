@@ -155,7 +155,8 @@
       },
       "empty": {
         "kind": "notice",
-        "evidence": "Article not found"
+        "evidence": "\"This article has no body text yet\"",
+        "note": "a published post saved without body copy: the reader keeps the title, excerpt and byline"
       },
       "error": {
         "kind": "notice",
@@ -211,22 +212,27 @@
     "pages/Dashboard.tsx": {
       "data": "fetch",
       "loading": {
-        "kind": "inline",
-        "evidence": "Processing..."
+        "kind": "notice",
+        "evidence": "StoredForecastPanel state={view}",
+        "note": "the shared panel renders the loading state for the district read"
       },
       "empty": {
-        "kind": "absent",
-        "reason": "the console renders the map and the district list from committed artifacts; an empty run shows a zero-count strip rather than an empty state"
+        "kind": "notice",
+        "evidence": "`No stored forecast for ${district.name} yet`",
+        "note": "the district is in the coverage list but the published forecast archive has no record for the horizon; the map and the static baseline stay on screen"
       },
       "error": {
-        "kind": "absent",
-        "reason": "a failed prediction read surfaces as a toast, not as a page state"
+        "kind": "notice",
+        "evidence": "`The stored forecast for ${district.name} could not be read`",
+        "retry": true,
+        "retry_via": "the Try the forecast again button re-runs the same district read",
+        "note": "reason-aware: only an uncovered 404 is the empty state, every other failure is retryable"
       },
       "success": {
         "kind": "page",
         "evidence": "Live map: multi-hazard situational awareness"
       },
-      "note": "console surface: the audit's P1-5/P2-3 reading is that dense console chrome is per-surface work (skill section 13); the two absent states are recorded, not waved through"
+      "note": "console surface: the audit's P1-5/P2-3 reading is that dense console chrome is per-surface work (skill section 13); the district forecast read's empty and error shapes are now the page's own states (DistrictForecastPanel)"
     },
     "pages/DistrictDetailPage.tsx": {
       "data": "fetch",
@@ -305,7 +311,7 @@
       },
       "success": {
         "kind": "page",
-        "evidence": "The published forecast record"
+        "evidence": "How the documentation is organized"
       }
     },
     "pages/DownloadCenter.tsx": {
@@ -417,8 +423,9 @@
         "evidence": "Loading the historical archive"
       },
       "empty": {
-        "kind": "absent",
-        "reason": "the five artifacts load together; a district with no recorded event is stated inside the catalog rather than by an empty page, and the page-level empty case (a loaded but eventless archive) is not distinguished"
+        "kind": "notice",
+        "evidence": "\"This deployment's historical archive is empty\"",
+        "note": "the five artifacts loaded with zero rows; the page still renders its shell and says so"
       },
       "error": {
         "kind": "notice",
@@ -497,7 +504,7 @@
       },
       "empty": {
         "kind": "notice",
-        "evidence": "isn’t on HazardNet"
+        "evidence": "isn\u2019t on HazardNet"
       },
       "error": {
         "kind": "notice",
@@ -541,7 +548,7 @@
       },
       "error": {
         "kind": "notice",
-        "evidence": "We couldn’t create your account.",
+        "evidence": "We couldn\u2019t create your account.",
         "retry": true,
         "retry_via": "the submit button"
       },
@@ -656,12 +663,18 @@
         "evidence": "loading && !user"
       },
       "empty": {
-        "kind": "absent",
-        "reason": "the account dashboard renders the profile it read; the no-profile case is not a distinct state"
+        "kind": "notice",
+        "evidence": "\"No profile is stored for this account yet\"",
+        "retry": true,
+        "retry_via": "the Create my profile button writes the seed profile document",
+        "note": "signed in with no profiles/<uid> row"
       },
       "error": {
-        "kind": "absent",
-        "reason": "an unreadable profile degrades to the auth user's own fields without stating the failure"
+        "kind": "notice",
+        "evidence": "\"Your profile could not be read\"",
+        "retry": true,
+        "retry_via": "the Try reading the profile again button calls refreshProfile",
+        "note": "AuthContext exposes profileStatus so the page can tell a failed read from a missing row"
       },
       "success": {
         "kind": "page",
@@ -730,6 +743,27 @@
       "success": {
         "kind": "page",
         "evidence": "Write a new article"
+      }
+    },
+    "pages/LastRunPage.tsx": {
+      "data": "fetch",
+      "loading": {
+        "kind": "inline",
+        "evidence": "loading={loading}"
+      },
+      "empty": {
+        "kind": "notice",
+        "evidence": "unreadable stays null"
+      },
+      "error": {
+        "kind": "notice",
+        "evidence": "unreadable stays null",
+        "retry": false,
+        "reason": "a failed read is reported as the card's own sentence, which links the status page; this page keeps the front door's no-retry fetch discipline"
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "path=\"/last-run\""
       }
     }
   }

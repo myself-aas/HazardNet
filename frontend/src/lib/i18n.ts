@@ -45,6 +45,12 @@ const EN = {
   'common.language': 'Language',
   'common.english': 'English',
   'common.bengali': 'বাংলা',
+  // Appearance control (`components/ThemeToggle.tsx`). 'System' means "follow the OS setting",
+  // which is the default the theme hook ships with.
+  'common.appearance': 'Appearance',
+  'common.themeSystem': 'System',
+  'common.themeLight': 'Light',
+  'common.themeDark': 'Dark',
   'common.loading': 'Loading…',
   'common.retry': 'Try again',
   'common.close': 'Close',
@@ -248,6 +254,7 @@ const EN = {
   'frontdoor.hero.ctaMap': 'Open the live map',
   'frontdoor.hero.ctaMethodology': 'How a forecast is produced',
   'frontdoor.hero.ctaScorecard': 'Read the validation scorecard',
+  'frontdoor.hero.viewLastRun': 'View the last run, from the committed artifacts',
   'frontdoor.hero.authority':
     'HazardNet is decision support, not an official warning service. Weather warnings, cyclone signals and flood bulletins come from the Bangladesh Meteorological Department and the Flood Forecasting and Warning Centre; in an emergency call 999.',
   'frontdoor.hero.authorityMap': 'The live map carries the current outlooks.',
@@ -255,6 +262,10 @@ const EN = {
   'frontdoor.hero.resumeMotion': 'Resume motion',
   'frontdoor.hero.readMore': 'Read the full overview',
   'frontdoor.hero.readLess': 'Show less',
+  'frontdoor.hero.evidencePointer':
+    'This run: {covered} of {expected} districts covered, {published}. Read the proof.',
+  'frontdoor.hero.evidencePointerAlerts': '{count} alerts published',
+  'frontdoor.hero.evidencePointerNoAlerts': 'no alerts published',
   'frontdoor.toc': 'On this page',
   'frontdoor.tocSection': 'Section',
   'frontdoor.bengaliDraft': 'Bengali draft. Awaiting native-speaker review',
@@ -342,6 +353,29 @@ const EN = {
   'frontdoor.run.failed':
     'At least one artifact could not be read on this load. The panels above say so where it applies; a blank is never rendered as a zero.',
 
+  'frontdoor.products.h2': 'Products',
+  'frontdoor.products.aside': 'Eight hazard classes · 7 and 15 day horizons',
+  'frontdoor.products.hazardsEyebrow': 'Eight hazard classes',
+  'frontdoor.products.hazardsNote':
+    'Every run labels each district with one of eight classes. Each card links to the full methodology for that class.',
+  'frontdoor.products.horizonsEyebrow': 'Forecast horizons',
+  'frontdoor.products.horizon7': '7-day outlook',
+  'frontdoor.products.horizon7desc':
+    'The short window: what the meteorological drivers resemble over the coming week, district by district.',
+  'frontdoor.products.horizon15': '15-day outlook',
+  'frontdoor.products.horizon15desc':
+    'The extended window: the same record computed over fifteen days, published side by side with the week.',
+  'frontdoor.products.methodologyLink': 'How each class is scored',
+  'frontdoor.products.forecastDocs': 'How to read a forecast',
+  'frontdoor.blogs.h2': 'Newest from the blog',
+  'frontdoor.blogs.aside': 'Field notes and analysis',
+  'frontdoor.blogs.loading': 'Loading the newest posts…',
+  'frontdoor.blogs.error': 'The blog could not be read: {error}',
+  'frontdoor.blogs.retry': 'Try again',
+  'frontdoor.blogs.empty': 'No posts are published yet. Field notes will appear here as soon as they are.',
+  'frontdoor.blogs.minRead': '{min} min read',
+  'frontdoor.blogs.newest': 'Newest',
+  'frontdoor.blogs.allPosts': 'Read all posts',
   'frontdoor.faq.h2': 'Direct answers',
   'frontdoor.attribution.eyebrow': 'Attribution',
   'frontdoor.attribution.h2': 'Who built this, and under whose supervision',
@@ -434,6 +468,13 @@ const BN: Record<string, string> = {
   'common.language': 'ভাষা',
   'common.english': 'English',
   'common.bengali': 'বাংলা',
+  // Transliterated, like the operating systems' own Bengali theme settings. The review this
+  // needs is tracked as Action 6d in docs/ops/owner-actions.md (6c closed for the 2026-09-19
+  // surface and asks for a new ID for anything added later).
+  'common.appearance': 'অ্যাপিয়ারেন্স',
+  'common.themeSystem': 'সিস্টেম',
+  'common.themeLight': 'লাইট',
+  'common.themeDark': 'ডার্ক',
   'common.loading': 'লোড হচ্ছে…',
   'common.retry': 'আবার চেষ্টা করুন',
   'common.close': 'বন্ধ করুন',
@@ -619,6 +660,7 @@ const BN: Record<string, string> = {
   'frontdoor.hero.ctaMap': 'লাইভ মানচিত্র খুলুন',
   'frontdoor.hero.ctaMethodology': 'কীভাবে পূর্বাভাস তৈরি হয়',
   'frontdoor.hero.ctaScorecard': 'যাচাই স্কোরকার্ড পড়ুন',
+  'frontdoor.hero.viewLastRun': 'সংরক্ষিত আর্টিফ্যাক্ট অনুযায়ী শেষ রানটি দেখুন',
   'frontdoor.hero.authority':
     'HazardNet সিদ্ধান্ত সহায়তা মাত্র, কোনো সরকারি সতর্কবার্তা সেবা নয়। আবহাওয়ার সতর্কবার্তা, ঘূর্ণিঝড় সংকেত ও বন্যা বুলেটিন প্রকাশ করে বাংলাদেশ আবহাওয়া অধিদপ্তর এবং প্লাবন পূর্বাভাস ও সতর্কীকরণ কেন্দ্র (FFWC); জরুরি অবস্থায় ৯৯৯ নম্বরে কল করুন।',
   'frontdoor.hero.authorityMap': 'বর্তমান পূর্বাভাস লাইভ মানচিত্রে দেখা যাবে।',
@@ -626,6 +668,10 @@ const BN: Record<string, string> = {
   'frontdoor.hero.resumeMotion': 'গতি চালু করুন',
   'frontdoor.hero.readMore': 'সম্পূর্ণ সারসংক্ষেপ পড়ুন',
   'frontdoor.hero.readLess': 'সংক্ষেপে দেখান',
+  'frontdoor.hero.evidencePointer':
+    'এই রানে {expected} জেলার মধ্যে {covered} জেলার তথ্য আছে, {published}। প্রমাণ দেখুন।',
+  'frontdoor.hero.evidencePointerAlerts': '{count} সতর্কতা প্রকাশিত',
+  'frontdoor.hero.evidencePointerNoAlerts': 'কোনো সতর্কতা প্রকাশিত হয়নি',
   'frontdoor.toc': 'এই পাতায়',
   'frontdoor.tocSection': 'বিভাগ',
   'frontdoor.bengaliDraft': 'বাংলা খসড়া. স্থানীয় ভাষাভাষীর পর্যালোচনা বাকি',
@@ -713,6 +759,29 @@ const BN: Record<string, string> = {
   'frontdoor.run.failed':
     'এইবার অন্তত একটি আর্টিফ্যাক্ট পড়া যায়নি। যেখানে প্রযোজ্য, ওপরের প্যানেলগুলো তা জানিয়েছে; খালি ঘর কখনো শূন্য হিসেবে দেখানো হয় না।',
 
+  'frontdoor.products.h2': 'পণ্যসমূহ',
+  'frontdoor.products.aside': '৮টি ঝুঁকি শ্রেণি · ৭ ও ১৫ দিনের পূর্বাভাস',
+  'frontdoor.products.hazardsEyebrow': 'আটটি ঝুঁকি শ্রেণি',
+  'frontdoor.products.hazardsNote':
+    'প্রতিটি রানে প্রতিটি জেলাকে আটটি শ্রেণির একটি দিয়ে চিহ্নিত করা হয়। প্রতিটি কার্ড সেই শ্রেণির পূর্ণ পদ্ধতিগত বিবরণের সঙ্গে যুক্ত।',
+  'frontdoor.products.horizonsEyebrow': 'পূর্বাভাসের সময়সীমা',
+  'frontdoor.products.horizon7': '৭ দিনের পূর্বাভাস',
+  'frontdoor.products.horizon7desc':
+    'স্বল্প সময়সীমা: আগামী এক সপ্তাহে আবহাওয়া চালকগুলো জেলাভিত্তিক কোন রূপ নেয়।',
+  'frontdoor.products.horizon15': '১৫ দিনের পূর্বাভাস',
+  'frontdoor.products.horizon15desc':
+    'বর্ধিত সময়সীমা: পনেরো দিনের জন্য গণনা করা একই রেকর্ড, সপ্তাহের পূর্বাভাসের পাশেই প্রকাশিত।',
+  'frontdoor.products.methodologyLink': 'প্রতিটি শ্রেণি কীভাবে মূল্যায়ন করা হয়',
+  'frontdoor.products.forecastDocs': 'পূর্বাভাস কীভাবে পড়বেন',
+  'frontdoor.blogs.h2': 'ব্লগের সর্বশেষ লেখা',
+  'frontdoor.blogs.aside': 'মাঠের নোট ও বিশ্লেষণ',
+  'frontdoor.blogs.loading': 'সর্বশেষ লেখা লোড হচ্ছে…',
+  'frontdoor.blogs.error': 'ব্লগ পড়া যায়নি: {error}',
+  'frontdoor.blogs.retry': 'আবার চেষ্টা করুন',
+  'frontdoor.blogs.empty': 'এখনও কোনো লেখা প্রকাশিত হয়নি। প্রকাশ হওয়া মাত্র এখানে দেখা যাবে।',
+  'frontdoor.blogs.minRead': '{min} মিনিটে পড়া যায়',
+  'frontdoor.blogs.newest': 'সর্বশেষ',
+  'frontdoor.blogs.allPosts': 'সব লেখা পড়ুন',
   'frontdoor.faq.h2': 'সরাসরি উত্তর',
   'frontdoor.attribution.eyebrow': 'স্বীকৃতি',
   'frontdoor.attribution.h2': 'কে তৈরি করেছেন এবং কার তত্ত্বাবধানে',

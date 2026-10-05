@@ -1,5 +1,6 @@
 import MaterialIcon from "../components/MaterialIcon";
 import React from 'react';
+import { Check } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -253,7 +254,9 @@ export const UseCases: React.FC = () => {
               <ul className="space-y-2 text-xs">
                 {activeCase.affectedCrops.map((crop, i) => (
                   <motion.li whileHover={{ x: 3 }} key={i} className="p-3 bg-carbon-05/90 border border-carbon-20/80 text-carbon-70 flex items-center gap-2.5 font-semibold hover:border-emerald-300/80 transition-all">
-                    <span className="text-emerald-600 font-extrabold bg-emerald-100/80 rounded-full p-0.5 px-1 text-xs">✔</span>
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100/80 text-emerald-700">
+                      <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                    </span>
                     <span>{crop}</span>
                   </motion.li>
                 ))}

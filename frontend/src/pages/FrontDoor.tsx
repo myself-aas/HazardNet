@@ -37,7 +37,9 @@
  *   · The hero visual is built (`components/frontdoor/RunVisual.tsx`) as the last run's own
  *     coverage, outcome and artifact ages. There is still no photograph: none ships in this
  *     repository under a licence the project can stand behind, and a stock image of a flood
- *     would date the page to a disaster it is not describing.
+ *     would date the page to a disaster it is not describing. On 2026-10-05 the card moved out
+ *     of the hero to a page of its own (`/last-run`, `pages/LastRunPage.tsx`); the hero keeps
+ *     the claim, the action and a hyperlink to the card that checks the claim.
  *   · The map stays at `/live`. The split was re-affirmed on 2026-09-19: `/` answers "who is
  *     telling me this, and how would I know if it stopped working", `/live` answers "where".
  *     A second map surface is a second thing to keep honest, for no reader who was lost.
@@ -49,6 +51,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useReducedMotion } from 'framer-motion';
+import { ExternalLink } from 'lucide-react';
 import { Interactive } from '../components/interactive/Interactive';
 import { useWebFrame, interpolate, Easing } from '../lib/motion-interpolate';
 
@@ -59,16 +62,16 @@ import { AlertLevelBadge } from '../components/alerts/AlertLevelBadge';
 import { LanguageToggle } from '../components/alerts/LanguageToggle';
 import LiveStatusStrip from '../components/frontdoor/LiveStatusStrip';
 import CardStackTable from '../components/ui/CardStackTable';
-import RunVisual from '../components/frontdoor/RunVisual';
 import HeroCinematicBackground from '../components/HeroCinematicBackground';
 import { localiseRoute, usePageSeo } from '../hooks/usePageSeo';
 import { useAlertsData } from '../hooks/useAlertsData';
-import { useHazardLabel } from '../hooks/useHazardLabel';
+import { hazardIcon, useHazardLabel } from '../hooks/useHazardLabel';
 import { useI18n } from '../hooks/useI18n';
 import { FRESHNESS_URL, parseFreshness, type FreshnessArtifact } from '../lib/freshness';
 import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
 import hazardMethodology from '../content/hazard-methodology.json';
 import attribution from '../content/attribution.json';
+import { listPublishedArticles, readingTimeMinutes, type BlogArticle } from '../lib/blogArticles';
 
 /* ─────────────────────────── live artifact readers ─────────────────────────── */
 
@@ -260,7 +263,7 @@ const ExternalOrInternalLink: React.FC<{ href: string; label: string }> = ({ hre
     return (
       <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
         {label}
-        <span aria-hidden="true">↗</span>
+        <ExternalLink className="h-4 w-4" aria-hidden="true" />
       </a>
     );
   }
@@ -288,9 +291,12 @@ export const FrontDoor: React.FC = () => {
   const [heroPaused, setHeroPaused] = useState(false);
   // The full standfirst is 70 words; below `sm` it is clamped to three lines with this control.
   const [standfirstOpen, setStandfirstOpen] = useState(false);
+  // The phone-only evidence pointer under the CTA reads the same artifact the proof card does, so
+  // the first viewport on a phone is claim -> action -> one fact from the run (see the hero comment).
+  const coverageArtifact = freshness?.coverage ?? null;
   const { alerts, assessed, counts, notPublished, generatedAt, loading: alertsLoading, error, refresh: refreshAlerts } = useAlertsData();
   const hazardLabel = useHazardLabel();
-  const { t, language, formatNumber } = useI18n();
+  const { t, language, formatNumber, formatDate } = useI18n();
   const [searchParams] = useSearchParams();
   const location = useLocation();
 
@@ -309,6 +315,31 @@ export const FrontDoor: React.FC = () => {
   const coverage = freshness?.coverage ?? null;
   const hazards = (hazardMethodology as { hazards?: unknown[] }).hazards ?? [];
   const topAlerts = useMemo(() => alerts.slice(0, 4), [alerts]);
+
+  /**
+   * Newest blog posts for the front door. The blog lives in Firestore (same store the
+   * /blogs page reads), so this is a second independent read with its own four states:
+   * an error here hides only this section, never the published record above it.
+   */
+  const [blogPosts, setBlogPosts] = useState<BlogArticle[] | null>(null);
+  const [blogsLoading, setBlogsLoading] = useState(true);
+  const [blogsError, setBlogsError] = useState<string | null>(null);
+  const [blogsReload, setBlogsReload] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    setBlogsLoading(true);
+    setBlogsError(null);
+    void listPublishedArticles().then((result) => {
+      if (cancelled) return;
+      setBlogsLoading(false);
+      setBlogsError(result.error ? String(result.error) : null);
+      setBlogPosts(result.data ?? []);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [blogsReload]);
 
   /**
    * The two counts the strip and the hero card print. Both come from the alert artifact:
@@ -357,15 +388,20 @@ export const FrontDoor: React.FC = () => {
       }}
       className="w-full"
     >
-      {/* ── Hero: NASA-Inspired Global Observatory with Dynamic Video Background ── */}
+      {/* ── Hero: one photograph, one claim, one action ──
+          The backdrop was a five-layer motion build with a decorative telemetry HUD and a film
+          grain; it is four layers now (see HeroCinematicBackground). Keeping the composition
+          honest rather than busy is the whole job of this block: a claim (h1), the sentence that
+          qualifies it, one primary action, and a hyperlink to the page that carries the artifact
+          card checking the claim (/last-run — the card itself moved there from this hero). */}
       {/* `mrd-on-dark` scopes the outline button's inversion to this hero, so the
           same primitive renders white-on-dark here and ink-on-light everywhere
           else without a second variant existing. */}
       {/* `pt-[calc(var(--navbar-height)+44px)]` instead of a hard 100px: the bar is 3.5rem plus
           `env(safe-area-inset-top)`, so a fixed number collided with it on notched phones. The
           variable now carries the inset, which makes this clearance correct on both. */}
-      <header className="mrd-on-dark relative w-full overflow-hidden bg-carbon-90 text-white min-h-[600px] lg:min-h-[100dvh] flex items-center -mt-14 sm:-mt-16 pt-[calc(var(--navbar-height)+44px)] pb-12 sm:pb-16 shadow-2xl">
-        {/* Remotion-Inspired 5-Layer Cinematic Motion Background (BgMesh, Video, HUD, Grade, Grain & Vignette) */}
+      <header className="mrd-on-dark relative w-full overflow-hidden bg-carbon-90 text-white min-h-[600px] lg:min-h-[100dvh] flex items-center -mt-14 sm:-mt-16 pt-[calc(var(--navbar-height)+20px)] sm:pt-[calc(var(--navbar-height)+44px)] pb-8 sm:pb-16 shadow-2xl">
+        {/* Mesh → photograph → grade → vignette. */}
         <HeroCinematicBackground paused={heroPaused} />
         {/* Pause control — keyboard-reachable, respects reduced-motion (audit #1) */}
         <button
@@ -387,16 +423,19 @@ export const FrontDoor: React.FC = () => {
               carries its own provenance. The language switch, which is the one control that has to
               be on the front door, stays and right-aligns on its own. */}
           <div className="flex justify-end">
-            <div className="bg-carbon-90/40 p-1 border border-white/20" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
-              <LanguageToggle variant="switch" tone="hds" />
-            </div>
+            {/* The switch carries its own surface (`tone="hds"` draws a bordered white chip), so
+                the second glass frame that used to sit around it was a box inside a box. */}
+            <LanguageToggle variant="switch" tone="hds" />
           </div>
 
-          <div className="mt-6 grid grid-cols-1 items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] xl:gap-12">
-            {/* Scrim, not a tint: the authority paragraph sits at the bottom of this card, and at
-                `to-black/35` its 12px `text-white/75` measured 2.45:1 over a light frame. At
-                `to-black/60` the same pixel measures 6.40:1. */}
-            <div className="min-w-0 rounded-sm border border-white/15 bg-gradient-to-b from-black/70 to-black/60 p-4 sm:p-5" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
+          <div className="mt-4 grid grid-cols-1 items-center gap-6 sm:mt-6 sm:gap-8">
+            {/* One flat scrim, not a two-stop gradient. The gradient existed to keep the
+                authority paragraph (12px `text-white/75`) off the weak end of its own surface:
+                at the old `to-black/35` the same pixel measured 2.45:1 over a light frame, at
+                `to-black/60` 6.40:1. A single `bg-carbon-black/65` clears that everywhere on the
+                card instead of only at the bottom of it, and `carbon-black` is pinned dark in
+                both themes (it is a scrim, see dark.css §1) so this holds in dark mode too. */}
+            <div className="min-w-0 rounded-sm border border-white/15 bg-carbon-black/65 p-4 sm:p-5" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
               <h1 className="mrd-display2 max-w-3xl text-balance text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                 {localised.h1 ?? localised.title}
               </h1>
@@ -412,11 +451,13 @@ export const FrontDoor: React.FC = () => {
                       phone, which was most of the viewport before the reader reached a button.
                       It is clamped below `sm` and expanded in place; the same argument is made
                       in full by the seven sections under this hero, so nothing is hidden that
-                      the page does not say again. */}
+                      the page does not say again. Two lines, not three: the third line cost 26px
+                      of the first viewport, and the phone budget belongs to the action and the
+                      evidence pointer (docs/audits/2026-10-03-landing-live-hero-audit.md, H-P1-3). */}
                   <p
                     id="front-door-standfirst"
                     className={`mt-5 max-w-2xl text-base leading-[1.62] text-white/90 md:text-lg md:leading-[1.5] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] ${
-                      standfirstOpen ? '' : 'line-clamp-3 sm:line-clamp-none'
+                      standfirstOpen ? '' : 'line-clamp-2 sm:line-clamp-none'
                     }`}
                   >
                     {localised.standfirst}
@@ -442,9 +483,11 @@ export const FrontDoor: React.FC = () => {
                   mean something when the district under it is under warning.
                   The two secondary links stay outlined. */}
               {/* One primary action. Three equal full-width buttons on a phone is three
-                  primaries, which reads as none; the other two destinations are still here as
-                  text links, and the scorecard has a whole section below that argues for it. */}
-              <div className="mt-7">
+                  primaries, which reads as none; the other destinations stay here as text
+                  links, and the scorecard has a whole section below that argues for it. The
+                  run card used to sit beside this copy as the hero's second column; since
+                  2026-10-05 it has a page of its own, and the hero reaches it as a link. */}
+              <div className="mt-5 sm:mt-7">
                 <ButtonLink href="/live" intent="ink" size="lg" className="w-full sm:w-auto">
                   <MaterialIcon name="public" className="text-base" />
                   {t('frontdoor.hero.ctaMap')}
@@ -452,18 +495,47 @@ export const FrontDoor: React.FC = () => {
                 <div className="mt-2 flex flex-wrap gap-x-6">
                   <Link
                     to="/methodology"
-                    className="inline-flex min-h-[44px] items-center text-sm font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white"
+                    className="inline-flex min-h-[44px] min-w-[44px] items-center text-sm font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white"
                   >
                     {t('frontdoor.hero.ctaMethodology')}
                   </Link>
                   <Link
                     to="/model-performance"
-                    className="inline-flex min-h-[44px] items-center text-sm font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white"
+                    className="inline-flex min-h-[44px] min-w-[44px] items-center text-sm font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white"
                   >
                     {t('frontdoor.hero.ctaScorecard')}
                   </Link>
+                  <Link
+                    to="/last-run"
+                    className="inline-flex min-h-[44px] min-w-[44px] items-center text-sm font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white"
+                  >
+                    {t('frontdoor.hero.viewLastRun')}
+                  </Link>
                 </div>
               </div>
+
+              {/* The one evidence pointer is deliberately the last hero element on a phone. It
+                  borrows the run card's own text (it is not a second copy) and links to the card's
+                  page, so the hierarchy stands - claim, action, then the card that checks the
+                  claim. The card moved to `/last-run` on 2026-10-05, so this anchor is now a
+                  route link rather than an in-page fragment; on the wide layout the text link above
+                  already reaches it and this line does not render.
+                  docs/audits/2026-10-03-landing-live-hero-audit.md, H-P1-3. */}
+              {coverageArtifact?.districts_covered != null && coverageArtifact?.districts_expected ? (
+                <Link
+                  to="/last-run"
+                  className="mt-3 inline-flex min-h-[44px] min-w-[44px] items-center text-xs font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white sm:hidden"
+                >
+                  {t('frontdoor.hero.evidencePointer', {
+                    covered: formatNumber(coverageArtifact.districts_covered),
+                    expected: formatNumber(coverageArtifact.districts_expected),
+                    published:
+                      published != null
+                        ? t('frontdoor.hero.evidencePointerAlerts', { count: formatNumber(published) })
+                        : t('frontdoor.hero.evidencePointerNoAlerts'),
+                  })}
+                </Link>
+              ) : null}
 
               <p className="mt-6 max-w-2xl border-t border-white/20 pt-4 text-xs leading-[1.62] text-white/75">
                 {t('frontdoor.hero.authority')}{' '}
@@ -471,11 +543,7 @@ export const FrontDoor: React.FC = () => {
                   {t('frontdoor.hero.authorityMap')}
                 </Link>
               </p>
-            </div>
 
-            {/* The hero visual card. Solid White background with Carbon-90 text for clean paper-like readability */}
-            <div className="relative z-10 w-full text-carbon-90 bg-white shadow-2xl overflow-hidden rounded-sm">
-              <RunVisual freshness={freshness} loading={loading} published={published} withheld={withheld} />
             </div>
           </div>
         </div>
@@ -661,6 +729,72 @@ export const FrontDoor: React.FC = () => {
         )}
       </section>
 
+      {/* ── Products: the eight hazard classes and the two forecast horizons ── */}
+      <section aria-labelledby="products-heading" className="space-y-4">
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <h2 id="products-heading" className="text-[22px] font-bold tracking-tight text-carbon-90 lg:text-2xl">
+            {t('frontdoor.products.h2')}
+          </h2>
+          <p className="font-mono text-xs uppercase tracking-wider text-carbon-60">{t('frontdoor.products.aside')}</p>
+        </div>
+
+        <div>
+          <Eyebrow>{t('frontdoor.products.hazardsEyebrow')}</Eyebrow>
+          <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {(hazards as { slug: string; class: string; season: string }[]).map((hazard) => (
+              <Link
+                key={hazard.slug}
+                to={`/hazards/${hazard.slug}`}
+                className="group flex flex-col gap-1.5 border border-carbon-20 bg-white p-4 transition-colors hover:border-nasa-blue-shade focus-visible:outline focus-visible:outline-2 focus-visible:outline-nasa-blue focus-visible:outline-offset-2"
+              >
+                <span className="flex items-center justify-between">
+                  <MaterialIcon name={hazardIcon(hazard.class)} className="text-xl text-nasa-blue-shade" />
+                  <MaterialIcon name="arrow_forward" className="text-sm text-carbon-30 transition-colors group-hover:text-nasa-blue-shade" />
+                </span>
+                <span className="text-sm font-bold text-carbon-90">{hazard.class}</span>
+                <span className="text-xs leading-relaxed text-carbon-60">{hazard.season}</span>
+              </Link>
+            ))}
+          </div>
+          <p className="mt-2 text-sm leading-[1.62] text-carbon-70">{t('frontdoor.products.hazardsNote')}</p>
+        </div>
+
+        <div>
+          <Eyebrow>{t('frontdoor.products.horizonsEyebrow')}</Eyebrow>
+          <div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-2">
+            <Link
+              to="/docs/forecasts"
+              className="group flex items-start gap-3 border border-carbon-20 bg-white p-4 transition-colors hover:border-nasa-blue-shade focus-visible:outline focus-visible:outline-2 focus-visible:outline-nasa-blue focus-visible:outline-offset-2"
+            >
+              <MaterialIcon name="date_range" className="mt-0.5 text-xl text-nasa-blue-shade" />
+              <span className="space-y-1">
+                <span className="block text-sm font-bold text-carbon-90">{t('frontdoor.products.horizon7')}</span>
+                <span className="block text-xs leading-relaxed text-carbon-60">{t('frontdoor.products.horizon7desc')}</span>
+              </span>
+            </Link>
+            <Link
+              to="/docs/forecasts"
+              className="group flex items-start gap-3 border border-carbon-20 bg-white p-4 transition-colors hover:border-nasa-blue-shade focus-visible:outline focus-visible:outline-2 focus-visible:outline-nasa-blue focus-visible:outline-offset-2"
+            >
+              <MaterialIcon name="calendar_month" className="mt-0.5 text-xl text-nasa-blue-shade" />
+              <span className="space-y-1">
+                <span className="block text-sm font-bold text-carbon-90">{t('frontdoor.products.horizon15')}</span>
+                <span className="block text-xs leading-relaxed text-carbon-60">{t('frontdoor.products.horizon15desc')}</span>
+              </span>
+            </Link>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <Link to="/hazards" className="inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 bg-white px-4 py-2 text-sm font-semibold text-carbon-80 hover:bg-carbon-05">
+            {t('frontdoor.products.methodologyLink')}
+          </Link>
+          <Link to="/docs/forecasts" className="inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 bg-white px-4 py-2 text-sm font-semibold text-carbon-80 hover:bg-carbon-05">
+            {t('frontdoor.products.forecastDocs')}
+          </Link>
+        </div>
+      </section>
+
       {/* ── On this page — anchor nav for the 7 editorial sections (audit #7: recognition/efficiency) ── */}
       {sections.length > 1 && (
         <nav aria-label={t('frontdoor.toc')} className="border border-carbon-20 bg-carbon-05 p-4">
@@ -692,6 +826,72 @@ export const FrontDoor: React.FC = () => {
           <SectionBody section={section} />
         </section>
       ))}
+
+      {/* ── Newest from the blog: freshness the published record cannot show ── */}
+      <section aria-labelledby="blogs-heading" className="space-y-3 border-t border-carbon-20 pt-6">
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <h2 id="blogs-heading" className="text-[22px] font-bold tracking-tight text-carbon-90 lg:text-2xl">
+            {t('frontdoor.blogs.h2')}
+          </h2>
+          <p className="font-mono text-xs uppercase tracking-wider text-carbon-60">{t('frontdoor.blogs.aside')}</p>
+        </div>
+
+        {blogsLoading && <p className="text-sm text-carbon-60">{t('frontdoor.blogs.loading')}</p>}
+
+        {!blogsLoading && blogsError && (
+          <div className="flex flex-wrap items-center gap-3 border border-carbon-20 bg-white p-4 text-sm text-carbon-70">
+            <span>{t('frontdoor.blogs.error', { error: blogsError })}</span>
+            <button
+              type="button"
+              onClick={() => setBlogsReload((n) => n + 1)}
+              className="inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 bg-carbon-05 px-3 py-1.5 text-xs font-bold text-carbon-80 hover:bg-carbon-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-nasa-blue focus-visible:outline-offset-2"
+            >
+              <MaterialIcon name="refresh" className="text-sm" />
+              {t('frontdoor.blogs.retry')}
+            </button>
+          </div>
+        )}
+
+        {!blogsLoading && !blogsError && blogPosts !== null && blogPosts.length === 0 && (
+          <p className="text-sm text-carbon-60">{t('frontdoor.blogs.empty')}</p>
+        )}
+
+        {!blogsLoading && !blogsError && blogPosts !== null && blogPosts.length > 0 && (
+          <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            {blogPosts.slice(0, 4).map((article, index) => (
+              <li key={article.id}>
+                <Link
+                  to={`/blogs/${encodeURIComponent(article.slug)}`}
+                  className="flex h-full flex-col gap-2 border border-carbon-20 bg-white p-4 transition-colors hover:border-nasa-blue-shade focus-visible:outline focus-visible:outline-2 focus-visible:outline-nasa-blue focus-visible:outline-offset-2"
+                >
+                  <span className="flex flex-wrap items-center gap-2">
+                    <span className="border border-carbon-20 bg-carbon-05 px-2 py-0.5 text-xs font-semibold text-carbon-70">
+                      {article.category || t('frontdoor.blogs.aside')}
+                    </span>
+                    {index === 0 && (
+                      <span className="border border-nasa-blue/20 bg-nasa-blue/10 px-2 py-0.5 text-xs font-bold text-nasa-blue-shade">
+                        {t('frontdoor.blogs.newest')}
+                      </span>
+                    )}
+                  </span>
+                  <span className="text-base font-bold leading-snug text-carbon-90">{article.title}</span>
+                  <span className="line-clamp-2 text-sm leading-[1.62] text-carbon-60">{article.excerpt}</span>
+                  <span className="mt-auto pt-1 font-mono text-xs text-carbon-60">
+                    {formatDate(article.publishedAt ?? article.createdAt)}
+                    {` · ${t('frontdoor.blogs.minRead', { min: readingTimeMinutes(article.contentHtml) })}`}
+                    {article.authorName ? ` · ${article.authorName}` : ''}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <Link to="/blogs" className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-bold text-nasa-blue-shade underline underline-offset-4 hover:decoration-nasa-blue-shade">
+          {t('frontdoor.blogs.allPosts')}
+          <MaterialIcon name="arrow_forward" className="text-sm" />
+        </Link>
+      </section>
 
       {/* ── Questions the front door should answer ────────────────────────── */}
       {faqs.length > 0 && (

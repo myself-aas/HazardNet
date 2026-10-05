@@ -1,4 +1,5 @@
 import MaterialIcon from "./MaterialIcon";
+import { Check, ChevronDown, ChevronUp, Maximize2, Share2, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMemo, useRef } from 'react';
 import { GranularDisasterData } from '../data/disasterDetails';
@@ -587,7 +588,13 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
                 onClick={onShareAlert}
                 className="px-3.5 py-2 bg-white hover:bg-carbon-10 text-carbon-80 font-bold rounded-xl border border-carbon-20 transition-all flex items-center gap-2 shadow-xs min-h-[44px]"
               >
-                <span>{copiedAlert ? 'Copied to Clipboard! ✓' : 'Share Alert'}</span>
+                <span className="inline-flex items-center gap-1.5">
+                  {copiedAlert ? (
+                    <><Check className="h-4 w-4" aria-hidden="true" />Copied to Clipboard!</>
+                  ) : (
+                    <><Share2 className="h-4 w-4" aria-hidden="true" />Share Alert</>
+                  )}
+                </span>
               </button>
             </div>
 
@@ -650,14 +657,23 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
                   className="px-2.5 py-1.5 bg-carbon-20 hover:bg-carbon-30 active:bg-carbon-40 text-carbon-80 rounded-lg text-xs font-extrabold flex items-center gap-1 transition-colors min-h-[36px]"
                   title="Toggle Sheet Height"
                 >
-                  <span>{sheetMode === 'peek' ? 'Expand ▲' : sheetMode === 'half' ? 'Max ⤢' : 'Peek ▼'}</span>
+                  <span className="inline-flex items-center gap-1">
+                    {sheetMode === 'peek' ? (
+                      <>Expand <ChevronUp className="h-3.5 w-3.5" aria-hidden="true" /></>
+                    ) : sheetMode === 'half' ? (
+                      <>Max <Maximize2 className="h-3.5 w-3.5" aria-hidden="true" /></>
+                    ) : (
+                      <>Peek <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" /></>
+                    )}
+                  </span>
                 </button>
                 <button
                   onClick={onClose}
                   className="w-9 h-9 bg-carbon-20 hover:bg-carbon-30 active:bg-carbon-40 text-carbon-70 rounded-lg text-xs font-black flex items-center justify-center transition-colors shrink-0 min-h-[36px]"
                   title="Close Sheet"
+                  aria-label="Close Sheet"
                 >
-                  ✕
+                  <X className="h-4 w-4" aria-hidden="true" />
                 </button>
               </div>
             </div>
@@ -689,13 +705,22 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
                   onClick={() => onSetSheetMode('half')}
                   className="flex-1 py-2.5 bg-primary active:bg-primary-strong text-carbon-90 font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 min-h-[44px]"
                 >
-                  <span>View Detailed Analytics & Action Plan ▲</span>
+                  <span className="inline-flex items-center gap-1.5">
+                    View Detailed Analytics &amp; Action Plan
+                    <ChevronUp className="h-4 w-4" aria-hidden="true" />
+                  </span>
                 </button>
                 <button
                   onClick={onShareAlert}
                   className="px-3 py-2.5 bg-carbon-10 active:bg-carbon-20 text-carbon-80 font-bold text-xs rounded-xl border border-carbon-20 transition-all min-h-[44px]"
                 >
-                  {copiedAlert ? 'Copied ✓' : 'Share 📢'}
+                  <span className="inline-flex items-center gap-1.5">
+                    {copiedAlert ? (
+                      <><Check className="h-4 w-4" aria-hidden="true" />Copied</>
+                    ) : (
+                      <><Share2 className="h-4 w-4" aria-hidden="true" />Share</>
+                    )}
+                  </span>
                 </button>
               </div>
             </div>
@@ -739,7 +764,13 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
                     onClick={onShareAlert}
                     className="flex-1 py-3 bg-carbon-10 active:bg-carbon-20 text-carbon-80 font-bold rounded-xl border border-carbon-20 text-xs transition-all min-h-[44px]"
                   >
-                    {copiedAlert ? 'Copied to Clipboard! ✓' : 'Share Alert 📢'}
+                    <span className="inline-flex items-center gap-1.5">
+                      {copiedAlert ? (
+                        <><Check className="h-4 w-4" aria-hidden="true" />Copied to Clipboard!</>
+                      ) : (
+                        <><Share2 className="h-4 w-4" aria-hidden="true" />Share Alert</>
+                      )}
+                    </span>
                   </button>
                   <button
                     onClick={onClose}

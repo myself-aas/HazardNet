@@ -1,57 +1,67 @@
+import type { IconName } from '@hazardnet/design-system';
+
 /**
  * WMO Weather interpretation codes (WW) — maps the integer `weather_code`
- * returned by Open-Meteo to a human-readable label + icon name.
+ * returned by Open-Meteo to a human-readable label and registered Lucide icon.
  *
  * Reference: https://open-meteo.com/en/docs (WMO Weather interpretation codes)
  */
 
+export type WmoWeatherIconName = Extract<
+  IconName,
+  | 'Cloud'
+  | 'CloudDrizzle'
+  | 'CloudFog'
+  | 'CloudHail'
+  | 'CloudLightning'
+  | 'CloudRain'
+  | 'CloudRainWind'
+  | 'CloudSnow'
+  | 'CloudSun'
+  | 'Snowflake'
+  | 'Sun'
+>;
+
 export interface WmoCodeInfo {
   code: number;
   label: string;
-  /** Short emoji/glyph for compact displays */
-  emoji: string;
-  /** Lucide icon name hint for <MaterialIcon name={...} /> */
-  icon: 'sun' | 'cloud-sun' | 'cloud' | 'cloud-fog' | 'cloud-drizzle' |
-        'cloud-rain' | 'cloud-snow' | 'cloud-hail' | 'cloud-lightning' |
-        'wind' | 'snowflake' | 'cloud-rain-wind';
-  /** Day vs. night variant (used by the caller to swap sun/moon). */
-  dayVariant?: boolean;
+  icon: WmoWeatherIconName;
 }
 
 const WMO_CODES: Record<number, Omit<WmoCodeInfo, 'code'>> = {
-  0:  { label: 'Clear sky',                          emoji: '☀️',  icon: 'sun' },
-  1:  { label: 'Mainly clear',                       emoji: '🌤️', icon: 'cloud-sun' },
-  2:  { label: 'Partly cloudy',                      emoji: '⛅',  icon: 'cloud-sun' },
-  3:  { label: 'Overcast',                           emoji: '☁️',  icon: 'cloud' },
-  45: { label: 'Fog',                                emoji: '🌫️', icon: 'cloud-fog' },
-  48: { label: 'Depositing rime fog',                emoji: '🌫️', icon: 'cloud-fog' },
-  51: { label: 'Light drizzle',                      emoji: '🌦️', icon: 'cloud-drizzle' },
-  53: { label: 'Moderate drizzle',                   emoji: '🌦️', icon: 'cloud-drizzle' },
-  55: { label: 'Dense drizzle',                      emoji: '🌧️', icon: 'cloud-drizzle' },
-  56: { label: 'Light freezing drizzle',             emoji: '🌧️', icon: 'cloud-hail' },
-  57: { label: 'Dense freezing drizzle',             emoji: '🌧️', icon: 'cloud-hail' },
-  61: { label: 'Slight rain',                        emoji: '🌦️', icon: 'cloud-rain' },
-  63: { label: 'Moderate rain',                      emoji: '🌧️', icon: 'cloud-rain' },
-  65: { label: 'Heavy rain',                         emoji: '🌧️', icon: 'cloud-rain' },
-  66: { label: 'Light freezing rain',                emoji: '🌧️', icon: 'cloud-hail' },
-  67: { label: 'Heavy freezing rain',                emoji: '🌧️', icon: 'cloud-hail' },
-  71: { label: 'Slight snowfall',                    emoji: '🌨️', icon: 'cloud-snow' },
-  73: { label: 'Moderate snowfall',                  emoji: '🌨️', icon: 'cloud-snow' },
-  75: { label: 'Heavy snowfall',                     emoji: '❄️', icon: 'cloud-snow' },
-  77: { label: 'Snow grains',                        emoji: '❄️', icon: 'snowflake' },
-  80: { label: 'Slight rain showers',                emoji: '🌦️', icon: 'cloud-rain' },
-  81: { label: 'Moderate rain showers',              emoji: '🌧️', icon: 'cloud-rain' },
-  82: { label: 'Violent rain showers',               emoji: '⛈️', icon: 'cloud-rain-wind' },
-  85: { label: 'Slight snow showers',                emoji: '🌨️', icon: 'cloud-snow' },
-  86: { label: 'Heavy snow showers',                 emoji: '❄️', icon: 'cloud-snow' },
-  95: { label: 'Thunderstorm',                       emoji: '⛈️', icon: 'cloud-lightning' },
-  96: { label: 'Thunderstorm with slight hail',      emoji: '⛈️', icon: 'cloud-lightning' },
-  99: { label: 'Thunderstorm with heavy hail',       emoji: '⛈️', icon: 'cloud-lightning' },
+  0: { label: 'Clear sky', icon: 'Sun' },
+  1: { label: 'Mainly clear', icon: 'CloudSun' },
+  2: { label: 'Partly cloudy', icon: 'CloudSun' },
+  3: { label: 'Overcast', icon: 'Cloud' },
+  45: { label: 'Fog', icon: 'CloudFog' },
+  48: { label: 'Depositing rime fog', icon: 'CloudFog' },
+  51: { label: 'Light drizzle', icon: 'CloudDrizzle' },
+  53: { label: 'Moderate drizzle', icon: 'CloudDrizzle' },
+  55: { label: 'Dense drizzle', icon: 'CloudDrizzle' },
+  56: { label: 'Light freezing drizzle', icon: 'CloudHail' },
+  57: { label: 'Dense freezing drizzle', icon: 'CloudHail' },
+  61: { label: 'Slight rain', icon: 'CloudRain' },
+  63: { label: 'Moderate rain', icon: 'CloudRain' },
+  65: { label: 'Heavy rain', icon: 'CloudRain' },
+  66: { label: 'Light freezing rain', icon: 'CloudHail' },
+  67: { label: 'Heavy freezing rain', icon: 'CloudHail' },
+  71: { label: 'Slight snowfall', icon: 'CloudSnow' },
+  73: { label: 'Moderate snowfall', icon: 'CloudSnow' },
+  75: { label: 'Heavy snowfall', icon: 'CloudSnow' },
+  77: { label: 'Snow grains', icon: 'Snowflake' },
+  80: { label: 'Slight rain showers', icon: 'CloudRain' },
+  81: { label: 'Moderate rain showers', icon: 'CloudRain' },
+  82: { label: 'Violent rain showers', icon: 'CloudRainWind' },
+  85: { label: 'Slight snow showers', icon: 'CloudSnow' },
+  86: { label: 'Heavy snow showers', icon: 'CloudSnow' },
+  95: { label: 'Thunderstorm', icon: 'CloudLightning' },
+  96: { label: 'Thunderstorm with slight hail', icon: 'CloudLightning' },
+  99: { label: 'Thunderstorm with heavy hail', icon: 'CloudLightning' },
 };
 
 export function wmoCodeInfo(code: number | null | undefined): WmoCodeInfo {
   if (code == null || !WMO_CODES[code]) {
-    return { code: code ?? -1, label: 'Unknown', emoji: '❓', icon: 'cloud' };
+    return { code: code ?? -1, label: 'Unknown', icon: 'Cloud' };
   }
   return { code, ...WMO_CODES[code] };
 }

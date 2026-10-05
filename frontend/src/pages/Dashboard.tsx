@@ -1,11 +1,14 @@
 import MaterialIcon from "../components/MaterialIcon";
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import Map from '../components/Map';
 import StoredForecastPanel from '../components/StoredForecastPanel';
+import { DataStateEmpty, DataStateError } from '../components/ui/DataState';
 import { fetchStoredPrediction, type StoredPrediction } from '../lib/storedPrediction';
+import { reasonFromError, type ForecastViewState } from '../lib/forecastView';
 import AdvisoryPanel from '../components/AdvisoryPanel';
 import OfflineBadge from '../components/OfflineBadge';
 import RiskAnalytics from '../components/RiskAnalytics';
@@ -35,6 +38,48 @@ interface DashboardProps {
   isFullScreen?: boolean;
 }
 
+/**
+ * The console's own loading / empty / error / ready states for one district's stored forecast.
+ *
+ * `StoredForecastPanel` still owns loading and ready, but the two failure shapes are the page's,
+ * because only the page knows the district it asked about and can offer the retry:
+ *
+ *   - empty  - the read answered "this district and horizon have no stored coverage" (HTTP 404,
+ *              `StoredPredictionError.reason === 'uncovered'`). The console keeps the map and the
+ *              district's static baseline on screen and says so, instead of showing a generic error;
+ *   - error  - the read failed for a reason retrying can fix (offline / rate-limited / server /
+ *              malformed payload). The retry control re-runs the same request.
+ *
+ * Before this, both shapes fell through `forecastViewStateFromLegacy`, which can only produce a
+ * generic `server` error - the console could not tell "no coverage" from "the service is down"
+ * (audit 2026-10-03 §9, the two `absent` Dashboard states).
+ */
+const DistrictForecastPanel: React.FC<{
+  district: District;
+  view: ForecastViewState;
+  onRetry: () => void;
+}> = ({ district, view, onRetry }) => {
+  if (view.kind === 'uncovered') {
+    return (
+      <DataStateEmpty
+        title={`No stored forecast for ${district.name} yet`}
+        body="This district is in the console's coverage list but the published forecast archive holds no record for the requested horizon. The map, the district's static baseline and the advisory history remain available."
+      />
+    );
+  }
+  if (view.kind === 'error') {
+    return (
+      <DataStateError
+        title={`The stored forecast for ${district.name} could not be read`}
+        detail={view.reason}
+        onRetry={onRetry}
+        retryLabel="Try the forecast again"
+      />
+    );
+  }
+  return <StoredForecastPanel state={view} onRetry={onRetry} />;
+};
+
 const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen = false }) => {
   const [searchParams] = useSearchParams();
   const { user, userProfile } = useAuth();
@@ -44,6 +89,8 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
   const [selectedDistrict, setSelectedDistrict] = useState<District | null>(null);
   const [loading, setLoading] = useState(false);
   const [storedForecast, setStoredForecast] = useState<StoredPrediction | null>(null);
+  // The district-scoped read state the page renders (see `DistrictForecastPanel`).
+  const [forecastView, setForecastView] = useState<ForecastViewState>({ kind: 'idle' });
   const requestSequence = useRef(0);
   const [severity, setSeverity] = useState<number>(0.78);
 
@@ -54,58 +101,11 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
   const [liveSummary, setLiveSummary] = useState<{ hazard: string; confidence: number } | null>(null);
 
 
-  // Offline Cache & Storage Management State
-  const [tileCacheStats, setTileCacheStats] = useState<{ count: number; estimatedSizeMb: number; loading: boolean }>({
-    count: 0,
-    estimatedSizeMb: 0,
-    loading: true,
-  });
-  const [isClearingTileCache, setIsClearingTileCache] = useState(false);
+  // Offline storage management. Map tiles are deliberately NOT stored on device:
+  // persisting OpenStreetMap tiles is exactly what the volunteer-run tile servers'
+  // usage policy prohibits (osm.wiki/Tile_usage_policy). Only app-shell assets and
+  // forecast responses may be cached; this panel lets users purge them.
   const [isClearingAllCache, setIsClearingAllCache] = useState(false);
-
-  const updateCacheStats = useCallback(async () => {
-    if (!('caches' in window)) {
-      setTileCacheStats({ count: 0, estimatedSizeMb: 0, loading: false });
-      return;
-    }
-    try {
-      const tileCache = await caches.open('hazardnet-tiles-v1');
-      const keys = await tileCache.keys();
-      const count = keys.length;
-      // Estimate tile size (~28 KB per tile)
-      const estimatedSizeMb = Number(((count * 28) / 1024).toFixed(2));
-      setTileCacheStats({ count, estimatedSizeMb, loading: false });
-    } catch (err) {
-      setTileCacheStats({ count: 0, estimatedSizeMb: 0, loading: false });
-    }
-  }, []);
-
-  useEffect(() => {
-    updateCacheStats();
-  }, [updateCacheStats]);
-
-  const handleClearTileCache = async () => {
-    setIsClearingTileCache(true);
-    try {
-      if ('caches' in window) {
-        const deleted = await caches.delete('hazardnet-tiles-v1');
-        if (deleted) {
-          toast.success('Offline map tile cache cleared! Storage freed.', {
-            icon: <MaterialIcon name="delete" className="w-4 h-4" />,
-          });
-        } else {
-          toast.success('Tile cache was already empty.');
-        }
-      } else {
-        toast.error('Browser Caches API unavailable.');
-      }
-      await updateCacheStats();
-    } catch (err) {
-      toast.error('Failed to clear tile cache.');
-    } finally {
-      setIsClearingTileCache(false);
-    }
-  };
 
   const handleClearAllCaches = async () => {
     setIsClearingAllCache(true);
@@ -117,7 +117,6 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
           icon: <MaterialIcon name="delete" className="w-4 h-4" />,
         });
       }
-      await updateCacheStats();
     } catch (err) {
       toast.error('Failed to purge caches.');
     } finally {
@@ -233,10 +232,12 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
 
   const runPrediction = useCallback(async (dist: District) => {
     const sequence = ++requestSequence.current;
+    const selection = { districtId: dist.id, horizon: '7_days' as const };
     setLoading(true);
     setStoredForecast(null);
     setLiveSummary(null);
     setPredictionSource('baseline');
+    setForecastView({ kind: 'loading', selection });
     try {
       const data = await fetchStoredPrediction(dist.id);
       if (sequence !== requestSequence.current) return;
@@ -244,10 +245,18 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
       setSeverity(data.prediction.severity_score);
       setLiveSummary({ hazard: data.prediction.hazard, confidence: data.prediction.confidence });
       setPredictionSource('live');
+      setForecastView({ kind: 'ready', selection, data, refreshing: false });
     } catch (error) {
       if (sequence !== requestSequence.current) return;
       console.warn('[HazardNet] stored forecast unavailable', error);
       setSeverity(dist.severity);
+      const reason = reasonFromError(error);
+      // A district with no stored coverage is an empty state; everything else is retryable.
+      setForecastView(
+        reason === 'uncovered'
+          ? { kind: 'uncovered', selection }
+          : { kind: 'error', selection, reason },
+      );
     } finally {
       if (sequence === requestSequence.current) setLoading(false);
     }
@@ -301,14 +310,15 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
             applies - the hard-coded `pt-16` (64px) was 39px short on a notched phone, so this
             header's status pill sat under the bar. From `sm` up the navbar only overlays the top
             of the stage on the home console, so the padding returns to the tighter value. */}
+        {/* 2026-10-05 restyle: the stage title floats on the map as plain text,
+            the way the reference apps float "Destination Ahead" — bold ink with
+            a soft legibility shadow, no bounding card between it and the map. */}
         <header className="pointer-events-none absolute inset-x-0 top-0 z-[var(--z-sticky)] flex items-start justify-between gap-3 p-3 pt-[calc(var(--navbar-height)+8px)] sm:p-5">
-          <div className="pointer-events-auto flex min-w-0 items-center gap-2 glass-panel px-3.5 py-2">
-            <div className="min-w-0">
-              <p className="truncate text-xs font-bold uppercase tracking-[0.14em] text-carbon-60">HazardNet / live</p>
-              <p className="truncate text-xs font-bold text-carbon-90">National situational map</p>
-            </div>
+          <div className="pointer-events-auto min-w-0 [text-shadow:0_1px_2px_rgba(255,255,255,0.7),0_0_8px_rgba(255,255,255,0.5)] dark:[text-shadow:0_1px_2px_rgba(0,0,0,0.8),0_0_8px_rgba(0,0,0,0.6)]">
+            <p className="truncate text-xs font-bold uppercase tracking-[0.14em] text-carbon-50 dark:text-carbon-40">HazardNet / live</p>
+            <p className="truncate text-sm font-bold tracking-tight text-carbon-90 dark:text-white">National situational map</p>
           </div>
-          <div className="pointer-events-auto hidden items-center gap-2 glass-panel px-3.5 py-2 text-xs font-bold uppercase tracking-[0.12em] text-carbon-60 sm:flex">
+          <div className="pointer-events-auto hidden items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-carbon-50 dark:text-carbon-40 [text-shadow:0_1px_2px_rgba(255,255,255,0.7),0_0_8px_rgba(255,255,255,0.5)] dark:[text-shadow:0_1px_2px_rgba(0,0,0,0.8),0_0_8px_rgba(0,0,0,0.6)] sm:flex">
             {predictionSource === 'live' ? 'Forecast synced' : 'Baseline coverage'}
           </div>
         </header>
@@ -378,11 +388,10 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 </div>
 
                 {/* Prediction Panel */}
-                <StoredForecastPanel
-                  forecast={storedForecast}
-                  loading={loading}
-                  requested={Boolean(selectedDistrict)}
-                  onRetry={() => selectedDistrict && runPrediction(selectedDistrict)}
+                <DistrictForecastPanel
+                  district={selectedDistrict}
+                  view={forecastView}
+                  onRetry={() => runPrediction(selectedDistrict)}
                 />
 
                 {/* Advisory Panel */}
@@ -670,7 +679,11 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                         <div className="flex items-center justify-between text-xs font-mono text-carbon-60 pt-1.5 sm:pt-2 border-t border-carbon-20/60 gap-2">
                           <span className="truncate">{dist.mainCrop}</span>
                           <span className={`font-bold flex items-center gap-1 whitespace-nowrap ${isSelected ? 'text-amber-700' : 'text-carbon-60'}`}>
-                            {isSelected ? <><MaterialIcon name="my_location" className="w-3.5 h-3.5 shrink-0" /> Centered</> : '→'}
+                            {isSelected ? (
+                              <><MaterialIcon name="my_location" className="w-3.5 h-3.5 shrink-0" /> Centered</>
+                            ) : (
+                              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                            )}
                           </span>
                         </div>
                       </div>
@@ -892,7 +905,9 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                     }}
                     className="w-full py-2.5 bg-carbon-90 hover:bg-carbon-80 text-white font-black text-xs  transition-all cursor-pointer"
                   >
-                    Focus GIS Map Stage →
+                    <span className="inline-flex items-center justify-center gap-2">
+                      Focus GIS Map Stage <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                    </span>
                   </button>
                 </div>
               ))}
@@ -917,100 +932,63 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 </span>
               </div>
               <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                Offline Map Tile Cache & Storage Settings
+                Offline Storage Settings
               </h2>
               <p className="text-xs sm:text-sm text-carbon-30 leading-relaxed font-normal">
-                Manage locally cached satellite GIS map tiles, published forecast snapshots, and offline storage. Manually clear tile caches to free up browser disk space without losing saved districts or system settings.
+                HazardNet keeps map tiles in the normal browser cache only and never writes them to offline storage: tile servers ask us not to bulk-download or persist their tiles. Forecast snapshots and app assets can still be purged here at any time.
               </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3 relative z-10 shrink-0">
-              <button
-                onClick={updateCacheStats}
-                className="px-4 py-2.5 bg-carbon-80 hover:bg-carbon-70 text-carbon-20 border border-carbon-70 text-xs font-bold  transition-all cursor-pointer flex items-center gap-2"
-                title="Refresh Cache Stats"
-              >
-                <MaterialIcon name="refresh" className="w-4 h-4 inline-block mr-1" /><span>Refresh Storage Stats</span>
-              </button>
             </div>
           </div>
 
           {/* Cards Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Tile Cache Card */}
+            {/* Tile policy card */}
             <div className="lg:col-span-7 bg-white border border-carbon-20 rounded-[28px] p-6 sm:p-8  space-y-6">
               <div className="flex items-center justify-between border-b border-carbon-10 pb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12  bg-nasa-red/15 border border-nasa-blue/30 text-amber-700 flex items-center justify-center font-bold text-xl">
-                    <MaterialIcon name="gis" className="w-6 h-6" />
+                    <MaterialIcon name="public" className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-black text-carbon-90">GIS Satellite Map Tile Cache</h3>
-                    <p className="text-xs text-carbon-60 font-mono">
-                      Cache ID: <code className="bg-carbon-10 px-1.5 py-0.5 rounded text-carbon-70">hazardnet-tiles-v1</code>
-                    </p>
+                    <h3 className="text-lg font-black text-carbon-90">Map Tiles</h3>
+                    <p className="text-xs text-carbon-60 font-mono">OpenTopoMap · OpenStreetMap data</p>
                   </div>
                 </div>
                 <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-carbon-05 text-carbon-80 border border-carbon-20">
-                  Active (Offline Enabled)
+                  Not stored offline
                 </span>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs font-mono">
                 <div className="p-4  bg-carbon-05 border border-carbon-20">
-                  <span className="text-xs text-carbon-60 font-bold uppercase block">Cached Tiles</span>
-                  <strong className="text-xl font-black text-carbon-90">
-                    {tileCacheStats.loading ? '...' : tileCacheStats.count.toLocaleString()}
-                  </strong>
-                  <span className="text-xs text-carbon-60 block mt-0.5">map images</span>
+                  <span className="text-xs text-carbon-60 font-bold uppercase block">Persisted Tiles</span>
+                  <strong className="text-xl font-black text-carbon-90">0</strong>
+                  <span className="text-xs text-carbon-60 block mt-0.5">by design</span>
                 </div>
 
                 <div className="p-4  bg-carbon-05 border border-carbon-20">
-                  <span className="text-xs text-carbon-60 font-bold uppercase block">Estimated Space</span>
-                  <strong className="text-xl font-black text-amber-700">
-                    {tileCacheStats.loading ? '...' : `~${tileCacheStats.estimatedSizeMb} MB`}
-                  </strong>
-                  <span className="text-xs text-carbon-60 block mt-0.5">local disk usage</span>
+                  <span className="text-xs text-carbon-60 font-bold uppercase block">Tile Source</span>
+                  <strong className="text-sm font-black text-carbon-90">tile.opentopomap.org</strong>
+                  <span className="text-xs text-carbon-60 block mt-0.5">renders OSM data</span>
                 </div>
 
                 <div className="p-4  bg-carbon-05 border border-carbon-20 col-span-2 sm:col-span-1">
-                  <span className="text-xs text-carbon-60 font-bold uppercase block">Max Tile Threshold</span>
-                  <strong className="text-xl font-black text-carbon-90">1,200</strong>
-                  <span className="text-xs text-carbon-60 block mt-0.5">auto eviction limit</span>
+                  <span className="text-xs text-carbon-60 font-bold uppercase block">Caching</span>
+                  <strong className="text-sm font-black text-carbon-90">Browser HTTP cache</strong>
+                  <span className="text-xs text-carbon-60 block mt-0.5">honours server headers</span>
                 </div>
               </div>
 
               <div className="p-4  bg-carbon-05 border border-amber-200 text-xs text-amber-900 space-y-2">
                 <div className="flex items-center gap-2 font-bold">
-                  <MaterialIcon name="lightbulb" className="w-4 h-4 inline-block mr-1" /><span>Offline Tile Cache Management</span>
+                  <MaterialIcon name="lightbulb" className="w-4 h-4 inline-block mr-1" /><span>Why tiles are not downloadable for offline use</span>
                 </div>
                 <p className="leading-relaxed">
-                  Map tiles from satellite imagery, topographic maps, and OpenStreetMap are cached locally in your browser when you zoom and pan across Bangladesh. If you need to free up storage space, you can clear this cache anytime. New tiles will be re-downloaded when online.
+                  Map tiles (rendered from OpenStreetMap data) are never bulk-downloaded or permanently stored: the earlier OpenStreetMap tile servers IP-blocked this site after an old build pre-cached them, and that lesson stuck. Tiles load on demand and live only in your browser's ordinary HTTP cache.
                 </p>
               </div>
 
-              {/* Action Buttons */}
               <div className="pt-2 flex flex-wrap items-center gap-3">
-                <button
-                  onClick={handleClearTileCache}
-                  disabled={isClearingTileCache || tileCacheStats.count === 0}
-                  className="px-6 py-3.5 bg-primary hover:bg-primary-strong text-white font-black text-sm   transition-all duration-200 flex items-center gap-2.5 disabled:opacity-50 active:scale-98 cursor-pointer"
-                >
-                  {isClearingTileCache ? (
-                    <>
-                      <svg className="animate-spin h-5 w-5 text-carbon-black" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                      </svg>
-                      <span>Clearing Tile Cache...</span>
-                    </>
-                  ) : (
-                    <>
-                      <MaterialIcon name="delete" className="w-4 h-4 inline-block mr-1" /><span>Clear Tile Cache ({tileCacheStats.count} items)</span>
-                    </>
-                  )}
-                </button>
-
                 <button
                   onClick={handleClearAllCaches}
                   disabled={isClearingAllCache}
@@ -1054,7 +1032,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
 
                 <div className="pt-2 text-xs text-carbon-60 space-y-1">
                   <p><strong>Service Worker Status:</strong> Active & Registered</p>
-                  <p>The Service Worker caches map tiles only. Model weights and preprocessing assets are never sent to or stored in the browser.</p>
+                  <p>The Service Worker caches app assets only; map tiles are never persisted. Model weights and preprocessing assets are never sent to or stored in the browser.</p>
                 </div>
               </div>
             </div>
@@ -1072,11 +1050,10 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 onSelectDistrict={(dist) => setSelectedDistrict(dist)}
               />
               {selectedDistrict && (
-                <StoredForecastPanel
-                  forecast={storedForecast}
-                  loading={loading}
-                  requested={Boolean(selectedDistrict)}
-                  onRetry={() => selectedDistrict && runPrediction(selectedDistrict)}
+                <DistrictForecastPanel
+                  district={selectedDistrict}
+                  view={forecastView}
+                  onRetry={() => runPrediction(selectedDistrict)}
                 />
               )}
             </div>
@@ -1136,7 +1113,9 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 className="px-4 py-3 bg-carbon-90 hover:bg-carbon-80 text-white border border-carbon-80 text-xs font-mono font-bold rounded-full transition-all flex items-center gap-2 active:scale-95 min-h-[48px] cursor-pointer"
                 title="Return to National Overview Mode"
               >
-                <span>← National Overview</span>
+                <span className="inline-flex items-center gap-2">
+                  <ArrowLeft className="h-4 w-4" aria-hidden="true" /> National Overview
+                </span>
               </button>
 
               <div className="flex items-center gap-4 text-xs sm:text-sm font-mono bg-transparent px-4 py-3  border-0">

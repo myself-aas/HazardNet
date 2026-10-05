@@ -199,6 +199,33 @@ describe('alert payloads', () => {
     caches.delete = async (name) => { deleted.push(name); return true; };
     caches.keys = async () => ['hazardnet-offline-v1', 'hazardnet-offline-v2', 'hazardnet-offline-v3', 'hazardnet-tiles-v1', 'hazardnet-alerts-v1', 'stale-cache'];
     await handlers.activate({ waitUntil: (p) => p });
-    expect(deleted).toEqual(['hazardnet-offline-v1', 'hazardnet-offline-v2', 'stale-cache']);
+    expect(deleted).toEqual(['hazardnet-offline-v1', 'hazardnet-offline-v2', 'hazardnet-tiles-v1', 'stale-cache']);
+  });
+
+  it('never intercepts OpenStreetMap tile requests (OSM tile usage policy)', async () => {
+    const { caches, puts } = makeCaches();
+    let fetched = 0;
+    const handlers = loadWorker({
+      caches,
+      fetchImpl: async () => { fetched += 1; return new Response('tile', { status: 200 }); },
+    });
+    // respondWith must never be called for tiles: no respondWith means the browser
+    // performs the request natively under the server's own HTTP cache headers.
+    let intercepted = false;
+    handlers.fetch({
+      request: request({ url: 'https://tile.openstreetmap.org/7/45/62.png' }),
+      respondWith: () => { intercepted = true; },
+    });
+    expect(intercepted).toBe(false);
+    expect(puts).toEqual([]);
+    expect(fetched).toBe(0);
+  });
+
+  it('has no tile-cache helpers left in the shipped worker', () => {
+    expect(WORKER_SOURCE).not.toContain('hazardnet-tiles-v1');
+    expect(WORKER_SOURCE).not.toContain('isMapTileRequest');
+    expect(WORKER_SOURCE).not.toContain('getTileFromIndexedDB');
+    expect(WORKER_SOURCE).not.toContain('trimTileCache');
+    expect(WORKER_SOURCE).not.toContain('hazardnet_tile_cache_db');
   });
 });

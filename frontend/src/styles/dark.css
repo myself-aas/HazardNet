@@ -157,10 +157,47 @@
 [data-mrd-theme='dark'] .active\:bg-carbon-80:active {
   background-color: #2f3944;
 }
+/* The same fill at partial alpha. These are the *chrome* steps — floating bars, sheets,
+   status strips, side panels — so they keep the raised surface and only the alpha varies.
+   They were the hole that produced the 2026-10-04 report: an element carrying
+   `bg-white/95 dark:bg-carbon-90/95` fell through both halves of the pair, because the
+   `dark:` utility resolves through `--hds-color-carbon-90` (near-white ink in dark mode)
+   while the pin below only covered the opaque step and /80 /60. The bar stayed white and
+   its ink went near-white with it — a menu button nobody could see. */
+[data-mrd-theme='dark'] .bg-carbon-90\/95,
+[data-mrd-theme='dark'] .hover\:bg-carbon-90\/95:hover {
+  background-color: color-mix(in srgb, var(--mrd-dark-surface-raised) 95%, transparent);
+}
+[data-mrd-theme='dark'] .bg-carbon-90\/92 {
+  background-color: color-mix(in srgb, var(--mrd-dark-surface-raised) 92%, transparent);
+}
+[data-mrd-theme='dark'] .bg-carbon-90\/90,
+[data-mrd-theme='dark'] .hover\:bg-carbon-90\/90:hover {
+  background-color: color-mix(in srgb, var(--mrd-dark-surface-raised) 90%, transparent);
+}
 [data-mrd-theme='dark'] .bg-carbon-90\/80,
+[data-mrd-theme='dark'] .bg-carbon-90\/70,
+[data-mrd-theme='dark'] .hover\:bg-carbon-90\/70:hover,
 [data-mrd-theme='dark'] .bg-carbon-90\/60,
+[data-mrd-theme='dark'] .bg-carbon-80\/90,
 [data-mrd-theme='dark'] .bg-carbon-80\/80 {
   background-color: color-mix(in srgb, var(--mrd-dark-surface-raised) 80%, transparent);
+}
+[data-mrd-theme='dark'] .bg-carbon-80\/50,
+[data-mrd-theme='dark'] .hover\:bg-carbon-80\/50:hover,
+[data-mrd-theme='dark'] .bg-carbon-80\/40,
+[data-mrd-theme='dark'] .hover\:bg-carbon-80\/40:hover {
+  background-color: var(--mrd-dark-grouped);
+}
+
+/* Scrims. `bg-carbon-90/40` is the veil behind every modal and the menu drawer: its job is
+   to darken what is behind it, so it must darken in *both* themes. Left to the ramp it
+   became a 40% white wash over the page — light, the opposite of the intent. */
+[data-mrd-theme='dark'] .bg-carbon-90\/50,
+[data-mrd-theme='dark'] .bg-carbon-90\/40,
+[data-mrd-theme='dark'] .bg-carbon-90\/30,
+[data-mrd-theme='dark'] .bg-carbon-90\/20 {
+  background-color: rgb(0 0 0 / 0.55);
 }
 
 /* The opaque `white` surface role: panels, cards, popups. 447 uses, and the whole
@@ -175,11 +212,38 @@
 [data-mrd-theme='dark'] .hover\:bg-carbon-10:hover {
   background-color: var(--mrd-dark-grouped);
 }
+/* The same role at partial alpha. Two steps, because the app uses them for two jobs:
+   · 95/92/90 are bars and sheets that sit *over the app* — the sticky header, the bottom
+     sheet, the floating control bar. They read as the elevated surface at the same alpha;
+   · 80 and below are frosted panels over imagery or a tinted well, and take the grouped
+     surface the light theme uses in the same slots.
+   `bg-white/95` is the one that made the header invisible: it stayed white while
+   `text-carbon-80`/`text-carbon-90` inside it were re-pointed to near-white ink. Anything
+   added at another alpha has to be added here too — `__tests__/darkTheme.test.js` now
+   walks the `bg-white/*` steps used in the source and fails on an un-mapped one. */
+[data-mrd-theme='dark'] .bg-white\/95,
+[data-mrd-theme='dark'] .hover\:bg-white\/95:hover {
+  background-color: color-mix(in srgb, var(--mrd-bg-elevated) 95%, transparent);
+}
+[data-mrd-theme='dark'] .bg-white\/92 {
+  background-color: color-mix(in srgb, var(--mrd-bg-elevated) 92%, transparent);
+}
+[data-mrd-theme='dark'] .bg-white\/90 {
+  background-color: color-mix(in srgb, var(--mrd-bg-elevated) 90%, transparent);
+}
 [data-mrd-theme='dark'] .bg-white\/80,
+[data-mrd-theme='dark'] .bg-white\/70,
+[data-mrd-theme='dark'] .hover\:bg-white\/70:hover,
 [data-mrd-theme='dark'] .bg-white\/60,
+[data-mrd-theme='dark'] .hover\:bg-white\/60:hover,
 [data-mrd-theme='dark'] .bg-white\/40 {
   background-color: color-mix(in srgb, var(--mrd-bg-elevated) 85%, transparent);
 }
+/* NOT mapped, on purpose: /10 /15 /20. Every use sits on imagery or a saturated fill
+   (`bg-white/10` chips over the hero, the weather card's sky→indigo header, the command
+   palette's dark active row) and carries `text-white`, so it is already the light-on-dark
+   pairing in both themes. Re-pointing them would erase the affordance. The gate in
+   `__tests__/darkTheme.test.js` knows this set by name. */
 
 /* Solid status fills keep their deep values so white text on them still clears AA;
    their text roles went light in §2. This is the same fill/ink split as §4. */
@@ -236,6 +300,76 @@
 [data-mrd-theme='dark'] .placeholder-carbon-60::placeholder,
 [data-mrd-theme='dark'] .placeholder-carbon-40::placeholder {
   color: var(--mrd-label-quaternary);
+}
+
+/* ── 5b · the `dark:` twins of the pinned roles --------------------------------
+   Components written with explicit `dark:` utilities compile to their own class
+   names (`.dark\:bg-carbon-90`, not `.bg-carbon-90`), so the pins above never
+   match them and the ramp hands back the *ink* value instead: near-white fills
+   where a dark chrome panel was meant, near-black text on a dark surface. This
+   is the hole behind the 2026-10-05 layer-panel report — `text-carbon-80
+   dark:text-carbon-10` rows went dark-on-dark because the §5 pin only matches
+   the bare `.text-carbon-10` class. Same roles as §4-§5, same pins: fills stay
+   chrome, text stays ink, hairlines stay hairlines. */
+[data-mrd-theme='dark'] .dark\:bg-carbon-90,
+[data-mrd-theme='dark'] .dark\:bg-carbon-80 {
+  background-color: var(--mrd-dark-surface-raised);
+}
+[data-mrd-theme='dark'] .dark\:bg-carbon-70 {
+  background-color: var(--mrd-dark-surface);
+}
+[data-mrd-theme='dark'] .dark\:hover\:bg-carbon-90:hover,
+[data-mrd-theme='dark'] .dark\:hover\:bg-carbon-80:hover,
+[data-mrd-theme='dark'] .dark\:hover\:bg-carbon-70:hover {
+  background-color: #2f3944;
+}
+[data-mrd-theme='dark'] .dark\:hover\:bg-carbon-10:hover,
+[data-mrd-theme='dark'] .dark\:bg-carbon-80\/60,
+[data-mrd-theme='dark'] .dark\:bg-carbon-80\/50,
+[data-mrd-theme='dark'] .dark\:hover\:bg-carbon-80\/50:hover {
+  background-color: var(--mrd-dark-grouped);
+}
+[data-mrd-theme='dark'] .dark\:bg-white {
+  background-color: var(--mrd-bg-elevated);
+}
+[data-mrd-theme='dark'] .dark\:bg-carbon-90\/95 {
+  background-color: color-mix(in srgb, var(--mrd-dark-surface-raised) 95%, transparent);
+}
+[data-mrd-theme='dark'] .dark\:bg-carbon-90\/92 {
+  background-color: color-mix(in srgb, var(--mrd-dark-surface-raised) 92%, transparent);
+}
+[data-mrd-theme='dark'] .dark\:bg-carbon-90\/90 {
+  background-color: color-mix(in srgb, var(--mrd-dark-surface-raised) 90%, transparent);
+}
+[data-mrd-theme='dark'] .dark\:bg-carbon-90\/60,
+[data-mrd-theme='dark'] .dark\:bg-carbon-90\/50,
+[data-mrd-theme='dark'] .dark\:bg-carbon-90\/40,
+[data-mrd-theme='dark'] .dark\:bg-carbon-90\/30 {
+  background-color: color-mix(in srgb, var(--mrd-dark-surface-raised) 80%, transparent);
+}
+[data-mrd-theme='dark'] .dark\:text-carbon-05,
+[data-mrd-theme='dark'] .dark\:text-carbon-10,
+[data-mrd-theme='dark'] .dark\:text-carbon-20,
+[data-mrd-theme='dark'] .dark\:text-carbon-30 {
+  color: var(--mrd-label);
+}
+[data-mrd-theme='dark'] .dark\:text-carbon-40,
+[data-mrd-theme='dark'] .dark\:text-carbon-50 {
+  color: var(--mrd-label-secondary);
+}
+[data-mrd-theme='dark'] .dark\:border-carbon-60,
+[data-mrd-theme='dark'] .dark\:border-carbon-70,
+[data-mrd-theme='dark'] .dark\:border-carbon-80,
+[data-mrd-theme='dark'] .dark\:hover\:border-carbon-60:hover {
+  border-color: var(--mrd-separator);
+}
+[data-mrd-theme='dark'] .dark\:border-carbon-70\/60,
+[data-mrd-theme='dark'] .dark\:border-carbon-80\/60 {
+  border-color: color-mix(in srgb, var(--mrd-separator) 60%, transparent);
+}
+[data-mrd-theme='dark'] .dark\:divide-carbon-70 > :not([hidden]) ~ :not([hidden]),
+[data-mrd-theme='dark'] .dark\:divide-carbon-80 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--mrd-separator);
 }
 
 /* ── 6 · the map ---------------------------------------------------------------

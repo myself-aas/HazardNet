@@ -106,6 +106,20 @@ function advisoryCsv({ generatedAt, rows = 3 }) {
   return `${header}\n${body}\n`;
 }
 
+/**
+ * A Kaggle-shaped stamp (`YYYY-MM-DD HH:MM:SS`, naive UTC) `hoursAgo` hours behind now.
+ *
+ * Relative, not fixed: the fetcher decides staleness against the clock, so a hard-coded
+ * 2026-10-03 fixture is inside the 36 h gate on the day it is written and outside it two days
+ * later — the suite would pass in review and fail the next morning.
+ */
+function kaggleStamp(hoursAgo) {
+  return new Date(Date.now() - hoursAgo * 3_600_000).toISOString().slice(0, 19).replace('T', ' ');
+}
+
+const RECENT_RUN = () => kaggleStamp(5);   // comfortably inside the 36 h ingest gate
+const STALE_RUN = () => kaggleStamp(60);   // newer than a September manifest, but past the gate
+
 /* ------------------------------------------------------------------ harness */
 
 let server;
@@ -194,8 +208,9 @@ describe('fetch_kaggle_advisory · end to end', () => {
       generated_at: '2026-09-16T03:14:42Z',
       row_count: 74,
     }));
+    const recent = RECENT_RUN();
 
-    serveZip(advisoryCsv({ generatedAt: '2026-10-03 05:15:00' }));
+    serveZip(advisoryCsv({ generatedAt: recent }));
 
     const run = await runFetcher([
       '--out', out,
@@ -212,8 +227,11 @@ describe('fetch_kaggle_advisory · end to end', () => {
 
     const report = JSON.parse(readFileSync(join(out, 'fetch-report.json'), 'utf8'));
     expect(report.rows).toBe(3);
-    expect(report.generatedAt).toBe('2026-10-03 05:15:00');
+    expect(report.generatedAt).toBe(recent);
     expect(report.newer).toBe(true);
+    expect(report.stale).toBe(false);
+    expect(report.age_hours).toBeGreaterThan(4);
+    expect(report.age_hours).toBeLessThanOrEqual(36);
     expect(report.via).toMatch(/dataset download/);
     // The report is what the workflow attaches to its job summary on the unchanged path.
     expect(report.sha256).toMatch(/^[0-9a-f]{64}$/);
@@ -222,8 +240,8 @@ describe('fetch_kaggle_advisory · end to end', () => {
   it('accepts Kaggle’s raw CSV response as well as a zip archive', async () => {
     const out = tempOut();
     const manifest = join(out, 'manifest.json');
-    writeFileSync(manifest, JSON.stringify({ generated_at: '2026-10-02 00:00:00', row_count: 1 }));
-    const source = advisoryCsv({ generatedAt: '2026-10-03 05:15:00' });
+    writeFileSync(manifest, JSON.stringify({ generated_at: kaggleStamp(200), row_count: 1 }));
+    const source = advisoryCsv({ generatedAt: RECENT_RUN() });
     serveRawCsv(source);
 
     const run = await runFetcher([
@@ -241,14 +259,14 @@ describe('fetch_kaggle_advisory · end to end', () => {
     // missed Kaggle schedule, and must not be laundered into a fresh ingest.
     const out = tempOut();
     const manifest = join(out, 'manifest.json');
+    const served = advisoryCsv({ generatedAt: kaggleStamp(30) });   // inside the gate
     writeFileSync(manifest, JSON.stringify({
-      generated_at: '2026-10-04T05:15:00Z',   // newer than the CSV we are about to serve
+      generated_at: kaggleStamp(10),   // newer than the CSV we are about to serve
       row_count: 3,
-      source_csv_sha256: require('node:crypto').createHash('sha256')
-        .update(advisoryCsv({ generatedAt: '2026-10-03 05:15:00' })).digest('hex'),
+      source_csv_sha256: require('node:crypto').createHash('sha256').update(served).digest('hex'),
     }));
 
-    serveZip(advisoryCsv({ generatedAt: '2026-10-03 05:15:00' }));
+    serveZip(served);
 
     const run = await runFetcher([
       '--out', out, '--manifest', manifest, '--attempts', '1',
@@ -258,7 +276,57 @@ describe('fetch_kaggle_advisory · end to end', () => {
     expect(run.stdout).toContain('unchanged since');
     expect(run.stdout).toContain('Kaggle notebook is scheduled daily');
     // It still downloaded and inspected — the report proves the fetch half worked.
-    expect(JSON.parse(readFileSync(join(out, 'fetch-report.json'), 'utf8')).newer).toBe(false);
+    const report = JSON.parse(readFileSync(join(out, 'fetch-report.json'), 'utf8'));
+    expect(report.newer).toBe(false);
+    // This is the "not newer" reason, not the staleness gate: 30 h is inside 36 h.
+    expect(report.stale).toBe(false);
+  });
+
+  it('exits 2 and names the age when the CSV is new but past the ingest gate', async () => {
+    // The 2026-10-04 production failure, reproduced: the published file *was* newer than the
+    // committed manifest, so the fetch called it fresh, the ingest then rejected it as
+    // STALE_DATA, and the artifact commit and deploy steps were skipped behind that error.
+    const out = tempOut();
+    const manifest = join(out, 'manifest.json');
+    writeFileSync(manifest, JSON.stringify({
+      generated_at: '2026-09-16T03:14:42Z',   // the real committed manifest of that week
+      row_count: 74,
+    }));
+    serveZip(advisoryCsv({ generatedAt: STALE_RUN() }));
+
+    const run = await runFetcher(['--out', out, '--manifest', manifest, '--attempts', '1']);
+
+    expect(run.status).toBe(2);
+    expect(run.stdout).toContain('36 h ingest gate');
+    expect(run.stdout).toContain('STALE_DATA');
+    const report = JSON.parse(readFileSync(join(out, 'fetch-report.json'), 'utf8'));
+    expect(report.newer).toBe(false);
+    expect(report.stale).toBe(true);
+    expect(report.age_hours).toBeGreaterThan(59);
+    expect(report.age_hours).toBeLessThan(61);
+  });
+
+  it('honours --max-age-hours and --force over the gate', async () => {
+    const served = advisoryCsv({ generatedAt: STALE_RUN() });
+    const oldManifest = JSON.stringify({ generated_at: '2026-09-16T03:14:42Z', row_count: 74 });
+
+    const out = tempOut();
+    const manifest = join(out, 'manifest.json');
+    writeFileSync(manifest, oldManifest);
+    serveZip(served);
+    const widened = await runFetcher([
+      '--out', out, '--manifest', manifest, '--attempts', '1', '--max-age-hours', '100',
+    ]);
+    expect(widened.status).toBe(0);
+
+    const forcedOut = tempOut();
+    const forcedManifest = join(forcedOut, 'manifest.json');
+    writeFileSync(forcedManifest, oldManifest);
+    serveZip(served);
+    const forced = await runFetcher([
+      '--out', forcedOut, '--manifest', forcedManifest, '--attempts', '1', '--force',
+    ]);
+    expect(forced.status).toBe(0);
   });
 
   it('exits 1 and names the credential problem when Kaggle rejects the key', async () => {

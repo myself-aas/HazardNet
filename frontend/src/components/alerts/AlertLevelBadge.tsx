@@ -35,31 +35,31 @@ export const ADVISORY_TIER_COLOURS: Record<string, string> = {
 
 const LEVEL_TOKENS: Record<string, LevelTokens> = {
   NORMAL: {
-    pill: 'bg-emerald-50 text-[#15803D] border-[#16A34A]/40 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-700',
+    pill: 'bg-emerald-50 text-emerald-700 border-emerald-300',
     solid: '#16A34A',
     icon: 'check_circle',
     label: 'Normal',
   },
   NO_ALERT: {
-    pill: 'bg-emerald-50 text-[#15803D] border-[#16A34A]/40 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-700',
+    pill: 'bg-emerald-50 text-emerald-700 border-emerald-300',
     solid: '#16A34A',
     icon: 'check_circle',
     label: 'No Alert',
   },
   WATCH: {
-    pill: 'bg-yellow-50 text-[#854D0E] border-[#CA8A04]/40 dark:bg-yellow-950/60 dark:text-yellow-300 dark:border-yellow-700',
+    pill: 'bg-yellow-50 text-yellow-700 border-yellow-300',
     solid: '#CA8A04',
     icon: 'visibility',
     label: 'Watch',
   },
   WARNING: {
-    pill: 'bg-amber-50 text-[#9A3412] border-[#D97706]/40 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700',
+    pill: 'bg-amber-50 text-amber-700 border-amber-300',
     solid: '#D97706',
     icon: 'shield_alert',
     label: 'Warning',
   },
   SEVERE: {
-    pill: 'bg-rose-50 text-[#991B1B] border-[#DC2626]/40 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-700',
+    pill: 'bg-rose-50 text-rose-700 border-rose-300',
     solid: '#DC2626',
     icon: 'alert_triangle',
     label: 'Severe',

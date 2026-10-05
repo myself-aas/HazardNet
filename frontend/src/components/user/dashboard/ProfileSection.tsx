@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Info } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth, UserProfileData, UserRolePersona } from '../../../context/AuthContext';
 import { ALL_64_DISTRICTS } from '../../../data/bangladeshDistricts';
@@ -82,7 +83,7 @@ export const ProfileSection: React.FC = () => {
 
   const save = async () => {
     if (!user) {
-      toast('Design preview: sign in to persist profile changes.', { icon: 'ℹ️' });
+      toast('Design preview: sign in to persist profile changes.', { icon: <Info className="h-4 w-4" aria-hidden="true" /> });
       return;
     }
     const changed: Record<string, unknown> = {};

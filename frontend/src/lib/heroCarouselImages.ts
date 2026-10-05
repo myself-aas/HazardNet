@@ -13,6 +13,12 @@
  * frames I located while researching were public domain but shipped as a labelled,
  * portrait two-panel comparison — the wrong shape and legibility for a full-bleed
  * background — so they were not used.
+ *
+ * Each landscape frame also has a 9:16 portrait render of the same scene in the same
+ * directory (`hero-<name>-portrait-2x.jpg`, 768x1376), painted by the
+ * `(max-width: 639px) and (min-resolution: 2dppx)` block in `styles/hero-media.css`, with
+ * the older 354x768 centre crop as the DPR 1 fallback. The `src` below stays the
+ * landscape file because that is the inline fallback and what the preloader probes.
  */
 
 export interface HeroCarouselImage {

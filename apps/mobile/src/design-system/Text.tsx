@@ -1,8 +1,9 @@
 /**
  * Text primitive for HazardNet Mobile.
  *
- * - Uses platform-correct default font family (SF Pro / Roboto).
- * - Caps max font scaling at 1.5× to prevent UI breakage (plan P2-7).
+ * - Uses the platform system font (San Francisco on iOS, the installed system sans on Android).
+ * - Respects system Dynamic Type / font scaling without an app-imposed maximum.
+ * - Applies the app's Large Text and Bold Text accessibility preferences to every role.
  * - Provides semantic role presets (display, title, body, caption, metadata, mono).
  * - Accessible: combines with `accessibilityRole="text"`.
  */
@@ -11,6 +12,7 @@ import React from 'react';
 import { Text as RNText, TextProps as RNTextProps, StyleSheet, StyleProp, TextStyle, Platform, AccessibilityRole } from 'react-native';
 import { useTheme } from '../theme/ThemeProvider';
 import { NATIVE_FONT_SCALE_MAX, TYPE_ROLES } from '../theme/nativeTokens';
+import { useSettingsStore } from '../state/settingsStore';
 
 export type TextRole = keyof typeof TYPE_ROLES;
 
@@ -41,16 +43,21 @@ export const Text: React.FC<TextProps> = ({
   ...rest
 }) => {
   const { theme, bodyFont, monoFont } = useTheme();
+  const largeText = useSettingsStore((state) => state.largeText);
+  const boldText = useSettingsStore((state) => state.boldText);
   const preset = theme.type[role];
+  const scale = largeText ? 1.2 : 1;
+  const selectedWeight = weight ?? preset.weight;
+  const resolvedWeight = boldText && Number(selectedWeight) < 600 ? '600' : selectedWeight;
   const resolvedColor = color
     ? (theme.colors as Record<string, string>)[color] ?? color
     : theme.colors.textPrimary;
 
   const base: TextStyle = {
     fontFamily: mono ? monoFont : bodyFont,
-    fontSize: size ?? preset.size,
-    fontWeight: weight ?? preset.weight,
-    lineHeight: preset.lineHeight,
+    fontSize: (size ?? preset.size) * scale,
+    fontWeight: resolvedWeight,
+    lineHeight: preset.lineHeight * scale,
     letterSpacing: preset.letterSpacing,
     color: resolvedColor,
     textAlign: align,

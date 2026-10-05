@@ -50,6 +50,7 @@ const HazardDetailPage = lazy(() => import('./pages/HazardDetailPage'));
 const AlertsPage = lazy(() => import('./pages/AlertsPage').then((m) => ({ default: m.AlertsPage })));
 const AlertDetailPage = lazy(() => import('./pages/AlertDetailPage').then((m) => ({ default: m.AlertDetailPage })));
 const StatusPage = lazy(() => import('./pages/StatusPage').then((m) => ({ default: m.StatusPage })));
+const LastRunPage = lazy(() => import('./pages/LastRunPage').then((m) => ({ default: m.LastRunPage })));
 const UserDashboardPage = lazy(() => import('./pages/UserDashboardPage'));
 const UserProfilePage = lazy(() => import('./pages/UserProfilePage'));
 const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'));
@@ -186,6 +187,16 @@ const AppRoutes: React.FC<{ location: ReturnType<typeof useLocation> }> = ({ loc
                 }
               />
               <Route path="/docs" element={<Documentation />} />
+              {/* Documentation topic pages: copy lives in src/content/site-routes.json,
+                  rendered by ArticlePage so the prerendered HTML and the SPA agree. */}
+              <Route path="/docs/platform" element={<ArticlePage path="/docs/platform" />} />
+              <Route path="/docs/hazards" element={<ArticlePage path="/docs/hazards" />} />
+              <Route path="/docs/districts" element={<ArticlePage path="/docs/districts" />} />
+              <Route path="/docs/forecasts" element={<ArticlePage path="/docs/forecasts" />} />
+              <Route path="/docs/alerts-and-advisories" element={<ArticlePage path="/docs/alerts-and-advisories" />} />
+              <Route path="/docs/archive" element={<ArticlePage path="/docs/archive" />} />
+              <Route path="/docs/data-and-api" element={<ArticlePage path="/docs/data-and-api" />} />
+              <Route path="/docs/verification" element={<ArticlePage path="/docs/verification" />} />
               {/* Legacy sitemap URL: /documentation was advertised in sitemap.xml
                   while the app only ever served /docs (404 in production). */}
               <Route path="/documentation" element={<Navigate to="/docs" replace />} />
@@ -198,6 +209,9 @@ const AppRoutes: React.FC<{ location: ReturnType<typeof useLocation> }> = ({ loc
               {/* Phase 7 observability: what the deployment's own committed artifacts say
                   about the freshness of the data it ships (frontend/public/data/freshness.json). */}
               <Route path="/status" element={<StatusPage />} />
+              {/* The run card the front door's hero links to: the last forecast run read from
+                  the committed artifacts, relocated here from the hero on 2026-10-05. */}
+              <Route path="/last-run" element={<LastRunPage />} />
               {/* Phase 8 content engine: hazard-by-hazard methodology, a page per district built
                   from the run this deployment serves, and (when an event archive is loaded)
                   annual retrospectives. All three are prerendered statically at build time. */}
@@ -241,7 +255,11 @@ const AppRoutes: React.FC<{ location: ReturnType<typeof useLocation> }> = ({ loc
 const AppContent: React.FC = () => {
   const { userProfile } = useAuth();
   useHazardNotifications(userProfile?.homeDistrictId);
-  useMeridianTheme();
+  // The theme hook's return value used to be thrown away here, which left `prefers-color-scheme`
+  // as the only way in or out of dark: a visitor whose OS is dark had no way back to light, and
+  // that is what "why is everything black?" turned out to mean (2026-10-04). The preference now
+  // travels with the menu drawer, next to the language switch.
+  const { theme, setTheme } = useMeridianTheme();
   const location = useLocation();
   const reduceMotion = useReducedMotion();
   const frame = useWebFrame(30, 6);
@@ -316,7 +334,7 @@ const AppContent: React.FC = () => {
             isHomePage ? 'absolute top-0 left-0 right-0' : 'sticky top-0'
           }`}
         >
-          <Navbar />
+          <Navbar theme={theme} onThemeChange={setTheme} />
         </div>
       )}
 

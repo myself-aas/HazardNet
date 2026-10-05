@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Compass, Bot, ExternalLink } from 'lucide-react';
+import { MapPin, Compass, Bot, ExternalLink, TrendingUp } from 'lucide-react';
 import { PrintQrCode } from '../PrintQrCode';
 
 import { useDistrictBrief } from './DistrictBriefContext';
@@ -160,8 +160,8 @@ export const DistrictOutlookCard: React.FC = () => {
             <div className="metric-card bg-carbon-05 border border-carbon-20 p-4 sm:p-6 space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-mono font-bold text-carbon-60 uppercase">AI Model Confidence</span>
-                <span className="px-2 py-0.5 rounded-sm text-xs font-mono font-bold bg-carbon-10 text-carbon-80">
-                  ▲ High Reliability
+                <span className="inline-flex items-center gap-1.5 rounded-sm bg-carbon-10 px-2 py-0.5 text-xs font-mono font-bold text-carbon-80">
+                  <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" /> High Reliability
                 </span>
               </div>
               <div className="flex items-baseline gap-2">

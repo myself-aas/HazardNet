@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { ExternalLink, Printer, Share2, X } from 'lucide-react';
 import { isValidGlide } from '../lib/glide';
 import { useDialogBehavior } from '../hooks/useDialogBehavior';
 
@@ -110,7 +111,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
                   className="px-2 py-0.5 rounded text-xs font-mono font-medium bg-blue-950/70 text-blue-300 border border-blue-800/80 hover:bg-blue-900 transition-colors inline-flex items-center gap-1"
                 >
                   <span>{event.glide}</span>
-                  <span className="text-xs">↗</span>
+                  <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
               ) : (
                 <span className="text-xs font-mono text-carbon-40">
@@ -134,7 +135,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
               title="Share report"
               aria-label="Share report"
             >
-              📤
+              <Share2 className="h-4 w-4" aria-hidden="true" />
             </button>
             <button
               type="button"
@@ -143,7 +144,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
               title="Print report"
               aria-label="Print report"
             >
-              🖨️
+              <Printer className="h-4 w-4" aria-hidden="true" />
             </button>
             <button
               type="button"
@@ -151,7 +152,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
               className="p-1.5 text-carbon-40 hover:text-white rounded-lg hover:bg-carbon-80 transition-colors"
               aria-label="Close disaster report modal"
             >
-              ✕
+              <X className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -182,7 +183,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
               <span className="text-xs text-carbon-40 font-medium">GEE Observation Window</span>
               <p className="text-xs font-mono text-carbon-30 mt-1">
                 {event.gee_start && event.gee_end
-                  ? `${event.gee_start} → ${event.gee_end}`
+                  ? `${event.gee_start} to ${event.gee_end}`
                   : 'Standard 90-day window'}
               </p>
             </div>
@@ -216,7 +217,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
                     <span className="capitalize text-carbon-30">
                       {source.replace('_', ' ')}
                     </span>
-                    <span className="text-blue-400">↗</span>
+                    <ExternalLink className="h-4 w-4 text-blue-400" aria-hidden="true" />
                   </a>
                 ))}
               </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { Check, Circle } from 'lucide-react';
 import { AuthLayout } from '../components/auth/AuthLayout'
 import { useAuth } from '../context/AuthContext'
 import MaterialIcon from '../components/MaterialIcon'
@@ -20,7 +21,9 @@ const isAuthConfigured = true;
 
 const Requirement: React.FC<{ met: boolean; children: React.ReactNode }> = ({ met, children }) => (
   <li className={`flex items-center gap-1.5 ${met ? 'text-emerald-700' : 'text-carbon-60'}`}>
-    <span aria-hidden="true">{met ? '✓' : '○'}</span>
+    <span className="flex h-4 w-4 shrink-0 items-center justify-center" aria-hidden="true">
+      {met ? <Check className="h-3.5 w-3.5" /> : <Circle className="h-3 w-3" />}
+    </span>
     <span className="text-xs font-medium">{children}</span>
   </li>
 )

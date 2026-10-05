@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { ExternalLink, FileSpreadsheet, FileText } from 'lucide-react';
 import { isValidGlide } from '../lib/glide';
 import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
 import { CardStackRows } from './ui/CardStackTable';
@@ -184,7 +185,7 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
             className="px-3 py-1.5 rounded-lg text-xs font-medium bg-carbon-80 hover:bg-carbon-70 text-carbon-20 border border-carbon-70 transition-colors flex items-center gap-1.5"
             aria-label="Export filtered records as CSV"
           >
-            <span>📥 Export CSV</span>
+            <span><FileSpreadsheet className="mr-1 inline h-4 w-4" aria-hidden="true" />Export CSV</span>
           </button>
           <button
             type="button"
@@ -192,7 +193,7 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
             className="px-3 py-1.5 rounded-lg text-xs font-medium bg-carbon-80 hover:bg-carbon-70 text-carbon-20 border border-carbon-70 transition-colors flex items-center gap-1.5"
             aria-label="Export filtered records as JSON"
           >
-            <span>📦 Export JSON</span>
+            <span><FileText className="mr-1 inline h-4 w-4" aria-hidden="true" />Export JSON</span>
           </button>
         </div>
       </div>
@@ -386,7 +387,7 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
                           title="Open Multilateral GLIDE links"
                         >
                           <span>{r.glide}</span>
-                          <span className="text-xs">↗</span>
+                          <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                         </button>
                       ) : (
                         <span className="text-carbon-60 text-xs">{r.glide || 'Domestic Rec.'}</span>

@@ -47,10 +47,9 @@ export interface ForecastRecord {
 }
 
 /**
- * Where a summary came from. The client falls back to a built-in default when neither the API nor
- * the committed artifact answers, and a page that renders that default as data is quoting numbers
- * nobody measured (audit finding X-P0-1's class). `'fallback'` means: show the empty state, not the
- * numbers.
+ * Where a summary came from. When neither the API nor the committed artifact answers, the client
+ * returns an explicit zero/empty sentinel; `'fallback'` means show the empty state, never treat the
+ * sentinel as measured data.
  */
 export type EventsSummarySource = 'api' | 'artifact' | 'fallback';
 
@@ -216,44 +215,26 @@ export async function fetchEventsSummary(): Promise<EventsSummary> {
       cachedSummary = { ...(await res.json()), source: 'artifact' };
       return cachedSummary!;
     }
-  } catch {
-    // fall through to default summary
+    } catch {
+    // fall through to the unavailable sentinel
   }
 
-  // 3. Fallback default summary if no static archive is loaded
+  // 3. An unavailable archive is empty; never invent plausible-looking headline statistics.
   cachedSummary = {
     source: 'fallback',
-    totalEvents: 3062,
-    yearRange: [2000, 2026],
-    totalDistricts: 64,
-    totalDivisions: 8,
-    totalHazards: 8,
+    totalEvents: 0,
+    yearRange: [0, 0],
+    totalDistricts: 0,
+    totalDivisions: 0,
+    totalHazards: 0,
     topDistricts: [],
-    hazardBreakdown: [
-      { hazard: 'Flood', count: 1145, percentage: 37.4 },
-      { hazard: 'Tropical Cyclone', count: 682, percentage: 22.3 },
-      { hazard: 'Severe Local Storm', count: 420, percentage: 13.7 },
-      { hazard: 'Flash Flood', count: 310, percentage: 10.1 },
-      { hazard: 'Cold Wave', count: 215, percentage: 7.0 },
-      { hazard: 'Drought', count: 140, percentage: 4.6 },
-      { hazard: 'Heat Wave', count: 110, percentage: 3.6 },
-      { hazard: 'Fire', count: 40, percentage: 1.3 },
-    ],
+    hazardBreakdown: [],
     divisionBreakdown: [],
     yearlyTrend: [],
     monthlyDistribution: [],
     activeForecastsCount: 0,
     forecastDistrictsCount: 0,
-    byHazard: {
-      'Flood': 1145,
-      'Tropical Cyclone': 682,
-      'Severe Local Storm': 420,
-      'Flash Flood': 310,
-      'Cold Wave': 215,
-      'Drought': 140,
-      'Heat Wave': 110,
-      'Fire': 40,
-    },
+    byHazard: {},
     byDivision: {},
   };
   return cachedSummary;

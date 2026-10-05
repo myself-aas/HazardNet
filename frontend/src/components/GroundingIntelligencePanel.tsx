@@ -222,7 +222,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                 }}
                 className="text-xs bg-blue-50 text-blue-800 border border-blue-200/80 px-2 py-0.5 rounded-md hover:bg-blue-100 transition-colors"
               >
-                📍 Upazila Agriculture Office
+                <MapPin className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" /> Upazila Agriculture Office
               </button>
               <button
                 type="button"
@@ -231,7 +231,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                 }}
                 className="text-xs bg-blue-50 text-blue-800 border border-blue-200/80 px-2 py-0.5 rounded-md hover:bg-blue-100 transition-colors"
               >
-                📍 Flood & Cyclone Shelters
+                <MapPin className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" /> Flood & Cyclone Shelters
               </button>
               <button
                 type="button"
@@ -240,7 +240,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                 }}
                 className="text-xs bg-blue-50 text-blue-800 border border-blue-200/80 px-2 py-0.5 rounded-md hover:bg-blue-100 transition-colors"
               >
-                📍 Veterinary Clinic
+                <MapPin className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" /> Veterinary Clinic
               </button>
             </>
           ) : (
@@ -252,7 +252,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                 }}
                 className="text-xs bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-2 py-0.5 rounded-md hover:bg-emerald-100 transition-colors"
               >
-                🌐 BMD Weather Warning
+                <Globe className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" /> BMD Weather Warning
               </button>
               <button
                 type="button"
@@ -261,7 +261,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                 }}
                 className="text-xs bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-2 py-0.5 rounded-md hover:bg-emerald-100 transition-colors"
               >
-                🌐 River Danger Levels (FFWC)
+                <Globe className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" /> River Danger Levels (FFWC)
               </button>
               <button
                 type="button"
@@ -270,7 +270,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                 }}
                 className="text-xs bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-2 py-0.5 rounded-md hover:bg-emerald-100 transition-colors"
               >
-                🌐 DAE Crop Relief News
+                <Globe className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" /> DAE Crop Relief News
               </button>
             </>
           )}

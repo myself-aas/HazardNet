@@ -9,12 +9,13 @@
 import React from 'react';
 import { Pressable, ViewStyle, StyleProp } from 'react-native';
 import { Box, HStack, VStack } from '../../design-system/primitives';
-import { Text, BodyBold, Caption, Metadata } from '../../design-system/Text';
+import { BodyBold, Caption, Metadata } from '../../design-system/Text';
 import { useTheme } from '../../theme/ThemeProvider';
 import type { AlertItemType } from '@hazardnet/core';
 import { severityForAlert, formatAge, formatTargetDate } from '../../lib/severity';
 import { SEVERITY_EDGE_WIDTH } from '../../theme/nativeTokens';
 import { useHaptics } from '../../hooks/useHaptics';
+import { Icon } from '../Icon';
 
 export interface AlertRowProps {
   alert: AlertItemType;
@@ -32,8 +33,11 @@ export const AlertRow: React.FC<AlertRowProps> = ({ alert, onPress, style, unrea
   const { theme } = useTheme();
   const edgeName = severityForAlert(alert);
   const edgeColor = edgeName === 'info'
-    ? theme.colors.primaryAction
-    : (theme.colors as Record<string, string>)[edgeName];
+    ? theme.colors.interactive
+    : (theme.colors as Record<string, string>)[`${edgeName}Solid`];
+  const statusIcon = alert.level === 'SEVERE' || alert.level === 'WARNING'
+    ? 'AlertTriangle'
+    : alert.level === 'WATCH' ? 'Eye' : 'CheckCircle2';
   const { trigger } = useHaptics();
 
   return (
@@ -52,13 +56,13 @@ export const AlertRow: React.FC<AlertRowProps> = ({ alert, onPress, style, unrea
     >
       <HStack space={12} align="flex-start">
         <Box pt={2}>
-          <Text role="title2" weight="700" color={edgeColor}>{alert.level === 'SEVERE' ? '!' : alert.level === 'WARNING' ? '!' : '◉'}</Text>
+          <Icon name={statusIcon} size="nav" color={edgeColor} />
         </Box>
         <VStack space={2} flex={1}>
           <HStack space={8} align="center">
             <BodyBold>{alert.district_name}</BodyBold>
             <Caption color="textMuted">· {alert.hazard_type}</Caption>
-            {unread ? <Box w={6} h={6} bg={theme.colors.primaryAction as string} radius={3} /> : null}
+            {unread ? <Box w={6} h={6} bg={theme.colors.interactive} radius={3} /> : null}
           </HStack>
           <Caption color="textSecondary">
             {alert.level === 'SEVERE'
@@ -75,7 +79,7 @@ export const AlertRow: React.FC<AlertRowProps> = ({ alert, onPress, style, unrea
             <Metadata color="textMuted">{formatTargetDate(alert.target_date)}</Metadata>
           </HStack>
         </VStack>
-        <Metadata color="textMuted" style={{ paddingTop: 4 }}>›</Metadata>
+        <Icon name="ChevronRight" size="meta" color={theme.colors.textMuted} />
       </HStack>
     </Pressable>
   );

@@ -1,0 +1,82 @@
+name: Live Wind Update
+
+# Phase E (2026-10-05): the wind field artifact, rebuilt every six hours from
+# GFS with ECMWF open data as the L1 alternate (decision E.1: decode here with
+# real tooling, serve a small committed artifact, spend no Vercel functions).
+# Scheduled runs fire on the default branch only; manual dispatch seeds or
+# rehearses the ladder on any branch.
+
+on:
+  schedule:
+    # Ten past every six hours: GFS f006 for the newest cycle is normally out
+    # by then, and the script climbs to whatever answers anyway.
+    - cron: '10 */6 * * *'
+  workflow_dispatch: {}
+
+concurrency:
+  group: live-wind-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    name: GFS/ECMWF wind artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+
+      - name: Install wgrib2
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wgrib2
+          wgrib2 -help | head -2
+
+      - name: Build wind artifact (GFS, falling back to ECMWF)
+        run: node scripts/fetch_live_wind.mjs --out frontend/public/data/live/wind.json
+
+      - name: Run wind pipeline tests
+        run: node --test __tests__/windPipeline.test.js
+
+      - name: Commit wind artifact
+        id: commit-artifact
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/public/data/live/wind.json
+          if git diff --staged --quiet; then
+            echo "[git] Wind artifact unchanged."
+            echo "committed=false" >> "$GITHUB_OUTPUT"
+          else
+            MODEL=$(node -e "console.log(JSON.parse(require('fs').readFileSync('frontend/public/data/live/wind.json','utf8')).model)")
+            git commit -m "chore(live-wind): refresh wind artifact ($MODEL) [skip ci]"
+            git push origin HEAD:${{ github.ref_name }}
+            echo "[git] Pushed refreshed wind artifact ($MODEL)."
+            echo "committed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Trigger Vercel Production Deployment
+        if: steps.commit-artifact.outputs.committed == 'true'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ -z "${VERCEL_TOKEN:-}" ]; then
+            echo "[deploy] VERCEL_TOKEN unset — relying on GitHub push trigger for deployment."
+            exit 0
+          fi
+          echo "[deploy] Triggering Vercel deployment..."
+          npx --yes vercel deploy --prod --token="$VERCEL_TOKEN"

@@ -11,7 +11,7 @@ export interface SwitchProps {
   value: boolean;
   onValueChange: (v: boolean) => void;
   disabled?: boolean;
-  accessibilityLabel?: string;
+  accessibilityLabel: string;
 }
 
 export const Switch: React.FC<SwitchProps> = ({ value, onValueChange, disabled, accessibilityLabel }) => {
@@ -22,8 +22,10 @@ export const Switch: React.FC<SwitchProps> = ({ value, onValueChange, disabled, 
       onValueChange={onValueChange}
       disabled={disabled}
       accessibilityLabel={accessibilityLabel}
-      trackColor={{ false: theme.colors.hairline as string, true: theme.colors.primaryAction as string }}
-      thumbColor="#fff"
+      accessibilityRole="switch"
+      accessibilityState={{ checked: value, disabled: Boolean(disabled) }}
+      trackColor={{ false: theme.colors.hairline, true: theme.colors.interactive }}
+      thumbColor={value ? theme.colors.interactiveText : theme.colors.surface}
       ios_backgroundColor={theme.colors.hairline as string}
       style={styles.switch}
     />

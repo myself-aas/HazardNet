@@ -1,4 +1,5 @@
 import React from 'react';
+import { AlertTriangle } from 'lucide-react';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -45,9 +46,9 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
           className="min-h-dvh flex items-center justify-center bg-carbon-05 p-6 font-sans text-carbon-90"
         >
           <div className="nasa-glass-panel max-w-md w-full p-8 text-center space-y-4">
-            <div className="mx-auto w-12 h-12 rounded-2xl bg-amber-100 border border-amber-300 flex items-center justify-center text-2xl">
-              ⚠️
-            </div>
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-300 bg-amber-100 text-amber-800">
+                <AlertTriangle className="h-6 w-6" aria-hidden="true" />
+              </div>
             <h1 className="hn-h2">Something went wrong</h1>
             <p className="hn-body text-carbon-60">
               The HazardNet dashboard hit an unexpected error. Your saved data is safe —

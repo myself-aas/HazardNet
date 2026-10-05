@@ -2,19 +2,36 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-// Mock Remotion frame hooks for unit testing
+// Mock Remotion frame hooks for unit testing.
+//
+// `Interactive` is flattened to a plain div here: the real one reads the studio's frame state
+// through `useCurrentFrame` internally, which throws outside a registered composition. The
+// passthrough keeps the two things a test cares about - the descriptive `name` and the inline
+// `style` - so a composition that uses it can be rendered and inspected in jsdom.
 jest.mock('remotion', () => {
   const original = jest.requireActual('remotion');
+  const React = jest.requireActual('react');
+  const passthrough = (tag) =>
+    function Interactive({ name, children, ...rest }) {
+      return React.createElement(tag, { 'data-interactive-name': name, ...rest }, children);
+    };
   return {
     ...original,
     useCurrentFrame: () => 15,
     useVideoConfig: () => ({ fps: 30, durationInFrames: 150, width: 1080, height: 1920 }),
+    Interactive: {
+      Div: passthrough('div'),
+      Span: passthrough('span'),
+      Section: passthrough('section'),
+      Header: passthrough('header'),
+    },
   };
 });
 
 import { HazardAlertStory } from '../frontend/src/remotion/compositions/HazardAlertStory';
 import { RemotionRoot } from '../frontend/src/remotion/Root';
 import { HeroCinematicBackground } from '../frontend/src/components/HeroCinematicBackground';
+import { HeroComposition } from '../frontend/src/remotion/compositions/HeroComposition';
 
 describe('Phase 3 Remotion Hazard Video & Atmospheric Hero', () => {
   describe('<HazardAlertStory />', () => {
@@ -52,6 +69,43 @@ describe('Phase 3 Remotion Hazard Video & Atmospheric Hero', () => {
     });
   });
 
+  describe('<HeroComposition /> (the 16:9 export of the web hero)', () => {
+    test('prints no telemetry the repository cannot support', () => {
+      // H-P0-1 of docs/audits/2026-10-03-landing-live-hero-audit.md, in the artifact that
+      // leaves the building as an MP4: "GEO-SYNC · 23°42'N 90°22'E · APEX 35,786 KM" and
+      // "OPTICAL SENSOR STREAM · 30 FPS · RES-ADAPTIVE" were readouts of a satellite the
+      // project does not operate, over a page whose argument is that every number traces to a
+      // published record. The web hero deleted them on 2026-10-05; the composition kept
+      // painting a hero that no longer existed until this test.
+      const { container } = render(<HeroComposition />);
+      const text = container.textContent ?? '';
+      for (const gone of ['GEO-SYNC', 'APEX', 'OPTICAL SENSOR STREAM', 'RES-ADAPTIVE', '23°42', '35,786']) {
+        expect(text).not.toContain(gone);
+      }
+      // "Verified artifacts" was a claim about a verification step the repository does not
+      // document; the sub-line states the provenance rule instead.
+      expect(text).not.toContain('Verified artifacts');
+      expect(text).toContain('Every number traces to a file');
+    });
+
+    test('is the same four layers as the web hero, and says the front door\'s own words', () => {
+      const { container } = render(<HeroComposition />);
+      // The composition mirrors components/HeroCinematicBackground.tsx: mesh, photograph/title,
+      // grade, vignette — with the HUD cluster, the second glow and the grain deleted from both.
+      const names = Array.from(container.querySelectorAll('[data-interactive-name]')).map((el) =>
+        el.getAttribute('data-interactive-name')
+      );
+      expect(names).toEqual(
+        expect.arrayContaining(['Primary orbital glow', 'Hero title', 'Cinematic soft-light grade', 'Exposure curve', 'Vignette — dual-zone elliptical'])
+      );
+      for (const gone of ['Secondary cyan reflection', 'HUD telemetry GEO-SYNC', 'HUD optical stream', 'Reticle TL', 'Reticle TR']) {
+        expect(names).not.toContain(gone);
+      }
+      // The default headline is the front door's h1 (`content/site-routes.json`), not a slogan.
+      expect(container.textContent).toContain('A forecast you can check, not just read');
+    });
+  });
+
   describe('<RemotionRoot />', () => {
     test('renders Remotion compositions tree without throwing', () => {
       const { container } = render(<RemotionRoot />);
@@ -60,21 +114,37 @@ describe('Phase 3 Remotion Hazard Video & Atmospheric Hero', () => {
   });
 
   describe('<HeroCinematicBackground />', () => {
-    test('keeps its decorative HUD hidden and prints no telemetry it cannot support', () => {
+    test('is four layers of backdrop and no telemetry HUD', () => {
       const { container } = render(<HeroCinematicBackground paused={true} />);
 
-      const hud = container.querySelector('[data-testid="hero-hud"]');
-      expect(hud).not.toBeNull();
-      expect(hud).toHaveAttribute('aria-hidden', 'true');
+      // The decorative HUD cluster - four corner reticles, a horizon rule and a `hero-hud`
+      // test id - was deleted on 2026-10-05 (docs/audits/2026-10-03-landing-live-hero-audit.md
+      // §4 lists it as "delete before the port"; it printed nothing, so deleting it costs the
+      // reader nothing). The layer test id went with it: a test id whose whole job is to prove
+      // decoration exists is the decoration's last tether.
+      expect(container.querySelector('[data-testid="hero-hud"]')).toBeNull();
 
-      // This layer used to render "GEO-SYNC · 23°42'N 90°22'E · APEX 35,786 KM" and an
+      // What it used to print: "GEO-SYNC · 23°42'N 90°22'E · APEX 35,786 KM" and an
       // "OPTICAL SENSOR STREAM · 30 FPS · RES-ADAPTIVE" readout. Nothing in the repository
-      // produces either value, and this test used to assert them - it pinned the defect. The
-      // strings are gone rather than restyled, so a screen reader meets the headline first.
+      // produces either value. An earlier version of this test asserted them - it pinned the
+      // defect; this one pins their absence, in every layer that is left.
       expect(screen.queryByText(/GEO-SYNC/i)).toBeNull();
       expect(screen.queryByText(/OPTICAL SENSOR STREAM/i)).toBeNull();
       expect(screen.queryByText(/APEX/i)).toBeNull();
       expect(screen.queryByText(/RES-ADAPTIVE/i)).toBeNull();
+
+      // The layers that remain are the ones that do something: the mesh, the photograph, the
+      // grade and the vignette. Named through `Interactive`, so the names are the contract.
+      const names = Array.from(container.querySelectorAll('[data-interactive-name]')).map((el) =>
+        el.getAttribute('data-interactive-name')
+      );
+      expect(names).toEqual(
+        expect.arrayContaining(['Hero cinematic background — 4-layer', 'BgMesh container', 'Hero photograph', 'Vignette — dual-zone elliptical'])
+      );
+      // And none of the deleted three come back by accident.
+      for (const gone of ['Telemetry HUD container', 'Reticle top-left', 'Horizon reference line', 'Film grain — SVG fractal noise', 'Secondary cyan reflection']) {
+        expect(names).not.toContain(gone);
+      }
     });
   });
 });

@@ -87,6 +87,14 @@ No citation in the tree identifies this action. If you have the original file, r
 
 Reopen this action (as a new ID) for any Bangla surface added after that date.
 
+## Action 6d · Bangla copy review for the appearance control
+
+| | |
+|---|---|
+| **Status** | **Open** — three new Bangla strings ship with `frontend/src/components/ThemeToggle.tsx` (`common.appearance`, `common.themeSystem`, `common.themeLight`, `common.themeDark` in `frontend/src/lib/i18n.ts`) |
+| **Why** | Action 6c closed on 2026-09-19 for the then-current surface and instructs a new ID for anything added later. This is that addition (2026-10-04), so it ships as transliterations (`অ্যাপিয়ারেন্স`, `সিস্টেম`, `লাইট`, `ডার্ক`) matching how the operating systems name the same settings, pending review. |
+| **Verify** | A native speaker confirms or replaces the four strings in `frontend/src/lib/i18n.ts`; `__tests__/phaseBFrontend.test.js` keeps EN/BN parity either way. |
+
 ## Action 7 · *not reconstructed*
 
 No citation in the tree identifies this action.
@@ -128,11 +136,21 @@ the run summary and the uploaded artifact, but the committed file goes stale. |
 
 | | |
 |---|---|
-| **Status** | Open — the GitHub download/ingest path is wired on 2026-10-03; the public file itself still needs an on-time daily publication verified |
-| **Why** | The public Kaggle artifact (`ashifahmedshuvo/hazardnet-weekly-forecasts`, `hazardnet_advisories_latest.csv`) last reported `generated_at=2026-09-29 23:29:31` when checked on 2026-10-03. The 36 h freshness guard in `scripts/validate_advisory_csv.mjs` correctly rejects older runs. The owner has confirmed the Kaggle notebook is scheduled daily; the public copy must reflect that run. |
+| **Status** | Open — the GitHub download/ingest path is wired on 2026-10-03; the public file itself still needs an on-time daily publication verified. **The notebook has not published since 2026-09-29.** |
+| **Why** | The public Kaggle artifact (`ashifahmedshuvo/hazardnet-weekly-forecasts`, `hazardnet_advisories_latest.csv`) last reported `generated_at=2026-09-29 23:29:31` when checked on 2026-10-03, and Kaggle's own dataset metadata (checked 2026-10-04T14:49Z) still says `lastUpdated: 2026-09-29T23:49:50Z`, version 10, "Expected update frequency: daily". The 36 h freshness guard in `scripts/validate_advisory_csv.mjs` correctly rejects older runs. The owner has confirmed the Kaggle notebook is scheduled daily; the public copy must reflect that run. |
 | **Do** | The GitHub side now runs daily at `05:30 UTC`: `.github/workflows/daily_advisory_ingest.yml` downloads the CSV from the exact public dataset URL (raw CSV or ZIP), retries while a run is finishing, skips an unchanged file, and calls `scripts/process_advisory_ingest.mjs` only for a newer source. Verify the Kaggle notebook publishes the completed daily run back into that dataset/file. Optional `KAGGLE_USERNAME` / `KAGGLE_KEY` secrets enable CLI/kernel fallback; the public HTTP download itself requires no credentials. |
-| **Verify** | A scheduled Actions run shows a new `generated_at`, passes `node scripts/validate_advisory_csv.mjs /tmp/advisory-ingest/hazardnet_advisories_latest.csv` without `--allow-stale`, commits updated forecast snapshots, and triggers Vercel only when artifacts changed. If the file is unchanged on a scheduled run, the workflow fails loudly and attaches the fetch report. |
+| **Verify** | A scheduled Actions run shows a new `generated_at`, passes `node scripts/validate_advisory_csv.mjs /tmp/advisory-ingest/hazardnet_advisories_latest.csv` without `--allow-stale`, commits updated forecast snapshots, and triggers Vercel only when artifacts changed. If the file is unchanged — or newer than the last ingest yet past the 36 h gate — the fetch step reports it (`age_hours`, `stale` in `fetch-report.json`), the run goes red with `::error::Scheduled Kaggle advisory publication is unchanged or past the 36 h ingest gate`, and the fetch report is attached. |
 | **Closed by** | — |
+
+**Measured 2026-10-04** (the day this file was last touched): the 05:30 UTC runs on
+2026-10-02, 2026-10-03 and 2026-10-04 all failed. Until this change the failure landed in
+*"Validate Advisory CSV & Execute Ingestion"* with `STALE_DATA` while the fetch step above it
+reported success, so the four downstream steps — pipeline tests, the artifact commit and the
+deploy trigger — were skipped and the red looked like an ingest bug. The fetch now applies the
+same 36 h gate and fails at its own step with the publication age. Nothing downstream of that
+step can go green until the notebook publishes: the site has been serving the 2026-09-24 build
+since, and `site-health.yml`'s forecast probe is red because
+`frontend/public/data/forecasts-latest.json` still carries `prediction_date: 2026-09-16`.
 
 ## Action 12 · Decide where analytics events are stored
 
@@ -174,6 +192,26 @@ the run summary and the uploaded artifact, but the committed file goes stale. |
 | **Verify** | `npx jest __tests__/pluginManifest.test.js` passes with every surviving entry implemented. |
 | **Closed by** | — |
 
+## Action 16 · The canonical host `www.hazardnet.live` does not resolve
+
+| | |
+|---|---|
+| **Status** | Open — **decision made 2026-10-04: `www` stays canonical; the domain is to be restored.** The code is not to be changed to the apex. |
+| **Why** | 41 tracked files treat `https://www.hazardnet.live` as the canonical origin: the `<link rel="canonical">` tags and structured data (`frontend/src/SEOHead.tsx`), the sitemap and `robots.txt`, `security.txt`'s `Canonical:`, the content engine (`scripts/build_content_engine.mjs`), and a build guard in `frontend/scripts/prerender.mjs` that **fails the build** if the origin is anything else. Meanwhile `www.hazardnet.live` is NXDOMAIN and `hazardnet.live` answers 200 directly from Firebase Hosting (199.36.158.100, `x-fh-requested-host`). So every URL in the deployed sitemap is unreachable, `site-health.yml`'s "Verify every sitemap URL resolves" probe fails on all 85 of them, and Google is being pointed at a host that does not exist. |
+| **Do** | Restore the host the code already declares: add `www.hazardnet.live` as a custom domain on the project that serves the site (Firebase console → Hosting → Add custom domain, or the equivalent on whichever platform owns the domain), add the DNS record it prints, and let the certificate issue. Note this is independent of *where* the build is deployed from — see Action 17 for the deploy path. |
+| **Verify** | `getent hosts www.hazardnet.live` resolves, `curl -sSI https://www.hazardnet.live/` answers 200, `https://www.hazardnet.live/sitemap.xml` is reachable, and the site-health sitemap probe flips green on the next scheduled run. |
+| **Closed by** | — |
+
+## Action 17 · Nothing in the repository deploys the frontend
+
+| | |
+|---|---|
+| **Status** | Open — **decision made 2026-10-04: deploys stay with Vercel and stay owner-run.** No CI deploy job is to be added. |
+| **Why** | Nothing in the repository ships the frontend automatically: the only deploy step anywhere is `daily_advisory_ingest.yml`'s *"Trigger Vercel Production Deployment"* (`npx vercel deploy --prod`, gated on `committed == 'true'`, so it has not run since the ingest started failing). Meanwhile **the host answering `hazardnet.live` today is Firebase Hosting** (`x-fh-requested-host`, `x-served-by: cache-dub…`, 199.36.158.100) with a build whose `Last-Modified` was **2026-09-24T21:56Z** on 2026-10-04. So a Vercel deploy alone will not change what the domain serves until the domain points at the Vercel project — and the site-health security-header probe reads whatever that host answers. |
+| **Do** | Deploy from the owner's Vercel project (`vercel --prod`, or the workflow step with `VERCEL_TOKEN` / `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID`), then confirm the domain resolves to that deployment. The `firebase.json` headers added on 2026-10-04 keep the Firebase path correct for whoever deploys it next; they are inert on Vercel. |
+| **Verify** | `curl -sSI https://hazardnet.live/` shows the new build (`last-modified` advances, or `x-vercel-id` appears alongside/instead of `x-fh-requested-host`), `/data/freshness.json` quotes the new build, and the site-health security-header probe passes. |
+| **Closed by** | — |
+
 ---
 
 ## Change log
@@ -181,3 +219,5 @@ the run summary and the uploaded artifact, but the committed file goes stale. |
 | Date | Change |
 |---|---|
 | 2026-10-02 | File created from the 12 in-tree citations; Actions 10, 11 (later 12–15) added; Action 6c recorded as closed. Owner still unassigned. |
+| 2026-10-04 | Action 11 updated with the measured Kaggle publication gap (last update 2026-09-29, version 10); Actions 16 (canonical host) and 17 (deploy path) added after triaging the red site-health and advisory-ingest runs. Owner decisions recorded the same day: `www` stays the canonical host and is to be restored rather than replaced in code; deploys stay with Vercel and stay owner-run. |
+| 2026-10-04 | Action 6d opened: the appearance control (`System / Light / Dark`) adds four Bangla strings to `frontend/src/lib/i18n.ts`, which Action 6c's closure note says must be reviewed under a new ID. |

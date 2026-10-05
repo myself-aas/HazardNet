@@ -1,6 +1,7 @@
 import React from 'react';
 import { Thermometer, CloudRain, Wind, Loader2, AlertCircle } from 'lucide-react';
 import { wmoCodeInfo } from '../lib/wmoWeatherCodes';
+import WeatherIcon from './WeatherIcon';
 import { useWeather } from '../hooks/useWeather';
 
 interface WeatherBadgeProps {
@@ -59,11 +60,11 @@ export const WeatherBadge: React.FC<WeatherBadgeProps> = ({
 
   return (
     <span
-      className={`${base} bg-sky-50 text-carbon-70 dark:bg-sky-900/30 dark:text-sky-100`}
+      className={`${base} bg-sky-50 text-sky-800`}
       onClick={onClick}
       role={onClick ? 'button' : undefined}
     >
-      <span aria-hidden>{info.emoji}</span>
+      <WeatherIcon name={info.icon} size={14} className="shrink-0" />
       <span className="flex items-center gap-0.5">
         <Thermometer size={11} />{temp}°
       </span>

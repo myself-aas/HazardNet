@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { ExternalLink, X } from 'lucide-react';
 import { generateGlideLinks, isValidGlide, MultilateralGlideLinks } from '../lib/glide';
 import { useDialogBehavior } from '../hooks/useDialogBehavior';
 
@@ -85,7 +86,7 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
             className="text-carbon-40 hover:text-white p-1 rounded-lg hover:bg-carbon-80 transition-colors"
             aria-label="Close GLIDE resources popover"
           >
-            ✕
+            <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
 
@@ -110,7 +111,7 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
                   Situation reports, sitreps, humanitarian maps, and appeals
                 </span>
               </div>
-              <span className="text-carbon-50 group-hover:text-blue-400 text-xs">↗</span>
+              <ExternalLink className="h-4 w-4 shrink-0 text-carbon-50 group-hover:text-blue-400" aria-hidden="true" />
             </a>
 
             <a
@@ -127,7 +128,7 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
                   Crop prospects, agricultural damage, food security assessment
                 </span>
               </div>
-              <span className="text-carbon-50 group-hover:text-blue-400 text-xs">↗</span>
+              <ExternalLink className="h-4 w-4 shrink-0 text-carbon-50 group-hover:text-blue-400" aria-hidden="true" />
             </a>
 
             <a
@@ -144,7 +145,7 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
                   Disease surveillance, epidemiological alerts, health cluster
                 </span>
               </div>
-              <span className="text-carbon-50 group-hover:text-blue-400 text-xs">↗</span>
+              <ExternalLink className="h-4 w-4 shrink-0 text-carbon-50 group-hover:text-blue-400" aria-hidden="true" />
             </a>
 
             <a
@@ -161,7 +162,7 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
                   Multilateral GLIDE register and regional catastrophe database
                 </span>
               </div>
-              <span className="text-carbon-50 group-hover:text-blue-400 text-xs">↗</span>
+              <ExternalLink className="h-4 w-4 shrink-0 text-carbon-50 group-hover:text-blue-400" aria-hidden="true" />
             </a>
 
             <a
@@ -178,7 +179,7 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
                   Red Cross / Red Crescent field operations and DREF emergency appeals
                 </span>
               </div>
-              <span className="text-carbon-50 group-hover:text-blue-400 text-xs">↗</span>
+              <ExternalLink className="h-4 w-4 shrink-0 text-carbon-50 group-hover:text-blue-400" aria-hidden="true" />
             </a>
           </div>
         ) : (

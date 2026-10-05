@@ -1,5 +1,6 @@
 import MaterialIcon from "./MaterialIcon";
 import React from 'react';
+import { AlertTriangle, ArrowRight, BarChart3, MapPin } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { ALL_8_DIVISIONS, DistrictData, DivisionData } from '../data/bangladeshDistricts';
 import { useLiveDistricts } from '../hooks/useForecasts';
@@ -265,7 +266,10 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
                 : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
             }`}
           >
-            <span>🗺️ Division Summaries ({divisionSummaries.length})</span>
+            <span className="inline-flex items-center gap-1.5">
+              <MapPin className="h-4 w-4" aria-hidden="true" />
+              Division Summaries ({divisionSummaries.length})
+            </span>
           </button>
 
           <button
@@ -287,7 +291,10 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
                 : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
             }`}
           >
-            <span>🧮 AI Formula Matrix</span>
+            <span className="inline-flex items-center gap-1.5">
+              <BarChart3 className="h-4 w-4" aria-hidden="true" />
+              AI Formula Matrix
+            </span>
           </button>
         </div>
 
@@ -608,7 +615,8 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
                 {/* Repeated Emergency Protocol Header Row on Every Printed Page */}
                 <tr className="print-table-emergency-header">
                   <th colSpan={8} className="emergency-protocol-title">
-                    🚨 NATIONAL EMERGENCY PROTOCOL & HAZARD DISTRIBUTION SUMMARY (SOD 2019)
+                    <AlertTriangle className="mr-2 inline h-4 w-4 align-[-2px]" aria-hidden="true" />
+                    NATIONAL EMERGENCY PROTOCOL & HAZARD DISTRIBUTION SUMMARY (SOD 2019)
                   </th>
                 </tr>
                 <tr>
@@ -701,7 +709,8 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
       {(activeTab === 'formula' || activeTab === 'top3') && (
         <div className="bg-carbon-05 border border-carbon-20 rounded-3xl p-6 space-y-4">
           <div className="flex items-center gap-2 text-xs font-mono text-sky-800 uppercase font-extrabold tracking-wider">
-            <span>🧮 AI Mathematical Prediction Mechanics</span>
+            <BarChart3 className="h-4 w-4" aria-hidden="true" />
+            <span>AI Mathematical Prediction Mechanics</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
@@ -809,7 +818,9 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
 
                 <div className="pt-2 border-t border-carbon-20 flex items-center justify-between text-xs font-mono text-sky-700">
                   <span>Crop: {d.mainCrop}</span>
-                  <span className="font-bold underline">Select District →</span>
+                  <span className="inline-flex items-center gap-1 font-bold underline">
+                    Select District <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  </span>
                 </div>
               </div>
             ))}

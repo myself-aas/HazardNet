@@ -35,5 +35,5 @@
     "../../packages/design-system/src/material3Expressive.ts",
     "../../packages/design-system/src/index.ts"
   ],
-  "exclude": ["node_modules", "dist", ".expo"]
+  "exclude": ["node_modules", "dist", ".expo", "../../packages/analytics/src/__tests__"]
 }

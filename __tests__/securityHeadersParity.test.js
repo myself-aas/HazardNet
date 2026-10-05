@@ -1,13 +1,21 @@
 /**
  * @jest-environment node
  *
- * Phase 6 (SEC-10): the three places that describe the same security policy must agree.
+ * Phase 6 (SEC-10): the four places that describe the same security policy must agree.
  *
- * The headers are declared three times — the root `vercel.json` (the deployed a-facing
- * surface), `frontend/vercel.json` (frontend-project scope), and `backend/server.js`
- * (helmet, for the self-hosted/Docker deployment). They drifted before: the CSP was added
- * to a config that was not the one serving production. This suite makes the drift visible
- * in CI instead of only in a live-header probe.
+ * The headers are declared four times — the root `vercel.json` (the deployed a-facing
+ * surface), `frontend/vercel.json` (frontend-project scope), `firebase.json` (the surface
+ * that actually answers `hazardnet.live` since the deployment moved to Firebase Hosting) and
+ * `backend/server.js` (helmet, for the self-hosted/Docker deployment). They drifted before:
+ * the CSP was added to a config that was not the one serving production.
+ *
+ * The Firebase copy is the one that drifted silently for real. On 2026-10-04 the live site
+ * answered with only `Referrer-Policy`, `X-Content-Type-Options` and `X-Frame-Options`; the
+ * `site-health.yml` security-header probe had been red on every scheduled run because
+ * `Strict-Transport-Security` carried no `includeSubDomains` and there was no
+ * `Content-Security-Policy` and no `Permissions-Policy` — all three present in both Vercel
+ * configs, none of them present in `firebase.json`, which was not covered here. This suite
+ * makes that drift visible in CI instead of only in a live-header probe.
  */
 
 import { readFileSync } from 'node:fs';
@@ -59,6 +67,9 @@ describe('security header parity', () => {
   const frontendCfg = readJson('frontend/vercel.json');
   const rootHeaders = headerMap(rootCfg);
   const frontendHeaders = headerMap(frontendCfg);
+  // Firebase Hosting wraps its config in `hosting`, and its source patterns are globs (`**`)
+  // rather than the `/(.*)` both Vercel configs use.
+  const firebaseHeaders = headerMap(readJson('firebase.json').hosting, '**');
   const server = readFileSync(join(root, 'backend/server.js'), 'utf8');
 
   const EXPECTED = [
@@ -78,14 +89,29 @@ describe('security header parity', () => {
     }
   });
 
-  it('serves an identical browser policy from both configs', () => {
+  it('the Firebase Hosting config sets every expected header for all paths', () => {
+    // This is the config that serves production, so a missing header here is a live gap no
+    // matter what the Vercel configs say — which is exactly how the 2026-10-04 probe failed.
+    for (const header of EXPECTED) {
+      expect(firebaseHeaders[header]).toBeTruthy();
+    }
+  });
+
+  it('serves an identical browser policy from all three hosts', () => {
     for (const header of EXPECTED) {
       expect(frontendHeaders[header]).toBe(rootHeaders[header]);
+      // Firebase Hosting cannot interpolate or share a value, so it must carry the same
+      // literal string; `csp.js` equality below pins the absolute truth for the CSP itself.
+      expect(firebaseHeaders[header]).toBe(rootHeaders[header]);
     }
   });
 
   it('keeps HSTS preload-eligible (includeSubDomains + preload + long max-age)', () => {
-    for (const value of [rootHeaders['Strict-Transport-Security'], frontendHeaders['Strict-Transport-Security']]) {
+    for (const value of [
+      rootHeaders['Strict-Transport-Security'],
+      frontendHeaders['Strict-Transport-Security'],
+      firebaseHeaders['Strict-Transport-Security'],
+    ]) {
       expect(value).toMatch(/includeSubDomains/);
       expect(value).toMatch(/preload/);
       const maxAge = Number(/max-age=(\d+)/.exec(value)[1]);
@@ -94,7 +120,11 @@ describe('security header parity', () => {
   });
 
   it('keeps the CSP enforcing, and locks down the dangerous directives', () => {
-    for (const value of [rootHeaders['Content-Security-Policy'], frontendHeaders['Content-Security-Policy']]) {
+    for (const value of [
+      rootHeaders['Content-Security-Policy'],
+      frontendHeaders['Content-Security-Policy'],
+      firebaseHeaders['Content-Security-Policy'],
+    ]) {
       expect(value).not.toMatch(/Content-Security-Policy-Report-Only/i);
       expect(value).toContain("default-src 'self'");
       expect(value).toContain("object-src 'none'");
@@ -159,9 +189,10 @@ describe('security header parity', () => {
   it('is the same string in the shared module, both configs and helmet', async () => {
     const { CSP, cspDirectivesFromString, AUTH_SCRIPT_ORIGINS } = await import('../backend/security/csp.js');
 
-    // One source of truth: the two Vercel configs carry exactly the canonical string.
+    // One source of truth: every host config carries exactly the canonical string.
     expect(rootHeaders['Content-Security-Policy']).toBe(CSP);
     expect(frontendHeaders['Content-Security-Policy']).toBe(CSP);
+    expect(firebaseHeaders['Content-Security-Policy']).toBe(CSP);
 
     // helmet runs the parsed canonical policy, so the self-hosted deployment cannot drift.
     const directives = cspDirectivesFromString();

@@ -110,3 +110,10 @@ manuscript/
 *.pth
 *.keras
 *.bin
+# agent skill installers (npx skills) — tooling artifacts, not product
+.agents/
+.claude/
+agent/
+data/skills/
+skills/
+skills-lock.json

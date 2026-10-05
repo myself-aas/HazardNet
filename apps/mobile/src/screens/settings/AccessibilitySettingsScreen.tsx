@@ -1,8 +1,8 @@
 /**
  * Accessibility settings — theme, language, text, motion, contrast, haptics.
  * Phase 8: expanded with Bangla (বাংলা) language picker, Increase Contrast,
- * and Bold Text toggles. System Dynamic Type integration lands alongside
- * the full accessibility audit in the next polish pass.
+ * and Bold Text toggles. Large Text builds on uncapped system font scaling;
+ * device-level VoiceOver/TalkBack and layout checks remain part of native QA.
  */
 
 import React, { useEffect } from 'react';
@@ -72,48 +72,48 @@ export function AccessibilitySettingsScreen() {
 
             <Card>
               <VStack space={10}>
-                <Title3>Display</Title3>
+                <Title3>{t('a11y.display')}</Title3>
                 <HStack justify="space-between" align="center">
                   <VStack space={2} flex={1}>
-                    <BodyBold>Bold Text</BodyBold>
-                    <Caption color="textMuted">Use heavier font weights across the app.</Caption>
+                    <BodyBold>{t('a11y.boldText')}</BodyBold>
+                    <Caption color="textMuted">{t('a11y.boldTextBody')}</Caption>
                   </VStack>
-                  <Switch value={boldText} onValueChange={setBoldText} />
+                  <Switch value={boldText} onValueChange={setBoldText} accessibilityLabel={t('a11y.boldText')} />
                 </HStack>
                 <HStack justify="space-between" align="center">
                   <VStack space={2} flex={1}>
-                    <BodyBold>Increase contrast</BodyBold>
-                    <Caption color="textMuted">Higher-contrast borders and text for legibility.</Caption>
+                    <BodyBold>{t('a11y.increaseContrast')}</BodyBold>
+                    <Caption color="textMuted">{t('a11y.increaseContrastBody')}</Caption>
                   </VStack>
-                  <Switch value={increaseContrast} onValueChange={setIncreaseContrast} />
+                  <Switch value={increaseContrast} onValueChange={setIncreaseContrast} accessibilityLabel={t('a11y.increaseContrast')} />
                 </HStack>
                 <HStack justify="space-between" align="center">
                   <VStack space={2} flex={1}>
                     <BodyBold>{t('a11y.largeText')}</BodyBold>
                     <Caption color="textMuted">{t('a11y.largeTextBody')}</Caption>
                   </VStack>
-                  <Switch value={largeText} onValueChange={setLargeText} />
+                  <Switch value={largeText} onValueChange={setLargeText} accessibilityLabel={t('a11y.largeText')} />
                 </HStack>
                 <HStack justify="space-between" align="center">
                   <VStack space={2} flex={1}>
                     <BodyBold>{t('a11y.reducedMotion')}</BodyBold>
                     <Caption color="textMuted">{t('a11y.reducedMotionBody')}</Caption>
                   </VStack>
-                  <Switch value={reducedMotion} onValueChange={setReducedMotion} />
+                  <Switch value={reducedMotion} onValueChange={setReducedMotion} accessibilityLabel={t('a11y.reducedMotion')} />
                 </HStack>
                 <HStack justify="space-between" align="center">
                   <VStack space={2} flex={1}>
                     <BodyBold>{t('a11y.haptics')}</BodyBold>
                     <Caption color="textMuted">{t('a11y.hapticsBody')}</Caption>
                   </VStack>
-                  <Switch value={hapticsEnabled} onValueChange={setHapticsEnabled} />
+                  <Switch value={hapticsEnabled} onValueChange={setHapticsEnabled} accessibilityLabel={t('a11y.haptics')} />
                 </HStack>
               </VStack>
             </Card>
 
             <Card>
               <VStack space={4}>
-                <Title3>Coming soon</Title3>
+                <Title3>{t('a11y.phase8')}</Title3>
                 <Body color="textSecondary">
                   {t('a11y.vo')}{`\n`}
                   {t('a11y.dt')}{`\n`}

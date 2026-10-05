@@ -11,6 +11,8 @@ import { Title3, Body, BodyBold, Caption } from '../../design-system/Text';
 import { Card } from '../../design-system/Card';
 import { Button } from '../../design-system/Button';
 import { Chip } from '../../design-system/Chip';
+import { Icon } from '../Icon';
+import { useTheme } from '../../theme/ThemeProvider';
 
 const KEY = 'hazardnet:notif-edu:v1';
 
@@ -29,6 +31,7 @@ interface Props {
 }
 
 export function PermissionEducationSheet({ visible, onAccept, onDismiss }: Props) {
+  const { theme } = useTheme();
   const [ready, setReady] = useState(false);
   useEffect(() => { setReady(true); }, []);
   if (!visible || !ready) return null;
@@ -36,7 +39,7 @@ export function PermissionEducationSheet({ visible, onAccept, onDismiss }: Props
     <Card>
       <VStack space={10}>
         <HStack align="center" space={8}>
-          <Chip label="🔔" severity="warning" />
+          <Chip label="Alerts" severity="warning" leadingIcon={<Icon name="Bell" size="meta" color={theme.colors.warning} />} />
           <Title3>Turn on alerts</Title3>
         </HStack>
         <BodyBold>Get notified when SEVERE weather affects your saved places.</BodyBold>

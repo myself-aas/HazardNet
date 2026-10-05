@@ -39,6 +39,7 @@ import {
 import type { WeatherResponse, HourlyWeather, DailyWeather } from '../lib/weather';
 import { windDirectionLabel } from '../lib/weather';
 import { wmoCodeInfo } from '../lib/wmoWeatherCodes';
+import WeatherIcon from './WeatherIcon';
 import type { ForecastRow } from '../lib/forecasts';
 import { CardStackRows } from './ui/CardStackTable';
 
@@ -237,7 +238,7 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
               <span className="text-sky-100 text-lg">C</span>
             </div>
             <div className="mt-1 text-sky-50 text-base font-medium flex items-center gap-2">
-              <span className="text-2xl" aria-hidden>{info.emoji}</span>
+              <WeatherIcon name={info.icon} size={24} className="shrink-0 text-sky-100" />
               <span>{info.label}</span>
             </div>
             <div className="mt-0.5 text-sm text-sky-100/90">
@@ -515,7 +516,7 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
                     <td className="py-2 pr-3 font-medium whitespace-nowrap">{String(d.date)}</td>
                     <td className="py-2 px-3">
                       <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                        <span aria-hidden>{w.emoji}</span>
+                        <WeatherIcon name={w.icon} size={16} className="shrink-0" />
                         <span className="text-xs">{w.label}</span>
                       </span>
                     </td>

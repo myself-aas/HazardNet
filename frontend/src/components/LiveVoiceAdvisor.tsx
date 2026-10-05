@@ -13,7 +13,8 @@ import {
   Sparkles,
   RefreshCw,
   HelpCircle,
-  MessageSquare
+  MessageSquare,
+  X,
 } from 'lucide-react';
 
 interface TranscriptItem {
@@ -238,7 +239,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
 
         if (msg.type === 'connection_established' || msg.type === 'session_ready') {
           setStatus('listening');
-          addTranscript('system', `Connected to Gemini Live (${msg.model || 'gemini-3.8-live'}) for ${district} with active RAG protocols.`);
+          addTranscript('system', `Voice advisor connected for ${district}.`);
         } else if (msg.type === 'audio' && msg.audio) {
           play24kHzAudioChunk(msg.audio);
         } else if (msg.type === 'interrupted') {
@@ -409,19 +410,16 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold tracking-tight text-carbon-80">
-                Live Voice Advisor
-              </span>
-              <span className="text-xs font-mono font-medium px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
-                gemini-3.8-live
+              <span className="text-sm font-semibold text-carbon-90">
+                Live Voice
               </span>
             </div>
             <div className="flex items-center gap-1.5 text-xs text-carbon-60">
-              <span className="capitalize font-medium">
-                {status === 'speaking' ? 'HazardNet Speaking...' :
-                 status === 'listening' ? (isMuted ? 'Mic Muted' : 'Listening for your voice...') :
-                 status === 'connecting' ? 'Connecting to Live API...' :
-                 status === 'interrupted' ? 'Interrupted' :
+              <span className="font-medium">
+                {status === 'speaking' ? 'Speaking' :
+                 status === 'listening' ? (isMuted ? 'Microphone muted' : 'Listening') :
+                 status === 'connecting' ? 'Connecting…' :
+                 status === 'interrupted' ? 'Paused' :
                  'Idle'}
               </span>
             </div>
@@ -434,21 +432,22 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
             <button
               id="switch-to-text-chat-btn"
               onClick={onSwitchToText}
-              className="px-2.5 py-1.5 text-xs font-medium rounded-lg text-carbon-60 hover:text-carbon-90 hover:bg-carbon-20 transition-colors flex items-center gap-1.5"
+              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-medium text-carbon-70 transition-colors hover:bg-carbon-20 hover:text-carbon-90"
               title="Switch to text chat"
+              aria-label="Switch to text chat"
             >
-              <MessageSquare className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Text Mode</span>
+              <MessageSquare className="w-4 h-4" aria-hidden="true" />
+              <span className="hidden sm:inline">Text</span>
             </button>
           )}
           {onClose && (
             <button
               id="close-live-voice-btn"
               onClick={onClose}
-              className="p-1.5 text-carbon-60 hover:text-carbon-70 rounded-lg hover:bg-carbon-20 transition-colors"
-              aria-label="Close"
+              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-carbon-60 transition-colors hover:bg-carbon-20 hover:text-carbon-90"
+              aria-label="Close Live Voice Advisor"
             >
-              ×
+              <X className="h-4 w-4" aria-hidden="true" />
             </button>
           )}
         </div>
@@ -463,7 +462,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
             id="live-voice-district-select"
             value={district}
             onChange={(e) => handleDistrictChange(e.target.value)}
-            className="bg-white border border-carbon-30 rounded px-2 py-0.5 text-xs font-medium text-carbon-80 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="min-h-[44px] rounded-lg border border-carbon-30 bg-white px-3 py-2 text-xs font-medium text-carbon-80 focus:outline-none focus:ring-2 focus:ring-nasa-blue"
           >
             {BANGLADESH_DISTRICTS.map(d => (
               <option key={d} value={d}>{d}</option>
@@ -478,7 +477,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
             id="live-voice-hazard-select"
             value={hazard}
             onChange={(e) => handleHazardChange(e.target.value)}
-            className="bg-white border border-carbon-30 rounded px-2 py-0.5 text-xs font-medium text-carbon-80 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="min-h-[44px] rounded-lg border border-carbon-30 bg-white px-3 py-2 text-xs font-medium text-carbon-80 focus:outline-none focus:ring-2 focus:ring-nasa-blue"
           >
             <option value="Flood">Flood (BRRI Submergence)</option>
             <option value="Cyclone">Cyclone (Surge & Salinity)</option>
@@ -507,14 +506,14 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
                 exit={{ opacity: 0 }}
                 className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-xs font-medium"
               >
-                <Sparkles className="w-3 h-3 text-amber-600 animate-spin" />
-                <span>RAG Protocol: Executing {activeTool}...</span>
+                <Sparkles className="w-3 h-3 text-amber-600" aria-hidden="true" />
+                <span>{activeTool === 'search_hazard_knowledge' ? 'Checking hazard guidance…' : 'Looking up local contacts…'}</span>
               </motion.div>
             )}
             {!activeTool && (
               <span className="text-xs text-carbon-50 font-medium">
                 {status === 'speaking' 
-                  ? 'Speaking through 24kHz audio stream' 
+                  ? 'The advisor is responding…'
                   : isMuted 
                   ? 'Unmute mic to speak with the advisor' 
                   : 'Speak into your microphone in English or Bengali'}
@@ -529,9 +528,9 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
         {transcripts.length === 0 && (
           <div className="h-full flex flex-col items-center justify-center text-center p-6 text-carbon-60">
             <Radio className="w-10 h-10 mb-2 opacity-30 text-blue-600" />
-            <p className="text-sm font-semibold text-carbon-70">Live Voice Conversation Initialized</p>
-            <p className="text-xs text-carbon-60 max-w-xs mt-1">
-              Ask anything about flood-tolerant rice varieties, livestock evacuation killas, cyclone salinity management, or DAE extension hotlines.
+            <p className="text-sm font-semibold text-carbon-80">Speak with your advisor</p>
+            <p className="mt-1 max-w-xs text-sm text-carbon-60">
+              Get guidance on crop protection, local hazards, and emergency contacts.
             </p>
             <div className="mt-4 flex flex-wrap justify-center gap-1.5 max-w-sm">
               <button
@@ -543,9 +542,9 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
                     }));
                   }
                 }}
-                className="text-xs px-2.5 py-1 rounded-full bg-carbon-10 hover:bg-carbon-20 text-carbon-70 transition"
+                className="min-h-[44px] rounded-full bg-carbon-10 px-3 py-2 text-xs text-carbon-70 transition-colors hover:bg-carbon-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue"
               >
-                "Which BRRI rice survives floods in {district}?"
+                Which BRRI rice survives floods?
               </button>
               <button
                 onClick={() => {
@@ -556,9 +555,9 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
                     }));
                   }
                 }}
-                className="text-xs px-2.5 py-1 rounded-full bg-carbon-10 hover:bg-carbon-20 text-carbon-70 transition"
+                className="min-h-[44px] rounded-full bg-carbon-10 px-3 py-2 text-xs text-carbon-70 transition-colors hover:bg-carbon-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue"
               >
-                "Livestock medical emergency hotline"
+                Livestock medical emergency hotline
               </button>
             </div>
           </div>
@@ -586,7 +585,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
               <div className="max-w-[85%] bg-carbon-10 text-carbon-90 border border-carbon-20 px-3 py-2 rounded-2xl rounded-tl-none shadow-sm">
                 <div className="flex items-center gap-1.5 mb-1 text-xs font-semibold text-blue-700">
                   <Sparkles className="w-3 h-3" />
-                  <span>HazardNet Voice (gemini-3.8-live)</span>
+                  <span>AI Advisor</span>
                 </div>
                 <p className="font-sans leading-relaxed">{item.text}</p>
                 <span className="text-xs text-carbon-60 mt-0.5 block">{item.timestamp}</span>
@@ -624,7 +623,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
             </div>
             <button
               onClick={connectWebSocket}
-              className="px-2 py-1 bg-rose-600 text-white rounded text-xs font-medium hover:bg-rose-700 transition"
+              className="min-h-[44px] shrink-0 rounded-lg bg-rose-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-rose-700"
             >
               Retry
             </button>
