@@ -131,7 +131,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
           {/* 3. Physics Override Transparency Badge (TASK-006) */}
           {isPhysicsOverridden && (
             <div
-              className="inline-flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-cyan-50 dark:bg-cyan-950/60 border border-cyan-300 dark:border-cyan-800 text-cyan-800 dark:text-cyan-300 text-xs font-semibold shadow-xs whitespace-nowrap"
+              className="inline-flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-cyan-50 border border-cyan-300 text-cyan-800 text-xs font-semibold shadow-xs whitespace-nowrap"
               title="Physical constraints overrode neural predictions."
               data-testid="physics-override-badge"
             >

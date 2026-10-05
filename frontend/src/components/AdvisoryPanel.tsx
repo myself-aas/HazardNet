@@ -94,7 +94,7 @@ const AdvisoryPanel: React.FC<AdvisoryPanelProps> = ({
 
   if (error) {
     return (
-      <div className="w-full bg-rose-50 dark:bg-rose-950/20 rounded-lg sm:rounded-xl border border-rose-200 dark:border-rose-900/50 shadow-sm sm:shadow-md p-3 sm:p-4 mt-4 sm:mt-6 text-rose-950 dark:text-rose-100 text-xs sm:text-sm space-y-2">
+      <div className="w-full bg-rose-50 rounded-lg sm:rounded-xl border border-rose-300 shadow-sm sm:shadow-md p-3 sm:p-4 mt-4 sm:mt-6 text-rose-900 text-xs sm:text-sm space-y-2">
         <p className="font-bold text-sm sm:text-base">Error generating AI Advisory</p>
         <p className="text-xs leading-relaxed font-normal">{error}</p>
       </div>
@@ -115,7 +115,7 @@ const AdvisoryPanel: React.FC<AdvisoryPanelProps> = ({
               HA Engine
             </span>
             {advisory.cached && (
-              <span className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-xs font-mono font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-950 dark:text-emerald-100 border border-emerald-200 dark:border-emerald-800/50">
+              <span className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-xs font-mono font-semibold bg-emerald-50 text-emerald-700 border border-emerald-300">
                 Cached
               </span>
             )}
@@ -130,8 +130,8 @@ const AdvisoryPanel: React.FC<AdvisoryPanelProps> = ({
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <span className={`px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-mono font-bold border whitespace-nowrap ${
             (advisory.urgency_tier === 'EMERGENCY' || advisory.urgency_level === 'EMERGENCY' || advisory.urgency_tier === 'WARNING' || advisory.urgency_level === 'WARNING')
-              ? 'bg-rose-100 dark:bg-rose-950/40 text-rose-950 dark:text-rose-100 border-rose-300 dark:border-rose-800/50'
-              : 'bg-amber-100 dark:bg-amber-950/40 text-amber-950 dark:text-amber-100 border-amber-300 dark:border-amber-800/50'
+              ? 'bg-rose-100 text-rose-700 border-rose-300'
+              : 'bg-amber-100 text-amber-700 border-amber-300'
           }`}>
             {advisory.urgency_tier || advisory.urgency_level || 'WATCH'}
           </span>

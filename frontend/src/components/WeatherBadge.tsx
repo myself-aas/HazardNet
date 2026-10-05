@@ -60,7 +60,7 @@ export const WeatherBadge: React.FC<WeatherBadgeProps> = ({
 
   return (
     <span
-      className={`${base} bg-sky-50 text-carbon-70 dark:bg-sky-900/30 dark:text-sky-100`}
+      className={`${base} bg-sky-50 text-sky-800`}
       onClick={onClick}
       role={onClick ? 'button' : undefined}
     >
