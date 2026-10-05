@@ -37,8 +37,8 @@ describe('Phase 2 — Expo Mobile Shell & Manifest Configuration', () => {
   });
 });
 
-describe('Phase 2 — Material 3 Expressive Mobile Primitives', () => {
-  it('ExpressiveBentoCard enforces 48dp minimum hit targets and M3 surface shapes', () => {
+describe('Phase 2 — mobile primitives, on the Apple design system', () => {
+  it('ExpressiveBentoCard enforces the 48dp hit floor and Apple card geometry', () => {
     const card = ExpressiveBentoCard({
       title: 'Kurigram Flood Risk',
       value: '0.88',
@@ -49,7 +49,7 @@ describe('Phase 2 — Material 3 Expressive Mobile Primitives', () => {
     expect(card.type).toBe('BentoCard');
     expect(card.props.minHitHeight).toBe(48);
     expect(card.props.borderRadius).toBe(16);
-    expect(card.props.severityLabel).toBe('Extreme Critical');
+    expect(card.props.severityLabel).toBe('Extreme');
   });
 
   it('ExpressiveFloatingControlBar enforces 48dp touch heights and pill radius', () => {
@@ -63,7 +63,7 @@ describe('Phase 2 — Material 3 Expressive Mobile Primitives', () => {
     expect(controlBar.props.pillRadius).toBe(9999);
   });
 
-  it('ExpressiveBottomSheet enforces 28dp top radius and 48dp handle area', () => {
+  it('ExpressiveBottomSheet uses the Apple 18pt sheet radius and a 48dp handle area', () => {
     const sheet = ExpressiveBottomSheet({
       isOpen: true,
       onClose: () => {},
@@ -71,7 +71,9 @@ describe('Phase 2 — Material 3 Expressive Mobile Primitives', () => {
     });
 
     expect(sheet.type).toBe('BottomSheet');
-    expect(sheet.props.topRadius).toBe(28);
+    // 18, not Material 3's 28: the sheet corner is Apple's `rounded.lg`, the same
+    // radius a card uses on the web. One system, one corner.
+    expect(sheet.props.topRadius).toBe(18);
     expect(sheet.props.handleTouchArea).toBe(48);
   });
 });

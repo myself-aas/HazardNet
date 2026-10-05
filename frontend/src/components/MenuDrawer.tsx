@@ -9,7 +9,7 @@ import { MenuToggleIcon } from './brand';
 import { LanguageToggle } from './alerts/LanguageToggle';
 import { ThemeToggle } from './ThemeToggle';
 import { DRAWER_SECTIONS, isPathCurrent, type NavItem } from '../lib/navigation';
-import type { MeridianThemeName } from './meridian/motion';
+import type { AppleThemeName } from './apple/motion';
 import { useDialogBehavior } from '../hooks/useDialogBehavior';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { usePWAInstall } from '../hooks/usePWAInstall';
@@ -53,12 +53,12 @@ interface MenuDrawerProps {
   /** Side-effects that ride on a navigation (the saved-districts heatmap). */
   onNavigateItem?: (item: NavItem) => void;
   /** Current appearance preference (`system` follows the OS). Omit to hide the control. */
-  theme?: MeridianThemeName;
-  onThemeChange?: (theme: MeridianThemeName) => void;
+  theme?: AppleThemeName;
+  onThemeChange?: (theme: AppleThemeName) => void;
 }
 
 const tileClass =
-  'flex min-h-[72px] flex-col items-center justify-center gap-1.5 rounded-2xl border border-carbon-20 bg-white px-2 py-2.5 text-[13px] font-semibold text-carbon-90 transition-colors duration-150 hover:bg-carbon-05 disabled:opacity-60 touch-manipulation cursor-pointer';
+  'flex min-h-[72px] flex-col items-center justify-center gap-1.5 rounded-2xl border border-carbon-20 bg-white px-2 py-2.5 text-ap-caption font-semibold text-carbon-90 transition-colors duration-150 hover:bg-carbon-05 disabled:opacity-60 touch-manipulation cursor-pointer';
 
 export const MenuDrawer: React.FC<MenuDrawerProps> = ({
   isOpen,
@@ -109,7 +109,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
         initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.15 }}
-        className="fixed inset-0 h-dvh bg-carbon-90/40 z-[var(--z-overlay)]"
+        className="fixed inset-0 h-dvh bg-carbon-black/40 z-[var(--ap-z-overlay)]"
         onClick={onClose}
         {...({ inert: true } as Record<string, unknown>)}
       />
@@ -126,7 +126,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
         initial={reduceMotion ? { x: 0 } : { x: '100%' }}
         animate={{ x: 0 }}
         transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-        className="fixed inset-y-0 right-0 z-[var(--z-overlay)] flex w-full max-w-[380px] select-none flex-col overflow-hidden border-l border-carbon-20 bg-white font-sans text-carbon-80"
+        className="fixed inset-y-0 right-0 z-[var(--ap-z-overlay)] flex w-full max-w-[380px] select-none flex-col overflow-hidden border-l border-carbon-20 bg-white font-sans text-carbon-80"
       >
         {/* brand · close — the only two things in the header row */}
         <div className="flex shrink-0 items-center justify-between px-4 pb-3 pt-[max(1rem,env(safe-area-inset-top))]">
@@ -150,7 +150,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
             type="button"
             onClick={() => onOpenSearch?.()}
             data-testid="district-search-trigger"
-            className="flex min-h-[52px] w-full cursor-pointer items-center gap-3 rounded-2xl border border-carbon-30 bg-carbon-05 px-4 text-left text-[15px] font-semibold text-carbon-70 transition-colors duration-150 hover:bg-carbon-10 touch-manipulation"
+            className="flex min-h-[52px] w-full cursor-pointer items-center gap-3 rounded-2xl border border-carbon-30 bg-carbon-05 px-4 text-left text-ap-caption font-semibold text-carbon-70 transition-colors duration-150 hover:bg-carbon-10 touch-manipulation"
           >
             <MaterialIcon name="map_search" className="h-5 w-5 shrink-0 text-carbon-90" />
             <span className="flex-1">Search</span>
@@ -171,7 +171,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
               aria-busy={isLocating || undefined}
               className={tileClass}
             >
-              <MaterialIcon name="location_on" className="h-6 w-6 text-nasa-blue" />
+              <MaterialIcon name="location_on" className="h-6 w-6 text-ap-link" />
               <span>Locate</span>
             </button>
             <button
@@ -185,19 +185,19 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
             >
               <MaterialIcon
                 name={isSubscribed ? 'notifications_active' : 'notifications'}
-                className={`h-6 w-6 ${isSubscribed ? 'text-nasa-blue' : 'text-carbon-90'}`}
+                className={`h-6 w-6 ${isSubscribed ? 'text-ap-link' : 'text-carbon-90'}`}
               />
               <span>Alerts</span>
               <span
                 aria-hidden="true"
-                className={`-mt-1 text-xs font-medium ${isSubscribed ? 'text-nasa-blue-shade' : 'text-carbon-60'}`}
+                className={`-mt-1 text-xs font-medium ${isSubscribed ? 'text-ap-link' : 'text-carbon-60'}`}
               >
                 {isSubscribed ? 'On' : 'Off'}
               </span>
             </button>
             {showInstall ? (
               <button type="button" onClick={install} className={tileClass}>
-                <MaterialIcon name="install_mobile" className="h-6 w-6 text-nasa-blue" />
+                <MaterialIcon name="install_mobile" className="h-6 w-6 text-ap-link" />
                 <span>Install</span>
               </button>
             ) : (
@@ -240,15 +240,15 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                           onClose();
                         }}
                         aria-current={isActive ? 'page' : undefined}
-                        className={`flex min-h-[48px] items-center gap-2.5 rounded-xl px-3 text-[15px] no-underline transition-colors duration-150 touch-manipulation ${
+                        className={`flex min-h-[48px] items-center gap-2.5 rounded-xl px-3 text-ap-caption no-underline transition-colors duration-150 touch-manipulation ${
                           isActive
-                            ? 'bg-nasa-blue-tint/15 font-bold text-nasa-blue-shade'
+                            ? 'bg-blue-50 font-bold text-blue-700'
                             : 'font-semibold text-carbon-80 hover:bg-carbon-05'
                         }`}
                       >
                         <MaterialIcon
                           name={item.icon}
-                          className={`h-[18px] w-[18px] shrink-0 ${isActive ? 'text-nasa-blue' : 'text-carbon-60'}`}
+                          className={`h-[18px] w-[18px] shrink-0 ${isActive ? 'text-ap-link' : 'text-carbon-60'}`}
                         />
                         <span className="truncate">{item.title}</span>
                       </Link>
@@ -273,16 +273,16 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                 className="flex min-h-[48px] min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-xl px-2 text-left transition-colors duration-150 hover:bg-carbon-05 touch-manipulation"
                 title="Profile"
               >
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-nasa-blue text-sm font-bold text-white">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-ap-action-fg">
                   {initial}
                 </span>
-                <span className="truncate text-[15px] font-semibold text-carbon-90">Profile</span>
+                <span className="truncate text-ap-caption font-semibold text-carbon-90">Profile</span>
               </button>
               <button
                 type="button"
                 onClick={handleSignOut}
                 disabled={isLoggingOut}
-                className="min-h-[48px] cursor-pointer rounded-xl px-4 text-[15px] font-semibold text-carbon-70 transition-colors duration-150 hover:bg-carbon-05 disabled:opacity-50 touch-manipulation"
+                className="min-h-[48px] cursor-pointer rounded-xl px-4 text-ap-caption font-semibold text-carbon-70 transition-colors duration-150 hover:bg-carbon-05 disabled:opacity-50 touch-manipulation"
               >
                 Sign out
               </button>
@@ -293,7 +293,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                 to="/login"
                 data-testid="drawer-signin-link"
                 onClick={onClose}
-                className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-nasa-blue text-[15px] font-semibold text-white no-underline transition-colors duration-150 hover:bg-nasa-blue-shade touch-manipulation"
+                className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-primary text-ap-caption font-semibold text-ap-action-fg no-underline transition-colors duration-150 hover:bg-primary-strong touch-manipulation"
               >
                 Sign in
               </Link>
@@ -301,7 +301,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                 to="/signup"
                 data-testid="drawer-signup-link"
                 onClick={onClose}
-                className="inline-flex min-h-[48px] items-center justify-center rounded-xl border border-carbon-30 text-[15px] font-semibold text-carbon-90 no-underline transition-colors duration-150 hover:bg-carbon-05 touch-manipulation"
+                className="inline-flex min-h-[48px] items-center justify-center rounded-xl border border-carbon-30 text-ap-caption font-semibold text-carbon-90 no-underline transition-colors duration-150 hover:bg-carbon-05 touch-manipulation"
               >
                 Sign up
               </Link>

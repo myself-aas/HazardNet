@@ -60,12 +60,12 @@ const TONES = {
     heading: 'text-carbon-90',
     label: 'text-carbon-60',
     value: 'text-carbon-70',
-    footer: 'border-carbon-10',
+    footer: 'border-carbon-20',
   },
   onDark: {
     list: 'divide-carbon-80/80 border-carbon-80',
     heading: 'text-white',
-    label: 'text-carbon-40',
+    label: 'text-carbon-50',
     value: 'text-carbon-30',
     footer: 'border-carbon-80',
   },
@@ -158,7 +158,7 @@ export const CardStackTable: React.FC<CardStackTableProps> = ({ columns, rows, c
           </thead>
           <tbody>
             {rows.map((row, rowIndex) => (
-              <tr key={`${rowIndex}-${row[0] ?? ''}`} className="border-b border-carbon-10 last:border-b-0">
+              <tr key={`${rowIndex}-${row[0] ?? ''}`} className="border-b border-carbon-20 last:border-b-0">
                 {row.map((cell, cellIndex) => (
                   <td
                     key={cellIndex}

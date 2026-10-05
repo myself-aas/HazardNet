@@ -25,12 +25,12 @@ export const About: React.FC = () => {
           <span className="px-2.5 py-0.5 rounded-sm text-xs font-mono font-bold uppercase tracking-wider bg-amber-50 text-amber-900 border border-amber-200">
             HazardNet Early Warning Initiative
           </span>
-          <span className="text-carbon-30">•</span>
+          <span className="text-carbon-60">•</span>
           <span className="text-xs text-carbon-60 font-medium">Active Deployment: 2026</span>
         </div>
         
-        <h1 className="text-[28px] sm:text-[32px] font-brand font-bold leading-tight text-carbon-90 tracking-tight">
-          Hazard<span className="text-nasa-red-shade">Net</span> Agro-Climatic Intelligence Platform
+        <h1 className="text-ap-lead sm:text-ap-display-md font-brand font-bold leading-tight text-carbon-90 tracking-tight">
+          Hazard<span className="text-ap-link">Net</span> Agro-Climatic Intelligence Platform
         </h1>
         <p className="text-base leading-[1.62] text-carbon-60 max-w-3xl">
           Automated multi-hazard early warning, multi-band satellite feature classification, physical severity quantification, and offline-capable edge computing for agricultural extension across Bangladesh.
@@ -40,7 +40,7 @@ export const About: React.FC = () => {
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
               to="/use-cases"
-              className="inline-flex min-h-[44px] items-center px-6 py-2 bg-primary-strong hover:bg-primary text-white text-base font-semibold touch-manipulation"
+              className="inline-flex min-h-[44px] items-center px-6 py-2 bg-primary hover:bg-primary-strong text-ap-action-fg text-base font-semibold touch-manipulation"
             >
               Explore Regional Use Cases
             </Link>
@@ -49,7 +49,7 @@ export const About: React.FC = () => {
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
               to="/download"
-              className="inline-flex min-h-[44px] items-center px-6 py-2 bg-nasa-blue hover:bg-nasa-blue-shade text-white text-base font-semibold touch-manipulation"
+              className="inline-flex min-h-[44px] items-center px-6 py-2 bg-primary hover:bg-primary-strong text-ap-action-fg text-base font-semibold touch-manipulation"
             >
               Download Offline Software
             </Link>
@@ -181,7 +181,7 @@ export const About: React.FC = () => {
               <p className="leading-relaxed text-carbon-60">
                 {item.desc}
               </p>
-              <Link to={item.link} className="text-nasa-blue-shade font-bold underline inline-block pt-1 hover:text-amber-900">
+              <Link to={item.link} className="text-ap-link font-bold underline inline-block pt-1 hover:text-amber-900">
                 <span className="inline-flex items-center gap-1.5">
                   {item.linkText}
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />

@@ -174,7 +174,7 @@ export async function exportElementToPdf(options: PdfExportOptions = {}): Promis
           clonedElement.style.setProperty('max-width', '100%', 'important');
           clonedElement.style.setProperty('box-sizing', 'border-box', 'important');
           clonedElement.style.setProperty('background', '#ffffff', 'important');
-          clonedElement.style.setProperty('color', '#17171b', 'important');
+          clonedElement.style.setProperty('color', '#1d1d1f', 'important');
           clonedElement.style.setProperty('padding', '24px', 'important');
           clonedElement.style.setProperty('margin', '0 auto', 'important');
 
@@ -227,39 +227,39 @@ export async function exportElementToPdf(options: PdfExportOptions = {}): Promis
             }
             :root {
               --background: #ffffff;
-              --foreground: #17171b;
+              --foreground: #1d1d1f;
               --card: #ffffff;
-              --card-foreground: #17171b;
-              --primary: #17171b;
-              --primary-foreground: #f6f6f6;
-              --secondary: #e3e3e3;
-              --secondary-foreground: #17171b;
-              --muted: #e3e3e3;
-              --muted-foreground: #77777a;
-              --border: #d1d1d1;
-              --input: #d1d1d1;
+              --card-foreground: #1d1d1f;
+              --primary: #1d1d1f;
+              --primary-foreground: #fafafc;
+              --secondary: #f5f5f7;
+              --secondary-foreground: #1d1d1f;
+              --muted: #f5f5f7;
+              --muted-foreground: #6e6e73;
+              --border: #e0e0e0;
+              --input: #e0e0e0;
             }
             body {
               background: #ffffff !important;
-              color: #17171b !important;
+              color: #1d1d1f !important;
               font-family: "Times New Roman", Times, serif !important;
               font-size: 12pt !important;
               line-height: 1.5 !important;
             }
             .pdf-capture-mode {
               background: #ffffff !important;
-              color: #17171b !important;
+              color: #1d1d1f !important;
               font-family: "Times New Roman", Times, serif !important;
               font-size: 12pt !important;
               line-height: 1.5 !important;
             }
             .bg-white, .bg-carbon-05, .bg-carbon-10, .bg-carbon-90, .bg-carbon-black, [class*="bg-slate-"] {
               background-color: ${inkSaver ? '#ffffff' : '#ffffff'} !important;
-              color: #17171b !important;
-              border-color: #b9b9bb !important;
+              color: #1d1d1f !important;
+              border-color: #d2d2d7 !important;
             }
             h1, h2, h3, h4, h5, h6 {
-              color: #17171b !important;
+              color: #1d1d1f !important;
               font-weight: 800 !important;
               page-break-after: avoid !important;
               break-after: avoid !important;
@@ -271,17 +271,17 @@ export async function exportElementToPdf(options: PdfExportOptions = {}): Promis
             p, span, li, td, th {
               font-size: 12pt !important;
               line-height: 1.5 !important;
-              color: #2e2e32 !important;
+              color: #272729 !important;
             }
             table {
               width: 100% !important;
               border-collapse: collapse !important;
-              border: 1.5px solid #17171b !important;
+              border: 1.5px solid #1d1d1f !important;
             }
             th, td {
-              border: 1px solid #b9b9bb !important;
+              border: 1px solid #d2d2d7 !important;
               padding: 6px 8px !important;
-              color: #17171b !important;
+              color: #1d1d1f !important;
             }
             thead,
             .print-table-emergency-header,
@@ -290,7 +290,7 @@ export async function exportElementToPdf(options: PdfExportOptions = {}): Promis
             }
             .print-table-emergency-header th,
             th.emergency-protocol-title {
-              background-color: #17171b !important;
+              background-color: #1d1d1f !important;
               color: #ffffff !important;
               font-family: 'DM Mono', Consolas, monospace !important;
               font-size: 8pt !important;

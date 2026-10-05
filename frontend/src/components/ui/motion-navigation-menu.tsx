@@ -56,7 +56,7 @@ const contentVariants = {
 
 type MotionNavigationMenuProps = Omit<
   React.ComponentPropsWithRef<"nav">,
-  "onValueChange"
+"onValueChange"
 > & {
   viewport?: boolean;
   viewportClassName?: string;
@@ -360,7 +360,7 @@ function MotionNavigationMenu({
         data-slot="navigation-menu"
         data-viewport={viewport}
         className={cn(
-          "group/navigation-menu relative flex max-w-max flex-1 items-center justify-center",
+"group/navigation-menu relative flex max-w-max flex-1 items-center justify-center",
           className,
         )}
         onPointerLeave={(event) => {
@@ -401,7 +401,7 @@ function MotionNavigationMenuList({
       controlledItems
       hover
       className={cn(
-        "bg-accent rounded-md pointer-events-none",
+"bg-accent rounded-md pointer-events-none",
         highlightClassName,
       )}
       style={{ zIndex: -1 }}
@@ -410,7 +410,7 @@ function MotionNavigationMenuList({
       <ul
         data-slot="navigation-menu-list"
         className={cn(
-          "group relative z-10 flex flex-1 list-none items-center justify-center gap-1",
+"group relative z-10 flex flex-1 list-none items-center justify-center gap-1",
           className,
         )}
         {...props}
@@ -441,7 +441,7 @@ function MotionNavigationMenuItem({
 }
 
 const motionNavigationMenuTriggerStyle = cva(
-  "group inline-flex h-9 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 text-sm font-medium hover:text-accent-foreground focus:text-accent-foreground disabled:pointer-events-none disabled:opacity-50 data-[state=open]:text-accent-foreground focus-visible:ring-ring/50 outline-none transition-colors focus-visible:ring-[3px] focus-visible:outline-1",
+"group inline-flex h-9 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 text-sm font-medium hover:text-accent-foreground focus:text-accent-foreground disabled:pointer-events-none disabled:opacity-50 data-[state=open]:text-accent-foreground focus-visible:ring-ring/50 outline-none transition-colors focus-visible:ring-[3px] focus-visible:outline-1",
 );
 
 function MotionNavigationMenuTrigger({
@@ -553,7 +553,7 @@ function MotionNavigationMenuContent({
           exit="exit"
           transition={context.spring}
           className={cn(
-            "bg-background/90 text-popover-foreground absolute top-full left-0 z-50 mt-1.5 rounded-md border p-2 pr-2.5 shadow",
+"bg-background/90 text-popover-foreground absolute top-full left-0 z-50 mt-1.5 rounded-md border p-2 pr-2.5 shadow",
             className,
           )}
         >
@@ -584,7 +584,7 @@ function MotionNavigationMenuContentInner({
       controlledItems
       hover
       className={cn(
-        "bg-accent rounded-sm pointer-events-none",
+"bg-accent rounded-sm pointer-events-none",
         highlightClassName,
       )}
       style={{ zIndex: -1 }}
@@ -666,7 +666,7 @@ function MotionNavigationMenuViewport({
         }}
         transition={context?.spring}
         className={cn(
-          "bg-background text-popover-foreground relative mt-1.5 overflow-hidden rounded-md border shadow backdrop-blur-md",
+"bg-background text-popover-foreground relative mt-1.5 overflow-hidden rounded-md border shadow backdrop-blur-md",
           className,
         )}
       >
@@ -728,7 +728,7 @@ function MotionNavigationMenuLink({
       <a
         data-slot="navigation-menu-link"
         className={cn(
-          "data-[active=true]:text-accent-foreground hover:text-accent-foreground focus:text-accent-foreground focus-visible:ring-ring/50 [&_svg:not([class*='text-'])]:text-muted-foreground flex flex-col gap-1 rounded-sm p-2 text-sm transition-colors outline-none focus-visible:ring-[3px] focus-visible:outline-1 [&_svg:not([class*='size-'])]:size-4",
+"data-[active=true]:text-accent-foreground hover:text-accent-foreground focus:text-accent-foreground focus-visible:ring-ring/50 [&_svg:not([class*='text-'])]:text-muted-foreground flex flex-col gap-1 rounded-sm p-2 text-sm transition-colors outline-none focus-visible:ring-[3px] focus-visible:outline-1 [&_svg:not([class*='size-'])]:size-4",
           className,
         )}
         {...props}
@@ -745,7 +745,7 @@ function MotionNavigationMenuIndicator({
     <div
       data-slot="navigation-menu-indicator"
       className={cn(
-        "pointer-events-none top-full z-1 flex h-1.5 items-end justify-center overflow-hidden",
+"pointer-events-none top-full z-1 flex h-1.5 items-end justify-center overflow-hidden",
         className,
       )}
       {...props}

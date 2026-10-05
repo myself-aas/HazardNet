@@ -45,7 +45,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
           role="alert"
           className="min-h-dvh flex items-center justify-center bg-carbon-05 p-6 font-sans text-carbon-90"
         >
-          <div className="nasa-glass-panel max-w-md w-full p-8 text-center space-y-4">
+          <div className="ap-frosted-panel max-w-md w-full p-8 text-center space-y-4">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-300 bg-amber-100 text-amber-800">
                 <AlertTriangle className="h-6 w-6" aria-hidden="true" />
               </div>
@@ -62,7 +62,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
             <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
               <button
                 onClick={this.handleReload}
-                className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-white font-bold text-sm transition-colors cursor-pointer"
+                className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-ap-action-fg font-bold text-sm transition-colors cursor-pointer"
               >
                 Reload HazardNet
               </button>

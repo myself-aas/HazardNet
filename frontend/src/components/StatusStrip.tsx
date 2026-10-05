@@ -126,7 +126,7 @@ export const StatusStrip: React.FC<StatusStripProps> = ({
     <div
       role="status"
       aria-live="polite"
-      className={`inline-flex flex-wrap items-center gap-2 px-3 py-1.5 rounded-xl bg-white/95 dark:bg-carbon-90/95 border border-carbon-20 dark:border-carbon-80 shadow-xs backdrop-blur-md text-xs font-mono ${className}`}
+      className={`inline-flex flex-wrap items-center gap-2 px-3 py-1.5 rounded-xl bg-white/95 border border-carbon-20 shadow-xs backdrop-blur-md text-xs font-mono ${className}`}
       data-testid="status-strip"
     >
       {showBadges ? (
@@ -156,7 +156,7 @@ export const StatusStrip: React.FC<StatusStripProps> = ({
           />
         </div>
       ) : (
-        <span className="font-semibold text-carbon-80 dark:text-carbon-20 tracking-wide">
+        <span className="font-semibold text-carbon-80 tracking-wide">
           {formattedText}
         </span>
       )}

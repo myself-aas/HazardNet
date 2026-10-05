@@ -206,7 +206,7 @@ export const AdvisoriesPage: React.FC = () => {
 
       {/* 1. SECTOR ROUTE NAVIGATOR (Unique URL per Sector) */}
       <div className="bg-white border border-carbon-20/90 rounded-3xl p-4 sm:p-6 shadow-md space-y-4 screen-only">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-carbon-10 pb-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-carbon-20 pb-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-carbon-10 border border-carbon-20 text-carbon-80 text-xs font-mono font-bold mb-2">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
@@ -260,7 +260,7 @@ export const AdvisoriesPage: React.FC = () => {
                 to={`/advisories/${sec.id}`}
                 className={`flex flex-col items-start p-3.5 rounded-2xl border transition-all text-left group ${
                   isActive
-                    ? 'bg-carbon-90 text-white border-carbon-90 shadow-md ring-2 ring-amber-400/40'
+                    ? 'bg-carbon-90 text-ap-on-inverse border-carbon-90 shadow-md ring-2 ring-amber-400/40'
                     : 'bg-carbon-05/80 text-carbon-70 border-carbon-20/80 hover:bg-white hover:border-carbon-30 hover:shadow-xs'
                 }`}
               >
@@ -324,8 +324,8 @@ export const AdvisoriesPage: React.FC = () => {
           </div>
 
           {/* Quick Action Box */}
-          <div className="bg-carbon-90 text-white rounded-2xl p-5 sm:p-6 lg:w-80 shrink-0 space-y-4 shadow-md border border-carbon-80">
-            <div className="flex items-center gap-2 text-amber-400">
+          <div className="bg-carbon-90 text-carbon-05 rounded-2xl p-5 sm:p-6 lg:w-80 shrink-0 space-y-4 shadow-md border border-carbon-80">
+            <div className="flex items-center gap-2 text-amber-300">
               <ShieldAlert className="w-5 h-5" />
               <span className="text-xs font-mono font-black tracking-wider uppercase">Emergency Action Desk</span>
             </div>
@@ -348,7 +348,7 @@ export const AdvisoriesPage: React.FC = () => {
                     : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
                 }`}
               >
-                <Bot className="w-3.5 h-3.5 text-amber-400" />
+                <Bot className="w-3.5 h-3.5 text-amber-300" />
                 <span>{showAiSynthesizer ? 'Hide AI Synthesizer' : 'Synthesize Gemini Advisory'}</span>
               </button>
             </div>
@@ -356,7 +356,7 @@ export const AdvisoriesPage: React.FC = () => {
         </div>
 
         {/* Issuing Authorities & Vulnerability Profiles */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-carbon-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-carbon-20">
           <div className="space-y-2">
             <span className="text-xs font-mono font-black text-carbon-90 uppercase tracking-wider block">
               Lead Issuing Authorities:
@@ -394,25 +394,25 @@ export const AdvisoriesPage: React.FC = () => {
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
           >
-            <div className="bg-carbon-90 text-white rounded-3xl p-6 sm:p-8 border border-carbon-80 shadow-xl space-y-6">
+            <div className="bg-carbon-90 text-carbon-05 rounded-3xl p-6 sm:p-8 border border-carbon-80 shadow-xl space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-carbon-80 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-400">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-700">
                     <Sparkles className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
+                    <h3 className="text-base sm:text-lg font-black text-ap-on-inverse flex items-center gap-2">
                       <span>Gemini 2.5 Dynamic Sector AI Synthesizer</span>
                       <span className="px-2 py-0.5 rounded-md bg-amber-400 text-carbon-black text-xs font-mono font-black">LIVE</span>
                     </h3>
-                    <p className="text-xs text-carbon-60">
+                    <p className="text-xs text-carbon-30">
                       Real-time generative intelligence correlating district AEZ soil profiles, river stage thresholds, and sector protocols.
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowAiSynthesizer(false)}
-                  className="text-carbon-40 hover:text-white p-1 rounded-lg hover:bg-carbon-80 self-start sm:self-auto cursor-pointer"
+                  className="text-carbon-30 hover:text-white p-1 rounded-lg hover:bg-carbon-80 self-start sm:self-auto cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -425,7 +425,7 @@ export const AdvisoriesPage: React.FC = () => {
                   <select
                     value={aiDistrict}
                     onChange={(e) => setAiDistrict(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-carbon-80 border border-carbon-70 text-white text-xs font-semibold focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 rounded-xl bg-carbon-80 border border-carbon-70 text-carbon-05 text-xs font-semibold focus:outline-none focus:border-amber-400"
                   >
                     {ALL_64_DISTRICTS.map((d) => (
                       <option key={d.id} value={d.name}>
@@ -440,7 +440,7 @@ export const AdvisoriesPage: React.FC = () => {
                   <select
                     value={aiHazard}
                     onChange={(e) => setAiHazard(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-carbon-80 border border-carbon-70 text-white text-xs font-semibold focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 rounded-xl bg-carbon-80 border border-carbon-70 text-carbon-05 text-xs font-semibold focus:outline-none focus:border-amber-400"
                   >
                     <option value="Monsoon Flood">Monsoon Riverine Flood</option>
                     <option value="Flash Flood">Northeastern Flash Flood (Haor)</option>
@@ -462,10 +462,10 @@ export const AdvisoriesPage: React.FC = () => {
                     onChange={(e) => setAiSeverity(parseFloat(e.target.value))}
                     className="w-full accent-amber-400 cursor-pointer"
                   />
-                  <div className="flex justify-between text-xs text-carbon-60 font-mono">
+                  <div className="flex justify-between text-xs text-carbon-30 font-mono">
                     <span>Watch (0.1)</span>
                     <span>Warning (0.5)</span>
-                    <span className="text-rose-400 font-bold">Emergency (1.0)</span>
+                    <span className="text-rose-300 font-bold">Emergency (1.0)</span>
                   </div>
                 </div>
 
@@ -473,7 +473,7 @@ export const AdvisoriesPage: React.FC = () => {
                   <button
                     onClick={handleGenerateAiAdvisory}
                     disabled={aiLoading}
-                    className="w-full py-2.5 px-4 rounded-xl bg-primary hover:bg-nasa-red-tint text-white font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                    className="w-full py-2.5 px-4 rounded-xl bg-primary hover:bg-ap-primary-tint text-ap-action-fg font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
                   >
                     {aiLoading ? (
                       <>
@@ -499,7 +499,7 @@ export const AdvisoriesPage: React.FC = () => {
               )}
 
               {aiError && !aiLoading && (
-                <div className="p-4 rounded-2xl bg-rose-950/50 border border-rose-800 text-rose-200 text-xs">
+                <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
                   <p className="font-bold">Notice:</p>
                   <p>{aiError}</p>
                 </div>
@@ -532,7 +532,7 @@ export const AdvisoriesPage: React.FC = () => {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-carbon-20 pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-carbon-90 text-white flex items-center justify-center font-mono font-bold text-xs">
+            <div className="w-8 h-8 rounded-xl bg-carbon-90 text-carbon-05 flex items-center justify-center font-mono font-bold text-xs">
               SOP
             </div>
             <div>
@@ -558,7 +558,7 @@ export const AdvisoriesPage: React.FC = () => {
                 onClick={() => setSelectedPhase(tab.id as any)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   selectedPhase === tab.id
-                    ? 'bg-white text-carbon-black shadow-xs border border-carbon-20'
+                    ? 'bg-white text-carbon-90 shadow-xs border border-carbon-20'
                     : 'text-carbon-60 hover:text-carbon-90'
                 }`}
               >
@@ -594,7 +594,7 @@ export const AdvisoriesPage: React.FC = () => {
                 className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-7 shadow-md space-y-4 hover:border-carbon-30 transition-all"
               >
                 {/* Step Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-carbon-10 pb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-carbon-20 pb-3">
                   <div className="flex items-center gap-3">
                     <span className="w-8 h-8 rounded-xl bg-carbon-10 border border-carbon-20 flex items-center justify-center font-mono font-black text-xs text-carbon-90 shrink-0">
                       {step.stepNumber}
@@ -607,7 +607,7 @@ export const AdvisoriesPage: React.FC = () => {
                         <span className="text-xs font-semibold text-carbon-60">
                           Lead: {step.leadAgency}
                         </span>
-                        <span className="text-carbon-30">•</span>
+                        <span className="text-carbon-60">•</span>
                         <span className="text-xs font-mono text-carbon-60 flex items-center gap-1">
                           <Clock className="w-3 h-3 text-carbon-60" />
                           {step.timeline}
@@ -689,7 +689,7 @@ export const AdvisoriesPage: React.FC = () => {
 
       {/* 5. TECHNICAL CULTIVARS, AGROCHEMICALS & MATERIAL SPECIFICATION MATRIX */}
       <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-5">
-        <div className="flex items-center justify-between border-b border-carbon-10 pb-3">
+        <div className="flex items-center justify-between border-b border-carbon-20 pb-3">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700">
               <Wheat className="w-4 h-4" />
@@ -755,7 +755,7 @@ export const AdvisoriesPage: React.FC = () => {
 
       {/* 6. OFFICIAL DOCUMENTATION & HYPERLINKED PORTALS */}
       <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-5">
-        <div className="flex items-center justify-between border-b border-carbon-10 pb-3">
+        <div className="flex items-center justify-between border-b border-carbon-20 pb-3">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700">
               <BookOpen className="w-4 h-4" />
@@ -814,7 +814,7 @@ export const AdvisoriesPage: React.FC = () => {
 
       {/* 7. OFFICIAL CONTACT INFORMATION & EMERGENCY SUPPORT DIRECTORY */}
       <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-carbon-10 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-carbon-20 pb-4">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-700">
               <PhoneCall className="w-4 h-4" />
@@ -831,9 +831,9 @@ export const AdvisoriesPage: React.FC = () => {
 
           <button
             onClick={() => setIsEmailModalOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-carbon-90 text-white text-xs font-bold hover:bg-carbon-80 transition-all cursor-pointer shadow-xs self-start sm:self-auto"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-carbon-90 text-carbon-05 text-xs font-bold hover:bg-carbon-80 transition-all cursor-pointer shadow-xs self-start sm:self-auto"
           >
-            <Mail className="w-3.5 h-3.5 text-amber-400" />
+            <Mail className="w-3.5 h-3.5 text-amber-300" />
             <span>Open Emergency Email Composer</span>
           </button>
         </div>
@@ -970,7 +970,7 @@ export const AdvisoriesPage: React.FC = () => {
               {/* Form Controls to Customize Email */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-carbon-70">Select Affected District:</label>
+                  <label className="text-xs font-bold text-carbon-90">Select Affected District:</label>
                   <select
                     value={selectedDistrictForEmail}
                     onChange={(e) => setSelectedDistrictForEmail(e.target.value)}
@@ -985,7 +985,7 @@ export const AdvisoriesPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-carbon-70">Affected Upazilas / Unions:</label>
+                  <label className="text-xs font-bold text-carbon-90">Affected Upazilas / Unions:</label>
                   <input
                     type="text"
                     value={affectedUpazilas}
@@ -996,7 +996,7 @@ export const AdvisoriesPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-carbon-70">Coordinator / Officer Name & Role:</label>
+                  <label className="text-xs font-bold text-carbon-90">Coordinator / Officer Name & Role:</label>
                   <input
                     type="text"
                     value={customOfficerName}
@@ -1007,7 +1007,7 @@ export const AdvisoriesPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-carbon-70">Officer Phone / Hotline:</label>
+                  <label className="text-xs font-bold text-carbon-90">Officer Phone / Hotline:</label>
                   <input
                     type="text"
                     value={customOfficerPhone}
@@ -1021,7 +1021,7 @@ export const AdvisoriesPage: React.FC = () => {
               {/* Preview of Email */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-carbon-70">Structured Requisition Body Preview:</span>
+                  <span className="font-bold text-carbon-90">Structured Requisition Body Preview:</span>
                   <span className="font-mono text-carbon-60">Recipients: {sector.emailTemplate.recipientDefault}</span>
                 </div>
                 <textarea
@@ -1041,7 +1041,7 @@ export const AdvisoriesPage: React.FC = () => {
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                   <button
                     onClick={handleCopyEmail}
-                    className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-carbon-30 text-carbon-70 text-xs font-bold hover:bg-carbon-10 flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-carbon-30 text-carbon-90 text-xs font-bold hover:bg-carbon-10 flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Copy className="w-4 h-4" />
                     <span>Copy Structured Email</span>
@@ -1049,9 +1049,9 @@ export const AdvisoriesPage: React.FC = () => {
 
                   <button
                     onClick={handleLaunchMailClient}
-                    className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-carbon-90 text-white text-xs font-bold hover:bg-carbon-80 flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                    className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-carbon-90 text-carbon-05 text-xs font-bold hover:bg-carbon-80 flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                   >
-                    <Send className="w-4 h-4 text-amber-400" />
+                    <Send className="w-4 h-4 text-amber-300" />
                     <span>Open in Email App</span>
                   </button>
                 </div>

@@ -93,7 +93,7 @@ const ConnectorCard: React.FC<{
             type="button"
             disabled={busy}
             onClick={startConnect}
-            className="flex-1 bg-carbon-90 px-3 py-2 text-xs font-extrabold text-white transition-colors hover:bg-carbon-80 disabled:opacity-50 cursor-pointer"
+            className="flex-1 bg-carbon-90 px-3 py-2 text-xs font-extrabold text-carbon-05 transition-colors hover:bg-carbon-80 disabled:opacity-50 cursor-pointer"
           >
             {busy ? '…' : configOpen && connector.asksFor ? 'Save & connect' : 'Connect'}
           </button>

@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { HDS_TOKENS, M3_EXPRESSIVE_TOKENS } from '@hazardnet/design-system';
+import { APPLE_NATIVE } from '@hazardnet/design-system';
 
 export interface ExpressiveBottomSheetProps {
   isOpen: boolean;
@@ -22,14 +22,14 @@ export const ExpressiveBottomSheet: React.FC<ExpressiveBottomSheetProps> = ({
   subtitle,
   children,
 }) => {
-  const topRadius = M3_EXPRESSIVE_TOKENS.containerShape.fullExpressive; // 28dp
-  const handleTouchArea = M3_EXPRESSIVE_TOKENS.touchTargetFloor.googlePlayDp; // 48dp minimum hit target
-  const springConfig = M3_EXPRESSIVE_TOKENS.expressiveSprings.emphasized;
+  const topRadius = APPLE_NATIVE.radii.card; // 28dp
+  const handleTouchArea = APPLE_NATIVE.touch.min; // 48dp minimum hit target
+  const springConfig = APPLE_NATIVE.motion.spring;
 
   const sheetStyle = {
     borderTopLeftRadius: topRadius,
     borderTopRightRadius: topRadius,
-    backgroundColor: HDS_TOKENS.colors.surfaceWhite,
+    backgroundColor: APPLE_NATIVE.colors.surfaceWhite,
     borderTopWidth: 1,
     borderColor: 'rgba(23, 23, 27, 0.12)',
     paddingTop: 12,

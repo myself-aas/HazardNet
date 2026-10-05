@@ -1,5 +1,5 @@
 /**
- * Meridian motion + theme hooks.
+ * Apple motion + theme hooks.
  *
  * Two rules from Apple's HIG, enforced here rather than per-component:
  *   · motion uses only compositor-friendly properties (opacity, transform,
@@ -158,7 +158,7 @@ export function useScrolledPast(offset = 24): boolean {
    Theme
    ──────────────────────────────────────────────────────────────────────────── */
 
-export type MeridianThemeName = 'light' | 'dark' | 'system';
+export type AppleThemeName = 'light' | 'dark' | 'system';
 export type ResolvedTheme = 'light' | 'dark';
 
 const STORAGE_KEY = 'hazardnet.theme';
@@ -172,7 +172,7 @@ function systemTheme(): 'light' | 'dark' {
  * The theme actually in effect on `<html>` right now — what the CSS is painting.
  *
  * Read from the DOM rather than from React state so it works for anything rendered outside the
- * hook's tree (the prerendered HTML, a portal, a component that never sees `useMeridianTheme`),
+ * hook's tree (the prerendered HTML, a portal, a component that never sees `useAppleTheme`),
  * and so a test can put the document in dark mode and assert what a component does with it.
  * `useResolvedTheme` below is the live version: it also hears about a change of theme, including
  * the OS flipping while the document is open.
@@ -180,7 +180,7 @@ function systemTheme(): 'light' | 'dark' {
 export function readAppliedTheme(): ResolvedTheme {
   if (typeof document === 'undefined') return 'light';
   const root = document.documentElement;
-  const attribute = root.getAttribute('data-mrd-theme');
+  const attribute = root.getAttribute('data-theme');
   if (attribute === 'dark' || attribute === 'light') return attribute;
   return root.classList.contains('dark') ? 'dark' : 'light';
 }
@@ -193,22 +193,26 @@ function announceTheme(theme: ResolvedTheme) {
 }
 
 /**
- * Resolves and applies the Meridian theme to <html data-mrd-theme>.
+ * Resolves and applies the Apple theme to <html data-theme>.
  *
  * Apple's system colours adapt automatically; on the web that adaptation is this hook.
  * 'system' follows the OS and follows it live if the OS changes.
  *
- * The default is 'system' - the same answer Phase 9 of MIGRATION_PLAN.md always wanted, and the
+ * DESIGN.md leaves dark mode under Known Gaps, so `styles/apple.css` §5 builds it from Apple's
+ * own dark tiles (#252527 canvas / #272729 grouped / #2a2a2c raised) and switches links to Sky
+ * Link Blue — one Apple language at two luminances, not a second design system.
+ *
+ * The default is 'system' - the answer the migration always wanted, and the
  * one P0-1 of the 2026-10-03 audit said could not be shipped until dark was complete. It was
  * held at 'light' while dark was 3.7% applied (an iOS user opening the app in the evening got a
  * light page with a dark panel nested inside it). It is now a theme layer:
- * `frontend/src/styles/dark.css` re-points the palette the utilities already resolve through, so
+ * `frontend/src/styles/apple.css` re-points the palette the utilities already resolve through, so
  * a page does not need `dark:` twins to be dark. `__tests__/darkTheme.test.js` is the gate - it
  * fails if a colour step is un-mapped, if a documented pair drops under AA, or if a colour family
  * appears in the source that the theme layer neither remaps nor allow-lists as a data encoding.
  */
-export function useMeridianTheme() {
-  const [theme, setTheme] = useState<MeridianThemeName>(() => {
+export function useAppleTheme() {
+  const [theme, setTheme] = useState<AppleThemeName>(() => {
     if (typeof window === 'undefined') return 'system';
     try {
       const stored = window.localStorage.getItem(STORAGE_KEY);
@@ -220,9 +224,13 @@ export function useMeridianTheme() {
 
   useEffect(() => {
     const root = document.documentElement;
-    const apply = (name: MeridianThemeName) => {
+    const apply = (name: AppleThemeName) => {
       const resolvedTheme = name === 'system' ? systemTheme() : name;
-      root.setAttribute('data-mrd-theme', resolvedTheme);
+      // The attribute is always written, including for 'system'. apple.css §5 carries a
+      // prefers-color-scheme arm scoped to :root:not([data-theme='light']) so a system-dark
+      // visitor is already painted dark in the prerendered HTML; this just keeps the DOM
+      // honest once React is live, and lets `light` positively override the OS.
+      root.setAttribute('data-theme', resolvedTheme);
       root.classList.toggle('dark', resolvedTheme === 'dark');
       root.style.colorScheme = resolvedTheme;
       // Everything that renders theme-dependent artwork (the brand lockup is the one today)
@@ -240,7 +248,7 @@ export function useMeridianTheme() {
     return () => query.removeEventListener('change', onChange);
   }, [theme]);
 
-  const select = useCallback((name: MeridianThemeName) => {
+  const select = useCallback((name: AppleThemeName) => {
     setTheme(name);
     try {
       window.localStorage.setItem(STORAGE_KEY, name);

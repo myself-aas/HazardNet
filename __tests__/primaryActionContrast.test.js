@@ -8,15 +8,14 @@
  * (`--primary-foreground` = white, 9.06:1), so the fix is mechanical, but nothing
  * stopped it coming back.
  *
- * The second half pins the token *semantics* rather than a specific class:
- * `--hn-hds-ink-muted` (carbon-50) is documented in index.css as "borders/icons
- * only, just under AA for text" and `--hn-hds-ink-soft` (carbon-60) as "smallest
- * text gray that clears AA". Those two comments are only true if the numbers
- * below hold, so the test computes them from the vendored HDS tokens instead of
- * trusting the prose.
+ * The second half pins the token *semantics* rather than a specific class. The Apple migration
+ * moved the floor: the old NASA carbon ramp had carbon-50 at 3.9:1 (just UNDER AA, borders and
+ * icons only), while the Apple ramp's derived carbon-50 (#6e6e73) measures 5.07:1 on white and
+ * 4.66:1 on parchment — so it is now a legitimate text grey, and carbon-40 is the non-text floor.
+ * Those are arithmetic claims, so this computes them rather than trusting the prose.
  *
- * Session 1 of docs/plans/2026-09-30-frontend-refactor.md. See also
- * __tests__/staticShellContrast.test.js, which covers the prerendered shell.
+ * Session 1 of docs/plans/2026-09-30-frontend-refactor.md, rewritten for the Apple migration.
+ * See also __tests__/staticShellContrast.test.js, which covers the prerendered shell.
  */
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
@@ -25,7 +24,8 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = join(ROOT, 'frontend/src');
-const HDS = join(ROOT, 'frontend/src/styles/nasa-hds.css');
+/** The one token stylesheet. Was styles/nasa-hds.css before the Apple migration. */
+const HDS = join(ROOT, 'frontend/src/styles/apple.css');
 
 /** Every .tsx/.ts source file under frontend/src, recursively. */
 function walk(dir) {
@@ -109,11 +109,16 @@ describe('primary action contrast (Session 1)', () => {
   });
 
   it('keeps the primary action on the token-defined foreground', () => {
-    // Whatever the ground, `--primary-foreground` must clear AA on crimson — this
-    // is the pairing the fix falls back to, so it has to stay true.
+    // Whatever the ground, the ink on the primary action must clear AA against
+    // it — this is the pairing the fix falls back to, so it has to stay true.
+    // The role was `--primary-foreground` while a shadcn-compatible alias layer
+    // existed; that layer is gone, and the Apple token it aliased is the only
+    // name for this now.
     const indexCss = readFileSync(join(ROOT, 'frontend/src/index.css'), 'utf8');
     const hdsCss = readFileSync(HDS, 'utf8');
-    const decl = /--primary-foreground:\s*([^;]+);/.exec(indexCss);
+    // The role lives in the token layer (apple.css) now; index.css only bridges it to Tailwind.
+    const decl =
+      /--ap-on-primary:\s*([^;]+);/.exec(hdsCss) || /--ap-on-primary:\s*([^;]+);/.exec(indexCss);
     expect(decl).not.toBeNull();
 
     // Follow `var(--x)` indirection across both stylesheets until a hex appears.
@@ -130,36 +135,46 @@ describe('primary action contrast (Session 1)', () => {
 
     const hex = resolveToken(decl[1]);
     expect(hex).not.toBeNull();
-    const crimson = /--hn-brand-red:\s*(#[0-9a-f]{6})/.exec(indexCss);
-    expect(crimson).not.toBeNull();
-    expect(ratio(hex, crimson[1])).toBeGreaterThanOrEqual(4.5);
+    // The ground is now Action Blue — the system's single accent — not the old crimson.
+    const accent = /--ap-primary:\s*(#[0-9a-f]{6})/.exec(hdsCss);
+    expect(accent).not.toBeNull();
+    expect(ratio(hex, accent[1])).toBeGreaterThanOrEqual(4.5);
   });
 });
 
 describe('text grey floor (Session 1)', () => {
   const hds = readFileSync(HDS, 'utf8');
   const token = (name) => {
-    const m = new RegExp(`--hds-color-${name}:\\s*(#[0-9a-f]{6})`).exec(hds);
-    if (!m) throw new Error(`HDS token --hds-color-${name} not found`);
+    const step = name.replace('carbon-', '');
+    const m = new RegExp(`--ap-n-${step}:\\s*(#[0-9a-f]{6})`).exec(hds);
+    if (!m) throw new Error(`Apple neutral token --ap-n-${step} not found`);
     return m[1];
   };
 
-  it('treats carbon-60 as the smallest text grey, per index.css', () => {
-    // index.css documents carbon-50 as "borders/icons only, just under AA for
-    // text" and carbon-60 as "smallest text gray that clears AA". Both claims
-    // are arithmetic, so assert them rather than trusting the comment.
+  it('treats carbon-50 as the smallest text grey, and carbon-40 as non-text', () => {
+    // The Apple ramp was derived so that EVERY step used for text clears AA on both of the
+    // grounds this product renders on — white and parchment (#f5f5f7). carbon-50 is the
+    // floor; carbon-40 is deliberately below it and is restricted to disabled ink and icons,
+    // which WCAG exempts.
+    const PARCHMENT = '#f5f5f7';
+    expect(ratio(token('carbon-70'), '#ffffff')).toBeGreaterThanOrEqual(4.5);
     expect(ratio(token('carbon-60'), '#ffffff')).toBeGreaterThanOrEqual(4.5);
-    expect(ratio(token('carbon-50'), '#ffffff')).toBeLessThan(4.5);
+    expect(ratio(token('carbon-50'), '#ffffff')).toBeGreaterThanOrEqual(4.5);
     expect(ratio(token('carbon-40'), '#ffffff')).toBeLessThan(4.5);
+
+    // The parchment check is the one the old NASA ramp never made: a grey measured on white
+    // and then rendered on the off-white canvas loses roughly 8% of its ratio (audit F-04).
+    expect(ratio(token('carbon-70'), PARCHMENT)).toBeGreaterThanOrEqual(4.5);
+    expect(ratio(token('carbon-60'), PARCHMENT)).toBeGreaterThanOrEqual(4.5);
+    expect(ratio(token('carbon-50'), PARCHMENT)).toBeGreaterThanOrEqual(4.5);
   });
 
   it('keeps the light greys correct on the dark surfaces they are used on', () => {
-    // The reason Session 1 did NOT darken every `text-carbon-40`: on a dark
-    // ground those greys are the right choice and darkening them is a
-    // regression. carbon-60 on carbon-90 is 2.52:1; carbon-40 on carbon-80 is
-    // 4.53:1. Pin both so a future blanket find-and-replace fails loudly.
+    // The reason the migration did NOT darken every `text-carbon-40`: on a dark ground those
+    // light greys are the right choice and darkening them would be the regression. Pin the
+    // direction so a future blanket find-and-replace fails loudly.
     expect(ratio(token('carbon-60'), token('carbon-90'))).toBeLessThan(4.5);
-    expect(ratio(token('carbon-40'), token('carbon-80'))).toBeGreaterThanOrEqual(4.5);
+    expect(ratio(token('carbon-40'), token('carbon-90'))).toBeGreaterThanOrEqual(4.5);
     expect(ratio(token('carbon-30'), token('carbon-90'))).toBeGreaterThanOrEqual(4.5);
   });
 });
@@ -183,8 +198,8 @@ describe('off-system colour (Session 1)', () => {
   });
 
   it('routes the international-orange text and border uses through the amber ramp', () => {
-    // `--color-amber-500` is aliased to `--hds-color-international-orange`
-    // (#ea6f24), so `text-amber-500` is the same colour with a token behind it.
+    // `--color-amber-*` now resolves to the severity-moderate hue, so `text-amber-500` is a
+    // token-backed caution colour inside the Apple palette rather than a raw NASA orange.
     const offenders = [];
     for (const { file, text } of sources) {
       for (const literal of classLists(text)) {

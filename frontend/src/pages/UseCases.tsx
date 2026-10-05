@@ -137,17 +137,17 @@ export const UseCases: React.FC = () => {
 
       {/* Header Banner */}
       <div className="bg-white border border-carbon-20/90 p-6 md:p-8 relative overflow-hidden group space-y-3">
-        <div className="absolute top-0 left-0 w-full h-1 bg-nasa-red"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-primary"></div>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 rounded-full text-xs font-mono font-extrabold bg-amber-50 text-amber-900 border border-amber-300 uppercase tracking-wider">
             Agricultural Disaster AI
           </span>
-          <span className="text-carbon-30">•</span>
+          <span className="text-carbon-60">•</span>
           <span className="text-xs text-carbon-60 font-semibold">South Asia Regional Deployment</span>
         </div>
 
         <h1 className="text-2xl md:text-3xl font-brand font-black text-carbon-90 tracking-tight">
-          Hazard<span className="text-nasa-red-shade">Net</span> Operational Use Cases & Field Impact
+          Hazard<span className="text-ap-link">Net</span> Operational Use Cases & Field Impact
         </h1>
         <p className="text-carbon-60 text-xs md:text-sm leading-relaxed max-w-3xl">
           Discover how HazardNet's multi-band multi-task neural network mitigates disaster risks across distinct agro-ecological zones in Bangladesh, protecting food security and rural livelihoods.
@@ -166,7 +166,7 @@ export const UseCases: React.FC = () => {
               onClick={() => setActiveCaseId(item.id)}
               className={`p-4 border text-left transition-all duration-300 flex flex-col justify-between gap-3 hover:cursor-pointer ${
                 isSelected
-                  ? 'bg-amber-50/90 text-carbon-90 border-nasa-blue ring-2 ring-nasa-blue/40 shadow-amber-500/10'
+                  ? 'bg-amber-50/90 text-carbon-90 border-ap-primary ring-2 ring-ap-primary/40 shadow-amber-500/10'
                   : 'bg-white text-carbon-80 border-carbon-20 hover:border-carbon-30 hover:bg-carbon-05/50'
               }`}
             >
@@ -214,7 +214,7 @@ export const UseCases: React.FC = () => {
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
               <Link
                 to={`/?district=${activeCase.districtId}&report=true`}
-                className="px-4 py-2.5 bg-carbon-90 hover:bg-carbon-80 text-white text-xs font-black transition-all hover:shrink-0 text-center inline-block cursor-pointer"
+                className="px-4 py-2.5 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 text-xs font-black transition-all hover:shrink-0 text-center inline-block cursor-pointer"
               >
                 <MaterialIcon name="satellite_alt" className="w-4 h-4" /> Simulate Hazard on Live GIS
               </Link>
@@ -295,7 +295,7 @@ export const UseCases: React.FC = () => {
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
               to="/download"
-              className="px-5 py-2.5 bg-primary hover:bg-primary-strong text-white font-black text-xs transition-all hover:inline-block cursor-pointer"
+              className="px-5 py-2.5 bg-primary hover:bg-primary-strong text-ap-action-fg font-black text-xs transition-all hover:inline-block cursor-pointer"
             >
               <MaterialIcon name="download" className="w-4 h-4" /> Download Software
             </Link>

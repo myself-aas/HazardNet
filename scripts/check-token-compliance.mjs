@@ -49,15 +49,22 @@ const GATE = Number(process.env.TOKEN_COMPLIANCE_GATE || 90);
  * declared in `@theme inline` falls through to Tailwind's stock palette.
  */
 const TAILWIND_FAMILIES = [
-  'carbon', 'amber', 'gray', 'neutral', 'slate', 'stone', 'zinc', 'chart',
+  'carbon', 'amber', 'gray', 'neutral', 'slate', 'stone', 'zinc',
   'emerald', 'rose', 'blue', 'sky', 'cyan', 'red', 'indigo', 'yellow',
   'teal', 'orange', 'purple',
+  // Completing the set. Any family Tailwind ships but this list omits is a
+  // family whose uses nobody is checking: `bg-lime-500` would simply resolve
+  // to stock lime and the gate would report 100% compliance while a non-Apple
+  // hue painted the page. `chart` came off the list in the other direction —
+  // the --color-chart-* keys were deleted once hazard identity moved onto the
+  // --ap-haz-* layer, so the family no longer exists to be used.
+  'green', 'lime', 'violet', 'pink', 'fuchsia',
 ];
 
 /**
  * Families the design system has consciously adopted, with HDS values behind them.
  */
-const DECLARED_EXPECTED = ['carbon', 'amber', 'gray', 'neutral', 'slate', 'stone', 'zinc', 'chart'];
+const DECLARED_EXPECTED = ['carbon', 'amber', 'gray', 'neutral', 'slate', 'stone', 'zinc'];
 
 /**
  * Families left off-system on purpose. Their uses are data encodings rather than
@@ -164,7 +171,7 @@ if (compliance < GATE) {
  * Raw hex literals: the second half of the measurement.
  *
  * Comments are stripped first, because a hex value in prose is documentation, not
- * a colour. CSS is excluded: `index.css`, `meridian.css` and the generated
+ * a colour. CSS is excluded: `index.css`, `apple.css` and the generated
  * `nasa-hds.css` *are* the token layer, so their literals are the source the rest
  * of the app is supposed to resolve through. The design-system package is outside
  * `frontend/src` for the same reason - `mapPalette.ts` is where a map colour is

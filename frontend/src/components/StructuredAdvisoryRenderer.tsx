@@ -184,7 +184,7 @@ export const StructuredAdvisoryRenderer: React.FC<StructuredAdvisoryRendererProp
         {/* Screen Interactive view */}
         <div className="screen-only">
           {impactExpanded ? (
-            <div className="bg-carbon-05 border border-carbon-20/90 rounded-2xl p-4 shadow-inner animate-in slide-in-from-top-2 fade-in duration-200">
+            <div className="bg-carbon-05 border border-carbon-20/90 rounded-2xl p-4 shadow-inner ap-enter-drop">
               <ReactMarkdown components={customComponents}>{impactMd}</ReactMarkdown>
             </div>
           ) : (
@@ -212,7 +212,7 @@ export const StructuredAdvisoryRenderer: React.FC<StructuredAdvisoryRendererProp
       </div>
 
       {/* MAIN SOURCE ATTRIBUTION */}
-      <div className="flex justify-end pt-2 border-t border-carbon-10">
+      <div className="flex justify-end pt-2 border-t border-carbon-20">
         <span className="px-3 py-1 rounded-full text-xs font-mono font-extrabold bg-carbon-10 text-carbon-60 border border-carbon-20 shadow-sm">
           Report Source: {providerSource}
         </span>

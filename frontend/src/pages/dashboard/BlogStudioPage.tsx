@@ -94,11 +94,11 @@ export const BlogStudioPage: React.FC = () => {
 
       {/* Header */}
       <div className="bg-white border border-carbon-20/90 p-6 relative overflow-hidden space-y-4">
-        <div aria-hidden="true" className="absolute top-0 left-0 w-full h-1 bg-nasa-red" />
+        <div aria-hidden="true" className="absolute top-0 left-0 w-full h-1 bg-primary" />
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono font-bold text-carbon-60 uppercase tracking-wider">
-              <MaterialIcon name="article" className="w-3.5 h-3.5 text-nasa-red-shade" />
+              <MaterialIcon name="article" className="w-3.5 h-3.5 text-ap-link" />
               User Dashboard · Content Administration
             </div>
             <h1 className="text-xl sm:text-2xl font-black text-carbon-90 tracking-tight mt-1">Blog Studio</h1>
@@ -109,7 +109,7 @@ export const BlogStudioPage: React.FC = () => {
           </div>
           <Link
             to="/dashboard/blog/new"
-            className="shrink-0 inline-flex items-center gap-2 bg-primary px-4 py-2.5 text-xs font-black text-white transition-colors hover:bg-primary-strong cursor-pointer"
+            className="shrink-0 inline-flex items-center gap-2 bg-primary px-4 py-2.5 text-xs font-black text-ap-action-fg transition-colors hover:bg-primary-strong cursor-pointer"
           >
             <MaterialIcon name="doc" className="w-4 h-4" /> New article
           </Link>
@@ -135,7 +135,7 @@ export const BlogStudioPage: React.FC = () => {
           </p>
         )}
         {error && (
-          <p role="alert" className="border border-nasa-red bg-white p-3 text-xs font-semibold text-nasa-red-shade">
+          <p role="alert" className="border border-ap-primary bg-white p-3 text-xs font-semibold text-ap-link">
             {error}: verify the blog_articles table exists.
           </p>
         )}
@@ -149,12 +149,12 @@ export const BlogStudioPage: React.FC = () => {
           </div>
         ) : articles.length === 0 ? (
           <div className="p-10 text-center space-y-3">
-            <FileText className="mx-auto h-8 w-8 text-carbon-40" aria-hidden="true" />
+            <FileText className="mx-auto h-8 w-8 text-carbon-50" aria-hidden="true" />
             <p className="text-sm font-bold text-carbon-80">No articles yet</p>
             <p className="text-xs text-carbon-60">Write the first HazardNet field report or research deep-dive.</p>
             <Link
               to="/dashboard/blog/new"
-              className="inline-block bg-primary px-4 py-2.5 text-xs font-black text-white hover:bg-primary-strong"
+              className="inline-block bg-primary px-4 py-2.5 text-xs font-black text-ap-action-fg hover:bg-primary-strong"
             >
               Start writing
             </Link>
@@ -218,7 +218,7 @@ export const BlogStudioPage: React.FC = () => {
                         type="button"
                         onClick={() => handleDelete(article)}
                         disabled={busyId === article.id}
-                        className="px-2.5 py-1.5 rounded-sm bg-rose-600 text-white text-xs font-black hover:bg-rose-700 disabled:opacity-50 cursor-pointer"
+                        className="px-2.5 py-1.5 rounded-sm bg-rose-600 text-ap-on-sev text-xs font-black hover:bg-rose-700 disabled:opacity-50 cursor-pointer"
                       >
                         {busyId === article.id ? 'Deleting…' : 'Confirm delete'}
                       </button>
@@ -234,7 +234,7 @@ export const BlogStudioPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setConfirmingId(article.id)}
-                      className="px-2.5 py-1.5 rounded-sm border border-nasa-red bg-white text-xs font-black text-nasa-red-shade hover:bg-rose-100 cursor-pointer"
+                      className="px-2.5 py-1.5 rounded-sm border border-ap-primary bg-white text-xs font-black text-ap-link hover:bg-rose-100 cursor-pointer"
                     >
                       Delete
                     </button>

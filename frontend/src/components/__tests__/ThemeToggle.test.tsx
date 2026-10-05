@@ -36,15 +36,15 @@ beforeAll(() => {
 beforeEach(() => {
   prefersDark = false;
   window.localStorage.clear();
-  document.documentElement.removeAttribute('data-mrd-theme');
+  document.documentElement.removeAttribute('data-theme');
   document.documentElement.classList.remove('dark');
 });
 
-import { useMeridianTheme } from '../meridian/motion';
+import { useAppleTheme } from '../apple/motion';
 import { ThemeToggle } from '../ThemeToggle';
 
 const Harness: React.FC = () => {
-  const { theme, setTheme } = useMeridianTheme();
+  const { theme, setTheme } = useAppleTheme();
   return <ThemeToggle theme={theme} onChange={setTheme} />;
 };
 
@@ -65,12 +65,12 @@ describe('the appearance control', () => {
     // The OS says dark: the app opens dark, which is correct — and used to be a one-way door.
     prefersDark = true;
     render(<Harness />);
-    await waitFor(() => expect(document.documentElement).toHaveAttribute('data-mrd-theme', 'dark'));
+    await waitFor(() => expect(document.documentElement).toHaveAttribute('data-theme', 'dark'));
     expect(document.documentElement).toHaveClass('dark');
 
     fireEvent.click(screen.getByRole('button', { name: 'Light' }));
 
-    await waitFor(() => expect(document.documentElement).toHaveAttribute('data-mrd-theme', 'light'));
+    await waitFor(() => expect(document.documentElement).toHaveAttribute('data-theme', 'light'));
     expect(document.documentElement).not.toHaveClass('dark');
     expect(document.documentElement.style.colorScheme).toBe('light');
     expect(window.localStorage.getItem('hazardnet.theme')).toBe('light');
@@ -79,13 +79,13 @@ describe('the appearance control', () => {
   it('goes back to following the OS when System is chosen again', async () => {
     prefersDark = true;
     render(<Harness />);
-    await waitFor(() => expect(document.documentElement).toHaveAttribute('data-mrd-theme', 'dark'));
+    await waitFor(() => expect(document.documentElement).toHaveAttribute('data-theme', 'dark'));
 
     fireEvent.click(screen.getByRole('button', { name: 'Light' }));
-    await waitFor(() => expect(document.documentElement).toHaveAttribute('data-mrd-theme', 'light'));
+    await waitFor(() => expect(document.documentElement).toHaveAttribute('data-theme', 'light'));
 
     fireEvent.click(screen.getByRole('button', { name: 'System' }));
-    await waitFor(() => expect(document.documentElement).toHaveAttribute('data-mrd-theme', 'dark'));
+    await waitFor(() => expect(document.documentElement).toHaveAttribute('data-theme', 'dark'));
     expect(window.localStorage.getItem('hazardnet.theme')).toBe('system');
   });
 });

@@ -26,7 +26,7 @@ describe('Phase 3 — React Native for Windows (RNW) Configuration', () => {
     const appState = getWindowsAppState();
     expect(appState.appName).toBe('HazardNet Windows Desktop');
     expect(appState.platform).toBe('React Native for Windows (WinUI 3)');
-    expect(appState.expressiveTouchFloor.googlePlayDp).toBe(48);
+    expect(appState.expressiveTouchFloor).toBe(48);
   });
 });
 

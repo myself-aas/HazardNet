@@ -17,10 +17,10 @@ describe('Phase 6 surface contracts (§14.3 / §14.7 / §14.8)', () => {
     });
 
     it('uses the crimson shade on the primary /live CTA and 44px targets', () => {
-      // --color-primary-strong and --color-nasa-red-shade are the same value
+      // The legacy NASA alias for this role is gone; `ap-primary` is the only name.
       // (#7B1D21). Session 3 renamed the class to the semantic token, so accept
       // either — what matters is that the CTA uses the shade, not the base red.
-      expect(front).toMatch(/bg-(?:primary-strong|nasa-red-shade)/);
+      expect(front).toMatch(/bg-(?:primary-strong|ap-primary)/);
       expect(front).toMatch(/min-h-\[44px\]/);
     });
 
@@ -35,19 +35,21 @@ describe('Phase 6 surface contracts (§14.3 / §14.7 / §14.8)', () => {
     const signup = read('pages', 'SignUpPage.tsx');
 
     it('drops looping accent shimmer and large radii on the card', () => {
-      expect(layout).not.toMatch(/bg-gradient-to-r from-nasa-red/);
+      expect(layout).not.toMatch(/bg-gradient-to-r from-ap-primary/);
       expect(layout).not.toMatch(/rounded-3xl/);
       expect(layout).not.toMatch(/shadow-xl/);
-      expect(layout).toMatch(/text-\[28px\]/);
+      // `text-ap-lead` is the named Apple style: the same 28px, sourced from the
+      // system instead of an arbitrary value. See packages/design-system/src/apple.ts.
+      expect(layout).toMatch(/text-ap-lead/);
     });
 
-    it('uses the crimson shade + white on submit, not carbon-black on nasa-red', () => {
-      // Same rename as above: --color-primary-strong === --color-nasa-red-shade.
+    it('uses the accent + white on submit, not carbon-black on the accent', () => {
+      // Same rename as above: the role is `ap-primary` now.
       // The contrast contract (shade + white, never carbon-black on red) is what
       // is being pinned, not the class spelling.
-      expect(login).toMatch(/bg-(?:primary-strong|nasa-red-shade)/);
+      expect(login).toMatch(/bg-(?:primary-strong|ap-primary)/);
       expect(login).not.toMatch(/text-carbon-black/);
-      expect(signup).toMatch(/bg-(?:primary-strong|nasa-red-shade)/);
+      expect(signup).toMatch(/bg-(?:primary-strong|ap-primary)/);
     });
 
     it('skips autoFocus unless the pointer is fine', () => {
@@ -62,7 +64,7 @@ describe('Phase 6 surface contracts (§14.3 / §14.7 / §14.8)', () => {
       expect(notFound).toMatch(/to="\/"/);
       expect(notFound).toMatch(/to="\/live"/);
       expect(notFound).toMatch(/min-h-\[44px\]/);
-      expect(notFound).toMatch(/text-\[28px\]/);
+      expect(notFound).toMatch(/text-ap-lead/);
     });
   });
 });

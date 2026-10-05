@@ -41,7 +41,7 @@ const AssetButton: React.FC<{
     onClick={() => onDownload(asset)}
     className={
       primary
-        ? 'px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-white text-xs font-black transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 shrink-0 cursor-pointer'
+        ? 'px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-ap-action-fg text-xs font-black transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 shrink-0 cursor-pointer'
         : 'px-3.5 py-2 rounded-lg bg-carbon-10 hover:bg-carbon-20 border border-carbon-20 text-carbon-80 text-xs font-bold font-mono transition-all flex items-center gap-1.5 shrink-0 cursor-pointer'
     }
     title={`Download ${asset.name}`}
@@ -112,7 +112,7 @@ const ChannelCard: React.FC<{ channel: DownloadChannel; state: ChannelState }> =
       className="scroll-mt-28 bg-white border border-carbon-20/90 rounded-3xl p-6 shadow-sm hover:border-amber-400/80 hover:shadow-xl transition-all duration-300 space-y-4 relative overflow-hidden"
     >
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-carbon-10 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-carbon-20 pb-4">
         <div className="flex items-start gap-3.5">
           <div className="w-12 h-12 rounded-2xl bg-amber-50/80 border border-amber-200 flex items-center justify-center shrink-0 shadow-2xs">
             <MaterialIcon name={channel.icon} className="w-6 h-6 text-amber-700" />
@@ -137,7 +137,7 @@ const ChannelCard: React.FC<{ channel: DownloadChannel; state: ChannelState }> =
       {/* Where the artifacts come from.
           This replaced the registry install command (`pip install hazardnet` /
           `npm install hazardnet`) that the page rendered while its own chip read
-          "pending": the packages have never existed, so the command could not
+"pending": the packages have never existed, so the command could not
           work and the two statements contradicted each other. HazardNet does not
           publish to a package registry (ADR 0011) — the card now states the
           distribution path that does exist. */}
@@ -270,17 +270,17 @@ export const DownloadCenter: React.FC = () => {
 
       {/* Hero Header */}
       <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 md:p-8 shadow-md relative overflow-hidden space-y-3">
-        <div className="absolute top-0 left-0 w-full h-1 bg-nasa-red"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-primary"></div>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 rounded-full text-xs font-mono font-extrabold bg-amber-50 text-amber-900 border border-amber-300 uppercase tracking-wider shadow-2xs">
             Open Software Center
           </span>
-          <span className="text-carbon-30">•</span>
+          <span className="text-carbon-60">•</span>
           <span className="text-xs text-carbon-60 font-semibold">HazardNet Software, Daemons & Libraries</span>
         </div>
 
         <h1 className="text-2xl md:text-3xl font-brand font-black text-carbon-90 tracking-tight">
-          Hazard<span className="text-nasa-red-shade">Net</span> Multi-Platform Downloads
+          Hazard<span className="text-ap-link">Net</span> Multi-Platform Downloads
         </h1>
         <p className="text-carbon-60 text-xs md:text-sm leading-relaxed max-w-3xl">
           Every artifact below is produced automatically by the HazardNet product repositories&apos; release
@@ -303,7 +303,7 @@ export const DownloadCenter: React.FC = () => {
             onClick={() => setSelectedTab(tab.id)}
             className={`px-4 py-2.5 rounded-xl transition-all duration-200 shrink-0 whitespace-nowrap cursor-pointer flex items-center gap-2 ${
               selectedTab === tab.id
-                ? 'bg-primary text-white font-black shadow-md shadow-amber-500/20'
+                ? 'bg-primary text-ap-action-fg font-black shadow-md shadow-amber-500/20'
                 : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
             }`}
           >

@@ -5,13 +5,14 @@
  * its swatch and accessible SVG icon. Minimum type is 12px (HDS metadata floor).
  *
  * Conforms strictly to TASK-005 color ramps and icons:
- *  - SEVERE → Crimson Red (#DC2626) with Alert Triangle icon
- *  - WARNING → Vivid Amber (#D97706) with Warning Shield icon
- *  - WATCH → Golden Yellow (#CA8A04) with Eye/Observation icon
- *  - NORMAL → Emerald Green (#16A34A) with Check Circle icon
+ *  - SEVERE → Crimson Red (#c01f1f) with Alert Triangle icon
+ *  - WARNING → Vivid Amber (#8a5a00) with Warning Shield icon
+ *  - WATCH → Golden Yellow (#8a5a00) with Eye/Observation icon
+ *  - NORMAL → Emerald Green (#1d7a3e) with Check Circle icon
  */
 
 import React from 'react';
+import { APPLE_SEVERITY } from '@hazardnet/design-system';
 import type { AlertLevel } from '../../lib/alerts';
 import type { AdvisoryTier } from '../../lib/forecasts';
 import MaterialIcon from '../MaterialIcon';
@@ -25,42 +26,48 @@ export interface LevelTokens {
 
 export type SupportedTierOrLevel = AlertLevel | AdvisoryTier | string;
 
+/**
+ * The four advisory tiers, on the four severity levels that match them. Each is
+ * a distinct step of the published scale — an earlier pass briefly collapsed
+ * WARNING and WATCH onto the same amber, which would have made two different
+ * operational states look identical on the map.
+ */
 export const ADVISORY_TIER_COLOURS: Record<string, string> = {
-  SEVERE: '#DC2626',
-  WARNING: '#D97706',
-  WATCH: '#CA8A04',
-  NORMAL: '#16A34A',
-  NO_ALERT: '#16A34A',
+  SEVERE: APPLE_SEVERITY.veryHigh.text,
+  WARNING: APPLE_SEVERITY.high.text,
+  WATCH: APPLE_SEVERITY.moderate.text,
+  NORMAL: APPLE_SEVERITY.low.text,
+  NO_ALERT: APPLE_SEVERITY.low.text,
 };
 
 const LEVEL_TOKENS: Record<string, LevelTokens> = {
   NORMAL: {
     pill: 'bg-emerald-50 text-emerald-700 border-emerald-300',
-    solid: '#16A34A',
+    solid: '#1d7a3e',
     icon: 'check_circle',
     label: 'Normal',
   },
   NO_ALERT: {
     pill: 'bg-emerald-50 text-emerald-700 border-emerald-300',
-    solid: '#16A34A',
+    solid: '#1d7a3e',
     icon: 'check_circle',
     label: 'No Alert',
   },
   WATCH: {
     pill: 'bg-yellow-50 text-yellow-700 border-yellow-300',
-    solid: '#CA8A04',
+    solid: '#8a5a00',
     icon: 'visibility',
     label: 'Watch',
   },
   WARNING: {
     pill: 'bg-amber-50 text-amber-700 border-amber-300',
-    solid: '#D97706',
+    solid: '#8a5a00',
     icon: 'shield_alert',
     label: 'Warning',
   },
   SEVERE: {
     pill: 'bg-rose-50 text-rose-700 border-rose-300',
-    solid: '#DC2626',
+    solid: '#c01f1f',
     icon: 'alert_triangle',
     label: 'Severe',
   },

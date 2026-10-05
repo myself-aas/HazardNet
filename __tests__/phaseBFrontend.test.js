@@ -68,11 +68,19 @@ describe('TASK-005: Advisory Tier Badges, Map Markers & Status Strip', () => {
     const badgePath = path.join(rootDir, 'frontend/src/components/alerts/AlertLevelBadge.tsx');
     const content = fs.readFileSync(badgePath, 'utf8');
 
-    // Color definitions
-    assert.ok(content.includes("SEVERE: '#DC2626'"), 'SEVERE color must be #DC2626');
-    assert.ok(content.includes("WARNING: '#D97706'"), 'WARNING color must be #D97706');
-    assert.ok(content.includes("WATCH: '#CA8A04'"), 'WATCH color must be #CA8A04');
-    assert.ok(content.includes("NORMAL: '#16A34A'"), 'NORMAL color must be #16A34A');
+    // Colour definitions. The TRD §5.1 ramp is now expressed as four distinct
+    // steps of the design system's severity scale rather than four transcribed
+    // hexes, so the badge cannot drift from the map or from dark mode.
+    assert.ok(content.includes('SEVERE: APPLE_SEVERITY.veryHigh.text'), 'SEVERE must be severity veryHigh');
+    assert.ok(content.includes('WARNING: APPLE_SEVERITY.high.text'), 'WARNING must be severity high');
+    assert.ok(content.includes('WATCH: APPLE_SEVERITY.moderate.text'), 'WATCH must be severity moderate');
+    assert.ok(content.includes('NORMAL: APPLE_SEVERITY.low.text'), 'NORMAL must be severity low');
+
+    // …and the four must stay four: distinct states need distinct colour.
+    const { APPLE_SEVERITY } = await import('../packages/design-system/src/apple.ts');
+    const tiers = [APPLE_SEVERITY.veryHigh.text, APPLE_SEVERITY.high.text,
+                   APPLE_SEVERITY.moderate.text, APPLE_SEVERITY.low.text];
+    assert.equal(new Set(tiers).size, 4, 'advisory tiers must be mutually distinguishable');
 
     // Icon associations
     assert.ok(content.includes("icon: 'alert_triangle'"), 'SEVERE must use alert_triangle icon');
@@ -85,10 +93,10 @@ describe('TASK-005: Advisory Tier Badges, Map Markers & Status Strip', () => {
     const mapPrimitivesPath = path.join(rootDir, 'frontend/src/components/map/mapPrimitives.ts');
     const content = fs.readFileSync(mapPrimitivesPath, 'utf8');
 
-    assert.ok(content.includes("SEVERE: '#DC2626'"));
-    assert.ok(content.includes("WARNING: '#D97706'"));
-    assert.ok(content.includes("WATCH: '#CA8A04'"));
-    assert.ok(content.includes("NORMAL: '#16A34A'"));
+    assert.ok(content.includes('SEVERE: APPLE_SEVERITY.veryHigh.text'));
+    assert.ok(content.includes('WARNING: APPLE_SEVERITY.high.text'));
+    assert.ok(content.includes('WATCH: APPLE_SEVERITY.moderate.text'));
+    assert.ok(content.includes('NORMAL: APPLE_SEVERITY.low.text'));
     assert.ok(content.includes('advisoryTier?: string'));
     assert.ok(content.includes('getAdvisoryColor'));
   });

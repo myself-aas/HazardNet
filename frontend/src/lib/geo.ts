@@ -4,6 +4,8 @@
  * Geospatial and vulnerability color ramp utilities (TASK-017, TRD §5.1, §7.10)
  */
 
+import { APPLE_SEVERITY } from '@hazardnet/design-system';
+
 export type VulnerabilityTier = 'LOW' | 'MODERATE' | 'HIGH' | 'CRITICAL';
 
 export function getVulnerabilityTier(score: number): VulnerabilityTier {
@@ -14,19 +16,24 @@ export function getVulnerabilityTier(score: number): VulnerabilityTier {
 }
 
 /**
- * Returns dynamic hex color along continuous vulnerability ramp:
- * Low (0.0) -> Yellow/Amber (0.5) -> Crimson/Dark Red (1.0)
+ * Returns the vulnerability colour for a 0–1 score.
+ *
+ * Five bands, because the design system publishes five severity levels and this
+ * ramp is that encoding — not a parallel one. It previously had seven steps cut
+ * from Tailwind defaults, two pairs of which were visually indistinguishable
+ * anyway, so the extra resolution was imaginary.
+ *
+ * Returns the `text` role: these values are used as ink and as a tinted fill,
+ * and the text case is the one with a contrast requirement.
  */
 export function getVulnerabilityColor(score: number): string {
   const s = Math.max(0, Math.min(1, Number(score) || 0));
 
-  if (s >= 0.90) return '#7f1d1d'; // Crimson Dark
-  if (s >= 0.80) return '#991b1b'; // Deep Red
-  if (s >= 0.65) return '#dc2626'; // Vivid Red
-  if (s >= 0.50) return '#ea580c'; // Amber Orange
-  if (s >= 0.35) return '#d97706'; // Golden Amber
-  if (s >= 0.20) return '#ca8a04'; // Warm Yellow
-  return '#16a34a'; // Low Risk Green
+  if (s >= 0.90) return APPLE_SEVERITY.extreme.text;
+  if (s >= 0.80) return APPLE_SEVERITY.veryHigh.text;
+  if (s >= 0.65) return APPLE_SEVERITY.high.text;
+  if (s >= 0.40) return APPLE_SEVERITY.moderate.text;
+  return APPLE_SEVERITY.low.text;
 }
 
 export function formatVulnerabilityScore(score: number): string {

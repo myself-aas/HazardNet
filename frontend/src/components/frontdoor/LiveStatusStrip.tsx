@@ -114,7 +114,7 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
       name="Live status strip — published now"
       style={{
         /* No colour in this style object. The surfaces used to be pinned here as inline
-           `#f6f6f6` / `#d1d1d1`, which is invisible in light mode and a hole in dark mode:
+           `#fafafc` / `#e0e0e0`, which is invisible in light mode and a hole in dark mode:
            an inline declaration beats every class, so the theme layer (styles/dark.css)
            could never re-point the strip's ground, and the dark ramp's near-white inks
            landed on a light panel at under 2:1. The classes below are the only surface
@@ -218,12 +218,12 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
             `<nav>` (its table of contents). See the same decision in `pages/FrontDoor.tsx`. */}
         <ul aria-label={t('frontdoor.strip.navLabel')} className="ml-auto flex flex-wrap gap-x-4 gap-y-1">
           <li>
-            <Link to="/alerts" className="inline-flex min-h-[44px] items-center text-base font-bold text-nasa-blue-shade underline underline-offset-4">
+            <Link to="/alerts" className="inline-flex min-h-[44px] items-center text-base font-bold text-ap-link underline underline-offset-4">
               {t('frontdoor.strip.allAlerts')}
             </Link>
           </li>
           <li>
-            <Link to="/live" className="inline-flex min-h-[44px] items-center text-base font-bold text-nasa-blue-shade underline underline-offset-4">
+            <Link to="/live" className="inline-flex min-h-[44px] items-center text-base font-bold text-ap-link underline underline-offset-4">
               {t('frontdoor.strip.liveMap')}
             </Link>
           </li>
@@ -245,7 +245,7 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
                 />
                 <Link
                   to={`/alerts/${encodeURIComponent(alert.id)}`}
-                  className="font-bold text-nasa-blue-shade underline underline-offset-2"
+                  className="font-bold text-ap-link underline underline-offset-2"
                 >
                   {alert.district_name ?? t('frontdoor.strip.districtUnnamed')}
                 </Link>
@@ -274,7 +274,7 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
           ) : (
             t('frontdoor.strip.withheldUnknown')
           )}{' '}
-          <Link to="/status" className="font-bold text-nasa-blue-shade underline underline-offset-2">
+          <Link to="/status" className="font-bold text-ap-link underline underline-offset-2">
             {t('frontdoor.strip.whyHeld')}
           </Link>
         </p>
@@ -307,12 +307,12 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
           role="alert"
           className="border-t border-carbon-20 bg-white px-4 py-3 md:px-5 flex flex-wrap items-center gap-3"
         >
-          <p className="text-sm leading-[1.62] text-nasa-red-shade flex-1 min-w-[12rem]">{error}</p>
+          <p className="text-sm leading-[1.62] text-ap-link flex-1 min-w-[12rem]">{error}</p>
           {onRetry && (
             <button
               type="button"
               onClick={onRetry}
-              className="inline-flex min-h-[44px] items-center gap-1.5 bg-nasa-blue px-4 py-2 text-sm font-semibold text-white hover:bg-nasa-blue-shade focus-visible:outline focus-visible:outline-2 focus-visible:outline-nasa-blue focus-visible:outline-offset-2"
+              className="inline-flex min-h-[44px] items-center gap-1.5 bg-primary px-4 py-2 text-sm font-semibold text-ap-action-fg hover:bg-primary-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
             >
               {t('common.retry')}
             </button>

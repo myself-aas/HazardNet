@@ -38,9 +38,9 @@ import { describeAge, stateLabel, type FreshnessArtifact, type FreshnessState } 
 
 /** A state is never signalled by colour alone: the word is always rendered beside the dot. */
 const STATE_DOT: Record<FreshnessState, string> = {
-  fresh: 'bg-nasa-green',
-  stale: 'bg-nasa-orange',
-  failing: 'bg-nasa-red',
+  fresh: 'bg-severity-low',
+  stale: 'bg-severity-high',
+  failing: 'bg-ap-primary',
   missing: 'bg-carbon-40',
   unknown: 'bg-carbon-40',
 };
@@ -76,7 +76,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
        (`landmark-complementary-is-top-level`), not just a style choice. The caption gives the
        figure its accessible name, so the eyebrow is read rather than skipped. */
     <figure id="last-run-visual" aria-labelledby="last-run-visual-caption" className="border border-carbon-20 bg-white p-5 sm:p-6 shadow-sm" data-testid="last-run-visual">
-      <figcaption id="last-run-visual-caption" className="flex flex-wrap items-center justify-between gap-3 border-b border-carbon-10 pb-3.5">
+      <figcaption id="last-run-visual-caption" className="flex flex-wrap items-center justify-between gap-3 border-b border-carbon-20 pb-3.5">
         <div className="flex items-center gap-2.5 min-w-0">
           <Interactive.Div
             name="Live pulse — freshness indicator"
@@ -96,7 +96,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                 width: 100 + '%',
                 height: 100 + '%',
                 borderRadius: 50 + '%',
-                backgroundColor: '#16a34a',
+                backgroundColor: '#1d7a3e',
                 opacity: reduceMotion
                   ? 0
                   : interpolate(frame, [0, 30, 60], [0.4, 0.75, 0.4], {
@@ -121,7 +121,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                 borderRadius: 50 + '%',
                 width: 10,
                 height: 10,
-                backgroundColor: '#16a34a',
+                backgroundColor: '#1d7a3e',
               }}
             />
           </Interactive.Div>
@@ -129,7 +129,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
         </div>
         <div className="flex items-center gap-1.5 shrink-0" aria-hidden="true">
           <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-mono font-medium text-carbon-70 bg-carbon-05 border border-carbon-20">
-            <span className="h-1.5 w-1.5 rounded-full bg-nasa-blue" />
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
             OPERATE RUN
           </span>
         </div>
@@ -167,8 +167,8 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
               borderRadius: 50 + '%',
               borderWidth: 2,
               borderStyle: 'solid',
-              borderColor: '#e3e3e3',
-              borderTopColor: '#1c67e3',
+              borderColor: '#f5f5f7',
+              borderTopColor: '#0066cc',
               flexShrink: 0,
               rotate: reduceMotion
                 ? '0deg'
@@ -190,7 +190,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
             {t('frontdoor.runVisual.unreadable')}{' '}
             <Link
               to="/status"
-              className="font-bold text-nasa-blue-shade underline underline-offset-2 hover:text-nasa-blue"
+              className="font-bold text-ap-link underline underline-offset-2 hover:text-ap-link"
             >
               {t('frontdoor.runVisual.statusPage')}
             </Link>
@@ -206,7 +206,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
             whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className="group rounded-xl border border-carbon-20 bg-gradient-to-br from-white to-carbon-05 p-4 shadow-[0_8px_30px_rgba(20,30,50,0.06)] transition-shadow hover:shadow-[0_12px_34px_rgba(20,30,50,0.12)] sm:p-5"
+            className="group rounded-xl border border-carbon-20 bg-gradient-to-br from-white to-carbon-05 p-4 transition-shadow hover: sm:p-5"
           >
           <div>
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -243,7 +243,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                 width: 100 + '%',
                 overflow: 'hidden',
                 borderRadius: 999,
-                backgroundColor: '#e3e3e3',
+                backgroundColor: '#f5f5f7',
                 borderWidth: 1,
                 borderStyle: 'solid',
                 borderColor: 'rgba(227,227,227,0.6)',
@@ -256,16 +256,16 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                     }),
               }}
               aria-hidden="true"
-              className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-carbon-10 border border-carbon-10/60"
+              className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-carbon-10 border border-carbon-20/60"
             >
               <div
                 style={{
                   height: 100 + '%',
                   borderRadius: 999,
-                  backgroundColor: coverage?.status === 'complete' ? '#16a34a' : '#d96a00',
+                  backgroundColor: coverage?.status === 'complete' ? '#1d7a3e' : '#b3400f',
                   width: (pct ?? 0) + '%',
                 }}
-                className={`h-full rounded-full ${coverage?.status === 'complete' ? 'bg-nasa-green' : 'bg-nasa-orange'}`}
+                className={`h-full rounded-full ${coverage?.status === 'complete' ? 'bg-severity-low' : 'bg-severity-high'}`}
               />
             </Interactive.Div>
             <p className="mt-2.5 font-mono text-xs leading-[1.62] text-carbon-60">
@@ -288,7 +288,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
             whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.45, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
-            className="group rounded-xl border border-carbon-20 bg-gradient-to-br from-white to-carbon-05 p-4 shadow-[0_8px_30px_rgba(20,30,50,0.06)] transition-shadow hover:shadow-[0_12px_34px_rgba(20,30,50,0.12)] sm:p-5"
+            className="group rounded-xl border border-carbon-20 bg-gradient-to-br from-white to-carbon-05 p-4 transition-shadow hover: sm:p-5"
           >
           <div>
             <div className="flex items-center justify-between gap-2">
@@ -337,7 +337,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
             whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.45, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
-            className="group rounded-xl border border-carbon-20 bg-gradient-to-br from-white to-carbon-05 p-4 shadow-[0_8px_30px_rgba(20,30,50,0.06)] transition-shadow hover:shadow-[0_12px_34px_rgba(20,30,50,0.12)] sm:p-5 sm:col-span-2"
+            className="group rounded-xl border border-carbon-20 bg-gradient-to-br from-white to-carbon-05 p-4 transition-shadow hover: sm:p-5 sm:col-span-2"
           >
           <div>
             <div className="flex items-center justify-between gap-2">
@@ -352,7 +352,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
               {freshness.sources.map((source) => (
                 <li
                   key={source.id}
-                  className="flex min-w-0 items-center justify-between gap-2.5 rounded-sm border border-carbon-10 bg-carbon-05/70 px-3 py-2 text-xs transition-colors hover:bg-carbon-05"
+                  className="flex min-w-0 items-center justify-between gap-2.5 rounded-sm border border-carbon-20 bg-carbon-05/70 px-3 py-2 text-xs transition-colors hover:bg-carbon-05"
                 >
                   <div className="flex min-w-0 items-center gap-2.5">
                     <span
@@ -381,7 +381,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
               whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.45, delay: 0.24, ease: [0.16, 1, 0.3, 1] }}
-              className="group rounded-xl border border-carbon-20 bg-gradient-to-br from-white to-carbon-05 p-4 shadow-[0_8px_30px_rgba(20,30,50,0.06)] transition-shadow hover:shadow-[0_12px_34px_rgba(20,30,50,0.12)] sm:col-span-2 sm:p-5"
+              className="group rounded-xl border border-carbon-20 bg-gradient-to-br from-white to-carbon-05 p-4 transition-shadow hover: sm:col-span-2 sm:p-5"
             >
             <div>
               <div className="flex items-center justify-between gap-2">
@@ -398,18 +398,18 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                     <li key={note} className="flex min-w-0 items-start gap-2.5 text-xs leading-[1.62] text-carbon-70">
                       <span
                         aria-hidden="true"
-                        className="mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full bg-nasa-orange"
+                        className="mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full bg-severity-high"
                       />
                       <span className="min-w-0 break-words font-mono text-xs text-carbon-80">{note}</span>
                     </li>
                   ))}
                 </ul>
                 {honesty.length > 3 && (
-                  <div className="mt-2.5 border-t border-carbon-10 pt-2 space-y-2">
+                  <div className="mt-2.5 border-t border-carbon-20 pt-2 space-y-2">
                     {!honestyExpanded && (
                       <p className="font-mono text-xs leading-[1.62] text-carbon-60">
                         {t('frontdoor.runVisual.moreHonesty', { total: formatNumber(honesty.length) })}{' '}
-                        <Link to="/status" className="font-bold text-nasa-blue-shade underline underline-offset-2 hover:text-nasa-blue">
+                        <Link to="/status" className="font-bold text-ap-link underline underline-offset-2 hover:text-ap-link">
                           {t('frontdoor.runVisual.statusPage')}
                         </Link>
                       </p>
@@ -419,7 +419,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                         type="button"
                         onClick={() => setHonestyExpanded((v) => !v)}
                         aria-expanded={honestyExpanded}
-                        className="inline-flex min-h-[32px] items-center gap-1.5 text-xs font-bold text-nasa-blue-shade underline underline-offset-2 hover:text-nasa-blue"
+                        className="inline-flex min-h-[32px] items-center gap-1.5 text-xs font-bold text-ap-link underline underline-offset-2 hover:text-ap-link"
                       >
                         <MaterialIcon name={honestyExpanded ? 'expand_less' : 'expand_more'} className="text-sm" />
                         {honestyExpanded ? t('common.showLess') : t('frontdoor.runVisual.showMore', { remaining: formatNumber(honesty.length - 3) })}
@@ -427,7 +427,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                       {honestyExpanded && (
                         <Link
                           to="/status"
-                          className="font-bold text-nasa-blue-shade underline underline-offset-2 hover:text-nasa-blue text-xs"
+                          className="font-bold text-ap-link underline underline-offset-2 hover:text-ap-link text-xs"
                         >
                           {t('frontdoor.runVisual.statusPage')}
                         </Link>
@@ -441,7 +441,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
           )}
 
           {/* ── provenance line ────────────────────────────────────────── */}
-          <div className="border-t border-carbon-10 pt-3.5 flex flex-wrap items-center justify-between gap-2 font-mono text-xs leading-[1.62] text-carbon-60">
+          <div className="border-t border-carbon-20 pt-3.5 flex flex-wrap items-center justify-between gap-2 font-mono text-xs leading-[1.62] text-carbon-60">
             <p className="min-w-0 break-words">
               {t('frontdoor.runVisual.provenance')} · built {freshness.built_at ?? 'timestamp not reported'}
             </p>
@@ -449,7 +449,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
               className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-carbon-05 border border-carbon-20 text-carbon-70"
               aria-hidden="true"
             >
-              <MaterialIcon name="verified" className="text-[14px] text-nasa-green" />
+              <MaterialIcon name="verified" className="text-ap-caption text-severity-low" />
               <span>VERIFIED ARTIFACT</span>
             </div>
           </div>

@@ -33,7 +33,7 @@ const ProviderButton: React.FC<{
       onClick={() => onPick(provider)}
       data-testid={`connect-${provider}-btn`}
       aria-label={label}
-      className="group flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-3 border border-carbon-20 bg-white px-4 py-3 text-base font-semibold text-carbon-80 hover:border-carbon-40 disabled:cursor-wait disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2"
+      className="group flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-3 border border-carbon-20 bg-white px-4 py-3 text-base font-semibold text-carbon-80 hover:border-carbon-40 disabled:cursor-wait disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary/60 focus-visible:ring-offset-2"
     >
       {busy ? (
         <span className="h-5 w-5 animate-spin rounded-full border-2 border-carbon-30 border-t-carbon-70" />
@@ -118,7 +118,7 @@ export function AuthSocialButtons({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             role="alert"
-            className="border-l-2 border-nasa-red bg-white p-4 text-sm text-nasa-red-shade"
+            className="border-l-2 border-ap-primary bg-white p-4 text-sm text-ap-link"
           >
             <p className="font-extrabold">
               {failure.provider}: {failure.title}

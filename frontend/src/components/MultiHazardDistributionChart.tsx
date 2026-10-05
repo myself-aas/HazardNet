@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { APPLE_HAZARD, APPLE_NEUTRAL } from '@hazardnet/design-system';
 import defaultDistribution from '../../public/data/historical/hazard-distribution.json';
 
 export interface HazardDistributionRecord {
@@ -17,17 +18,26 @@ export interface MultiHazardDistributionChartProps {
   lowBandwidth?: boolean;
 }
 
+/**
+ * Series colours, in the order the donut draws them, resolved from the one
+ * hazard palette. Previously ten Tailwind defaults with no contrast guarantee
+ * and no relationship to the hazard colour used on any other surface.
+ *
+ * Two of the ten slices ("Epidemic", "Earthquake") are outside the eight
+ * documented hazard classes, so they fall back to neutral ink rather than
+ * inventing a ninth and tenth hue that would break the >=22 dE separation.
+ */
 const COLOR_PALETTE = [
-  '#3b82f6', // Flood (Blue)
-  '#ef4444', // Tropical Cyclone (Red)
-  '#f59e0b', // Severe Local Storm (Amber)
-  '#06b6d4', // Flash Flood (Cyan)
-  '#8b5cf6', // Cold Wave (Purple)
-  '#ec4899', // Epidemic (Pink)
-  '#f97316', // Earthquake (Orange)
-  '#dc2626', // Fire (Dark Red)
-  '#eab308', // Drought (Yellow)
-  '#fb923c', // Heat Wave (Light Orange)
+  APPLE_HAZARD.flood.text,
+  APPLE_HAZARD.cyclone.text,
+  APPLE_HAZARD.storm.text,
+  APPLE_HAZARD.flashFlood.text,
+  APPLE_HAZARD.coldWave.text,
+  APPLE_NEUTRAL['70'],
+  APPLE_NEUTRAL['50'],
+  APPLE_HAZARD.fire.text,
+  APPLE_HAZARD.drought.text,
+  APPLE_HAZARD.heatWave.text,
 ];
 
 export const MultiHazardDistributionChart: React.FC<MultiHazardDistributionChartProps> = ({
@@ -95,14 +105,14 @@ export const MultiHazardDistributionChart: React.FC<MultiHazardDistributionChart
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-4 border-b border-carbon-80">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-base font-bold text-white tracking-tight">
+            <h3 className="text-base font-bold text-ap-on-inverse tracking-tight">
               Multi-Hazard Classification Breakdown
             </h3>
-            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-medium bg-rose-950/60 text-rose-300 border border-rose-800/60">
+            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-medium bg-rose-50 text-rose-700 border border-rose-200">
               {data.length} Hazard Classes
             </span>
           </div>
-          <p className="text-xs text-carbon-40 mt-1">
+          <p className="text-xs text-carbon-30 mt-1">
             Empirical historical frequency distribution of meteorological and geophysical hazards.
           </p>
         </div>
@@ -125,7 +135,7 @@ export const MultiHazardDistributionChart: React.FC<MultiHazardDistributionChart
                     key={slice.hazard_type}
                     d={slice.path}
                     fill={slice.color}
-                    stroke="#17171b"
+                    stroke="#1d1d1f"
                     strokeWidth={isHovered ? 2.5 : 1}
                     className="cursor-pointer transition-transform hover:opacity-90 focus:outline-hidden"
                     tabIndex={0}
@@ -144,23 +154,23 @@ export const MultiHazardDistributionChart: React.FC<MultiHazardDistributionChart
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
               {hoveredHazard ? (
                 <>
-                  <span className="text-xs font-medium text-carbon-40 max-w-[100px] truncate">
+                  <span className="text-xs font-medium text-carbon-30 max-w-[100px] truncate">
                     {hoveredHazard.hazard_type}
                   </span>
-                  <span className="text-lg font-bold font-mono text-white">
+                  <span className="text-lg font-bold font-mono text-ap-on-inverse">
                     {hoveredHazard.event_count}
                   </span>
-                  <span className="text-xs font-mono text-rose-400 font-bold">
+                  <span className="text-xs font-mono text-rose-300 font-bold">
                     {hoveredHazard.percentage}%
                   </span>
                 </>
               ) : (
                 <>
-                  <span className="text-xs text-carbon-40">Total Recorded</span>
-                  <span className="text-xl font-bold font-mono text-white">
+                  <span className="text-xs text-carbon-30">Total Recorded</span>
+                  <span className="text-xl font-bold font-mono text-ap-on-inverse">
                     {totalEvents.toLocaleString()}
                   </span>
-                  <span className="text-xs text-carbon-50">2000–2026</span>
+                  <span className="text-xs text-carbon-30">2000–2026</span>
                 </>
               )}
             </div>
@@ -192,7 +202,7 @@ export const MultiHazardDistributionChart: React.FC<MultiHazardDistributionChart
                   </span>
                 </div>
                 <div className="flex items-center gap-3 font-mono text-xs shrink-0">
-                  <span className="text-carbon-40">{item.event_count.toLocaleString()}</span>
+                  <span className="text-carbon-30">{item.event_count.toLocaleString()}</span>
                   <span className="text-carbon-20 font-bold w-12 text-right">
                     {item.percentage}%
                   </span>

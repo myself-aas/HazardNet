@@ -13,7 +13,7 @@ export const remotionTheme = {
     bgAlt: '#0A0E1A',
     
     // THE hero colors — directed visual hierarchy
-    primary: '#1c67e3',      // NASA Blue
+    primary: '#0066cc',      // NASA Blue
     primaryShade: '#0f3a7a', // Deep NASA Blue
     accent: '#22D3EE',       // Atmospheric cyan telemetry
     accentGlow: 'rgba(34, 211, 238, 0.35)',
@@ -22,11 +22,11 @@ export const remotionTheme = {
     // High-contrast text & telemetry
     text: '#FFFFFF',
     textDim: '#A1A1AA',
-    textTelemetry: '#d1d1d1',
+    textTelemetry: '#e0e0e0',
     
     // Telemetry and HUD accents
     hudBorder: 'rgba(255, 255, 255, 0.12)',
-    hudActive: '#38BDF8',
+    hudActive: '#0066cc',
   },
   
   // Custom non-linear easing curves (Rule 1: NEVER use linear interpolation)

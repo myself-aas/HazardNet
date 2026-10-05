@@ -36,7 +36,7 @@ export const SavedAssessmentsModalUI: React.FC<SavedAssessmentsModalUIProps> = (
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
-          className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center p-4 bg-carbon-90/50"
+          className="fixed inset-0 z-[var(--ap-z-modal)] flex items-center justify-center p-4 bg-carbon-black/50"
           onClick={(e) => {
             if (e.target === e.currentTarget) onClose();
           }}
@@ -119,7 +119,7 @@ export const SavedAssessmentsModalUI: React.FC<SavedAssessmentsModalUIProps> = (
                         </div>
                         {item.notes && (
                           <p className="text-xs text-carbon-70 italic mt-1.5 bg-white p-2 rounded-xl border border-carbon-20">
-                            "{item.notes}"
+"{item.notes}"
                           </p>
                         )}
                       </div>
@@ -132,7 +132,7 @@ export const SavedAssessmentsModalUI: React.FC<SavedAssessmentsModalUIProps> = (
                               onSelectDistrict(item.districtId);
                               onClose();
                             }}
-                            className="px-3 py-1.5 bg-primary hover:bg-primary-strong text-carbon-90 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+                            className="px-3 py-1.5 bg-primary hover:bg-primary-strong text-ap-action-fg rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
                           >
                             View Map
                           </motion.button>

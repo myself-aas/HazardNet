@@ -191,7 +191,7 @@ const PublicProfilePage: React.FC = () => {
           </p>
           <Link
             to="/signup"
-            className="mt-5 inline-flex min-h-[44px] items-center bg-primary-strong px-5 py-3 text-base font-semibold text-white hover:bg-primary touch-manipulation"
+            className="mt-5 inline-flex min-h-[44px] items-center bg-primary px-5 py-3 text-base font-semibold text-ap-action-fg hover:bg-primary-strong touch-manipulation"
           >
             Claim this username
           </Link>
@@ -229,14 +229,14 @@ const PublicProfilePage: React.FC = () => {
               {profile.photoURL ? (
                 <img src={profile.photoURL} alt={profile.displayName} className="h-24 w-24 rounded-full border-4 border-white object-cover" />
               ) : (
-                <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-white bg-nasa-red text-3xl font-black text-white">
+                <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-white bg-primary text-3xl font-black text-ap-action-fg">
                   {profile.displayName.charAt(0).toUpperCase()}
                 </div>
               )}
             </div>
 
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <h1 className="text-[28px] font-bold leading-tight tracking-tight text-carbon-90 sm:text-[32px]">{profile.displayName}</h1>
+              <h1 className="text-ap-lead font-bold leading-tight tracking-tight text-carbon-90 sm:text-ap-display-md">{profile.displayName}</h1>
               <span className="text-sm font-bold text-amber-700">@{profile.username ?? username}</span>
             </div>
             <p className="mt-1 text-base leading-[1.62] font-semibold text-carbon-60">
@@ -266,7 +266,7 @@ const PublicProfilePage: React.FC = () => {
                 </span>
               )}
               {profile.irrigationType && (
-                <span className="rounded-sm bg-carbon-05 px-3 py-1.5 text-xs font-bold text-nasa-blue-shade">
+                <span className="rounded-sm bg-carbon-05 px-3 py-1.5 text-xs font-bold text-ap-link">
                   <Droplets className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />
                   {profile.irrigationType}
                 </span>
@@ -284,13 +284,13 @@ const PublicProfilePage: React.FC = () => {
             </div>
 
             {(SOCIALS.some(([key]) => profile[key]) || profile.website) && (
-              <div className="mt-5 flex flex-wrap gap-2 border-t border-carbon-10 pt-4">
+              <div className="mt-5 flex flex-wrap gap-2 border-t border-carbon-20 pt-4">
                 {profile.website && (
                   <a
                     href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-carbon-90 px-3.5 py-2 text-xs font-bold text-white transition-colors hover:bg-carbon-80"
+                    className="bg-carbon-90 px-3.5 py-2 text-xs font-bold text-carbon-05 transition-colors hover:bg-carbon-80"
                   >
                     <Globe className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />Website
                   </a>
@@ -320,7 +320,7 @@ const PublicProfilePage: React.FC = () => {
       <p className="mt-6 text-center text-xs text-carbon-60">
         Every HazardNet member gets a profile like this at{' '}
         <span className="font-bold text-carbon-60">hazardnet.live/u/username</span>.{' '}
-        <Link to="/signup" className="font-bold text-nasa-blue-shade hover:underline">
+        <Link to="/signup" className="font-bold text-ap-link hover:underline">
           <span className="inline-flex items-center gap-1.5">
             Claim yours <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
           </span>

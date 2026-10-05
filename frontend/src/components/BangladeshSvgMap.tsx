@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   ALL_64_DISTRICTS,
   ALL_8_DIVISIONS,
@@ -6,6 +6,7 @@ import {
   DivisionData
 } from '../data/bangladeshDistricts';
 import { LEVEL_COLOURS } from './alerts/AlertLevelBadge';
+import { SEVERITY_TIERS, getSeverityVar, severityTierRange } from '../services/geolocationService';
 
 interface BangladeshSvgMapProps {
   onSelectDistrict?: (district: DistrictData) => void;
@@ -53,17 +54,45 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
   const [hoveredDivision, setHoveredDivision] = useState<DivisionData | null>(null);
   const [hazardFilter, setHazardFilter] = useState<string>(activeHazardFilter);
   const [viewMode, setViewMode] = useState<'districts' | 'divisions'>(mapViewMode);
+  /**
+   * Roving tabindex. Every marker used to be `tabIndex={0}`, which put 64
+   * districts plus 8 divisions — 72 stops — in the page's tab order, so a
+   * keyboard user had to press Tab 72 times to get past the map. The map is
+   * one composite widget: it takes a single stop, and Arrow keys move the
+   * active marker inside it. Home/End jump to the ends.
+   */
+  const [activeIndex, setActiveIndex] = useState(0);
+  const markerRefs = useRef<Record<number, SVGGElement | null>>({});
+  const [activeDivIndex, setActiveDivIndex] = useState(0);
+  const divisionRefs = useRef<Record<number, SVGGElement | null>>({});
+
+  const gridKeyDown = (
+    e: React.KeyboardEvent,
+    index: number,
+    count: number,
+    activate: () => void,
+    refs: React.MutableRefObject<Record<number, SVGGElement | null>> = markerRefs,
+    setIndex: (n: number) => void = setActiveIndex,
+  ) => {
+    const moveActive = (delta: number) => {
+      const next = Math.max(0, Math.min(count - 1, index + delta));
+      setIndex(next);
+      refs.current[next]?.focus();
+    };
+    switch (e.key) {
+      case 'ArrowRight': case 'ArrowDown': e.preventDefault(); moveActive(1); break;
+      case 'ArrowLeft': case 'ArrowUp': e.preventDefault(); moveActive(-1); break;
+      case 'Home': e.preventDefault(); moveActive(-count); break;
+      case 'End': e.preventDefault(); moveActive(count); break;
+      case 'Enter': case ' ': e.preventDefault(); activate(); break;
+      default: break;
+    }
+  };
 
   const filteredDistricts = ALL_64_DISTRICTS.filter((d) => {
     if (hazardFilter === 'All') return true;
     return d.hazardType === hazardFilter;
   });
-
-  const getSeverityColor = (sev: number) => {
-    if (sev >= 0.8) return '#ef4444'; // Red
-    if (sev >= 0.5) return '#f59e0b'; // Amber
-    return '#10b981'; // Emerald
-  };
 
   return (
     <div className="w-full bg-white rounded-2xl border border-carbon-20 p-4 shadow-xl relative overflow-hidden flex flex-col justify-between text-carbon-80">
@@ -73,7 +102,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
         <div
           className="absolute inset-0 pointer-events-none opacity-20"
           style={{
-            backgroundImage: `radial-gradient(#959599 0.75px, transparent 0.75px)`,
+            backgroundImage: 'radial-gradient(var(--color-carbon-40) 0.75px, transparent 0.75px)',
             backgroundSize: '16px 16px'
           }}
         />
@@ -83,7 +112,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
       <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3 pb-3 border-b border-carbon-20">
         <div>
           <div className="flex items-center gap-2">
-            <span className={`w-2.5 h-2.5 rounded-full bg-nasa-red ${lowBandwidth ? '' : 'animate-ping'}`}></span>
+            <span className={`w-2.5 h-2.5 rounded-full bg-ap-primary ${lowBandwidth ? '' : 'animate-ping'}`}></span>
             <h3 className="text-sm font-extrabold text-carbon-90 tracking-tight flex items-center gap-2">
               <span>Vector Spatial Heatmap</span>
             </h3>
@@ -113,7 +142,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
               aria-pressed={viewMode === 'districts'}
               className={`min-h-[44px] px-2.5 py-1 rounded-lg font-bold transition-colors ${
                 viewMode === 'districts'
-                  ? 'bg-primary text-white shadow-xs'
+                  ? 'bg-primary text-ap-action-fg shadow-xs'
                   : 'text-carbon-60 hover:text-carbon-90'
               }`}
             >
@@ -125,7 +154,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
               aria-pressed={viewMode === 'divisions'}
               className={`min-h-[44px] px-2.5 py-1 rounded-lg font-bold transition-colors ${
                 viewMode === 'divisions'
-                  ? 'bg-primary text-white shadow-xs'
+                  ? 'bg-primary text-ap-action-fg shadow-xs'
                   : 'text-carbon-60 hover:text-carbon-90'
               }`}
             >
@@ -149,7 +178,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
                     aria-pressed={isAct}
                     className={`min-h-[44px] px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
                       isAct
-                        ? 'bg-carbon-90 text-white font-bold border border-carbon-90'
+                        ? 'bg-carbon-90 text-ap-on-inverse font-bold border border-carbon-90'
                         : 'text-carbon-60 bg-carbon-05 hover:bg-carbon-10 border border-carbon-20'
                     }`}
                   >
@@ -214,46 +243,67 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
         >
           <defs>
             <radialGradient id="highRiskGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#ef4444" stopOpacity="0.7" />
-              <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
+              <stop offset="0%" stopColor="var(--ap-sev-very-high)" stopOpacity="0.7" />
+              <stop offset="100%" stopColor="var(--ap-sev-very-high)" stopOpacity="0" />
             </radialGradient>
             <radialGradient id="modRiskGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
+              <stop offset="0%" stopColor="var(--ap-sev-moderate)" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="var(--ap-sev-moderate)" stopOpacity="0" />
             </radialGradient>
             <radialGradient id="lowRiskGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#10b981" stopOpacity="0.5" />
-              <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+              <stop offset="0%" stopColor="var(--ap-sev-low)" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="var(--ap-sev-low)" stopOpacity="0" />
             </radialGradient>
           </defs>
 
           {/* Render 8 Division SVG Polygons */}
-          {ALL_8_DIVISIONS.map((div) => {
+          {ALL_8_DIVISIONS.map((div, divIndex) => {
             const isSelectedDiv = div.id === selectedDivisionId;
             return (
               <g
                 key={div.id}
-                tabIndex={0}
+                ref={(el) => { divisionRefs.current[divIndex] = el; }}
+                /* Only the layer the reader is actually working in takes a tab
+                   stop. In districts mode the division polygons are background
+                   geography, so putting all 8 of them in the tab order just
+                   made the reader pass through the basemap twice. */
+                tabIndex={viewMode === 'divisions' && divIndex === activeDivIndex ? 0 : -1}
                 role="button"
                 aria-label={`${div.name}, Primary Hazard: ${div.primaryHazard}, Average Severity: ${(div.avgSeverity * 100).toFixed(0)}%`}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    if (onSelectDivision) onSelectDivision(div);
-                  }
-                }}
-                className="cursor-pointer outline-hidden focus:outline-hidden group/div"
+                onFocus={() => setActiveDivIndex(divIndex)}
+                onKeyDown={(e) => gridKeyDown(
+                  e, divIndex, ALL_8_DIVISIONS.length,
+                  () => { if (onSelectDivision) onSelectDivision(div); },
+                  divisionRefs, setActiveDivIndex,
+                )}
+                className="cursor-pointer group/div focus:outline-hidden"
               >
                 <path
                   d={div.path}
-                  fill={isSelectedDiv ? 'rgba(249, 168, 37, 0.25)' : '#e3e3e3'}
-                  stroke={isSelectedDiv ? '#f64137' : '#b9b9bb'}
+                  fill={isSelectedDiv ? 'var(--color-ap-primary)' : 'var(--color-carbon-05)'}
+                  fillOpacity={isSelectedDiv ? 0.18 : 1}
+                  stroke={isSelectedDiv ? 'var(--color-ap-primary)' : 'var(--color-carbon-20)'}
                   strokeWidth={isSelectedDiv ? '1.2' : '0.5'}
                   strokeDasharray={viewMode === 'divisions' ? 'none' : '1 1'}
                   onMouseEnter={() => setHoveredDivision(div)}
                   onMouseLeave={() => setHoveredDivision(null)}
                   onClick={() => onSelectDivision && onSelectDivision(div)}
-                  className="transition-colors duration-300 hover:fill-amber-100 group-focus/div:stroke-amber-600 group-focus/div:stroke-[1.5]"
+                  /* Selection and hover are CHROME, so they use the one accent.
+                     Amber here used to collide with the severity encoding: an
+                     amber-filled division looked like a moderate-severity
+                     reading rather than the thing you had clicked. */
+                  className="transition-colors duration-300 hover:fill-ap-primary/10"
+                />
+                {/* Focus ring, drawn as geometry. `focus:outline-hidden` on its
+                    own removed the only keyboard affordance (WCAG 2.4.7); the
+                    accent stroke below replaces it and clears 3:1 against both
+                    the canvas and the division fill in either theme. */}
+                <path
+                  d={div.path}
+                  fill="none"
+                  stroke="var(--ap-focus-ring)"
+                  strokeWidth="1.6"
+                  className="pointer-events-none opacity-0 group-focus-visible/div:opacity-100"
                 />
 
                 {/* Render Division Centroid Labels in Division Mode */}
@@ -263,14 +313,14 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
                       cx={div.cx}
                       cy={div.cy}
                       r="2.5"
-                      fill="#17171b"
-                      stroke="#ffffff"
+                      fill="var(--color-carbon-90)"
+                      stroke="var(--ap-bg-canvas)"
                       strokeWidth="0.5"
                     />
                     <text
                       x={div.cx}
                       y={div.cy - 3.5}
-                      fill="#17171b"
+                      fill="var(--color-carbon-90)"
                       fontSize="2.8"
                       fontWeight="bold"
                       textAnchor="middle"
@@ -281,7 +331,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
                     <text
                       x={div.cx}
                       y={div.cy + 5}
-                      fill="#58585b"
+                      fill="var(--color-carbon-60)"
                       fontSize="2"
                       fontFamily="monospace"
                       textAnchor="middle"
@@ -299,24 +349,24 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
           <path
             d="M 48,16 Q 46,35 58,53 T 54,72"
             fill="none"
-            stroke="#38bdf8"
+            stroke="var(--ap-haz-flood)"
             strokeWidth="0.8"
             strokeOpacity="0.6"
           />
           <path
             d="M 72,28 Q 65,40 58,53"
             fill="none"
-            stroke="#38bdf8"
+            stroke="var(--ap-haz-flood)"
             strokeWidth="0.6"
             strokeOpacity="0.6"
           />
 
           {/* Render All 64 District Nodes in Districts View Mode */}
           {viewMode === 'districts' &&
-            filteredDistricts.map((dist) => {
+            filteredDistricts.map((dist, index) => {
               const isSelected = dist.id === selectedDistrictId;
               const alertLevel = alertLevels ? alertLevels[dist.id] : undefined;
-              const color = alertLevel ? LEVEL_COLOURS[alertLevel as keyof typeof LEVEL_COLOURS] : getSeverityColor(dist.severity);
+              const color = alertLevel ? LEVEL_COLOURS[alertLevel as keyof typeof LEVEL_COLOURS] : getSeverityVar(dist.severity);
               const isHigh = !alertLevel && dist.severity >= 0.8;
               // Accessible name: the baseline risk is always stated, and the published
               // alert level is appended when one exists. A comma expression here would
@@ -329,24 +379,31 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
               return (
                 <g
                   key={dist.id}
-                  tabIndex={0}
+                  ref={(el) => { markerRefs.current[index] = el; }}
+                  tabIndex={index === activeIndex ? 0 : -1}
                   role="button"
                   aria-label={`${dist.name} District, Risk: ${dist.risk}, Hazard: ${dist.hazardType}, Severity: ${(dist.severity * 100).toFixed(0)}%${alertLabel}`}
                   onClick={() => {
+                    setActiveIndex(index);
                     if (onSelectDistrict) onSelectDistrict(dist);
                     if (onOpenDisasterModal) onOpenDisasterModal(dist.id);
                   }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      if (onSelectDistrict) onSelectDistrict(dist);
-                      if (onOpenDisasterModal) onOpenDisasterModal(dist.id);
-                    }
-                  }}
+                  onFocus={() => setActiveIndex(index)}
+                  onKeyDown={(e) => gridKeyDown(e, index, filteredDistricts.length, () => {
+                    if (onSelectDistrict) onSelectDistrict(dist);
+                    if (onOpenDisasterModal) onOpenDisasterModal(dist.id);
+                  })}
                   onMouseEnter={() => setHoveredDistrict(dist)}
                   onMouseLeave={() => setHoveredDistrict(null)}
-                  className="cursor-pointer group outline-hidden focus:outline-hidden"
+                  className="cursor-pointer group focus:outline-hidden"
                 >
+                  {/* Hit target. The painted marker is r=1.4 in a 100-unit
+                      viewBox, which is about 12 CSS px across at this map's
+                      rendered size — half of the 24 px WCAG 2.5.8 floor, and
+                      genuinely hard to hit on a phone. This transparent circle
+                      carries the pointer and gives every district the same
+                      ~29 px target without changing the drawing. */}
+                  <circle cx={dist.cx} cy={dist.cy} r="3.5" fill="transparent" />
                   {/* Heatmap Glow Circle (decorative; skipped in low-bandwidth mode) */}
                   {!lowBandwidth && (
                     <circle
@@ -377,9 +434,22 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
                     cy={dist.cy}
                     r={isSelected ? 2.2 : 1.4}
                     fill={color}
-                    stroke="#ffffff"
+                    stroke="var(--ap-bg-canvas)"
                     strokeWidth="0.5"
-                    className="transition-transform group-hover:scale-150 group-focus:scale-175 group-focus:stroke-[#17171b] group-focus:stroke-[0.8]"
+                    className="transition-transform group-hover:scale-150"
+                  />
+
+                  {/* Keyboard focus ring. Separate geometry rather than a
+                      stroke swap, so it reads at 3:1 against the marker fill
+                      whatever severity colour that marker happens to be. */}
+                  <circle
+                    cx={dist.cx}
+                    cy={dist.cy}
+                    r="3.2"
+                    fill="none"
+                    stroke="var(--ap-focus-ring)"
+                    strokeWidth="0.7"
+                    className="pointer-events-none opacity-0 group-focus-visible:opacity-100"
                   />
 
                   {/* Selected Ring */}
@@ -389,7 +459,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
                       cy={dist.cy}
                       r={3.2}
                       fill="none"
-                      stroke="#17171b"
+                      stroke="var(--color-carbon-90)"
                       strokeWidth="0.5"
                       strokeDasharray="0.6 0.6"
                     />
@@ -400,7 +470,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
                     <text
                       x={dist.cx + 1.8}
                       y={dist.cy + 0.8}
-                      fill={isSelected ? '#17171b' : '#444447'}
+                      fill={isSelected ? 'var(--color-carbon-90)' : 'var(--color-carbon-80)'}
                       fontSize="1.9"
                       fontWeight={isSelected ? 'bold' : 'normal'}
                       className="font-sans pointer-events-none select-none drop-shadow-xs"
@@ -420,20 +490,26 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
         
         {/* Legend: alert levels when the alert layer is on, baseline severity otherwise */}
         {legendSlot ? legendSlot : (
-        <div className="flex items-center gap-3">
-          <span className="font-bold text-carbon-70">Severity Scale:</span>
-          <div className="flex items-center gap-1.5 font-mono text-xs">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-            <span>Low (&lt;0.50)</span>
-          </div>
-          <div className="flex items-center gap-1.5 font-mono text-xs">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-            <span>Moderate</span>
-          </div>
-          <div className="flex items-center gap-1.5 font-mono text-xs">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
-            <span>High (&gt;0.75)</span>
-          </div>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          <span className="font-bold text-carbon-70">Severity scale:</span>
+          {/* Rendered straight off SEVERITY_TIERS, the same table
+              getSeverityVar paints the markers from. The previous key was
+              written by hand and had drifted: it showed three bands where the
+              map drew five, its swatches were emerald/amber/rose while the
+              markers used the Apple severity ramp, and the thresholds it
+              printed ("<0.50", ">0.75") were neither of the two the code
+              actually used. A key that disagrees with the map is worse than
+              no key, so it can no longer be written separately. */}
+          {SEVERITY_TIERS.map((tier, i) => (
+            <span key={tier.tier} className="flex items-center gap-1.5 font-mono text-xs">
+              <span
+                className="h-2.5 w-2.5 shrink-0 rounded-full"
+                style={{ backgroundColor: `var(${tier.cssVar})` }}
+                aria-hidden="true"
+              />
+              <span>{tier.label} <span className="text-carbon-50">{severityTierRange(i)}</span></span>
+            </span>
+          ))}
         </div>
         )}
 

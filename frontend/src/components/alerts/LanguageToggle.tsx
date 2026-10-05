@@ -29,13 +29,13 @@ const TONES = {
   slate: {
     wrapper: 'rounded-xl border border-carbon-30 bg-white p-0.5',
     button: 'rounded-lg',
-    active: 'bg-carbon-90 text-white',
+    active: 'bg-carbon-90 text-ap-on-inverse',
     idle: 'text-carbon-70 hover:bg-carbon-10',
   },
   hds: {
     wrapper: 'rounded-none border border-carbon-20 bg-white p-0.5',
     button: 'rounded-none',
-    active: 'bg-carbon-90 text-white',
+    active: 'bg-carbon-90 text-ap-on-inverse',
     idle: 'text-carbon-70 hover:bg-carbon-05',
   },
 } as const;
@@ -99,7 +99,7 @@ export const LanguageToggle: React.FC<LanguageToggleProps> = ({
       <span className="text-carbon-60" aria-hidden="true">
         EN
       </span>
-      <span className="text-carbon-30" aria-hidden="true">
+      <span className="text-carbon-60" aria-hidden="true">
         /
       </span>
       <span lang="bn" className="text-carbon-90">

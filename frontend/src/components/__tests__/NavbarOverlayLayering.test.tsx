@@ -87,7 +87,7 @@ describe("Navbar overlay layering", () => {
     expect(document.body.contains(drawer)).toBe(true);
 
     // Overlay token sits above chat (--z-sticky) and the header (--z-nav).
-    expect(drawer.className).toContain("z-[var(--z-overlay)]");
+    expect(drawer.className).toContain("z-[var(--ap-z-overlay)]");
   });
 
   it("gives the drawer backdrop the overlay z-tier, above the chat window", async () => {
@@ -100,7 +100,7 @@ describe("Navbar overlay layering", () => {
       expect(el).not.toBeNull();
       return el as HTMLElement;
     });
-    expect(backdrop.className).toContain("z-[var(--z-overlay)]");
+    expect(backdrop.className).toContain("z-[var(--ap-z-overlay)]");
     expect(backdrop.className).toContain("fixed inset-0");
   });
 

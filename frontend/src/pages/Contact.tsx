@@ -193,7 +193,7 @@ export const Contact: React.FC = () => {
         </p>
         <p
           role="note"
-          className="border border-nasa-red bg-white p-3 text-xs font-semibold leading-relaxed text-nasa-red-shade"
+          className="border border-ap-primary bg-white p-3 text-xs font-semibold leading-relaxed text-ap-link"
         >
           This is not an emergency channel and it is not monitored around the clock. In an emergency call{' '}
           <strong>999</strong>, and follow BMD, FFWC, DDM and local administration instructions.
@@ -221,7 +221,7 @@ export const Contact: React.FC = () => {
                 }}
                 className={`min-h-[44px] px-4 py-2 transition-all whitespace-nowrap cursor-pointer touch-manipulation tap-target inline-flex items-center justify-center ${
                   activeForm === kind
-                    ? 'bg-amber-500 text-carbon-90 font-bold'
+                    ? 'bg-amber-500 text-ap-on-sev font-bold'
                     : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20 hover:text-carbon-90'
                 }`}
               >
@@ -231,7 +231,7 @@ export const Contact: React.FC = () => {
           </div>
 
           {errors.length > 0 && (
-            <div role="alert" className="border border-nasa-red bg-white p-4 text-xs text-nasa-red-shade">
+            <div role="alert" className="border border-ap-primary bg-white p-4 text-xs text-ap-link">
               <p className="font-bold">Please fix the following before continuing:</p>
               <ul className="mt-1 list-disc pl-5">
                 {errors.map((problem) => (
@@ -254,7 +254,7 @@ export const Contact: React.FC = () => {
                   href={issueUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="min-h-[44px] bg-carbon-90 px-4 py-2 font-bold text-white hover:bg-carbon-70 touch-manipulation tap-target inline-flex items-center justify-center"
+                  className="min-h-[44px] bg-carbon-90 px-4 py-2 font-bold text-carbon-05 hover:bg-carbon-70 touch-manipulation tap-target inline-flex items-center justify-center"
                 >
                   Open a prefilled GitHub issue
                 </a>
@@ -490,7 +490,7 @@ export const Contact: React.FC = () => {
 
             <button
               type="submit"
-              className="min-h-[44px] px-6 py-3 bg-primary text-white font-bold transition-all inline-flex items-center gap-2 text-sm hover:bg-primary-strong cursor-pointer touch-manipulation tap-target"
+              className="min-h-[44px] px-6 py-3 bg-primary text-ap-action-fg font-bold transition-all inline-flex items-center gap-2 text-sm hover:bg-primary-strong cursor-pointer touch-manipulation tap-target"
             >
               <SendIcon size={18} duration={0.15} isState={false} />
               <span>Prepare report</span>
@@ -509,9 +509,9 @@ export const Contact: React.FC = () => {
             </h2>
 
             <div className="space-y-3 text-xs">
-              <div className="p-3 bg-white border border-nasa-red space-y-1">
-                <span className="font-bold text-nasa-red-shade block">National emergency service</span>
-                <p className="font-mono text-sm font-bold text-nasa-red-shade">
+              <div className="p-3 bg-white border border-ap-primary space-y-1">
+                <span className="font-bold text-ap-link block">National emergency service</span>
+                <p className="font-mono text-sm font-bold text-ap-link">
                   <PhoneCall className="mr-1 inline h-4 w-4" aria-hidden="true" />999
                 </p>
               </div>

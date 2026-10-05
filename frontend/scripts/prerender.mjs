@@ -398,39 +398,47 @@ function renderHead(route) {
  * so a visitor does not see a jarring flash before React mounts.
  */
 const STATIC_STYLES = `<style>
-  /* Static fallback shell. Colours, type and shape are NASA Horizon Design System
-     tokens: carbon neutrals, 1px rules, square corners, 2px on small controls. The type is
-     the platform UI face, never a webfont: the shell paints before the app's stylesheet
-     does, and it used to ask for Inter and Public Sans Web - neither of which this build
-     ships, so the first paint on a slow connection was the one paint guaranteed to render
-     in fallback metrics. Values are literals here because this document must not name the
-     tree it was built from. */
-  .hn-static{max-width:60rem;margin:0 auto;padding:5.5rem 1.25rem 3rem;background:#ffffff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Bengali",sans-serif;font-size:1rem;color:#17171b;line-height:1.62}
-  .hn-static h1,.hn-static h2,.hn-static h3,.hn-static summary,.hn-static th{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Bengali",sans-serif}
+  /* Static fallback shell — the Apple design system, as literals.
+
+     Literals, not custom properties, on purpose: this style block is inlined into every
+     prerendered document and paints BEFORE the application stylesheet arrives, so a custom
+     property here would resolve to nothing on the one paint that matters most. Every value
+     below is copied from the design system, and a test fails if one of them stops being a
+     colour the system publishes.
+
+     The type is the platform UI face, never a webfont: SF Pro is named first and resolves on
+     Apple platforms, system-ui everywhere else, so the shell's first paint uses the same
+     metrics as the hydrated app and nothing reflows.
+
+     The dark arm is a prefers-color-scheme media query rather than a class, because there is
+     no JavaScript yet to read the stored preference — this is what stops a system-dark
+     visitor getting a white flash before the app boots. */
+  .hn-static{max-width:60rem;margin:0 auto;padding:5.5rem 1.25rem 3rem;background:#ffffff;font-family:"SF Pro Text",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans Bengali",sans-serif;font-size:1rem;color:#1d1d1f;line-height:1.62}
+  .hn-static h1,.hn-static h2,.hn-static h3,.hn-static summary,.hn-static th{font-family:"SF Pro Display",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans Bengali",sans-serif}
   .hn-static h1{font-size:1.9rem;line-height:1.15;letter-spacing:-.02em;margin:0 0 .75rem;font-weight:700}
   .hn-static h2{font-size:1.15rem;line-height:1.35;letter-spacing:-.02em;margin:2rem 0 .5rem;font-weight:700}
-  .hn-static p{margin:.6rem 0;color:#444447;overflow-wrap:anywhere}
-  .hn-static .hn-lead{font-size:1.03rem;line-height:1.5;color:#17171b}
-  .hn-static ul{margin:.5rem 0 1rem;padding-left:1.15rem;color:#444447}
+  .hn-static p{margin:.6rem 0;color:#333333;overflow-wrap:anywhere}
+  .hn-static .hn-lead{font-size:1.03rem;line-height:1.5;color:#1d1d1f}
+  .hn-static ul{margin:.5rem 0 1rem;padding-left:1.15rem;color:#333333}
   .hn-static li{margin:.3rem 0}
-  .hn-static a{color:#0b3d91}
-  .hn-static .hn-callout{border-left:2px solid #ea6f24;background:#fce3ca;color:#3b1b00;padding:.7rem .9rem;border-radius:0;font-size:.94rem}
-  .hn-static .hn-meta{font-size:.8rem;line-height:1.75;letter-spacing:.025em;color:#58585b;border-top:1px solid #e3e3e3;padding-top:.9rem;margin-top:2rem}
-  .hn-static .hn-meta-line{font-size:.8rem;line-height:1.75;letter-spacing:.025em;color:#58585b}
+  .hn-static a{color:#0066cc}
+  .hn-static .hn-callout{border-left:2px solid #b3400f;background:#fdeee7;color:#b3400f;padding:.7rem .9rem;border-radius:0;font-size:.94rem}
+  .hn-static .hn-meta{font-size:.8rem;line-height:1.75;letter-spacing:.025em;color:#5a5a5d;border-top:1px solid #e0e0e0;padding-top:.9rem;margin-top:2rem}
+  .hn-static .hn-meta-line{font-size:.8rem;line-height:1.75;letter-spacing:.025em;color:#5a5a5d}
   .hn-static .hn-tablewrap{overflow-x:auto;margin:.75rem 0 1rem}
   .hn-static table{width:100%;border-collapse:collapse;font-size:.92rem}
   .hn-static li,.hn-static td,.hn-static th{overflow-wrap:anywhere}
-  .hn-static caption{text-align:left;font-size:.8rem;line-height:1.75;letter-spacing:.025em;color:#58585b;padding-bottom:.35rem}
-  .hn-static th,.hn-static td{border-bottom:1px solid #e3e3e3;padding:.45rem .6rem .45rem 0;text-align:left;vertical-align:top}
+  .hn-static caption{text-align:left;font-size:.8rem;line-height:1.75;letter-spacing:.025em;color:#5a5a5d;padding-bottom:.35rem}
+  .hn-static th,.hn-static td{border-bottom:1px solid #e0e0e0;padding:.45rem .6rem .45rem 0;text-align:left;vertical-align:top}
   .hn-static th{font-weight:700}
-  .hn-static .hn-state{display:inline-block;border:1px solid #b9b9bb;border-radius:2px;background:#ffffff;color:#17171b;padding:.1rem .5rem;font-size:.75rem;font-weight:700;white-space:nowrap}
-  .hn-static .hn-state-fresh{border-color:#47da84;background:#f6f6f6;color:#17171b}
-  .hn-static .hn-state-stale{border-color:#ea6f24;background:#fce3ca;color:#3b1b00}
-  .hn-static .hn-state-failing{border-color:#f64137;background:#fce3ca;color:#b60109}
-  .hn-static .hn-state-unknown{border-color:#b9b9bb;background:#f6f6f6;color:#444447}
-  .hn-static .hn-reason{display:block;font-weight:400;font-size:.8rem;color:#58585b}
+  .hn-static .hn-state{display:inline-block;border:1px solid #a1a1a6;border-radius:9999px;background:#ffffff;color:#1d1d1f;padding:.1rem .5rem;font-size:.75rem;font-weight:700;white-space:nowrap}
+  .hn-static .hn-state-fresh{border-color:#1d7a3e;background:#f5f5f7;color:#1d1d1f}
+  .hn-static .hn-state-stale{border-color:#b3400f;background:#fdeee7;color:#b3400f}
+  .hn-static .hn-state-failing{border-color:#c01f1f;background:#fdeee7;color:#c01f1f}
+  .hn-static .hn-state-unknown{border-color:#a1a1a6;background:#f5f5f7;color:#333333}
+  .hn-static .hn-reason{display:block;font-weight:400;font-size:.8rem;color:#5a5a5d}
   .hn-static .hn-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-  .hn-static .hn-loading{font-size:.8rem;color:#58585b}
+  .hn-static .hn-loading{font-size:.8rem;color:#5a5a5d}
   /* The brand mark that loads in place of the notice below. The artwork itself is
      /hazardnet-loader.svg — the infinity mark, animated — so a slow connection
      spends its wait looking at the product's own mark instead of a spinner.
@@ -438,30 +446,30 @@ const STATIC_STYLES = `<style>
      image has no intrinsic box until the SVG decodes and the notice jumps. */
   .hn-static .hn-loader{display:flex;flex-direction:column;align-items:center;gap:1.1rem;margin:2.75rem 0 .5rem}
   .hn-static .hn-loader-mark{display:block;width:112px;height:63px}
-  .hn-static details{border-bottom:1px solid #e3e3e3;padding:.55rem 0}
+  .hn-static details{border-bottom:1px solid #e0e0e0;padding:.55rem 0}
   .hn-static summary{font-weight:600;cursor:pointer}
   /* Dark scheme. Every rule restates its own background next to its text colour so the
      pairing stays legible to a reader (and to a static contrast checker) that does not
      cascade media queries. Ratios on the stated backgrounds are all >= 4.5:1. */
   @media (prefers-color-scheme:dark){
-    body{background:#17171b}
-    .hn-static{background:#17171b;color:#e3e3e3}
-    .hn-static p,.hn-static ul,.hn-static li{color:#d1d1d1}
-    .hn-static .hn-lead{color:#e3e3e3}
-    .hn-static a{color:#288bff}
-    .hn-static .hn-callout{background:#2e2e32;border-left-color:#ea6f24;color:#fce3ca}
-    .hn-static .hn-meta{background:#17171b;border-top-color:#444447;color:#b9b9bb}
-    .hn-static .hn-meta-line,.hn-static caption,.hn-static .hn-reason,.hn-static .hn-loading{color:#b9b9bb}
+    body{background:#252527}
+    .hn-static{background:#252527;color:#ffffff}
+    .hn-static p,.hn-static ul,.hn-static li{color:#cccccc}
+    .hn-static .hn-lead{color:#e0e0e0}
+    .hn-static a{color:#2997ff}
+    .hn-static .hn-callout{background:#272729;border-left-color:#b3400f;color:#fdeee7}
+    .hn-static .hn-meta{background:#252527;border-top-color:#333333;color:#a1a1a6}
+    .hn-static .hn-meta-line,.hn-static caption,.hn-static .hn-reason,.hn-static .hn-loading{color:#a1a1a6}
     /* Nothing to revert for the loader on this scheme: the infinity mark's blue gradient holds at >= 3:1 on both a
        white and a near-black ground, so one animated file serves both. (The previous mark was near-black and
        had to be inverted, with a hue rotation to save its red, here and in the header.) */
-    .hn-static th,.hn-static td{border-bottom-color:#444447}
-    .hn-static details{border-bottom-color:#444447}
-    .hn-static .hn-state{background:#2e2e32;border-color:#58585b;color:#e3e3e3}
-    .hn-static .hn-state-fresh{background:#2e2e32;border-color:#47da84;color:#e3e3e3}
-    .hn-static .hn-state-stale{background:#5c2b00;border-color:#ea6f24;color:#fce3ca}
-    .hn-static .hn-state-failing{background:#241000;border-color:#f64137;color:#ff5c52}
-    .hn-static .hn-state-unknown{background:#2e2e32;border-color:#58585b;color:#b9b9bb}
+    .hn-static th,.hn-static td{border-bottom-color:#333333}
+    .hn-static details{border-bottom-color:#333333}
+    .hn-static .hn-state{background:#272729;border-color:#5a5a5d;color:#e0e0e0}
+    .hn-static .hn-state-fresh{background:#272729;border-color:#1d7a3e;color:#e0e0e0}
+    .hn-static .hn-state-stale{background:#3a1d10;border-color:#b3400f;color:#fdeee7}
+    .hn-static .hn-state-failing{background:#3a1512;border-color:#c01f1f;color:#ff6b60}
+    .hn-static .hn-state-unknown{background:#272729;border-color:#5a5a5d;color:#a1a1a6}
   }
 </style>`;
 

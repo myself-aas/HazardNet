@@ -84,7 +84,7 @@ export const DistrictBriefActions: React.FC = () => {
               className="inline-flex min-h-[44px] items-center gap-2.5 px-3 py-2 bg-white border border-carbon-20 text-carbon-90 hover:border-carbon-30 text-sm font-semibold cursor-pointer touch-manipulation"
             >
               <MapPin className="w-3.5 h-3.5 text-amber-600" />
-              <span>Switch District: <strong className="text-carbon-black">{data.districtName}</strong></span>
+              <span>Switch District: <strong className="text-carbon-90">{data.districtName}</strong></span>
               <ChevronDown className={`w-3.5 h-3.5 text-carbon-60 transition-transform ${districtDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
@@ -96,7 +96,7 @@ export const DistrictBriefActions: React.FC = () => {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 6, scale: 0.98 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute left-0 top-full mt-2 w-72 sm:w-80 bg-white border border-carbon-20 z-[var(--z-overlay)] p-3 space-y-2"
+                  className="absolute left-0 top-full mt-2 w-72 sm:w-80 bg-white border border-carbon-20 z-[var(--ap-z-overlay)] p-3 space-y-2"
                 >
                   <div className="relative">
                     <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-carbon-60" />
@@ -178,7 +178,7 @@ export const DistrictBriefActions: React.FC = () => {
             type="button"
             onClick={handlePrintBrief}
             title="Print this district brief (HTML print is the primary export)"
-            className="inline-flex min-h-[44px] items-center gap-2 px-3 py-2 bg-nasa-blue text-white text-sm font-semibold cursor-pointer touch-manipulation"
+            className="inline-flex min-h-[44px] items-center gap-2 px-3 py-2 bg-primary text-ap-action-fg text-sm font-semibold cursor-pointer touch-manipulation"
           >
             <Printer className="w-4 h-4" />
             <span>Print brief</span>
@@ -209,9 +209,9 @@ export const DistrictBriefActions: React.FC = () => {
           <button
             onClick={handleDownloadReport}
             title="Download Raw Machine-Readable JSON Telemetry"
-            className="inline-flex min-h-[44px] items-center gap-2 px-3.5 py-2 bg-carbon-90 hover:bg-carbon-80 text-white text-sm font-semibold cursor-pointer touch-manipulation"
+            className="inline-flex min-h-[44px] items-center gap-2 px-3.5 py-2 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 text-sm font-semibold cursor-pointer touch-manipulation"
           >
-            <Download className="w-4 h-4 text-amber-400" />
+            <Download className="w-4 h-4 text-amber-300" />
             <span>Export Data</span>
           </button>
         </div>

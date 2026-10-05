@@ -73,7 +73,7 @@ export default function UploadPage() {
   return (
     <section className="w-full max-w-3xl space-y-6" aria-labelledby="lookup-heading">
       <header>
-        <h1 id="lookup-heading" className="text-[28px] font-bold tracking-tight text-carbon-90 sm:text-[32px]">
+        <h1 id="lookup-heading" className="text-ap-lead font-bold tracking-tight text-carbon-90 sm:text-ap-display-md">
           {t('lookup.title')}
         </h1>
         <p className="mt-4 max-w-prose text-base leading-[1.62] text-carbon-70">{t('lookup.standfirst')}</p>
@@ -85,7 +85,7 @@ export default function UploadPage() {
           load({ districtId: district, horizon });
         }}
       >
-        <label className="flex min-w-0 flex-1 flex-col gap-2 text-[13px] font-medium text-carbon-90" htmlFor="lookup-district">
+        <label className="flex min-w-0 flex-1 flex-col gap-2 text-ap-caption font-medium text-carbon-90" htmlFor="lookup-district">
           {t('lookup.district')}
           <select
             id="lookup-district"
@@ -101,7 +101,7 @@ export default function UploadPage() {
             ))}
           </select>
         </label>
-        <label className="flex min-w-0 flex-col gap-2 text-[13px] font-medium text-carbon-90" htmlFor="lookup-horizon">
+        <label className="flex min-w-0 flex-col gap-2 text-ap-caption font-medium text-carbon-90" htmlFor="lookup-horizon">
           {t('lookup.horizon')}
           <select
             id="lookup-horizon"
@@ -117,7 +117,7 @@ export default function UploadPage() {
         <button
           type="submit"
           disabled={state.kind === 'loading'}
-          className="inline-flex min-h-11 items-center justify-center bg-nasa-blue px-6 py-3 text-base font-semibold text-white hover:bg-nasa-blue-shade disabled:opacity-50"
+          className="inline-flex min-h-11 items-center justify-center bg-primary px-6 py-3 text-base font-semibold text-ap-action-fg hover:bg-primary-strong disabled:opacity-50"
         >
           {state.kind === 'loading' ? t('lookup.submitting') : t('lookup.submit')}
         </button>

@@ -33,7 +33,7 @@ const finePointer =
     : false;
 
 const inputClass =
-  'h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 placeholder-carbon-40 font-medium focus:border-nasa-blue focus:outline-none focus:ring-2 focus:ring-nasa-blue/40';
+  'h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 placeholder-carbon-40 font-medium focus:border-ap-primary focus:outline-none focus:ring-2 focus:ring-ap-primary/40';
 
 const LoginPage: React.FC = () => {
   const { signInWithEmail, user } = useAuth();
@@ -84,7 +84,7 @@ const LoginPage: React.FC = () => {
               exit={{ opacity: 0, y: -5 }}
               role="alert"
               aria-live="polite"
-              className="flex items-start gap-2 border-l-2 border-nasa-red bg-white p-4 text-sm font-medium text-nasa-red-shade"
+              className="flex items-start gap-2 border-l-2 border-ap-primary bg-white p-4 text-sm font-medium text-ap-link"
             >
               <span className="shrink-0 mt-0.5">
                 <MaterialIcon name="warning" className="w-4 h-4" />
@@ -121,7 +121,7 @@ const LoginPage: React.FC = () => {
             <Link
               id="login-page-forgot-pwd-btn"
               to="/forgot-password"
-              className="text-xs font-bold text-nasa-blue-shade hover:text-nasa-blue hover:underline"
+              className="text-xs font-bold text-ap-link hover:text-ap-link hover:underline"
             >
               Forgot password?
             </Link>
@@ -141,7 +141,7 @@ const LoginPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowPassword((value) => !value)}
-              className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-carbon-60 hover:text-carbon-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 cursor-pointer touch-manipulation"
+              className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-carbon-60 hover:text-carbon-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary/60 cursor-pointer touch-manipulation"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               <EyeToggleIcon isState={showPassword} size={20} duration={0} />
@@ -153,7 +153,7 @@ const LoginPage: React.FC = () => {
           id="login-page-submit-btn"
           type="submit"
           disabled={loading || !email.trim() || !password}
-          className="flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 bg-primary-strong px-6 py-3 text-base font-semibold text-white hover:bg-primary disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2 touch-manipulation"
+          className="flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 bg-primary px-6 py-3 text-base font-semibold text-ap-action-fg hover:bg-primary-strong disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary/60 focus-visible:ring-offset-2 touch-manipulation"
         >
           {loading ? (
             <>
@@ -175,11 +175,11 @@ const LoginPage: React.FC = () => {
       </div>
       <AuthSocialButtons onSuccess={() => navigate(next, { replace: true })} />
 
-      <p className="text-center text-xs sm:text-[13px] text-carbon-60">
+      <p className="text-center text-xs sm:text-ap-caption text-carbon-60">
         New to HazardNet?{' '}
         <Link
           to={next !== '/' ? `/signup?next=${encodeURIComponent(next)}` : '/signup'}
-          className="font-extrabold text-nasa-blue-shade hover:text-nasa-blue hover:underline"
+          className="font-extrabold text-ap-link hover:text-ap-link hover:underline"
         >
           Create an account
         </Link>

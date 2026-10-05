@@ -17,7 +17,7 @@ export const RunVisualComposition: React.FC<{
   return (
     <AbsoluteFill
       style={{
-        backgroundColor: '#f6f6f6',
+        backgroundColor: '#fafafc',
         padding: 40,
         fontFamily: 'Inter, sans-serif',
       }}
@@ -28,7 +28,7 @@ export const RunVisualComposition: React.FC<{
           backgroundColor: 'white',
           borderWidth: 1,
           borderStyle: 'solid',
-          borderColor: '#d1d1d1',
+          borderColor: '#e0e0e0',
           padding: 24,
           display: 'flex',
           flexDirection: 'column',
@@ -70,7 +70,7 @@ export const RunVisualComposition: React.FC<{
               fontWeight: 700,
               letterSpacing: '0.05em',
               textTransform: 'uppercase',
-              color: '#17171b',
+              color: '#1d1d1f',
             }}
           >
             Coverage
@@ -79,7 +79,7 @@ export const RunVisualComposition: React.FC<{
             style={{
               fontFamily: 'DM Mono, monospace',
               fontSize: 12,
-              color: '#77777a',
+              color: '#6e6e73',
             }}
           >
             {status}
@@ -92,7 +92,7 @@ export const RunVisualComposition: React.FC<{
             fontFamily: 'DM Mono, monospace',
             fontSize: 32,
             fontWeight: 900,
-            color: '#17171b',
+            color: '#1d1d1f',
             opacity: interpolate(frame, [fps * 0.3, fps * 0.6], [0, 1], {
               easing: Easing.bezier(0.16, 1, 0.3, 1),
               extrapolateLeft: 'clamp',
@@ -112,7 +112,7 @@ export const RunVisualComposition: React.FC<{
           name="Coverage bar track"
           style={{
             height: 8,
-            backgroundColor: '#f6f6f6',
+            backgroundColor: '#fafafc',
             borderRadius: 999,
             overflow: 'hidden',
             borderWidth: 1,
@@ -124,7 +124,7 @@ export const RunVisualComposition: React.FC<{
             name="Coverage bar fill"
             style={{
               height: '100%',
-              backgroundColor: '#16a34a',
+              backgroundColor: '#1d7a3e',
               borderRadius: 999,
               width: `${interpolate(frame, [fps * 0.5, fps * 1.2], [0, 86], {
                 easing: Easing.bezier(0.16, 1, 0.3, 1),

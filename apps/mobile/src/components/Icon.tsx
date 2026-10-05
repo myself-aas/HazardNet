@@ -13,7 +13,7 @@
  * (audit P1-8).
  *
  * Sizing and stroke come from the registry, not from this file: `ICON_SIZES` is the same scale the
- * web uses, and `ICON_STROKE` is what `svg.lucide { stroke-width }` sets in `meridian.css`.
+ * web uses, and `ICON_STROKE` is what `svg.lucide { stroke-width }` sets in `apple.css`.
  */
 
 import React from 'react';

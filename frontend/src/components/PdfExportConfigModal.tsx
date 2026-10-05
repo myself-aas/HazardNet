@@ -284,7 +284,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="pdf-config-modal-title"
-      className="fixed inset-0 z-[10000] flex items-center justify-center p-3 sm:p-4 bg-carbon-black/80 backdrop-blur-sm animate-in fade-in duration-150"
+      className="fixed inset-0 z-[10000] flex items-center justify-center p-3 sm:p-4 bg-carbon-black/80 backdrop-blur-sm ap-enter"
     >
       {/* Modal Container */}
       <div
@@ -293,19 +293,19 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
         className="relative w-full max-w-xl bg-white border border-carbon-20 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-5 py-4 bg-carbon-90 text-white border-b border-carbon-80 shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 bg-carbon-90 text-carbon-05 border-b border-carbon-80 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-amber-400/10 border border-amber-400/30 text-amber-400">
+            <div className="p-2 rounded-xl bg-amber-400/10 border border-amber-400/30 text-amber-700">
               <FileDown className="w-5 h-5" />
             </div>
             <div>
-              <h3 id="pdf-config-modal-title" className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+              <h3 id="pdf-config-modal-title" className="text-base font-bold text-ap-on-inverse tracking-tight flex items-center gap-2">
                 <span>PDF Export Configuration</span>
                 <span className="px-2 py-0.5 rounded text-xs font-mono bg-carbon-80 text-amber-300 border border-carbon-70">
                   SOD 2019
                 </span>
               </h3>
-              <p className="text-xs text-carbon-60 font-medium">
+              <p className="text-xs text-carbon-30 font-medium">
                 Customize document filename, dynamic tags, and layout before downloading
               </p>
             </div>
@@ -314,7 +314,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
           <button
             onClick={onClose}
             disabled={isExporting}
-            className="p-1.5 rounded-lg text-carbon-40 hover:text-white hover:bg-carbon-80 transition-colors cursor-pointer disabled:opacity-50"
+            className="p-1.5 rounded-lg text-carbon-30 hover:text-white hover:bg-carbon-80 transition-colors cursor-pointer disabled:opacity-50"
             title="Close dialog (Esc)"
           >
             <X className="w-5 h-5" />
@@ -322,11 +322,11 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="p-5 overflow-y-auto space-y-5 custom-scrollbar text-carbon-80">
+        <div className="p-5 overflow-y-auto space-y-5 custom-scrollbar text-carbon-90">
           {/* Section 1: Filename Template Input */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label htmlFor="pdf-filename-template-input" className="text-xs font-bold text-carbon-70 flex items-center gap-1.5">
+              <label htmlFor="pdf-filename-template-input" className="text-xs font-bold text-carbon-90 flex items-center gap-1.5">
                 <FileText className="w-3.5 h-3.5 text-carbon-60" />
                 <span>Filename Template</span>
               </label>
@@ -410,7 +410,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
 
           {/* Section 4: Quick Presets */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-carbon-70 flex items-center gap-1.5">
+            <label className="text-xs font-bold text-carbon-90 flex items-center gap-1.5">
               <Bookmark className="w-3.5 h-3.5 text-carbon-60" />
               <span>Quick Filename Presets</span>
             </label>
@@ -426,7 +426,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
                     disabled={isExporting}
                     className={`p-2.5 text-left rounded-xl border text-xs transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-carbon-90 text-white border-carbon-90 shadow-xs'
+                        ? 'bg-carbon-90 text-ap-on-inverse border-carbon-90 shadow-xs'
                         : 'bg-white hover:bg-carbon-05 text-carbon-80 border-carbon-20 hover:border-carbon-30'
                     }`}
                   >
@@ -444,7 +444,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
           <div className="pt-2 border-t border-carbon-20 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             {/* Page Orientation */}
             <div className="space-y-1.5">
-              <span className="font-bold text-carbon-70 block">Page Orientation</span>
+              <span className="font-bold text-carbon-90 block">Page Orientation</span>
               <div className="flex items-center gap-2 bg-carbon-10 p-1 rounded-xl border border-carbon-20">
                 <button
                   type="button"
@@ -473,7 +473,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
 
             {/* Ink-Saver High Contrast Switch */}
             <div className="space-y-1.5">
-              <span className="font-bold text-carbon-70 block">Printer Optimization</span>
+              <span className="font-bold text-carbon-90 block">Printer Optimization</span>
               <button
                 type="button"
                 onClick={() => handleInkSaverChange(!inkSaver)}
@@ -484,7 +484,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
                 }`}
               >
                 <span className="flex items-center gap-1.5">
-                  <SunMedium className="w-3.5 h-3.5 text-amber-500" />
+                  <SunMedium className="w-3.5 h-3.5 text-rose-700" />
                   <span>Ink-Saver Mode</span>
                 </span>
                 <span className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded ${
@@ -530,16 +530,16 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
               type="button"
               onClick={handleStartExport}
               disabled={isExporting}
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-carbon-90 hover:bg-carbon-80 text-white text-xs font-bold transition-all shadow-md cursor-pointer hover:scale-102 active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-carbon-90 hover:bg-carbon-80 text-carbon-05 text-xs font-bold transition-all shadow-md cursor-pointer hover:scale-102 active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isExporting ? (
                 <>
-                  <Loader2 className="w-4 h-4 text-amber-400 animate-spin shrink-0" />
+                  <Loader2 className="w-4 h-4 text-amber-300 animate-spin shrink-0" />
                   <span>{exportProgress.stage || 'Generating PDF...'}</span>
                 </>
               ) : (
                 <>
-                  <FileDown className="w-4 h-4 text-amber-400 shrink-0" />
+                  <FileDown className="w-4 h-4 text-amber-300 shrink-0" />
                   <span>Export & Download PDF</span>
                 </>
               )}

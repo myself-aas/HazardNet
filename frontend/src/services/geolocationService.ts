@@ -1,3 +1,4 @@
+import { APPLE_SEVERITY } from '@hazardnet/design-system';
 import { ALL_64_DISTRICTS, DistrictData } from '../data/bangladeshDistricts';
 
 export interface LocationDetectionResult {
@@ -32,30 +33,82 @@ export function isValidLatLng(lat: any, lng: any): boolean {
 }
 
 /**
- * Dynamic severity color calculation (0% Green -> 50% Yellow -> 100% Red)
- * @param severity Severity index from 0.0 (0%) to 1.0 (100%)
+ * Severity → the one Apple severity scale.
+ *
+ * This used to interpolate a continuous green→yellow→red gradient. Two things
+ * were wrong with that. First, the endpoints it interpolated between were the
+ * stock Tailwind green-600, yellow-500 and red-600, while the comments beside
+ * them claimed the Apple severity values — so the maps quietly ran a second
+ * colour system that no legend described. Second, a continuous ramp is not
+ * decodable: a reader cannot tell 0.62 from 0.71 by eye, and no key could
+ * help them.
+ *
+ * The product already defines five severity tiers, each with a label, so the
+ * index is quantised onto those tiers instead. The map now matches its legend,
+ * and the value is one of five things a reader can actually name.
+ *
+ * Thresholds follow the alert ladder: a tier starts where its band starts.
  */
-export function getSeverityColor(severity: number): string {
+export type SeverityTier = 'low' | 'moderate' | 'high' | 'veryHigh' | 'extreme';
+
+/**
+ * The one severity table. The map markers, the map legend and anything else
+ * that paints severity all read THIS — previously the marker thresholds
+ * (0.5 / 0.8) and the legend text ("<0.50", ">0.75") were written out
+ * separately and had drifted apart, so the key did not describe the map.
+ *
+ * `cssVar` flips with the theme. `hex` and `label` are read from
+ * APPLE_SEVERITY rather than transcribed here, so this table cannot drift from
+ * the design system the way the old gradient endpoints did.
+ */
+export const SEVERITY_TIERS = [
+  { tier: 'low', min: 0, cssVar: '--ap-sev-low' },
+  { tier: 'moderate', min: 0.2, cssVar: '--ap-sev-moderate' },
+  { tier: 'high', min: 0.4, cssVar: '--ap-sev-high' },
+  { tier: 'veryHigh', min: 0.6, cssVar: '--ap-sev-very-high' },
+  { tier: 'extreme', min: 0.8, cssVar: '--ap-sev-extreme' },
+].map((t) => ({
+  ...t,
+  hex: APPLE_SEVERITY[t.tier as SeverityTier].text,
+  label: APPLE_SEVERITY[t.tier as SeverityTier].label,
+})) as readonly { tier: SeverityTier; min: number; cssVar: string; hex: string; label: string }[];
+
+/** Inclusive lower bound of each tier, rendered the way the legend states it. */
+export function severityTierRange(index: number): string {
+  const lo = SEVERITY_TIERS[index].min;
+  const hi = index === SEVERITY_TIERS.length - 1 ? 1 : SEVERITY_TIERS[index + 1].min;
+  return `${lo.toFixed(2)}\u2013${hi.toFixed(2)}`;
+}
+
+/** Normalise a 0–1 index (or a 0–100 percentage) onto a named tier. */
+export function getSeverityTier(severity: number): SeverityTier {
   const normalized = severity > 1 ? severity / 100 : severity;
   const s = Math.max(0, Math.min(1, normalized));
-
-  let r: number, g: number, b: number;
-  if (s <= 0.5) {
-    // 0.0 to 0.5: Emerald Green (#16a34a) -> Warning Yellow (#eab308)
-    const t = s * 2;
-    r = Math.round(22 + (234 - 22) * t);
-    g = Math.round(163 + (179 - 163) * t);
-    b = Math.round(74 + (8 - 74) * t);
-  } else {
-    // 0.5 to 1.0: Warning Yellow (#eab308) -> Hazard Red (#dc2626)
-    const t = (s - 0.5) * 2;
-    r = Math.round(234 + (220 - 234) * t);
-    g = Math.round(179 + (38 - 179) * t);
-    b = Math.round(8 + (38 - 8) * t);
+  // Walk down so the highest matching lower bound wins.
+  for (let i = SEVERITY_TIERS.length - 1; i > 0; i -= 1) {
+    if (s >= SEVERITY_TIERS[i].min) return SEVERITY_TIERS[i].tier;
   }
+  return 'low';
+}
 
-  const toHex = (n: number) => n.toString(16).padStart(2, '0');
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+/**
+ * Theme-aware severity paint, for anything rendered into the DOM — SVG `fill`
+ * and `stroke`, CSS custom properties, Leaflet's SVG renderer. Prefer this.
+ */
+export function getSeverityVar(severity: number): string {
+  const tier = getSeverityTier(severity);
+  return `var(${SEVERITY_TIERS.find((t) => t.tier === tier)!.cssVar})`;
+}
+
+/**
+ * Literal severity hex, for the few consumers that cannot resolve a CSS
+ * variable — canvas, a `<meta name="theme-color">`, an exported image. This
+ * returns the LIGHT value and therefore does not follow the theme; reach for
+ * `getSeverityVar` unless you know the consumer cannot take one.
+ */
+export function getSeverityColor(severity: number): string {
+  const tier = getSeverityTier(severity);
+  return SEVERITY_TIERS.find((t) => t.tier === tier)!.hex;
 }
 
 // Helper to generate organic realistic district boundary polygons (20 vertices)

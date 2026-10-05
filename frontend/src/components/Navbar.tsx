@@ -11,7 +11,7 @@ import { HazardNetBrand } from './HazardNetLogo';
 import { MenuToggleIcon } from './brand';
 import { detectExactPinpointLocation } from '../services/geolocationService';
 import { PRIMARY_LINKS, type NavItem } from '../lib/navigation';
-import type { MeridianThemeName } from './meridian/motion';
+import type { AppleThemeName } from './apple/motion';
 
 /**
  * The site header — as little as it can be.
@@ -31,8 +31,10 @@ import type { MeridianThemeName } from './meridian/motion';
  * --z-nav). The command palette is mounted exactly once (it used to be mounted twice, once per layout).
  *
  * The scrolled bar is `bg-white/95` + `text-carbon-80`, and the menu icon paints in `currentColor`. In dark mode the
- * theme layer re-points both halves (`dark.css` §4), which is what fixed the 2026-10-04 report of a hamburger that
- * vanished while scrolling: the bar stayed white while its ink went near-white. The brand lockup follows the theme
+ * theme layer re-points both halves (apple.css: the `.bg-white/NN` surface overrides plus the inverted neutral ramp),
+ * which is what fixed the 2026-10-04 report of a hamburger that vanished while scrolling: the bar stayed white while
+ * its ink went near-white. The icon's own `fill: currentColor` lives in apple.css under "Brand motion" — it was lost
+ * for a while with `brand.css`, and an unstyled SVG rect falls back to black, which is the 2026-10-05 report. The brand lockup follows the theme
  * (`variant="auto"`), except over the hero, where the artwork stays the white wordmark because the hero image is
  * dark in both themes.
  */
@@ -45,14 +47,14 @@ interface NavbarProps {
   onOpenAIDrawer?: () => void;
   onExportReport?: () => void;
   /**
-   * Appearance preference and its setter, straight from `useMeridianTheme` in App. Optional:
+   * Appearance preference and its setter, straight from `useAppleTheme` in App. Optional:
    * without them the bar still renders (tests, storybook), it just has no theme control to hand
    * to the drawer. The bar itself deliberately carries no switch — "one button" is the contract
    * (see the class docstring and NavbarSimplicity.test.tsx) — so the control lives in the drawer
    * with the other preference (language).
    */
-  theme?: MeridianThemeName;
-  onThemeChange?: (theme: MeridianThemeName) => void;
+  theme?: AppleThemeName;
+  onThemeChange?: (theme: AppleThemeName) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onSelectDistrict, onToggleHeatmap, theme, onThemeChange }) => {
@@ -125,7 +127,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSelectDistrict, onToggleHeatma
   };
 
   const linkClass = (current: boolean) =>
-    `inline-flex min-h-[44px] items-center rounded-control px-3 text-[15px] font-semibold no-underline transition-colors duration-150 ${
+    `inline-flex min-h-[44px] items-center rounded-control px-3 text-ap-caption font-semibold no-underline transition-colors duration-150 ${
       overHero
         ? current
           ? 'bg-white/15 text-white'
@@ -138,12 +140,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onSelectDistrict, onToggleHeatma
   return (
     <>
       <header
-        className={`animate-in fade-in sticky top-0 z-[var(--z-nav)] flex h-14 select-none items-center pt-[env(safe-area-inset-top)] duration-300 sm:h-16 ${
+        className={`ap-enter sticky top-0 z-[var(--ap-z-nav)] flex h-14 select-none items-center pt-[env(safe-area-inset-top)] duration-300 sm:h-16 ${
           overHero
             ? 'border-b border-white/10 bg-black/25 text-white backdrop-blur-md'
             : 'border-b border-carbon-20 bg-white/95 text-carbon-80 shadow-xs backdrop-blur-md'
         } transition-colors ease-out`}
         data-testid="site-header"
+        /* Lets the menu icon's accent bead know it is sitting on photography
+           rather than on an opaque bar — see the .hn-menu-icon rules. */
+        data-over-hero={overHero ? 'true' : 'false'}
       >
         <div className="mx-auto flex h-full w-full max-w-[1280px] items-center gap-2 px-4 xl:px-8">
           <Link

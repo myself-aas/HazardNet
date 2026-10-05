@@ -35,7 +35,7 @@ describe('DistrictDetailPage Phase 5 contracts', () => {
 
   it('uses an opaque sticky subnav without glass', () => {
     expect(source).not.toMatch(/backdrop-blur/);
-    expect(source).toMatch(/z-\[var\(--z-sticky\)\]/);
+    expect(source).toMatch(/z-\[var\(--ap-z-sticky\)\]/);
   });
 
   it('does not nest a second main landmark', () => {

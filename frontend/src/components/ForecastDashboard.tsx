@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { APPLE_HAZARD_ALIASES, hazardPalette } from '@hazardnet/design-system';
 import { motion } from 'framer-motion';
 import {
   ResponsiveContainer,
@@ -34,16 +35,10 @@ interface ForecastDashboardProps {
   onSelectDistrict?: (districtId: string) => void;
 }
 
-const HAZARD_COLORS: Record<string, string> = {
-  'Flood': '#3b82f6',
-  'Flash Flood': '#06b6d4',
-  'Tropical Cyclone': '#ef4444',
-  'Drought': '#f59e0b',
-  'Heat Wave': '#f97316',
-  'Cold Wave': '#6366f1',
-  'Severe Local Storm': '#8b5cf6',
-  'Fire': '#dc2626',
-};
+/** One hazard palette, shared with every other surface. See APPLE_HAZARD. */
+const HAZARD_COLORS: Record<string, string> = Object.fromEntries(
+  Object.keys(APPLE_HAZARD_ALIASES).map((name) => [name, hazardPalette(name).text]),
+);
 
 const RISK_THRESHOLDS = {
   HIGH: 0.67,
@@ -336,9 +331,9 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleExportCsv}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-carbon-90 text-white text-xs font-extrabold shadow-sm hover:bg-carbon-80 transition-colors cursor-pointer min-h-[44px]"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-carbon-90 text-carbon-05 text-xs font-extrabold shadow-sm hover:bg-carbon-80 transition-colors cursor-pointer min-h-[44px]"
             >
-              <MaterialIcon name="download" className="w-4 h-4 text-amber-400" />
+              <MaterialIcon name="download" className="w-4 h-4 text-amber-300" />
               <span>Export CSV Data</span>
             </motion.button>
           </div>
@@ -352,7 +347,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
           value={stats.total}
           unit="Districts"
           subtitle={`Horizon: ${selectedHorizon.replace('_', ' ')}`}
-          statusBadge={{ label: 'TACTICAL', color: '#1c67e3' }}
+          statusBadge={{ label: 'TACTICAL', color: '#0066cc' }}
           icon={<MaterialIcon name="assessment" />}
         />
         <BentoCard
@@ -360,7 +355,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
           value={stats.highRisk}
           unit="Districts"
           subtitle="Severity Score ≥ 67%"
-          statusBadge={{ label: 'CRITICAL', color: '#dc2626' }}
+          statusBadge={{ label: 'CRITICAL', color: '#c01f1f' }}
           icon={<MaterialIcon name="warning" />}
           gaugePercent={Math.min(100, (stats.highRisk / Math.max(1, stats.total)) * 100 * 2)}
         />
@@ -369,7 +364,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
           value={stats.modRisk}
           unit="Districts"
           subtitle="Severity Score 34% - 66%"
-          statusBadge={{ label: 'ADVISORY', color: '#ea6f24' }}
+          statusBadge={{ label: 'ADVISORY', color: '#b3400f' }}
           icon={<MaterialIcon name="error_outline" />}
           gaugePercent={Math.min(100, (stats.modRisk / Math.max(1, stats.total)) * 100 * 1.5)}
         />
@@ -377,7 +372,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
           title="Avg AI Confidence"
           value={`${stats.avgConfidence.toFixed(1)}%`}
           subtitle={`Latest Run: ${stats.latestDate}`}
-          statusBadge={{ label: 'VERIFIED', color: '#16a34a' }}
+          statusBadge={{ label: 'VERIFIED', color: '#1d7a3e' }}
           icon={<MaterialIcon name="verified" />}
           gaugePercent={stats.avgConfidence}
         />
@@ -457,7 +452,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
 
       {/* Main Charts Container */}
       <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 shadow-md space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-carbon-10 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-carbon-20 pb-4">
           <div>
             <h2 className="text-lg font-bold text-carbon-90 flex items-center gap-2">
               <MaterialIcon name="show_chart" className="w-5 h-5 text-amber-500" />
@@ -472,7 +467,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
             <button
               onClick={() => setActiveChartTab('trends')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors min-h-[44px] ${
-                activeChartTab === 'trends' ? 'bg-amber-500 text-carbon-90 shadow-2xs font-extrabold' : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20'
+                activeChartTab === 'trends' ? 'bg-amber-500 text-ap-on-sev shadow-2xs font-extrabold' : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20'
               }`}
             >
               Trends
@@ -480,7 +475,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
             <button
               onClick={() => setActiveChartTab('comparison')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors min-h-[44px] ${
-                activeChartTab === 'comparison' ? 'bg-amber-500 text-carbon-90 shadow-2xs font-extrabold' : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20'
+                activeChartTab === 'comparison' ? 'bg-amber-500 text-ap-on-sev shadow-2xs font-extrabold' : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20'
               }`}
             >
               Bar Chart
@@ -488,7 +483,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
             <button
               onClick={() => setActiveChartTab('dualTrack')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors min-h-[44px] ${
-                activeChartTab === 'dualTrack' ? 'bg-amber-500 text-carbon-90 shadow-2xs font-extrabold' : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20'
+                activeChartTab === 'dualTrack' ? 'bg-amber-500 text-ap-on-sev shadow-2xs font-extrabold' : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20'
               }`}
             >
               Dual-Track
@@ -509,13 +504,13 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
               <div className="h-80 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={trendChartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" />
-                    <XAxis dataKey="date" stroke="#77777a" fontSize={12} tickLine={false} />
-                    <YAxis domain={[0, 100]} stroke="#77777a" fontSize={12} tickFormatter={(val) => `${val}%`} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f7" />
+                    <XAxis dataKey="date" stroke="#6e6e73" fontSize={12} tickLine={false} />
+                    <YAxis domain={[0, 100]} stroke="#6e6e73" fontSize={12} tickFormatter={(val) => `${val}%`} />
                     <Tooltip />
                     <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                    <ReferenceLine y={67} stroke="#ef4444" strokeDasharray="4 4" />
-                    <ReferenceLine y={34} stroke="#f59e0b" strokeDasharray="4 4" />
+                    <ReferenceLine y={67} stroke="#c01f1f" strokeDasharray="4 4" />
+                    <ReferenceLine y={34} stroke="#8a5a00" strokeDasharray="4 4" />
 
                     {availableHazards.map((hazard) => (
                       <Area
@@ -523,8 +518,8 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                         type="monotone"
                         dataKey={hazard}
                         name={hazard}
-                        stroke={HAZARD_COLORS[hazard] || '#8884d8'}
-                        fill={HAZARD_COLORS[hazard] || '#8884d8'}
+                        stroke={HAZARD_COLORS[hazard] || '#6e6e73'}
+                        fill={HAZARD_COLORS[hazard] || '#6e6e73'}
                         fillOpacity={0.15}
                         strokeWidth={2}
                       />
@@ -538,16 +533,16 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
               <div className="h-80 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={districtComparisonData} margin={{ top: 10, right: 30, left: 10, bottom: 40 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" />
-                    <XAxis dataKey="name" stroke="#77777a" fontSize={12} angle={-35} textAnchor="end" interval={0} />
-                    <YAxis domain={[0, 100]} stroke="#77777a" fontSize={12} tickFormatter={(val) => `${val}%`} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f7" />
+                    <XAxis dataKey="name" stroke="#6e6e73" fontSize={12} angle={-35} textAnchor="end" interval={0} />
+                    <YAxis domain={[0, 100]} stroke="#6e6e73" fontSize={12} tickFormatter={(val) => `${val}%`} />
                     <Tooltip />
-                    <ReferenceLine y={67} stroke="#ef4444" strokeDasharray="4 4" />
+                    <ReferenceLine y={67} stroke="#c01f1f" strokeDasharray="4 4" />
                     <Bar dataKey="maxSeverity" name="Severity Score %" radius={[6, 6, 0, 0]}>
                       {districtComparisonData.map((entry, index) => (
                         <Cell
                           key={`cell-${index}`}
-                          fill={entry.maxSeverity >= 67 ? '#ef4444' : entry.maxSeverity >= 34 ? '#f59e0b' : '#10b981'}
+                          fill={entry.maxSeverity >= 67 ? '#c01f1f' : entry.maxSeverity >= 34 ? '#8a5a00' : '#1d7a3e'}
                         />
                       ))}
                     </Bar>
@@ -560,13 +555,13 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
               <div className="h-80 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={trendChartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" />
-                    <XAxis dataKey="date" stroke="#77777a" fontSize={12} />
-                    <YAxis domain={[0, 100]} stroke="#77777a" fontSize={12} tickFormatter={(val) => `${val}%`} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f7" />
+                    <XAxis dataKey="date" stroke="#6e6e73" fontSize={12} />
+                    <YAxis domain={[0, 100]} stroke="#6e6e73" fontSize={12} tickFormatter={(val) => `${val}%`} />
                     <Tooltip />
                     <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                    <Line type="monotone" dataKey="modelSeverity" name="CNN Neural Net %" stroke="#8b5cf6" strokeWidth={3} />
-                    <Line type="monotone" dataKey="physicsSeverity" name="Physics Proxy %" stroke="#06b6d4" strokeWidth={2} strokeDasharray="4 4" />
+                    <Line type="monotone" dataKey="modelSeverity" name="CNN Neural Net %" stroke="#0066cc" strokeWidth={3} />
+                    <Line type="monotone" dataKey="physicsSeverity" name="Physics Proxy %" stroke="#0066cc" strokeWidth={2} strokeDasharray="4 4" />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
@@ -611,7 +606,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                 footer: (
                   <button
                     onClick={() => setActiveSheetItem(item)}
-                    className="min-h-[44px] font-extrabold text-nasa-blue"
+                    className="min-h-[44px] font-extrabold text-ap-link"
                   >
                     Inspect Sheet
                   </button>
@@ -664,7 +659,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                         <span className="inline-flex items-center gap-1.5 font-medium text-carbon-80">
                           <span
                             className="w-2 h-2 rounded-full shrink-0"
-                            style={{ backgroundColor: HAZARD_COLORS[item.hazard_type] || '#77777a' }}
+                            style={{ backgroundColor: HAZARD_COLORS[item.hazard_type] || '#6e6e73' }}
                           />
                           {item.hazard_type}
                         </span>
@@ -692,7 +687,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                             e.stopPropagation();
                             setActiveSheetItem(item);
                           }}
-                          className="text-nasa-blue font-extrabold text-xs hover:underline cursor-pointer min-h-[44px] px-2"
+                          className="text-ap-link font-extrabold text-xs hover:underline cursor-pointer min-h-[44px] px-2"
                         >
                           Inspect Sheet
                         </button>
@@ -726,7 +721,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                   onSelectDistrict(String(activeSheetItem.district_id));
                   setActiveSheetItem(null);
                 }}
-                className="px-5 py-2.5 rounded-xl bg-nasa-blue text-white font-sans font-semibold text-xs hover:bg-nasa-blue-shade shadow-xs min-h-[44px]"
+                className="px-5 py-2.5 rounded-xl bg-primary text-ap-action-fg font-sans font-semibold text-xs hover:bg-primary-strong shadow-xs min-h-[44px]"
               >
                 View on Live GIS Map
               </button>

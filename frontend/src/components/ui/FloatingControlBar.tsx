@@ -32,11 +32,11 @@ export const FloatingControlBar: React.FC<FloatingControlBarProps> = ({
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-      className={`w-full max-w-xl mx-auto bg-white/90 dark:bg-carbon-90/90 backdrop-blur-xl border border-carbon-20/60 dark:border-carbon-70/60 rounded-2xl shadow-lg p-2 flex flex-col gap-2 ${className}`}
+      className={`w-full max-w-xl mx-auto bg-white/90 backdrop-blur-xl border border-carbon-20/60 rounded-2xl shadow-lg p-2 flex flex-col gap-2 ${className}`}
     >
       {/* Top Row: Search Input & Primary Action */}
       {typeof onSearchChange === 'function' && (
-        <div className="flex items-center gap-2 px-2 py-1 bg-surface-page/50 dark:bg-carbon-90/50 rounded-xl border border-carbon-20/40">
+        <div className="flex items-center gap-2 px-2 py-1 bg-surface-page/50 rounded-xl border border-carbon-20/40">
           <svg
             className="w-5 h-5 text-carbon-60 shrink-0"
             fill="none"
@@ -56,7 +56,7 @@ export const FloatingControlBar: React.FC<FloatingControlBarProps> = ({
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={placeholder}
             aria-label="Search hazards, districts, or crops"
-            className="w-full bg-transparent font-sans text-sm text-carbon-90 dark:text-carbon-05 placeholder-carbon-40 focus:outline-none min-h-[44px]"
+            className="w-full bg-transparent font-sans text-sm text-carbon-90 placeholder-carbon-40 focus:outline-none min-h-[44px]"
           />
           {actionButton}
         </div>
@@ -72,8 +72,8 @@ export const FloatingControlBar: React.FC<FloatingControlBarProps> = ({
               aria-pressed={chip.active}
               className={`tap-target px-3 py-1.5 rounded-full text-xs font-sans font-semibold flex items-center gap-1.5 whitespace-nowrap transition-all ${
                 chip.active
-                  ? 'bg-nasa-blue text-white shadow-xs'
-                  : 'bg-carbon-10 dark:bg-carbon-80 text-carbon-70 dark:text-carbon-30 hover:bg-carbon-20 dark:hover:bg-carbon-70'
+                  ? 'bg-primary text-ap-action-fg shadow-xs'
+                  : 'bg-carbon-10 text-carbon-70 hover:bg-carbon-20 dark:hover:bg-carbon-70'
               }`}
             >
               {chip.icon}

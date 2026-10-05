@@ -34,7 +34,9 @@ const GREY_HEX = /#(?:f8fafc|f1f5f9|e2e8f0|cbd5e1|94a3b8|64748b|475569|334155|1e
 const GREY_RGB = /\(\s*(?:248, 250, 252|241, 245, 249|226, 232, 240|203, 213, 225|148, 163, 184|100, 116, 139|71, 85, 105|51, 65, 85|30, 41, 59|15, 23, 42|2, 6, 23)\s*\)/;
 
 /** Carbon's own values, which a literal is allowed to be. */
-const CARBON_HEX = /#(?:f6f6f6|e3e3e3|d1d1d1|b9b9bb|959599|77777a|58585b|444447|2e2e32|17171b|000000)\b/i;
+// The Apple neutral ramp, in the order apple.css declares it. Anchors marked (*) are verbatim
+// DESIGN.md values; 40/50/60 are the derived steps. See packages/design-system/src/apple.ts.
+const CARBON_HEX = /#(?:fafafc|f5f5f7|e0e0e0|d2d2d7|a1a1a6|6e6e73|5a5a5d|333333|272729|1d1d1f|000000)\b/i;
 
 function walk(dir, predicate) {
   const out = [];
@@ -104,17 +106,20 @@ describe('the neutral ramp is carbon', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('the legacy alias still points at NASA, if anything reaches for it', () => {
+  it('the legacy Tailwind greys still resolve, and resolve to Apple', () => {
     const css = readFileSync(INDEX_CSS, 'utf8');
     const aliases = [...css.matchAll(/^\s*(--color-(?:slate|gray|zinc|neutral|stone)-\d{2,3}):\s*([^;]+);/gm)];
     expect(aliases.length).toBeGreaterThanOrEqual(55);
     for (const [, key, value] of aliases) {
-      expect(value).toMatch(/^var\(--hds-color-carbon-(?:05|10|20|30|40|50|60|70|80|90|black)\)$/);
+      // Post-Apple migration: the five Tailwind grey families collapse onto the one
+      // Apple neutral ramp, so a stray `bg-slate-100` renders Apple parchment rather
+      // than a sixth grey. See frontend/src/styles/apple.css §1.
+      expect(value).toMatch(/^var\(--ap-n-(?:05|10|20|30|40|50|60|70|80|90|black)\)$/);
       expect(key).not.toMatch(/--color-carbon/);
     }
   });
 
-  it('every carbon step a component names is a step NASA publishes', () => {
+  it('every carbon step a component names is a step the Apple ramp publishes', () => {
     const css = readFileSync(INDEX_CSS, 'utf8');
     const defined = new Set(
       [...css.matchAll(/--color-carbon-([a-z0-9]+):/g)].map((match) => match[1]),
@@ -134,7 +139,7 @@ describe('the neutral ramp is carbon', () => {
     expect([...used].filter((step) => !defined.has(step))).toEqual([]);
   });
 
-  it('the shipped stylesheet resolves carbon to NASA’s token', () => {
+  it('the shipped stylesheet resolves carbon to the Apple ramp', () => {
     if (!existsSync(DIST_CSS_DIR)) {
       console.warn('[paletteTokens] frontend/dist is not built; skipping the bundle check.');
       return;
@@ -142,9 +147,9 @@ describe('the neutral ramp is carbon', () => {
     const bundles = readdirSync(DIST_CSS_DIR).filter((name) => name.endsWith('.css'));
     expect(bundles.length).toBeGreaterThan(0);
     const css = bundles.map((name) => readFileSync(join(DIST_CSS_DIR, name), 'utf8')).join('\n');
-    expect(css).toMatch(/\.text-carbon-60[^{]*\{color:var\(--hds-color-carbon-60\)\}/);
-    expect(css).toMatch(/\.bg-carbon-05[^{]*\{background-color:var\(--hds-color-carbon-05\)\}/);
-    // A carbon literal in the bundle is NASA's value, not Tailwind's.
+    expect(css).toMatch(/\.text-carbon-60[^{]*\{color:var\(--ap-n-60\)\}/);
+    expect(css).toMatch(/\.bg-carbon-05[^{]*\{background-color:var\(--ap-n-05\)\}/);
+    // A carbon literal in the bundle is the Apple ramp's value, not Tailwind's.
     expect(CARBON_HEX.test(css)).toBe(true);
     expect(css).not.toMatch(GREY_HEX);
   });

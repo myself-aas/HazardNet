@@ -71,7 +71,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
 
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1">
-            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-carbon-90 text-white font-mono text-[7pt] font-extrabold uppercase">
+            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-carbon-90 text-carbon-05 font-mono text-[7pt] font-extrabold uppercase">
               DISTRICT SITUATION REPORT
             </div>
             <h2 className="text-xl font-black text-carbon-90 tracking-tight">
@@ -188,7 +188,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           onClick={() => onSetActiveTab('upazilas')}
           className={`pb-2.5 px-3 font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'upazilas'
-              ? 'border-nasa-blue text-nasa-red-shade'
+              ? 'border-ap-primary text-ap-link'
               : 'border-transparent text-carbon-60 hover:text-carbon-80'
           }`}
         >
@@ -199,7 +199,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           onClick={() => onSetActiveTab('aiModel')}
           className={`pb-2.5 px-3 font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'aiModel'
-              ? 'border-nasa-blue text-nasa-red-shade'
+              ? 'border-ap-primary text-ap-link'
               : 'border-transparent text-carbon-60 hover:text-carbon-80'
           }`}
         >
@@ -210,7 +210,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           onClick={() => onSetActiveTab('emergency')}
           className={`pb-2.5 px-3 font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'emergency'
-              ? 'border-nasa-blue text-nasa-red-shade'
+              ? 'border-ap-primary text-ap-link'
               : 'border-transparent text-carbon-60 hover:text-carbon-80'
           }`}
         >
@@ -221,7 +221,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           onClick={() => onSetActiveTab('history')}
           className={`pb-2.5 px-3 font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'history'
-              ? 'border-nasa-blue text-nasa-red-shade'
+              ? 'border-ap-primary text-ap-link'
               : 'border-transparent text-carbon-60 hover:text-carbon-80'
           }`}
         >
@@ -358,7 +358,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
               <ul className="space-y-2 text-xs text-carbon-70">
                 {data.emergencyResponse.advisoryBullets.map((bullet, idx) => (
                   <li key={idx} className="flex items-start gap-2 bg-white p-2.5 rounded-lg border border-carbon-20">
-                    <span className="text-nasa-red-shade font-bold">•</span>
+                    <span className="text-ap-link font-bold">•</span>
                     <span>{bullet}</span>
                   </li>
                 ))}
@@ -498,7 +498,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[1200] hidden sm:flex items-center justify-center p-3 sm:p-5 bg-carbon-90/50 backdrop-blur-md"
+            className="fixed inset-0 z-[1200] hidden sm:flex items-center justify-center p-3 sm:p-5 bg-carbon-black/50 backdrop-blur-md"
             onClick={onClose}
           >
             <motion.div
@@ -512,7 +512,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.92, y: 15 }}
               transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-              className="bg-white border border-carbon-20 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden relative text-carbon-80"
+              className="bg-white border border-carbon-20 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden relative text-carbon-90"
               onClick={(e) => e.stopPropagation()}
             >
           {/* Top Header & Close Button */}
@@ -532,7 +532,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
               
               <p className="text-xs text-carbon-60 font-semibold mt-1 flex items-center gap-2">
                 <span>{data.hazardSubtype}</span>
-                <span className="text-carbon-30">•</span>
+                <span className="text-carbon-60">•</span>
                 <span className="text-carbon-60 font-mono text-xs">{data.lastSatelliteUpdate}</span>
               </p>
             </div>
@@ -579,7 +579,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
 
               <button
                 onClick={onDownloadReport}
-                className="px-3.5 py-2 bg-carbon-90 hover:bg-carbon-80 text-white font-bold rounded-xl border border-carbon-90 transition-all flex items-center gap-2 shadow-xs min-h-[44px]"
+                className="px-3.5 py-2 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 font-bold rounded-xl border border-carbon-90 transition-all flex items-center gap-2 shadow-xs min-h-[44px]"
               >
                 <span>Download JSON</span>
               </button>
@@ -613,7 +613,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
         {/* Dim Backdrop when expanded */}
         {sheetMode !== 'peek' && (
           <div
-            className="fixed inset-0 bg-carbon-90/40 backdrop-blur-xs pointer-events-auto transition-opacity"
+            className="fixed inset-0 bg-carbon-black/40 backdrop-blur-xs pointer-events-auto transition-opacity"
             onClick={() => onSetSheetMode('peek')}
           />
         )}
@@ -625,7 +625,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           role="dialog"
           aria-modal="true"
           aria-labelledby="disaster-detail-modal-title-mobile"
-          className={`w-full bg-white border-t border-carbon-20 rounded-t-[28px] shadow-2xl flex flex-col pointer-events-auto transition-all duration-300 relative z-10 text-carbon-80 overflow-hidden ${
+          className={`w-full bg-white border-t border-carbon-20 rounded-t-xl shadow-2xl flex flex-col pointer-events-auto transition-all duration-300 relative z-10 text-carbon-80 overflow-hidden ${
             sheetMode === 'peek'
               ? 'max-h-[160px]'
               : sheetMode === 'half'
@@ -703,7 +703,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
               <div className="flex items-center gap-2 pt-1">
                 <button
                   onClick={() => onSetSheetMode('half')}
-                  className="flex-1 py-2.5 bg-primary active:bg-primary-strong text-carbon-90 font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 min-h-[44px]"
+                  className="flex-1 py-2.5 bg-primary active:bg-primary-strong text-ap-action-fg font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 min-h-[44px]"
                 >
                   <span className="inline-flex items-center gap-1.5">
                     View Detailed Analytics &amp; Action Plan
@@ -755,7 +755,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
 
                 <button
                   onClick={onDownloadReport}
-                  className="w-full py-3 bg-carbon-90 active:bg-carbon-80 text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-2 min-h-[48px]"
+                  className="w-full py-3 bg-carbon-90 active:bg-carbon-80 text-carbon-05 font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-2 min-h-[48px]"
                 >
                   <span>Download Situation Report (JSON)</span>
                 </button>

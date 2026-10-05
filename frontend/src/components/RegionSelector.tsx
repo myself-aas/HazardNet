@@ -109,7 +109,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
   }, [filteredDistricts]);
 
   return (
-    <div className="bg-white border border-carbon-20 p-6 sm:p-8 rounded-[28px] shadow-xs space-y-6 transition-all duration-300 hover:border-carbon-30 text-carbon-90">
+    <div className="bg-white border border-carbon-20 p-6 sm:p-8 rounded-xl shadow-xs space-y-6 transition-all duration-300 hover:border-carbon-30 text-carbon-90">
       
       {/* Top Header & Map Level Mode Selector (64 Districts vs 8 Divisions) */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-carbon-20 pb-5">
@@ -133,7 +133,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
             onClick={() => onViewModeChange && onViewModeChange('districts')}
             className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-all duration-200 flex items-center gap-2 min-h-[44px] ${
               viewMode === 'districts'
-                ? 'bg-primary text-carbon-90 shadow-xs scale-[1.02]'
+                ? 'bg-primary text-ap-action-fg shadow-xs scale-[1.02]'
                 : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-20'
             }`}
           >
@@ -143,7 +143,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
             onClick={() => onViewModeChange && onViewModeChange('divisions')}
             className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-all duration-200 flex items-center gap-2 min-h-[44px] ${
               viewMode === 'divisions'
-                ? 'bg-primary text-carbon-90 shadow-xs scale-[1.02]'
+                ? 'bg-primary text-ap-action-fg shadow-xs scale-[1.02]'
                 : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-20'
             }`}
           >
@@ -168,7 +168,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
               }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-16 pr-10 py-3.5 bg-carbon-05 border border-carbon-20 focus:border-nasa-blue focus:bg-white focus:ring-2 focus:ring-nasa-blue/20 rounded-2xl text-carbon-90 text-sm font-medium placeholder-carbon-40 focus:outline-none transition-all shadow-xs"
+              className="w-full pl-16 pr-10 py-3.5 bg-carbon-05 border border-carbon-20 focus:border-ap-primary focus:bg-white focus:ring-2 focus:ring-ap-primary/20 rounded-2xl text-carbon-90 text-sm font-medium placeholder-carbon-40 focus:outline-none transition-all shadow-xs"
             />
             {searchQuery && (
               <button
@@ -187,7 +187,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
             <select
               value={selectedDivisionFilter}
               onChange={(e) => setSelectedDivisionFilter(e.target.value)}
-              className="w-full px-4 py-3.5 bg-carbon-05 border border-carbon-20 focus:border-nasa-blue focus:bg-white focus:ring-2 focus:ring-nasa-blue/20 rounded-2xl text-carbon-90 text-sm font-semibold focus:outline-none cursor-pointer shadow-xs"
+              className="w-full px-4 py-3.5 bg-carbon-05 border border-carbon-20 focus:border-ap-primary focus:bg-white focus:ring-2 focus:ring-ap-primary/20 rounded-2xl text-carbon-90 text-sm font-semibold focus:outline-none cursor-pointer shadow-xs"
             >
               <option value="All">All 8 Divisions</option>
               {ALL_8_DIVISIONS.map((div) => (
@@ -208,7 +208,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
                 const selected = ALL_64_DISTRICTS.find((d) => d.id === e.target.value);
                 if (selected) onSelectDistrict(selected);
               }}
-              className="w-full px-4 py-3.5 bg-carbon-05 border border-carbon-20 text-carbon-90 font-bold rounded-2xl text-sm focus:outline-none cursor-pointer shadow-xs focus:ring-2 focus:ring-nasa-blue/20"
+              className="w-full px-4 py-3.5 bg-carbon-05 border border-carbon-20 text-carbon-90 font-bold rounded-2xl text-sm focus:outline-none cursor-pointer shadow-xs focus:ring-2 focus:ring-ap-primary/20"
             >
               {Object.keys(districtsByDivision).map((divName) => (
                 <optgroup key={divName} label={`--- ${divName} Division ---`} className="bg-carbon-10 text-carbon-60 font-mono">
@@ -274,7 +274,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
               <MaterialIcon name="my_location" className="w-4 h-4 text-carbon-90 shrink-0" filled />
             </span>
             <span>
-              Location detected via <strong className="uppercase font-mono">{detectedLocation.method}</strong>: Mapped to <strong className="font-bold text-carbon-black">{detectedLocation.nearestDistrict.name} District</strong> ({detectedLocation.nearestDistrict.division} Division)
+              Location detected via <strong className="uppercase font-mono">{detectedLocation.method}</strong>: Mapped to <strong className="font-bold text-amber-950">{detectedLocation.nearestDistrict.name} District</strong> ({detectedLocation.nearestDistrict.division} Division)
             </span>
           </div>
           <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 font-mono text-xs text-carbon-60">
@@ -291,7 +291,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
         <div className="flex flex-wrap items-center gap-2.5">
           <span className="text-carbon-60 font-medium">Active Location:</span>
           <strong className="text-carbon-90 font-extrabold text-sm">{currentDistrict.name} District</strong>
-          <span className="text-carbon-30 hidden sm:inline">•</span>
+          <span className="text-carbon-60 hidden sm:inline">•</span>
           <span className="text-carbon-60 font-semibold">{currentDistrict.division} Division</span>
 
           {currentHomeDistrictId === currentDistrict.id ? (
@@ -313,7 +313,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
         <div className="flex flex-wrap items-center gap-2.5">
           <span className="text-carbon-60">Hazard:</span>
           <span className="text-carbon-80 font-bold">{currentDistrict.hazardType}</span>
-          <span className="text-carbon-30 hidden sm:inline">•</span>
+          <span className="text-carbon-60 hidden sm:inline">•</span>
           <span className="text-carbon-60">Crop:</span>
           <span className="text-carbon-80 font-bold">{currentDistrict.mainCrop}</span>
           <span className={`px-3 py-1 rounded-full font-bold text-xs ${
@@ -347,7 +347,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
                 }}
                 className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 border min-h-[38px] ${
                   isSelected
-                    ? 'bg-primary text-carbon-90 border-nasa-blue shadow-xs scale-[1.02]'
+                    ? 'bg-primary text-ap-action-fg border-ap-primary shadow-xs scale-[1.02]'
                     : 'bg-carbon-05 text-carbon-70 border-carbon-20 hover:text-carbon-90 hover:bg-carbon-10'
                 }`}
               >

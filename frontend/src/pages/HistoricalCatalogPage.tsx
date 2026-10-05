@@ -153,7 +153,7 @@ export const HistoricalCatalogPage: React.FC = () => {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-rose-50 text-nasa-red border border-rose-200">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-rose-50 text-ap-link border border-rose-200">
                   Phase E Verified
                 </span>
                 <span className="text-xs font-mono text-carbon-60">
@@ -176,11 +176,11 @@ export const HistoricalCatalogPage: React.FC = () => {
               </div>
               <div className="text-center px-2 border-r border-carbon-20">
                 <div className="text-xs text-carbon-60 font-medium">Clean Events</div>
-                <div className="text-lg font-bold font-mono text-nasa-red">3,062</div>
+                <div className="text-lg font-bold font-mono text-ap-link">3,062</div>
               </div>
               <div className="text-center px-2">
                 <div className="text-xs text-carbon-60 font-medium">GLIDE Rec.</div>
-                <div className="text-lg font-bold font-mono text-nasa-blue">70</div>
+                <div className="text-lg font-bold font-mono text-ap-link">70</div>
               </div>
             </div>
           </div>
@@ -197,7 +197,7 @@ export const HistoricalCatalogPage: React.FC = () => {
             </div>
             <dl className="grid grid-cols-2 lg:grid-cols-6 gap-3">
               {data.baseline.metrics.map((m) => (
-                <div key={m.metric} className="bg-carbon-05 border border-carbon-10 rounded-xl px-3 py-2.5">
+                <div key={m.metric} className="bg-carbon-05 border border-carbon-20 rounded-xl px-3 py-2.5">
                   <dt className="text-xs text-carbon-60 leading-snug">{m.metric}</dt>
                   <dd className="text-sm font-bold font-mono text-carbon-90 tabular-nums mt-0.5">{m.value}</dd>
                 </div>
@@ -215,7 +215,7 @@ export const HistoricalCatalogPage: React.FC = () => {
                         cell == null || i <= j ? null : (
                           <li
                             key={`${i}-${j}`}
-                            className="flex items-center justify-between gap-3 bg-carbon-05 border border-carbon-10 rounded-xl px-3 py-2 text-xs font-mono tabular-nums"
+                            className="flex items-center justify-between gap-3 bg-carbon-05 border border-carbon-20 rounded-xl px-3 py-2 text-xs font-mono tabular-nums"
                           >
                             <span className="text-carbon-70">
                               {data.correlations.variables[i].replace(/_/g, ' ')} and{' '}
@@ -241,7 +241,7 @@ export const HistoricalCatalogPage: React.FC = () => {
                     </thead>
                     <tbody>
                       {data.correlations.matrix.map((row, i) => (
-                        <tr key={data.correlations.variables[i]} className="border-t border-carbon-10">
+                        <tr key={data.correlations.variables[i]} className="border-t border-carbon-20">
                           <th className="text-left py-1 pr-2 font-semibold text-carbon-70">
                             {data.correlations.variables[i].replace(/_/g, ' ')}
                           </th>

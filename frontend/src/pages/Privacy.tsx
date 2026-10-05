@@ -21,11 +21,11 @@ export const Privacy: React.FC = () => {
             <span className="rounded-sm border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-mono font-bold uppercase text-amber-900">
               Privacy Policy
             </span>
-            <span className="text-carbon-30">•</span>
+            <span className="text-carbon-60">•</span>
             <span className="text-xs text-carbon-60 font-medium">Updated: August 1, 2026</span>
           </div>
 
-          <h1 className="text-[28px] font-bold leading-[1.2] tracking-tight text-carbon-90">
+          <h1 className="text-ap-lead font-bold leading-[1.2] tracking-tight text-carbon-90">
             HazardNet AI Telemetry & Data Privacy Policy
           </h1>
         </div>
@@ -59,7 +59,7 @@ export const Privacy: React.FC = () => {
         <section className="space-y-2">
           <h2 className="text-sm font-bold text-carbon-90">4. Contact Our Privacy Lead</h2>
           <p>
-            If you have questions regarding data privacy or wish to request data removal, contact us via our <Link to="/contact" className="font-bold text-nasa-blue-shade underline underline-offset-4">Contact Page</Link> or view our <Link to="/terms" className="font-bold text-nasa-blue-shade underline underline-offset-4">Terms of Service</Link>.
+            If you have questions regarding data privacy or wish to request data removal, contact us via our <Link to="/contact" className="font-bold text-ap-link underline underline-offset-4">Contact Page</Link> or view our <Link to="/terms" className="font-bold text-ap-link underline underline-offset-4">Terms of Service</Link>.
           </p>
         </section>
 

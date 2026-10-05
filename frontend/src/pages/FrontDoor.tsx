@@ -56,8 +56,8 @@ import { Interactive } from '../components/interactive/Interactive';
 import { useWebFrame, interpolate, Easing } from '../lib/motion-interpolate';
 
 import MaterialIcon from '../components/MaterialIcon';
-import { ButtonLink, Card, PillTabs, ProvenanceNote, SectionHeading, SeverityBadge } from '../components/meridian/primitives';
-import { useReveal } from '../components/meridian/motion';
+import { ButtonLink, Card, PillTabs, ProvenanceNote, SectionHeading, SeverityBadge } from '../components/apple/primitives';
+import { useReveal } from '../components/apple/motion';
 import { AlertLevelBadge } from '../components/alerts/AlertLevelBadge';
 import { LanguageToggle } from '../components/alerts/LanguageToggle';
 import LiveStatusStrip from '../components/frontdoor/LiveStatusStrip';
@@ -154,9 +154,9 @@ function useLiveFacts(): LiveFacts {
 
 /* ─────────────────────────────── presentation ──────────────────────────────── */
 
-/** Meridian eyebrow: uppercase caption, weight over size, secondary label colour. */
+/** Eyebrow: uppercase caption, weight over size, secondary label colour. */
 const Eyebrow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <p className="mrd-eyebrow">{children}</p>
+  <p className="ap-caption-strong text-ap-link">{children}</p>
 );
 
 /**
@@ -176,24 +176,24 @@ const Eyebrow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
  */
 const Figure: React.FC<{ value: string; label: string; tone?: 'default' | 'muted' }> = ({ value, label, tone = 'default' }) => (
   <div
-    className={`flex flex-col gap-2 p-5 transition-shadow duration-[var(--mrd-duration-base)] ${
+    className={`flex flex-col gap-2 p-5 transition-shadow duration-[var(--ap-duration-base)] ${
       tone === 'muted'
-        ? 'bg-[color:var(--mrd-bg-grouped)]'
-        : 'bg-[color:var(--mrd-bg-elevated)] shadow-[var(--mrd-shadow-card)]'
+        ? 'bg-[color:var(--ap-bg-grouped)]'
+        : 'bg-[color:var(--ap-bg-raised)] shadow-[var(--ap-elev-flat)]'
     }`}
   >
     {/* leading-[1.1], not leading-none: values like "7 & 15 days" wrap on narrow
         screens, and zero leading would collide the wrapped lines. */}
     <p
-      className={`mrd-figure font-semibold leading-[1.1] ${
+      className={`ap-display-md ap-mono ${
         tone === 'muted'
-          ? 'text-[length:var(--mrd-text-display3)] text-[color:var(--mrd-label-secondary)]'
-          : 'text-[length:var(--mrd-text-display2)] text-[color:var(--mrd-label)]'
+          ? 'text-[length:var(--ap-text-tagline)] text-[color:var(--ap-label-secondary)]'
+          : 'text-[length:var(--ap-text-display-lg)] text-[color:var(--ap-label)]'
       }`}
     >
       {value}
     </p>
-    <p className="mrd-caption text-[color:var(--mrd-label)]">{label}</p>
+    <p className="ap-caption text-[color:var(--ap-label)]">{label}</p>
   </div>
 );
 
@@ -210,7 +210,7 @@ const SectionBody: React.FC<{ section: Section }> = ({ section }) => {
         <ul className="space-y-2">
           {(section.bullets ?? []).map((bullet, index) => (
             <li key={index} className="flex min-w-0 gap-2 text-base leading-[1.62] text-carbon-70">
-              <span aria-hidden="true" className="mt-2 h-1 w-1 shrink-0 bg-nasa-blue" />
+              <span aria-hidden="true" className="mt-2 h-1 w-1 shrink-0 bg-primary" />
               <span className="min-w-0 break-words">{bullet}</span>
             </li>
           ))}
@@ -227,7 +227,7 @@ const SectionBody: React.FC<{ section: Section }> = ({ section }) => {
       {section.callout?.text && (
         <p
           role={section.callout.tone === 'warning' ? 'note' : undefined}
-          className="border-l-2 border-nasa-orange bg-white p-4 text-base leading-[1.62] text-carbon-80"
+          className="border-l-2 border-severity-high bg-white p-4 text-base leading-[1.62] text-carbon-80"
         >
           {section.callout.text}
         </p>
@@ -258,7 +258,7 @@ const SectionBody: React.FC<{ section: Section }> = ({ section }) => {
 const ExternalOrInternalLink: React.FC<{ href: string; label: string }> = ({ href, label }) => {
   const external = /^https?:\/\//i.test(href);
   const className =
-    'inline-flex min-h-[44px] items-center gap-1 text-base font-bold text-nasa-blue-shade underline decoration-carbon-30 underline-offset-4 hover:decoration-nasa-blue-shade';
+    'inline-flex min-h-[44px] items-center gap-1 text-base font-bold text-ap-link underline decoration-carbon-30 underline-offset-4 hover:decoration-ap-primary';
   if (external) {
     return (
       <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
@@ -394,13 +394,13 @@ export const FrontDoor: React.FC = () => {
           honest rather than busy is the whole job of this block: a claim (h1), the sentence that
           qualifies it, one primary action, and a hyperlink to the page that carries the artifact
           card checking the claim (/last-run — the card itself moved there from this hero). */}
-      {/* `mrd-on-dark` scopes the outline button's inversion to this hero, so the
+      {/* `ap-on-dark` scopes the outline button's inversion to this hero, so the
           same primitive renders white-on-dark here and ink-on-light everywhere
           else without a second variant existing. */}
       {/* `pt-[calc(var(--navbar-height)+44px)]` instead of a hard 100px: the bar is 3.5rem plus
           `env(safe-area-inset-top)`, so a fixed number collided with it on notched phones. The
           variable now carries the inset, which makes this clearance correct on both. */}
-      <header className="mrd-on-dark relative w-full overflow-hidden bg-carbon-90 text-white min-h-[600px] lg:min-h-[100dvh] flex items-center -mt-14 sm:-mt-16 pt-[calc(var(--navbar-height)+20px)] sm:pt-[calc(var(--navbar-height)+44px)] pb-8 sm:pb-16 shadow-2xl">
+      <header className="ap-on-dark relative w-full overflow-hidden bg-carbon-90 text-carbon-05 min-h-[600px] lg:min-h-[100dvh] flex items-center -mt-14 sm:-mt-16 pt-[calc(var(--navbar-height)+20px)] sm:pt-[calc(var(--navbar-height)+44px)] pb-8 sm:pb-16 shadow-2xl">
         {/* Mesh → photograph → grade → vignette. */}
         <HeroCinematicBackground paused={heroPaused} />
         {/* Pause control — keyboard-reachable, respects reduced-motion (audit #1) */}
@@ -409,7 +409,7 @@ export const FrontDoor: React.FC = () => {
           onClick={() => setHeroPaused((v) => !v)}
           aria-pressed={heroPaused}
           aria-label={heroPaused ? t('frontdoor.hero.resumeMotion') : t('frontdoor.hero.pauseMotion')}
-          className="absolute bottom-4 right-4 z-10 inline-flex min-h-[44px] items-center gap-1.5 bg-carbon-90/60 px-3 py-2 text-xs font-semibold text-white border border-white/20 backdrop-blur-sm hover:bg-carbon-90/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+          className="absolute bottom-4 right-4 z-10 inline-flex min-h-[44px] items-center gap-1.5 bg-carbon-black/60 px-3 py-2 text-xs font-semibold text-white border border-white/20 backdrop-blur-sm hover:bg-carbon-black/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
         >
           <MaterialIcon name={heroPaused ? 'play_arrow' : 'pause'} className="text-sm" />
           <span>{heroPaused ? t('frontdoor.hero.resumeMotion') : t('frontdoor.hero.pauseMotion')}</span>
@@ -436,7 +436,7 @@ export const FrontDoor: React.FC = () => {
                 card instead of only at the bottom of it, and `carbon-black` is pinned dark in
                 both themes (it is a scrim, see dark.css §1) so this holds in dark mode too. */}
             <div className="min-w-0 rounded-sm border border-white/15 bg-carbon-black/65 p-4 sm:p-5" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
-              <h1 className="mrd-display2 max-w-3xl text-balance text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+              <h1 className="ap-hero max-w-3xl text-balance text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                 {localised.h1 ?? localised.title}
               </h1>
               {language === 'bn' && (
@@ -474,8 +474,8 @@ export const FrontDoor: React.FC = () => {
                 </>
               )}
 
-              {/* Meridian dual-primary, applied. "Open the map" is a NAVIGATION
-                  action, so it takes the ink pill — not crimson. Under HDS 2.2
+              {/* Dual-primary, applied. "Open the map" is a NAVIGATION
+                  action, so it takes the Action Blue pill — not crimson. Under HDS 2.2
                   this button was `bg-primary-strong` (crimson), which spent the
                   hazard colour on a browse action and trained the reader that
                   crimson means "clickable". On a warning service that is a
@@ -488,7 +488,7 @@ export const FrontDoor: React.FC = () => {
                   run card used to sit beside this copy as the hero's second column; since
                   2026-10-05 it has a page of its own, and the hero reaches it as a link. */}
               <div className="mt-5 sm:mt-7">
-                <ButtonLink href="/live" intent="ink" size="lg" className="w-full sm:w-auto">
+                <ButtonLink href="/live" intent="primary" size="lg" className="w-full sm:w-auto">
                   <MaterialIcon name="public" className="text-base" />
                   {t('frontdoor.hero.ctaMap')}
                 </ButtonLink>
@@ -567,7 +567,7 @@ export const FrontDoor: React.FC = () => {
 
       {/* ── Trust strip: every figure carries the artifact it was read from ── */}
       <section aria-labelledby="trust-heading" className="space-y-3">
-          <h2 id="trust-heading" className="text-[22px] font-bold tracking-tight text-carbon-90">
+          <h2 id="trust-heading" className="text-ap-tagline font-bold tracking-tight text-carbon-90">
           {t('frontdoor.covers.h2')}
         </h2>
         <div className="grid grid-cols-1 gap-px bg-carbon-20 sm:grid-cols-2 lg:grid-cols-4">
@@ -597,7 +597,7 @@ export const FrontDoor: React.FC = () => {
             ? ` ${t('frontdoor.covers.noteUnits', { units: formatNumber(coverage.produced_units) })}`
             : ''}
           .{' '}
-          <Link to="/status" className="font-bold text-nasa-blue-shade underline underline-offset-2">
+          <Link to="/status" className="font-bold text-ap-link underline underline-offset-2">
             {t('frontdoor.covers.statusLink')}
           </Link>{' '}
           {t('frontdoor.covers.noteTail')}
@@ -620,7 +620,7 @@ export const FrontDoor: React.FC = () => {
           {!alertsLoading && topAlerts.length > 0 && (
             <ul className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
               {topAlerts.map((alert) => (
-                <li key={alert.id} className="border-b border-carbon-10 pb-3 md:border-b-0 md:pb-0">
+                <li key={alert.id} className="border-b border-carbon-20 pb-3 md:border-b-0 md:pb-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <AlertLevelBadge
                       level={alert.level}
@@ -631,7 +631,7 @@ export const FrontDoor: React.FC = () => {
                     />
                     <Link
                       to={`/alerts/${encodeURIComponent(alert.id)}`}
-                      className="min-w-0 break-words text-sm font-bold text-nasa-blue-shade underline underline-offset-2"
+                      className="min-w-0 break-words text-sm font-bold text-ap-link underline underline-offset-2"
                     >
                       {alert.district_name ?? t('frontdoor.strip.districtUnnamed')}
                     </Link>
@@ -670,16 +670,16 @@ export const FrontDoor: React.FC = () => {
                     : ''}
                 {generatedAt ? t('frontdoor.run.noneGenerated', { at: generatedAt }) : '.'}
               </p>
-              {error && <p className="text-nasa-red-shade">{t('frontdoor.run.errorPrefix', { error })}</p>}
+              {error && <p className="text-ap-link">{t('frontdoor.run.errorPrefix', { error })}</p>}
               <p>
                 {t('frontdoor.run.noneSilence')}{' '}
                 <strong className="font-bold text-carbon-90">{t('frontdoor.run.distinction')}</strong>.{' '}
                 {t('frontdoor.run.noneRead')}{' '}
-                <Link to="/live" className="font-bold text-nasa-blue-shade underline underline-offset-2">
+                <Link to="/live" className="font-bold text-ap-link underline underline-offset-2">
                   {t('frontdoor.run.noneLiveLink')}
                 </Link>{' '}
                 {t('frontdoor.run.noneFor')}{' '}
-                <Link to="/status" className="font-bold text-nasa-blue-shade underline underline-offset-2">
+                <Link to="/status" className="font-bold text-ap-link underline underline-offset-2">
                   {t('frontdoor.run.noneStatusLink')}
                 </Link>{' '}
                 {t('frontdoor.run.noneTail')}
@@ -688,21 +688,21 @@ export const FrontDoor: React.FC = () => {
           )}
 
           {/* A list, not a `<nav>`: this page already carries its one navigation landmark (the
-              "On this page" table of contents). Extra named navigation regions do not help a
+"On this page" table of contents). Extra named navigation regions do not help a
               reader - VoiceOver's rotor fills with near-identical "Navigation" entries and
               TalkBack does not expose the role at all, so the aria-label is inert there - and
               the links are just as reachable as a labelled list. */}
           <ul
             aria-label={t('frontdoor.run.alertNav')}
-            className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-carbon-10 pt-3"
+            className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-carbon-20 pt-3"
           >
             <li>
-              <Link to="/alerts" className="text-xs font-bold text-nasa-blue-shade underline underline-offset-2">
+              <Link to="/alerts" className="text-xs font-bold text-ap-link underline underline-offset-2">
                 {t('frontdoor.strip.allAlerts')}
               </Link>
             </li>
             <li>
-              <Link to="/status" className="text-xs font-bold text-nasa-blue-shade underline underline-offset-2">
+              <Link to="/status" className="text-xs font-bold text-ap-link underline underline-offset-2">
                 {t('frontdoor.strip.whyHeld')}
               </Link>
             </li>
@@ -710,13 +710,13 @@ export const FrontDoor: React.FC = () => {
         </div>
 
         {failed && (
-          <div role="alert" aria-live="polite" className="border-l-2 border-nasa-orange bg-white p-4 space-y-3">
+          <div role="alert" aria-live="polite" className="border-l-2 border-severity-high bg-white p-4 space-y-3">
             <p className="text-sm leading-[1.62] text-carbon-70">{t('frontdoor.run.failed')}</p>
             <div className="flex flex-wrap gap-3">
               <button
                 type="button"
                 onClick={retryLiveFacts}
-                className="inline-flex min-h-[44px] items-center gap-1.5 bg-nasa-blue px-4 py-2 text-sm font-semibold text-white hover:bg-nasa-blue-shade focus-visible:outline focus-visible:outline-2 focus-visible:outline-nasa-blue focus-visible:outline-offset-2"
+                className="inline-flex min-h-[44px] items-center gap-1.5 bg-primary px-4 py-2 text-sm font-semibold text-ap-action-fg hover:bg-primary-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
               >
                 <MaterialIcon name="refresh" className="text-base" />
                 {t('common.retry')}
@@ -732,7 +732,7 @@ export const FrontDoor: React.FC = () => {
       {/* ── Products: the eight hazard classes and the two forecast horizons ── */}
       <section aria-labelledby="products-heading" className="space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-2">
-          <h2 id="products-heading" className="text-[22px] font-bold tracking-tight text-carbon-90 lg:text-2xl">
+          <h2 id="products-heading" className="text-ap-tagline font-bold tracking-tight text-carbon-90 lg:text-2xl">
             {t('frontdoor.products.h2')}
           </h2>
           <p className="font-mono text-xs uppercase tracking-wider text-carbon-60">{t('frontdoor.products.aside')}</p>
@@ -745,11 +745,11 @@ export const FrontDoor: React.FC = () => {
               <Link
                 key={hazard.slug}
                 to={`/hazards/${hazard.slug}`}
-                className="group flex flex-col gap-1.5 border border-carbon-20 bg-white p-4 transition-colors hover:border-nasa-blue-shade focus-visible:outline focus-visible:outline-2 focus-visible:outline-nasa-blue focus-visible:outline-offset-2"
+                className="group flex flex-col gap-1.5 border border-carbon-20 bg-white p-4 transition-colors hover:border-ap-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
               >
                 <span className="flex items-center justify-between">
-                  <MaterialIcon name={hazardIcon(hazard.class)} className="text-xl text-nasa-blue-shade" />
-                  <MaterialIcon name="arrow_forward" className="text-sm text-carbon-30 transition-colors group-hover:text-nasa-blue-shade" />
+                  <MaterialIcon name={hazardIcon(hazard.class)} className="text-xl text-ap-link" />
+                  <MaterialIcon name="arrow_forward" className="text-sm text-carbon-60 transition-colors group-hover:text-ap-link" />
                 </span>
                 <span className="text-sm font-bold text-carbon-90">{hazard.class}</span>
                 <span className="text-xs leading-relaxed text-carbon-60">{hazard.season}</span>
@@ -764,9 +764,9 @@ export const FrontDoor: React.FC = () => {
           <div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-2">
             <Link
               to="/docs/forecasts"
-              className="group flex items-start gap-3 border border-carbon-20 bg-white p-4 transition-colors hover:border-nasa-blue-shade focus-visible:outline focus-visible:outline-2 focus-visible:outline-nasa-blue focus-visible:outline-offset-2"
+              className="group flex items-start gap-3 border border-carbon-20 bg-white p-4 transition-colors hover:border-ap-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
             >
-              <MaterialIcon name="date_range" className="mt-0.5 text-xl text-nasa-blue-shade" />
+              <MaterialIcon name="date_range" className="mt-0.5 text-xl text-ap-link" />
               <span className="space-y-1">
                 <span className="block text-sm font-bold text-carbon-90">{t('frontdoor.products.horizon7')}</span>
                 <span className="block text-xs leading-relaxed text-carbon-60">{t('frontdoor.products.horizon7desc')}</span>
@@ -774,9 +774,9 @@ export const FrontDoor: React.FC = () => {
             </Link>
             <Link
               to="/docs/forecasts"
-              className="group flex items-start gap-3 border border-carbon-20 bg-white p-4 transition-colors hover:border-nasa-blue-shade focus-visible:outline focus-visible:outline-2 focus-visible:outline-nasa-blue focus-visible:outline-offset-2"
+              className="group flex items-start gap-3 border border-carbon-20 bg-white p-4 transition-colors hover:border-ap-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
             >
-              <MaterialIcon name="calendar_month" className="mt-0.5 text-xl text-nasa-blue-shade" />
+              <MaterialIcon name="calendar_month" className="mt-0.5 text-xl text-ap-link" />
               <span className="space-y-1">
                 <span className="block text-sm font-bold text-carbon-90">{t('frontdoor.products.horizon15')}</span>
                 <span className="block text-xs leading-relaxed text-carbon-60">{t('frontdoor.products.horizon15desc')}</span>
@@ -802,7 +802,7 @@ export const FrontDoor: React.FC = () => {
           <ul className="mt-2 grid grid-cols-1 gap-1 sm:grid-cols-2">
             {sections.map((section, index) => (
               <li key={`toc-${index}`}>
-                <a href={`#section-${index}`} className="inline-flex min-h-[44px] items-center text-sm font-semibold text-nasa-blue-shade underline underline-offset-4 hover:decoration-nasa-blue-shade">
+                <a href={`#section-${index}`} className="inline-flex min-h-[44px] items-center text-sm font-semibold text-ap-link underline underline-offset-4 hover:decoration-ap-primary">
                   {section.h2 ?? `${t('frontdoor.tocSection')} ${index + 1}`}
                 </a>
               </li>
@@ -819,7 +819,7 @@ export const FrontDoor: React.FC = () => {
           className="space-y-4 border-t border-carbon-20 pt-6"
         >
           {section.h2 && (
-            <h2 id={`section-${index}`} className="text-[22px] font-bold tracking-tight text-carbon-90 lg:text-2xl">
+            <h2 id={`section-${index}`} className="text-ap-tagline font-bold tracking-tight text-carbon-90 lg:text-2xl">
               {section.h2}
             </h2>
           )}
@@ -830,7 +830,7 @@ export const FrontDoor: React.FC = () => {
       {/* ── Newest from the blog: freshness the published record cannot show ── */}
       <section aria-labelledby="blogs-heading" className="space-y-3 border-t border-carbon-20 pt-6">
         <div className="flex flex-wrap items-end justify-between gap-2">
-          <h2 id="blogs-heading" className="text-[22px] font-bold tracking-tight text-carbon-90 lg:text-2xl">
+          <h2 id="blogs-heading" className="text-ap-tagline font-bold tracking-tight text-carbon-90 lg:text-2xl">
             {t('frontdoor.blogs.h2')}
           </h2>
           <p className="font-mono text-xs uppercase tracking-wider text-carbon-60">{t('frontdoor.blogs.aside')}</p>
@@ -844,7 +844,7 @@ export const FrontDoor: React.FC = () => {
             <button
               type="button"
               onClick={() => setBlogsReload((n) => n + 1)}
-              className="inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 bg-carbon-05 px-3 py-1.5 text-xs font-bold text-carbon-80 hover:bg-carbon-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-nasa-blue focus-visible:outline-offset-2"
+              className="inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 bg-carbon-05 px-3 py-1.5 text-xs font-bold text-carbon-80 hover:bg-carbon-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
             >
               <MaterialIcon name="refresh" className="text-sm" />
               {t('frontdoor.blogs.retry')}
@@ -862,14 +862,14 @@ export const FrontDoor: React.FC = () => {
               <li key={article.id}>
                 <Link
                   to={`/blogs/${encodeURIComponent(article.slug)}`}
-                  className="flex h-full flex-col gap-2 border border-carbon-20 bg-white p-4 transition-colors hover:border-nasa-blue-shade focus-visible:outline focus-visible:outline-2 focus-visible:outline-nasa-blue focus-visible:outline-offset-2"
+                  className="flex h-full flex-col gap-2 border border-carbon-20 bg-white p-4 transition-colors hover:border-ap-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
                 >
                   <span className="flex flex-wrap items-center gap-2">
                     <span className="border border-carbon-20 bg-carbon-05 px-2 py-0.5 text-xs font-semibold text-carbon-70">
                       {article.category || t('frontdoor.blogs.aside')}
                     </span>
                     {index === 0 && (
-                      <span className="border border-nasa-blue/20 bg-nasa-blue/10 px-2 py-0.5 text-xs font-bold text-nasa-blue-shade">
+                      <span className="border border-ap-primary/20 bg-ap-primary/10 px-2 py-0.5 text-xs font-bold text-ap-link">
                         {t('frontdoor.blogs.newest')}
                       </span>
                     )}
@@ -887,7 +887,7 @@ export const FrontDoor: React.FC = () => {
           </ul>
         )}
 
-        <Link to="/blogs" className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-bold text-nasa-blue-shade underline underline-offset-4 hover:decoration-nasa-blue-shade">
+        <Link to="/blogs" className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-bold text-ap-link underline underline-offset-4 hover:decoration-ap-primary">
           {t('frontdoor.blogs.allPosts')}
           <MaterialIcon name="arrow_forward" className="text-sm" />
         </Link>
@@ -896,14 +896,14 @@ export const FrontDoor: React.FC = () => {
       {/* ── Questions the front door should answer ────────────────────────── */}
       {faqs.length > 0 && (
         <section aria-labelledby="faq-heading" className="space-y-3 border-t border-carbon-20 pt-6">
-          <h2 id="faq-heading" className="text-[22px] font-bold tracking-tight text-carbon-90 lg:text-2xl">
+          <h2 id="faq-heading" className="text-ap-tagline font-bold tracking-tight text-carbon-90 lg:text-2xl">
             {t('frontdoor.faq.h2')}
           </h2>
           {faqs.map((faq) => (
             <details key={faq.question} className="group border-b border-carbon-20 py-1 last:border-b-0">
-              <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 text-base font-bold text-carbon-90 marker:hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-nasa-blue focus-visible:outline-offset-2">
+              <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 text-base font-bold text-carbon-90 marker:hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2">
                 <span className="inline-flex items-start gap-2 py-2">
-                  <MaterialIcon name="help" className="mt-0.5 text-base text-nasa-blue" />
+                  <MaterialIcon name="help" className="mt-0.5 text-base text-ap-link" />
                   <span>{faq.question}</span>
                 </span>
                 <MaterialIcon name="chevron_right" className="shrink-0 text-carbon-60 transition-transform duration-150 group-open:rotate-90" aria-hidden="true" />
@@ -917,7 +917,7 @@ export const FrontDoor: React.FC = () => {
       {/* ── Attribution: the exact block, from the committed data ─────────── */}
       <section aria-labelledby="attribution-heading" className="border border-carbon-20 bg-white p-6 lg:p-8">
         <Eyebrow>{t('frontdoor.attribution.eyebrow')}</Eyebrow>
-        <h2 id="attribution-heading" className="mt-3 text-[22px] font-bold tracking-tight text-carbon-90">
+        <h2 id="attribution-heading" className="mt-3 text-ap-tagline font-bold tracking-tight text-carbon-90">
           {t('frontdoor.attribution.h2')}
         </h2>
         <p className="mt-3 max-w-3xl text-base leading-[1.62] text-carbon-70">
@@ -936,7 +936,7 @@ export const FrontDoor: React.FC = () => {
             href={attribution.author.orcidUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="font-bold text-nasa-blue-shade underline underline-offset-2"
+            className="font-bold text-ap-link underline underline-offset-2"
           >
             {t('frontdoor.attribution.orcid', { id: attribution.author.orcid })}
           </a>

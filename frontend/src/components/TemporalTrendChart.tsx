@@ -22,9 +22,9 @@ interface MilestoneAnnotation {
 }
 
 const MILESTONES: MilestoneAnnotation[] = [
-  { year: 2007, label: 'Cyclone Sidr', sublabel: 'Cat 5 / 3,400+ casualties', color: '#ef4444' },
-  { year: 2017, label: 'Flash Floods', sublabel: 'Haor Basin submerged', color: '#3b82f6' },
-  { year: 2024, label: 'Cyclone Remal', sublabel: 'Severe storm surge', color: '#f59e0b' },
+  { year: 2007, label: 'Cyclone Sidr', sublabel: 'Cat 5 / 3,400+ casualties', color: '#c01f1f' },
+  { year: 2017, label: 'Flash Floods', sublabel: 'Haor Basin submerged', color: '#0066cc' },
+  { year: 2024, label: 'Cyclone Remal', sublabel: 'Severe storm surge', color: '#8a5a00' },
 ];
 
 export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
@@ -96,14 +96,14 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-4 border-b border-carbon-80">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-base font-bold text-white tracking-tight">
+            <h3 className="text-base font-bold text-ap-on-inverse tracking-tight">
               Temporal Hazard Recurrence Trends (2000–2026)
             </h3>
-            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-medium bg-rose-950/60 text-rose-300 border border-rose-800/60">
+            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-medium bg-rose-50 text-rose-700 border border-rose-200">
               26-Year Empirical Record
             </span>
           </div>
-          <p className="text-xs text-carbon-40 mt-1">
+          <p className="text-xs text-carbon-30 mt-1">
             Annual event frequency across all 64 districts with historical milestone disaster annotations.
           </p>
         </div>
@@ -129,15 +129,15 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
         {/* Tooltip Overlay */}
         {hoveredPoint && (
           <div
-            className="absolute top-3 left-16 z-20 bg-carbon-90/95 backdrop-blur-md border border-carbon-70 px-3 py-2 rounded-lg shadow-xl text-xs space-y-1 pointer-events-none"
+            className="absolute top-3 left-16 z-20 bg-carbon-black/90 backdrop-blur-md border border-white/15 px-3 py-2 rounded-lg shadow-xl text-xs space-y-1 pointer-events-none"
             role="tooltip"
           >
             <div className="flex items-center justify-between gap-4 font-mono font-bold text-white">
               <span>Year {hoveredPoint.year}</span>
-              <span className="text-rose-400">{hoveredPoint.event_frequency} Events</span>
+              <span className="text-ap-on-scrim-sev">{hoveredPoint.event_frequency} Events</span>
             </div>
             {MILESTONES.find((m) => m.year === hoveredPoint.year) && (
-              <div className="text-xs text-amber-300 font-semibold pt-0.5">
+              <div className="text-xs text-ap-on-scrim font-semibold pt-0.5">
                 <Sparkles className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />
                 {MILESTONES.find((m) => m.year === hoveredPoint.year)?.label}:{' '}
                 {MILESTONES.find((m) => m.year === hoveredPoint.year)?.sublabel}
@@ -155,8 +155,8 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
         >
           <defs>
             <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.35" />
-              <stop offset="100%" stopColor="#f43f5e" stopOpacity="0.0" />
+              <stop offset="0%" stopColor="#8b0f3a" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="#8b0f3a" stopOpacity="0.0" />
             </linearGradient>
           </defs>
 
@@ -170,7 +170,7 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
                   y1={y}
                   x2={width - padding.right}
                   y2={y}
-                  stroke="#444447"
+                  stroke="#333333"
                   strokeWidth={0.5}
                   strokeDasharray="3, 3"
                 />
@@ -195,7 +195,7 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
           <path
             d={linePath}
             fill="none"
-            stroke="#f43f5e"
+            stroke="#8b0f3a"
             strokeWidth={2.5}
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -250,8 +250,8 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
                   cx={p.x}
                   cy={p.y}
                   r={isHovered ? 5.5 : 3}
-                  fill={isHovered ? '#ffffff' : '#f43f5e'}
-                  stroke="#17171b"
+                  fill={isHovered ? '#ffffff' : '#8b0f3a'}
+                  stroke="#1d1d1f"
                   strokeWidth={1.5}
                   className="transition-all"
                 />

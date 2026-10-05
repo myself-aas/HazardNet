@@ -19,7 +19,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = join(ROOT, 'frontend/src');
 const AUTHORED_CSS = [join(SRC, 'index.css')];
-const GENERATED_CSS = join(SRC, 'styles/nasa-hds.css');
+/** The single token stylesheet. Was styles/nasa-hds.css before the Apple migration. */
+const GENERATED_CSS = join(SRC, 'styles/apple.css');
 const PRERENDER = join(ROOT, 'frontend/scripts/prerender.mjs');
 
 const PX_PER_REM = 16;
@@ -124,18 +125,25 @@ describe('leading on type we author', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('only ever leads tightly inside NASA\'s vendored tokens, never as an applied style', () => {
+  it('only ever leads tightly inside the Apple token declarations, never as an applied style', () => {
     const text = stripComments(readFileSync(GENERATED_CSS, 'utf8'));
     const rules = parseRules(text);
     const offenders = [];
     for (const { selector, decls } of rules) {
       for (const [prop, value] of Object.entries(decls)) {
+        // Only leading is in scope. apple.css is no longer a token-only file — it also
+        // carries the component layer — so a bare `border: 0` or `opacity: 0.4` must not
+        // be read as a line-height of 0.
+        const isLeading = prop === 'line-height' || /^--ap-leading-/.test(prop) || /^--[a-z-]*leading/.test(prop);
+        if (!isLeading) continue;
         const leading = toPx(value);
         if (leading === null || leading >= MIN_BODY_LEADING) continue;
-        // Every sub-1.3 value in this file must be a --hds-* token declaration, which is
-        // NASA's published vocabulary. An applied rule here would mean the file was edited
-        // by hand, which scripts/import_nasa_tokens.mjs would overwrite.
-        if (!prop.startsWith('--hds-')) {
+        // Every sub-1.3 value in this file must be an --ap-* token declaration, i.e. one of
+        // the 16 named Apple styles transcribed from DESIGN.md. Several of them legitimately
+        // lead tight (hero is 1.07, display-lg 1.1, button-large 1.0) because they are
+        // single-line display type. An APPLIED rule leading that tightly would be a real
+        // defect — it would squash a paragraph — so the token/applied distinction is the test.
+        if (!prop.startsWith('--ap-')) {
           offenders.push(`${selector} { ${prop}: ${value} }`);
         }
       }

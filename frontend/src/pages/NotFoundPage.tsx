@@ -17,7 +17,7 @@ export const NotFoundPage: React.FC = () => {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-[28px] font-bold leading-[1.2] tracking-tight text-carbon-90">
+          <h1 className="text-ap-lead font-bold leading-[1.2] tracking-tight text-carbon-90">
             Page not found
           </h1>
           <p className="text-base leading-[1.62] text-carbon-70">
@@ -32,13 +32,13 @@ export const NotFoundPage: React.FC = () => {
         <div className="flex flex-col sm:flex-row gap-2 pt-2">
           <Link
             to="/"
-            className="inline-flex min-h-[44px] flex-1 items-center justify-center bg-primary-strong px-6 py-3 text-base font-semibold text-white hover:bg-primary touch-manipulation"
+            className="inline-flex min-h-[44px] flex-1 items-center justify-center bg-primary px-6 py-3 text-base font-semibold text-ap-action-fg hover:bg-primary-strong touch-manipulation"
           >
             Home
           </Link>
           <Link
             to="/live"
-            className="inline-flex min-h-[44px] flex-1 items-center justify-center border-2 border-nasa-blue px-6 py-3 text-base font-semibold text-nasa-blue-shade hover:bg-nasa-blue/5 touch-manipulation"
+            className="inline-flex min-h-[44px] flex-1 items-center justify-center border-2 border-ap-primary px-6 py-3 text-base font-semibold text-ap-link hover:bg-ap-primary/5 touch-manipulation"
           >
             Live map
           </Link>

@@ -1,0 +1,19 @@
+{
+  "why": "Raw colour literals in SVG paint attributes that predate check-svg-tokens.mjs. Each one is frozen in its light-mode value and cannot follow the theme. Counts may only go down.",
+  "files": {
+    "components/DistrictRiskMap.tsx": 5,
+    "components/ForecastDashboard.tsx": 19,
+    "components/MultiHazardDistributionChart.tsx": 1,
+    "components/NationalOverview.tsx": 3,
+    "components/RiskAnalytics.tsx": 9,
+    "components/TemporalTrendChart.tsx": 7,
+    "components/ThirtyDayTrendChart.tsx": 4,
+    "components/WeatherPanel.tsx": 16,
+    "components/district/DistrictBriefBody.tsx": 10,
+    "components/district/DistrictForecastRecords.tsx": 5,
+    "components/interactive/Badge.tsx": 1,
+    "components/ui/3d-globe.tsx": 6,
+    "components/ui/animated-state-icons.tsx": 3,
+    "lib/heroMedia.ts": 12
+  }
+}

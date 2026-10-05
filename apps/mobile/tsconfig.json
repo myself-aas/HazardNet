@@ -32,7 +32,6 @@
     "../../packages/api/src/**/*.ts",
     "../../packages/analytics/src/**/*.ts",
     "../../packages/design-system/src/tokens.ts",
-    "../../packages/design-system/src/material3Expressive.ts",
     "../../packages/design-system/src/index.ts"
   ],
   "exclude": ["node_modules", "dist", ".expo", "../../packages/analytics/src/__tests__"]

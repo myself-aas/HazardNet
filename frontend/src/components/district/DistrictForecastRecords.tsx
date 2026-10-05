@@ -76,7 +76,7 @@ export const DistrictForecastRecords: React.FC = () => {
             <div className="text-xs font-mono font-bold text-amber-600 uppercase tracking-wider">
               Published Forecast Records • District Telemetry Feed
             </div>
-            <h2 className="text-xl font-black text-carbon-black tracking-tight">
+            <h2 className="text-xl font-black text-carbon-90 tracking-tight">
               7-Day & 15-Day Forecast Records ({data.districtName})
             </h2>
           </div>
@@ -87,7 +87,7 @@ export const DistrictForecastRecords: React.FC = () => {
               onClick={() => setActiveTableHorizon('7_days')}
               className={`min-h-[44px] px-4 py-2 text-sm font-semibold cursor-pointer touch-manipulation ${
                 activeTableHorizon === '7_days'
-                  ? 'bg-nasa-blue text-white'
+                  ? 'bg-primary text-ap-action-fg'
                   : 'bg-carbon-10 hover:bg-carbon-20 text-carbon-70'
               }`}
             >
@@ -97,7 +97,7 @@ export const DistrictForecastRecords: React.FC = () => {
               onClick={() => setActiveTableHorizon('15_days')}
               className={`min-h-[44px] px-4 py-2 text-sm font-semibold cursor-pointer touch-manipulation ${
                 activeTableHorizon === '15_days'
-                  ? 'bg-nasa-blue text-white'
+                  ? 'bg-primary text-ap-action-fg'
                   : 'bg-carbon-10 hover:bg-carbon-20 text-carbon-70'
               }`}
             >
@@ -106,7 +106,7 @@ export const DistrictForecastRecords: React.FC = () => {
             <button
               onClick={handleDownloadTableCsv}
               title="Download specific 7 and 15-day hazard intelligence records as CSV"
-              className="inline-flex min-h-[44px] items-center gap-1.5 px-3.5 py-2 bg-nasa-blue text-white font-semibold text-sm cursor-pointer ml-1 touch-manipulation"
+              className="inline-flex min-h-[44px] items-center gap-1.5 px-3.5 py-2 bg-primary text-ap-action-fg font-semibold text-sm cursor-pointer ml-1 touch-manipulation"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Download CSV</span>
@@ -138,15 +138,15 @@ export const DistrictForecastRecords: React.FC = () => {
             <div className="h-56 sm:h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData} margin={{ top: 10, right: 20, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" />
-                  <XAxis dataKey="date" stroke="#77777a" fontSize={12} tickLine={false} />
-                  <YAxis stroke="#77777a" fontSize={12} domain={[0, 100]} tickLine={false} unit="%" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                  <XAxis dataKey="date" stroke="#6e6e73" fontSize={12} tickLine={false} />
+                  <YAxis stroke="#6e6e73" fontSize={12} domain={[0, 100]} tickLine={false} unit="%" />
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#17171b', borderColor: '#444447', borderRadius: '12px', color: '#fff', fontSize: '12px' }}
+                    contentStyle={{ backgroundColor: '#1d1d1f', borderColor: '#333333', borderRadius: '12px', color: '#fff', fontSize: '12px' }}
                     formatter={(value: any, name: any) => [`${value}%`, name === 'physicsSeverity' ? 'Physics Severity' : name === 'modelSeverity' ? 'Model Severity' : 'Confidence']}
                   />
-                  <Line type="monotone" dataKey="physicsSeverity" name="physicsSeverity" stroke="#dc2626" strokeWidth={3} dot={{ r: 4, fill: '#dc2626' }} activeDot={{ r: 6 }} />
-                  <Line type="monotone" dataKey="modelSeverity" name="modelSeverity" stroke="#2563eb" strokeWidth={2} strokeDasharray="4 4" dot={{ r: 3, fill: '#2563eb' }} />
+                  <Line type="monotone" dataKey="physicsSeverity" name="physicsSeverity" stroke="#c01f1f" strokeWidth={3} dot={{ r: 4, fill: '#c01f1f' }} activeDot={{ r: 6 }} />
+                  <Line type="monotone" dataKey="modelSeverity" name="modelSeverity" stroke="#0066cc" strokeWidth={2} strokeDasharray="4 4" dot={{ r: 3, fill: '#0066cc' }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -193,7 +193,7 @@ export const DistrictForecastRecords: React.FC = () => {
           <div className="hidden overflow-x-auto border border-carbon-20/90 md:block">
             <table className="w-full text-left border-collapse text-xs font-sans">
               <thead>
-                <tr className="bg-carbon-90 text-white font-bold text-xs uppercase tracking-wider font-mono">
+                <tr className="bg-carbon-90 text-carbon-05 font-bold text-xs uppercase tracking-wider font-mono">
                   <th className="px-3.5 py-3">Target Date</th>
                   <th className="px-3.5 py-3">Prediction</th>
                   <th className="px-3.5 py-3">Hazard Type</th>
@@ -238,7 +238,7 @@ export const DistrictForecastRecords: React.FC = () => {
                             {row.advisory_tier}
                           </span>
                         ) : (
-                          <span className="text-carbon-40" title="This row predates the advisory tier column">—</span>
+                          <span className="text-carbon-50" title="This row predates the advisory tier column">—</span>
                         )}
                       </td>
                       <td className="px-3.5 py-3 font-mono font-bold whitespace-nowrap">

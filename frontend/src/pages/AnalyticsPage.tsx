@@ -3,6 +3,9 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import ForecastDashboard from '../components/ForecastDashboard';
 import { DataStateEmpty, DataStateError, DataStateLoading } from '../components/ui/DataState';
+import EmdatComparisonChart from '../components/EmdatComparisonChart';
+import hazardCatalog from '../../public/data/historical/hazard-catalog-index.json';
+import modelPerformance from '../../public/data/model-performance.json';
 
 /** Shape of `public/data/forecasts-latest.json` (hazardnet-forecast-snapshot/v2). */
 interface ForecastSnapshot {
@@ -100,7 +103,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
           whileTap={{ scale: 0.98 }}
           onClick={() => navigate('/analytics/forecast-dashboard')}
           className={`px-4 py-2.5 rounded-2xl text-xs font-extrabold transition-all shrink-0 whitespace-nowrap cursor-pointer ${
-            activeTab === 'forecast-dashboard' ? 'bg-amber-500 text-carbon-90 shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
+            activeTab === 'forecast-dashboard' ? 'bg-amber-500 text-ap-on-sev shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
           }`}
         >
           Forecast Dashboard (Firestore & Recharts)
@@ -110,7 +113,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
           whileTap={{ scale: 0.98 }}
           onClick={() => navigate('/analytics/model-metrics')}
           className={`px-4 py-2.5 rounded-2xl text-xs font-extrabold transition-all shrink-0 whitespace-nowrap cursor-pointer ${
-            activeTab === 'model-metrics' ? 'bg-amber-500 text-carbon-90 shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
+            activeTab === 'model-metrics' ? 'bg-amber-500 text-ap-on-sev shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
           }`}
         >
           Model Metrics (Latency, MAE, ECE)
@@ -120,7 +123,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
           whileTap={{ scale: 0.98 }}
           onClick={() => navigate('/analytics/pipeline-status')}
           className={`px-4 py-2.5 rounded-2xl text-xs font-extrabold transition-all shrink-0 whitespace-nowrap cursor-pointer ${
-            activeTab === 'pipeline-status' ? 'bg-amber-500 text-carbon-90 shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
+            activeTab === 'pipeline-status' ? 'bg-amber-500 text-ap-on-sev shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
           }`}
         >
           Pipeline Status (production / GitHub CI/CD)
@@ -130,7 +133,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
           whileTap={{ scale: 0.98 }}
           onClick={() => navigate('/analytics/historical')}
           className={`px-4 py-2.5 rounded-2xl text-xs font-extrabold transition-all shrink-0 whitespace-nowrap cursor-pointer ${
-            activeTab === 'historical' ? 'bg-amber-500 text-carbon-90 shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
+            activeTab === 'historical' ? 'bg-amber-500 text-ap-on-sev shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
           }`}
         >
           Historical EM-DAT vs Prediction Explorer
@@ -241,10 +244,16 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-6"
           >
             <h2 className="text-xl font-bold text-carbon-90">EM-DAT International Disaster Database vs HazardNet Predictions</h2>
-            <p className="text-sm text-carbon-60 leading-relaxed">Comparative analysis of historical flood, cyclone, and drought events (1990-2026) in Bangladesh mapped against neural record forecasts.</p>
-            <div className="h-64 bg-carbon-05/80 rounded-2xl border border-carbon-20/90 shadow-2xs flex items-center justify-center text-carbon-60 font-mono text-xs px-4 text-center">
-              Interactive EM-DAT Comparison Chart (Authorized Researcher View)
-            </div>
+            <p className="text-sm text-carbon-60 leading-relaxed">
+              The catalogued historical record for Bangladesh plotted against the episodes HazardNet has been
+              scored on. The two are different kinds of measurement and are drawn as different marks: the record
+              spans every year, the benchmark covers five episodes and reports detection only.
+            </p>
+            <EmdatComparisonChart
+              events={hazardCatalog as { year: number; hazard_type: string }[]}
+              episodes={modelPerformance.episodes}
+              caveats={modelPerformance.how_to_read}
+            />
           </motion.div>
         )}
       </AnimatePresence>

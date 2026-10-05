@@ -213,14 +213,14 @@ describe('prerendered static shell contrast', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('keeps the shell on NASA HDS neutrals instead of a second grey ramp', () => {
-    // HDS carbon ramp + brand colours, vendored in frontend/src/styles/nasa-hds.css.
-    const hds = readFileSync(join(ROOT, 'frontend/src/styles/nasa-hds.css'), 'utf8');
-    // Every colour NASA publishes, not just the brand ramp: the carbon neutrals and the
-    // sequential dataviz ramps are all HDS tokens, and the shell's caution surfaces come
-    // from the orange ramp.
+  it('keeps the shell on the Apple palette instead of a second grey ramp', () => {
+    // The one design system, declared in frontend/src/styles/apple.css.
+    const apple = readFileSync(join(ROOT, 'frontend/src/styles/apple.css'), 'utf8');
+    // Every colour the system publishes: the Apple primitives, the neutral ramp, the dark
+    // theme's tile surfaces and the severity data layer. A hex in the prerendered shell that
+    // is not one of these is a colour nobody designed.
     const hdsColours = new Set(
-      [...hds.matchAll(/--hds-[a-z0-9-]+:\s*(#[0-9a-f]{6})/gi)].map((m) => m[1].toLowerCase()),
+      [...apple.matchAll(/--ap-[a-z0-9-]+:\s*(#[0-9a-f]{6})/gi)].map((m) => m[1].toLowerCase()),
     );
     const used = new Set(
       [...css.matchAll(/(?:color|background|border[^:]*|border-(?:top|bottom|left|right)-color):\s*(#[0-9a-f]{6})/gi)].map(

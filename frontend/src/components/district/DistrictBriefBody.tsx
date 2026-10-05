@@ -75,7 +75,7 @@ export const DistrictBriefBody: React.FC = () => {
   return (
     <>
       {/* 3. STICKY EXECUTIVE SECTION JUMP BAR */}
-      <div className="sticky top-[var(--navbar-height)] z-[var(--z-sticky)] bg-white border border-carbon-20 overflow-x-auto scrollbar-none screen-only">
+      <div className="sticky top-[var(--navbar-height)] z-[var(--ap-z-sticky)] bg-white border border-carbon-20 overflow-x-auto scrollbar-none screen-only">
         <div className="flex items-center gap-1 min-w-max text-sm font-semibold">
           <span className="px-3 text-carbon-60 font-mono text-xs uppercase font-bold">Jump:</span>
           {[
@@ -94,7 +94,7 @@ export const DistrictBriefBody: React.FC = () => {
               onClick={() => scrollToSection(sec.id)}
               className={`inline-flex min-h-[44px] items-center gap-2 px-3 py-2 cursor-pointer touch-manipulation ${
                 activeSection === sec.id
-                  ? 'bg-nasa-blue text-white font-semibold'
+                  ? 'bg-primary text-ap-action-fg font-semibold'
                   : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
               }`}
             >
@@ -116,7 +116,7 @@ export const DistrictBriefBody: React.FC = () => {
       <section id="sec-impact" className="scroll-mt-[calc(var(--navbar-height)+8px)] space-y-4 pt-2">
         <div className="flex items-center justify-between border-b border-carbon-20 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-carbon-05 border border-carbon-20 flex items-center justify-center text-nasa-red-shade">
+            <div className="w-8 h-8 bg-carbon-05 border border-carbon-20 flex items-center justify-center text-ap-link">
               <Users className="w-4 h-4" />
             </div>
             <div>
@@ -132,9 +132,9 @@ export const DistrictBriefBody: React.FC = () => {
           <div className="impact-metric-pill bg-white border border-carbon-20 p-5 space-y-3 hover:border-carbon-30 transition-all">
             <div className="flex items-center gap-3">
               <div className={`w-9 h-9 flex items-center justify-center shrink-0 ${
-                data.modelAssessment.riskCategory === 'High' ? 'bg-carbon-05 border border-rose-100 text-[var(--severity-red)]' :
-                data.modelAssessment.riskCategory === 'Moderate' ? 'bg-amber-50 border border-amber-100 text-[var(--severity-amber)]' :
-                'bg-carbon-05 border border-emerald-100 text-[var(--severity-green)]'
+                data.modelAssessment.riskCategory === 'High' ? 'bg-carbon-05 border border-rose-100 text-[var(--ap-sev-very-high)]' :
+                data.modelAssessment.riskCategory === 'Moderate' ? 'bg-amber-50 border border-amber-100 text-[var(--ap-sev-moderate)]' :
+                'bg-carbon-05 border border-emerald-100 text-[var(--ap-sev-low)]'
               }`}>
                 <Waves className="w-4 h-4 shrink-0" />
               </div>
@@ -145,20 +145,20 @@ export const DistrictBriefBody: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="space-y-1 pt-1 border-t border-carbon-10">
+            <div className="space-y-1 pt-1 border-t border-carbon-20">
               <div className="flex items-center justify-between text-xs text-carbon-60">
                 <span>District Exposure</span>
                 <strong className={`font-bold ${
-                  data.modelAssessment.riskCategory === 'High' ? 'text-[var(--severity-red)]' :
-                  data.modelAssessment.riskCategory === 'Moderate' ? 'text-[var(--severity-amber)]' :
-                  'text-[var(--severity-green)]'
+                  data.modelAssessment.riskCategory === 'High' ? 'text-[var(--ap-sev-very-high)]' :
+                  data.modelAssessment.riskCategory === 'Moderate' ? 'text-[var(--ap-sev-moderate)]' :
+                  'text-[var(--ap-sev-low)]'
                 }`}>{data.impactAreaPercentage}%</strong>
               </div>
               <div className="w-full bg-carbon-10 h-2 rounded-sm overflow-hidden">
                 <div className={`h-full rounded-sm transition-all duration-700 ${
-                  data.modelAssessment.riskCategory === 'High' ? 'bg-[var(--severity-red)]' :
-                  data.modelAssessment.riskCategory === 'Moderate' ? 'bg-[var(--severity-amber)]' :
-                  'bg-[var(--severity-green)]'
+                  data.modelAssessment.riskCategory === 'High' ? 'bg-[var(--ap-sev-very-high)]' :
+                  data.modelAssessment.riskCategory === 'Moderate' ? 'bg-[var(--ap-sev-moderate)]' :
+                  'bg-[var(--ap-sev-low)]'
                 }`} style={{ width: `${data.impactAreaPercentage}%` }} />
               </div>
             </div>
@@ -180,7 +180,7 @@ export const DistrictBriefBody: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="space-y-1 pt-1 border-t border-carbon-10">
+            <div className="space-y-1 pt-1 border-t border-carbon-20">
               <div className="flex items-center justify-between text-xs text-carbon-60">
                 <span>Vulnerable Families</span>
                 <strong className="font-bold text-carbon-90">{data.affectedHouseholds.toLocaleString()} HH</strong>
@@ -207,7 +207,7 @@ export const DistrictBriefBody: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="space-y-1 pt-1 border-t border-carbon-10">
+            <div className="space-y-1 pt-1 border-t border-carbon-20">
               <div className="flex items-center justify-between text-xs text-carbon-60">
                 <span>Standing Crops</span>
                 <strong className="font-bold text-carbon-90 truncate ml-1">{data.primaryCropsAtRisk.join(', ')}</strong>
@@ -234,13 +234,13 @@ export const DistrictBriefBody: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="space-y-1 pt-1 border-t border-carbon-10">
+            <div className="space-y-1 pt-1 border-t border-carbon-20">
               <div className="flex items-center justify-between text-xs text-carbon-60">
                 <span>Capacity Utilized</span>
                 <strong className="font-bold text-carbon-80">{data.emergencyResponse.shelterCapacityUsedPercent}%</strong>
               </div>
               <div className="w-full bg-carbon-10 h-2 rounded-sm overflow-hidden">
-                <div className="bg-nasa-green h-full rounded-sm" style={{ width: `${data.emergencyResponse.shelterCapacityUsedPercent}%` }} />
+                <div className="bg-severity-low h-full rounded-sm" style={{ width: `${data.emergencyResponse.shelterCapacityUsedPercent}%` }} />
               </div>
             </div>
             <div className="text-xs text-carbon-60 truncate">
@@ -257,14 +257,14 @@ export const DistrictBriefBody: React.FC = () => {
             <div className="text-xs font-mono font-bold text-amber-600 uppercase tracking-wider">
               Geospatial Distribution Matrix
             </div>
-            <h3 className="text-xl font-black text-carbon-black tracking-tight">
+            <h3 className="text-xl font-black text-carbon-90 tracking-tight">
               Hazard Severity Heatmap: {data.districtName} District Sub-Regions
             </h3>
           </div>
           <div className="flex flex-wrap items-center gap-3 text-xs font-mono min-w-0">
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-nasa-green" /> Low (0-33%)</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-severity-low" /> Low (0-33%)</span>
             <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-amber-500" /> Moderate (34-66%)</span>
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-nasa-red-shade" /> Critical (67-100%)</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-primary" /> Critical (67-100%)</span>
           </div>
         </div>
 
@@ -285,7 +285,7 @@ export const DistrictBriefBody: React.FC = () => {
                 {/* Heatmap background intensity bar */}
                 <div
                   className={`absolute bottom-0 left-0 h-1 transition-all duration-500 ${
-                    isCrit ? 'bg-nasa-red-shade' : isHigh ? 'bg-amber-500' : 'bg-nasa-green'
+                    isCrit ? 'bg-ap-primary' : isHigh ? 'bg-amber-500' : 'bg-severity-low'
                   }`}
                   style={{ width: `${scorePct}%` }}
                 />
@@ -293,9 +293,9 @@ export const DistrictBriefBody: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-carbon-90 text-sm">{upazila.name}</span>
                   <span className={`px-2.5 py-0.5 rounded-sm text-xs font-mono font-black ${
-                    isCrit ? 'bg-nasa-red-shade text-white animate-pulse' :
-                    isHigh ? 'bg-amber-500 text-carbon-black' :
-                    'bg-emerald-600 text-white'
+                    isCrit ? 'bg-primary text-ap-action-fg animate-pulse' :
+                    isHigh ? 'bg-amber-500 text-ap-on-sev' :
+                    'bg-emerald-600 text-ap-on-sev'
                   }`}>
                     {scorePct}% Intensity
                   </span>
@@ -356,7 +356,7 @@ export const DistrictBriefBody: React.FC = () => {
                 <div className="bg-carbon-05 p-4 border border-carbon-20/80 space-y-1">
                   <span className="text-xs font-mono text-carbon-60 font-bold uppercase">{data.physicalSensorMetrics.primaryMetricName}</span>
                   <div className={`text-2xl font-black font-mono ${
-                    data.modelAssessment.riskCategory === 'High' ? 'text-nasa-red-shade' :
+                    data.modelAssessment.riskCategory === 'High' ? 'text-ap-link' :
                     data.modelAssessment.riskCategory === 'Moderate' ? 'text-amber-600' :
                     'text-carbon-80'
                   }`}>
@@ -377,7 +377,7 @@ export const DistrictBriefBody: React.FC = () => {
               </div>
             </div>
 
-            <div className="pt-3 border-t border-carbon-10 space-y-2 text-xs">
+            <div className="pt-3 border-t border-carbon-20 space-y-2 text-xs">
               <div className="flex items-center justify-between text-carbon-60">
                 <span>Peak Hazard Window:</span>
                 <strong className="font-mono text-carbon-90">{data.peakImpactWindow}</strong>
@@ -445,7 +445,7 @@ export const DistrictBriefBody: React.FC = () => {
             <div className="flex items-center gap-4 text-xs font-mono bg-carbon-05 p-3 border border-carbon-20/80">
               <div>
                 <div className="text-carbon-60">7-Day Peak Risk</div>
-                <div className="text-sm font-black text-nasa-red-shade">
+                <div className="text-sm font-black text-ap-link">
                   {hazardTrendData.length ? Math.max(...hazardTrendData.map(d => Number(d[data.hazardType] || 0))) : "\u2014"} / 100
                 </div>
               </div>
@@ -461,11 +461,11 @@ export const DistrictBriefBody: React.FC = () => {
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={hazardTrendData} margin={{ top: 15, right: 20, left: -15, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" vertical={false} />
-                <XAxis dataKey="day" stroke="#959599" fontSize={12} tickLine={false} />
-                <YAxis stroke="#959599" fontSize={12} domain={[0, 100]} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f7" vertical={false} />
+                <XAxis dataKey="day" stroke="#a1a1a6" fontSize={12} tickLine={false} />
+                <YAxis stroke="#a1a1a6" fontSize={12} domain={[0, 100]} tickLine={false} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #d1d1d1', fontSize: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
+                  contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e0e0e0', fontSize: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
                   formatter={(value: any, name: string) => [`${value}% Risk Index`, name]}
                 />
                 <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }} />
@@ -475,9 +475,9 @@ export const DistrictBriefBody: React.FC = () => {
                     type="monotone"
                     dataKey={data.hazardType}
                     name={`${data.hazardType} Risk`}
-                    stroke="#e11d48"
+                    stroke="#8b0f3a"
                     strokeWidth={3}
-                    dot={{ r: 4, fill: '#e11d48' }}
+                    dot={{ r: 4, fill: '#8b0f3a' }}
                     activeDot={{ r: 6 }}
                   />
                 )}
@@ -486,7 +486,7 @@ export const DistrictBriefBody: React.FC = () => {
             </ResponsiveContainer>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-carbon-10 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-carbon-20 text-xs">
             <div className="bg-carbon-05 p-3 border border-carbon-20/80">
               <span className="font-mono text-carbon-60 font-bold block mb-1">Early Warning Indicator</span>
               <p className="text-carbon-70">Risk index crossed moderate threshold 4 days prior due to cumulative catchment basin rainfall.</p>
@@ -509,7 +509,7 @@ export const DistrictBriefBody: React.FC = () => {
       <section id="sec-ai-overview" className="scroll-mt-[calc(var(--navbar-height)+8px)] space-y-4 pt-4 pagination-protected">
         <div className="flex items-center justify-between border-b border-carbon-20 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-carbon-05 border border-carbon-20 flex items-center justify-center text-nasa-blue">
+            <div className="w-8 h-8 bg-carbon-05 border border-carbon-20 flex items-center justify-center text-ap-link">
               <Cpu className="w-4 h-4" />
             </div>
             <div>
@@ -521,7 +521,7 @@ export const DistrictBriefBody: React.FC = () => {
             <a
               href="#appendix-a"
               onClick={(e) => { e.preventDefault(); scrollToSection('appendix-a'); }}
-              className="text-xs text-nasa-blue-shade hover:text-carbon-90 font-mono font-bold inline-flex items-center gap-1 screen-only"
+              className="text-xs text-ap-link hover:text-carbon-90 font-mono font-bold inline-flex items-center gap-1 screen-only"
             >
               <span>View Technical Appendix</span>
               <ExternalLink className="w-3 h-3" />
@@ -536,7 +536,7 @@ export const DistrictBriefBody: React.FC = () => {
           <div className="bg-white border border-carbon-20 p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-nasa-blue" />
+                <BarChart3 className="w-4 h-4 text-ap-link" />
                 Hazard Probability Breakdown
               </h3>
               <span className="text-xs font-mono text-carbon-60">Total = 100%</span>
@@ -559,7 +559,7 @@ export const DistrictBriefBody: React.FC = () => {
                       viewport={{ once: true }}
                       transition={{ duration: 0.6, delay: i * 0.1 }}
                       className={`h-full rounded-sm ${
-                        i === 0 ? 'bg-nasa-blue' : i === 1 ? 'bg-nasa-orange' : 'bg-carbon-40'
+                        i === 0 ? 'bg-ap-primary' : i === 1 ? 'bg-severity-high' : 'bg-carbon-40'
                       }`}
                     />
                   </div>
@@ -582,7 +582,7 @@ export const DistrictBriefBody: React.FC = () => {
               </div>
             </div>
 
-            <div className="pt-2 border-t border-carbon-10 flex items-center justify-between text-xs text-carbon-60 font-mono">
+            <div className="pt-2 border-t border-carbon-20 flex items-center justify-between text-xs text-carbon-60 font-mono">
               <span>Model Confidence: <strong className="text-carbon-80 font-bold">{data.modelAssessment.confidenceLevel}% (High)</strong></span>
               <span>Updated: {data.lastSatelliteUpdate.split('•')[0]}</span>
             </div>
@@ -653,7 +653,7 @@ export const DistrictBriefBody: React.FC = () => {
                   onClick={() => setUpazilaFilter(filterVal)}
                   className={`px-3 py-1.5 font-bold transition-all cursor-pointer ${
                     upazilaFilter === filterVal
-                      ? 'bg-carbon-90 text-white'
+                      ? 'bg-carbon-90 text-ap-on-inverse'
                       : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20'
                   }`}
                 >
@@ -693,9 +693,9 @@ export const DistrictBriefBody: React.FC = () => {
                   className="upazila-card pagination-protected break-inside-avoid bg-white border border-carbon-20 p-5 space-y-3 hover:border-carbon-30 transition-all flex flex-col justify-between"
                 >
                   {/* Card Header: Upazila Name + Geocode + Priority Badge */}
-                  <div className="flex items-start justify-between gap-3 border-b border-carbon-10 pb-3">
+                  <div className="flex items-start justify-between gap-3 border-b border-carbon-20 pb-3">
                     <div>
-                      <h3 className="font-extrabold text-carbon-black text-base flex items-center gap-2">
+                      <h3 className="font-extrabold text-carbon-90 text-base flex items-center gap-2">
                         <span>{up.name}</span>
                         <span className="text-xs font-mono text-carbon-60 font-normal">
                           (GEO-{data.districtId.toUpperCase().slice(0, 3)}-{idx + 101})
@@ -714,8 +714,8 @@ export const DistrictBriefBody: React.FC = () => {
                     </div>
 
                     <span className={`px-2.5 py-1 text-xs font-mono font-black tracking-wide shrink-0 ${
-                      up.severityScore >= 0.8 ? 'bg-nasa-red-shade text-white' :
-                      up.severityScore >= 0.5 ? 'bg-amber-500 text-carbon-black font-bold' :
+                      up.severityScore >= 0.8 ? 'bg-primary text-ap-action-fg' :
+                      up.severityScore >= 0.5 ? 'bg-amber-500 text-ap-on-sev font-bold' :
                       'bg-carbon-10 text-carbon-70'
                     }`}>
                       {up.severityScore >= 0.8 ? 'PRIORITY 1: CRITICAL' : up.severityScore >= 0.5 ? 'PRIORITY 2: STANDBY' : 'PRIORITY 3: MONITOR'}
@@ -724,7 +724,7 @@ export const DistrictBriefBody: React.FC = () => {
 
                   {/* 4-Item Sub-Grid Metrics */}
                   <div className="grid grid-cols-2 gap-3 text-xs pt-1">
-                    <div className="bg-carbon-05 p-2.5 border border-carbon-10 space-y-1">
+                    <div className="bg-carbon-05 p-2.5 border border-carbon-20 space-y-1">
                       <span className="text-xs font-mono text-carbon-60 font-bold uppercase block">Severity Score</span>
                       <div className="flex items-center justify-between">
                         <span className="text-base font-black text-carbon-90 font-mono">
@@ -735,14 +735,14 @@ export const DistrictBriefBody: React.FC = () => {
                       <div className="w-full bg-carbon-20 h-1.5 rounded-sm overflow-hidden">
                         <div
                           className={`h-full rounded-sm ${
-                            up.severityScore >= 0.8 ? 'bg-nasa-green' : up.severityScore >= 0.5 ? 'bg-amber-500' : 'bg-blue-500'
+                            up.severityScore >= 0.8 ? 'bg-severity-low' : up.severityScore >= 0.5 ? 'bg-amber-500' : 'bg-blue-500'
                           }`}
                           style={{ width: `${up.severityScore * 100}%` }}
                         />
                       </div>
                     </div>
 
-                    <div className="bg-carbon-05 p-2.5 border border-carbon-10 space-y-1">
+                    <div className="bg-carbon-05 p-2.5 border border-carbon-20 space-y-1">
                       <span className="text-xs font-mono text-carbon-60 font-bold uppercase block">Exposed Households</span>
                       <div className="text-base font-black text-carbon-90 font-mono">
                         {up.householdsAffected.toLocaleString()}
@@ -754,7 +754,7 @@ export const DistrictBriefBody: React.FC = () => {
                   </div>
 
                   {/* Action Directive Footnote */}
-                  <div className="pt-2 border-t border-carbon-10 flex items-center justify-between text-xs text-carbon-60 font-medium">
+                  <div className="pt-2 border-t border-carbon-20 flex items-center justify-between text-xs text-carbon-60 font-medium">
                     <span className="truncate">
                       {up.severityScore >= 0.8
                         ? 'Immediate relief boats & evacuation required'
@@ -803,7 +803,7 @@ export const DistrictBriefBody: React.FC = () => {
                           <div className="w-20 bg-carbon-10 h-2 rounded-sm overflow-hidden">
                             <div
                               className={`h-full rounded-sm ${
-                                up.severityScore >= 0.8 ? 'bg-nasa-green' : up.severityScore >= 0.5 ? 'bg-amber-500' : 'bg-blue-500'
+                                up.severityScore >= 0.8 ? 'bg-severity-low' : up.severityScore >= 0.5 ? 'bg-amber-500' : 'bg-blue-500'
                               }`}
                               style={{ width: `${up.severityScore * 100}%` }}
                             />
@@ -818,7 +818,7 @@ export const DistrictBriefBody: React.FC = () => {
                       </td>
                       <td className="py-4 px-5 text-right">
                         <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold font-mono ${
-                          up.severityScore >= 0.8 ? 'bg-nasa-red-shade text-white' :
+                          up.severityScore >= 0.8 ? 'bg-primary text-ap-action-fg' :
                           up.severityScore >= 0.5 ? 'bg-amber-100 text-amber-900' :
                           'bg-carbon-10 text-carbon-70'
                         }`}>
@@ -853,7 +853,7 @@ export const DistrictBriefBody: React.FC = () => {
               onClick={() => setShowLiveAiAdvisory(!showLiveAiAdvisory)}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-all cursor-pointer screen-only ${
                 showLiveAiAdvisory
-                  ? 'bg-amber-500 text-carbon-black'
+                  ? 'bg-amber-500 text-ap-on-sev'
                   : 'bg-white border border-carbon-20 text-carbon-70 hover:bg-carbon-05 hover:text-carbon-90'
               }`}
             >
@@ -866,23 +866,23 @@ export const DistrictBriefBody: React.FC = () => {
 
         {/* Live AI Advisory Synthesizer (When toggled) */}
         {showLiveAiAdvisory && (
-          <div className="bg-carbon-90 text-white p-6 sm:p-8 border border-carbon-80 space-y-4 screen-only">
+          <div className="bg-carbon-90 text-carbon-05 p-6 sm:p-8 border border-carbon-80 space-y-4 screen-only">
             <div className="flex items-center justify-between border-b border-carbon-80 pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-400">
+                <div className="w-8 h-8 bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-700">
                   <Bot className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-ap-on-inverse flex items-center gap-2">
                     <span>Gemini 2.5 Dynamic Advisory Engine</span>
-                    <span className="px-2 py-0.5 rounded-sm bg-amber-400/20 text-amber-300 text-xs font-mono font-bold">ONLINE</span>
+                    <span className="px-2 py-0.5 rounded-sm bg-amber-400/20 text-amber-700 text-xs font-mono font-bold">ONLINE</span>
                   </h3>
-                  <p className="text-xs text-carbon-60">Real-time LLM inference synthesizing localized meteorological & agrarian guidance.</p>
+                  <p className="text-xs text-carbon-30">Real-time LLM inference synthesizing localized meteorological & agrarian guidance.</p>
                 </div>
               </div>
             </div>
 
-            <div className="text-carbon-90">
+            <div className="text-ap-on-inverse">
               <AdvisoryPanel
                 districtName={data.districtName}
                 hazardType={data.hazardType}
@@ -903,7 +903,7 @@ export const DistrictBriefBody: React.FC = () => {
         <section aria-label="Live weather forecast" className="max-w-4xl mx-auto w-full">
           <div className="flex items-center gap-2 mb-3 px-1">
             <Cloud className="w-4 h-4 text-sky-500" />
-            <h2 className="text-base font-bold text-carbon-80 dark:text-carbon-10">
+            <h2 className="text-base font-bold text-carbon-80">
               Live Weather: {data.districtName}
             </h2>
             <span className="text-xs font-mono text-carbon-60 ml-auto">
@@ -958,7 +958,7 @@ export const DistrictBriefBody: React.FC = () => {
                   <span className="w-8 h-8 rounded-sm bg-carbon-10 text-carbon-80 font-mono text-sm flex items-center justify-center shrink-0 font-extrabold mt-0.5 border border-carbon-20">
                     {idx + 1}
                   </span>
-                  <div className="flex-1 text-sm sm:text-[15px] text-carbon-80 leading-relaxed font-normal">
+                  <div className="flex-1 text-sm sm:text-ap-caption text-carbon-80 leading-relaxed font-normal">
                     {bullet}
                   </div>
                   {/* `basis-full` below sm: this 178px attribution chip is
@@ -996,7 +996,7 @@ export const DistrictBriefBody: React.FC = () => {
               </div>
             </div>
 
-            <div className="pt-3 border-t border-carbon-10 text-xs text-carbon-60">
+            <div className="pt-3 border-t border-carbon-20 text-xs text-carbon-60">
               Department of Agricultural Extension Hotline: <strong className="font-mono text-carbon-80">16123</strong>
             </div>
           </div>
@@ -1034,7 +1034,7 @@ export const DistrictBriefBody: React.FC = () => {
                     <span>View {climaticEventsData.division} Division</span>
                     <ExternalLink className="w-3 h-3" />
                   </Link>
-                  <span className="text-carbon-30">•</span>
+                  <span className="text-carbon-60">•</span>
                   <Link
                     to={`/hazards/${climaticEventsData.primaryHazard.toLowerCase().replace(/\s+/g, '-')}`}
                     className="text-amber-700 hover:text-amber-900 font-semibold inline-flex items-center gap-1"
@@ -1092,7 +1092,7 @@ export const DistrictBriefBody: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
               {/* Chart 1: Multi-Year Historical Trend */}
               <div className="border border-carbon-20 p-5 bg-white space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-carbon-10">
+                <div className="flex items-center justify-between pb-2 border-b border-carbon-20">
                   <div>
                     <h4 className="text-xs font-bold text-carbon-90 flex items-center gap-1.5">
                       <TrendingUp className="w-3.5 h-3.5 text-blue-600" />
@@ -1107,13 +1107,13 @@ export const DistrictBriefBody: React.FC = () => {
                 <div className="h-56 w-full pt-2">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={climaticEventsData.yearlyTrend} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" vertical={false} />
-                      <XAxis dataKey="year" tick={{ fontSize: 12, fill: '#77777a' }} />
-                      <YAxis tick={{ fontSize: 12, fill: '#77777a' }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f7" vertical={false} />
+                      <XAxis dataKey="year" tick={{ fontSize: 12, fill: '#6e6e73' }} />
+                      <YAxis tick={{ fontSize: 12, fill: '#6e6e73' }} />
                       <Tooltip
-                        contentStyle={{ backgroundColor: '#ffffff', borderColor: '#d1d1d1', borderRadius: '0.5rem', fontSize: '12px' }}
+                        contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e0e0e0', borderRadius: '0.5rem', fontSize: '12px' }}
                       />
-                      <Bar dataKey="count" name="Disaster Events" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="count" name="Disaster Events" fill="#0066cc" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -1121,7 +1121,7 @@ export const DistrictBriefBody: React.FC = () => {
 
               {/* Chart 2: Monthly Seasonality Curve */}
               <div className="border border-carbon-20 p-5 bg-white space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-carbon-10">
+                <div className="flex items-center justify-between pb-2 border-b border-carbon-20">
                   <div>
                     <h4 className="text-xs font-bold text-carbon-90 flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5 text-amber-600" />
@@ -1135,17 +1135,17 @@ export const DistrictBriefBody: React.FC = () => {
                     <AreaChart data={climaticEventsData.seasonalPattern} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
                       <defs>
                         <linearGradient id="districtSeasonGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.4} />
-                          <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.0} />
+                          <stop offset="5%" stopColor="#8a5a00" stopOpacity={0.4} />
+                          <stop offset="95%" stopColor="#8a5a00" stopOpacity={0.0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" vertical={false} />
-                      <XAxis dataKey="monthName" tick={{ fontSize: 12, fill: '#77777a' }} />
-                      <YAxis tick={{ fontSize: 12, fill: '#77777a' }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f7" vertical={false} />
+                      <XAxis dataKey="monthName" tick={{ fontSize: 12, fill: '#6e6e73' }} />
+                      <YAxis tick={{ fontSize: 12, fill: '#6e6e73' }} />
                       <Tooltip
-                        contentStyle={{ backgroundColor: '#ffffff', borderColor: '#d1d1d1', borderRadius: '0.5rem', fontSize: '12px' }}
+                        contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e0e0e0', borderRadius: '0.5rem', fontSize: '12px' }}
                       />
-                      <Area type="monotone" dataKey="count" name="Historical Events" stroke="#d97706" strokeWidth={2} fill="url(#districtSeasonGrad)" />
+                      <Area type="monotone" dataKey="count" name="Historical Events" stroke="#8a5a00" strokeWidth={2} fill="url(#districtSeasonGrad)" />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -1156,7 +1156,7 @@ export const DistrictBriefBody: React.FC = () => {
           {/* Interactive Historical Event Records Log */}
           {climaticEventsData && climaticEventsData.allEvents.length > 0 && (
             <div className="space-y-3 pt-2">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-carbon-10 gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-carbon-20 gap-2">
                 <div>
                   <h4 className="text-xs font-bold text-carbon-90 flex items-center gap-1.5">
                     <Layers className="w-3.5 h-3.5 text-blue-600" />
@@ -1249,7 +1249,7 @@ export const DistrictBriefBody: React.FC = () => {
                               <tr className="bg-blue-50/20">
                                 <td colSpan={6} className="p-3 border-b border-carbon-20">
                                   <div className="bg-white border border-carbon-20 p-3 text-xs space-y-1.5">
-                                    <div className="flex items-center justify-between text-carbon-60 border-b border-carbon-10 pb-1 text-xs">
+                                    <div className="flex items-center justify-between text-carbon-60 border-b border-carbon-20 pb-1 text-xs">
                                       <span><strong>ID:</strong> {event.id}</span>
                                       <span><strong>Coordinates:</strong> {event.lat.toFixed(4)}, {event.lng.toFixed(4)}</span>
                                       <span><strong>GLIDE:</strong> {event.glide || 'N/A'}</span>
@@ -1278,7 +1278,7 @@ export const DistrictBriefBody: React.FC = () => {
       <section id="sec-ops" className="scroll-mt-[calc(var(--navbar-height)+8px)] space-y-4 pt-4 pagination-protected">
         <div className="flex items-center justify-between border-b border-carbon-20 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-carbon-05 border border-carbon-20 flex items-center justify-center text-nasa-red-shade">
+            <div className="w-8 h-8 bg-carbon-05 border border-carbon-20 flex items-center justify-center text-ap-link">
               <Radio className="w-4 h-4" />
             </div>
             <div>
@@ -1293,33 +1293,33 @@ export const DistrictBriefBody: React.FC = () => {
           {/* Logistics Summary with Standardized Color Coding */}
           <div className="bg-white border border-carbon-20 p-6 space-y-4">
             <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-nasa-red-shade" />
+              <Building2 className="w-4 h-4 text-ap-link" />
               Emergency Relief & Resource Logistics
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              {/* Active Safe Shelters - Emerald (#059669) for resources, Amber (#f59e0b) for occupancy */}
+              {/* Active Safe Shelters - Emerald (#1d7a3e) for resources, Amber (#8a5a00) for occupancy */}
               <div className="bg-carbon-05 p-4 border border-carbon-20/80 space-y-1">
                 <span className="text-carbon-60 font-medium">Active Safe Shelters</span>
                 <div className="text-xl font-bold text-carbon-80 font-mono">{data.emergencyResponse.activeShelters} Facilities</div>
                 <span className="text-xs font-mono text-amber-700 font-bold">{data.emergencyResponse.shelterCapacityUsedPercent}% occupied</span>
               </div>
 
-              {/* Relief Grain Allocated - Emerald (#059669) */}
+              {/* Relief Grain Allocated - Emerald (#1d7a3e) */}
               <div className="bg-carbon-05 p-4 border border-carbon-20/80 space-y-1">
                 <span className="text-carbon-60 font-medium">Relief Grain Allocated</span>
                 <div className="text-xl font-bold text-carbon-80 font-mono">{data.emergencyResponse.reliefDistributedTons} Metric Tons</div>
                 <span className="text-xs text-carbon-60">Rice, lentils & dry provisions</span>
               </div>
 
-              {/* Rapid Medical Teams - Blue (#2563eb) */}
+              {/* Rapid Medical Teams - Blue (#0066cc) */}
               <div className="bg-carbon-05 p-4 border border-carbon-20/80 space-y-1">
                 <span className="text-carbon-60 font-medium">Rapid Medical Teams</span>
                 <div className="text-xl font-bold text-blue-600 font-mono">{data.emergencyResponse.medicalTeamsDeployed} Mobile Units</div>
                 <span className="text-xs text-carbon-60">Equipped with IV & ORS</span>
               </div>
 
-              {/* Water Purification Units - Emerald (#059669) */}
+              {/* Water Purification Units - Emerald (#1d7a3e) */}
               <div className="bg-carbon-05 p-4 border border-carbon-20/80 space-y-1">
                 <span className="text-carbon-60 font-medium">Water Purification Units</span>
                 <div className="text-xl font-bold text-carbon-80 font-mono">12 Mobile Vans</div>
@@ -1342,7 +1342,7 @@ export const DistrictBriefBody: React.FC = () => {
               <div className="bg-carbon-05 p-4 border border-carbon-20/80 text-xs font-mono space-y-2">
                 <div className="flex justify-between items-center text-carbon-90 font-bold">
                   <span>Disaster Early Warning (BMD/FFWC):</span>
-                  <span className="text-nasa-red-shade text-sm">1090 (Toll Free)</span>
+                  <span className="text-ap-link text-sm">1090 (Toll Free)</span>
                 </div>
                 <div className="flex justify-between items-center text-carbon-90 font-bold">
                   <span>National Emergency Police/Fire:</span>
@@ -1367,7 +1367,7 @@ export const DistrictBriefBody: React.FC = () => {
               <button
                 onClick={handleTriggerDispatch}
                 disabled={dispatchStatus === 'broadcasting'}
-                className="w-full py-3 px-4 bg-primary-strong hover:bg-primary active:bg-primary-strong text-white font-extrabold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-3 px-4 bg-primary hover:bg-primary-strong active:bg-primary-strong text-ap-action-fg font-extrabold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <Radio className={`w-4 h-4 ${dispatchStatus === 'broadcasting' ? 'animate-spin' : ''}`} />
                 <span>
@@ -1383,7 +1383,7 @@ export const DistrictBriefBody: React.FC = () => {
               {dispatchLogs.length > 0 && (
                 <div className="bg-carbon-90 text-carbon-20 p-3 text-xs font-mono space-y-1 max-h-24 overflow-y-auto">
                   {dispatchLogs.map((log, i) => (
-                    <div key={i} className="text-emerald-400">{log}</div>
+                    <div key={i} className="text-emerald-300">{log}</div>
                   ))}
                 </div>
               )}
@@ -1416,31 +1416,31 @@ export const DistrictBriefBody: React.FC = () => {
 
         <div className="bg-white border border-carbon-20 p-6 space-y-4 text-xs font-sans">
           <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-            <Bot className="w-4 h-4 text-nasa-blue" />
+            <Bot className="w-4 h-4 text-ap-link" />
             What this brief reports
           </h3>
 
           <div className="bg-carbon-05 border border-carbon-20 p-4 sm:p-5 space-y-3.5 text-carbon-80 leading-relaxed">
             <div>
-              <strong className="text-carbon-black font-bold block mb-1">[1] Published forecast record:</strong>
+              <strong className="text-carbon-90 font-bold block mb-1">[1] Published forecast record:</strong>
               <p className="text-carbon-70">
                 Each district unit is one record: hazard class, severity, confidence score and the 7- and 15-day horizons, stamped with the forecast date of the run that produced it. Nothing on this page is recomputed in the browser.
               </p>
             </div>
             <div>
-              <strong className="text-carbon-black font-bold block mb-1">[2] Confidence score (uncalibrated):</strong>
+              <strong className="text-carbon-90 font-bold block mb-1">[2] Confidence score (uncalibrated):</strong>
               <p className="text-carbon-70">
                 The 0&ndash;100% figure is the score for the chosen class in the published record. It is <strong className="font-bold">not</strong> a calibrated probability &mdash; no calibration accuracy is claimed, and detection performance is reported only once it can be measured against observed outcomes.
               </p>
             </div>
             <div>
-              <strong className="text-carbon-black font-bold block mb-1">[3] What this is not:</strong>
+              <strong className="text-carbon-90 font-bold block mb-1">[3] What this is not:</strong>
               <p className="text-carbon-70">
                 The published product is per-district severity for {data.districtName} &mdash; it is not a metre-scale inundation map and not an official warning.
               </p>
             </div>
             <div>
-              <strong className="text-carbon-black font-bold block mb-1">[4] The official record:</strong>
+              <strong className="text-carbon-90 font-bold block mb-1">[4] The official record:</strong>
               <p className="text-carbon-70">
                 River-level bulletins from the Flood Forecasting and Warning Centre (FFWC) and forecasts from the Bangladesh Meteorological Department (BMD) remain the official record and outrank anything shown here.
               </p>

@@ -103,7 +103,7 @@ export const AccountSection: React.FC = () => {
                 type="button"
                 onClick={handleEmailChange}
                 disabled={emailBusy || !newEmail.trim()}
-                className="shrink-0 bg-carbon-90 px-4 py-2.5 text-xs font-extrabold text-white transition-colors hover:bg-carbon-80 disabled:opacity-40 cursor-pointer"
+                className="shrink-0 bg-carbon-90 px-4 py-2.5 text-xs font-extrabold text-carbon-05 transition-colors hover:bg-carbon-80 disabled:opacity-40 cursor-pointer"
               >
                 {emailBusy ? 'Sending…' : 'Update email'}
               </button>
@@ -127,7 +127,7 @@ export const AccountSection: React.FC = () => {
             type="button"
             onClick={handlePasswordReset}
             disabled={resetBusy || !userProfile?.email}
-            className="flex items-center gap-2 bg-carbon-90 px-4 py-2.5 text-xs font-extrabold text-white transition-colors hover:bg-carbon-80 disabled:opacity-40 cursor-pointer"
+            className="flex items-center gap-2 bg-carbon-90 px-4 py-2.5 text-xs font-extrabold text-carbon-05 transition-colors hover:bg-carbon-80 disabled:opacity-40 cursor-pointer"
           >
             {resetBusy && <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/40 border-t-white" />}
             {passwordProvider === 'social' ? 'Email me a password-setup link' : 'Email me a password-reset link'}
@@ -150,7 +150,7 @@ export const AccountSection: React.FC = () => {
           type="button"
           onClick={handleSignOut}
           disabled={signOutBusy}
-          className="flex items-center gap-2 border border-nasa-red bg-white px-4 py-2.5 text-xs font-extrabold text-nasa-red-shade transition-colors hover:bg-rose-100 disabled:opacity-40 cursor-pointer"
+          className="flex items-center gap-2 border border-ap-primary bg-white px-4 py-2.5 text-xs font-extrabold text-ap-link transition-colors hover:bg-rose-100 disabled:opacity-40 cursor-pointer"
         >
           <MaterialIcon name="logout" size={14} />
           {signOutBusy ? 'Signing out…' : 'Sign out'}

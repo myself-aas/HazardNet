@@ -1,16 +1,16 @@
 /**
  * HazardNet native theme.
  *
- * Meridian is the semantic source for surfaces, labels, controls and type. The
+ * Apple is the semantic source for surfaces, labels, controls and type. The
  * native layer only adds device-specific surface treatment (OLED) and maps
  * HazardNet's four operational alert classes onto the shared severity palette.
  */
 
 import {
-  HDS_NASA_TOKENS,
-  MERIDIAN_PRIMITIVES,
-  MERIDIAN_SEVERITY,
-  MERIDIAN_THEMES,
+  APPLE_NATIVE,
+  APPLE_NATIVE_COLORS,
+  APPLE_NATIVE_DATAVIZ,
+  APPLE_NATIVE_THEMES,
 } from '@hazardnet/design-system';
 import { TYPE_ROLES, BORDER_WIDTHS, NATIVE_RADIUS, spacing } from './nativeTokens';
 
@@ -71,68 +71,68 @@ export interface Theme {
 }
 
 const WHITE = '#ffffff';
-const INK = MERIDIAN_PRIMITIVES.ink;
-const { colors: nasaColors } = HDS_NASA_TOKENS;
+const INK = APPLE_NATIVE_COLORS.inkPrimary;
+const { colors: nasaColors } = APPLE_NATIVE;
 
 const LIGHT_ALERTS = {
   severe: {
-    label: MERIDIAN_SEVERITY.extreme.color,
-    surface: MERIDIAN_SEVERITY.extreme.surface,
-    solid: MERIDIAN_PRIMITIVES.brandCrimson,
+    label: APPLE_NATIVE_COLORS.severity.extreme.color,
+    surface: APPLE_NATIVE_COLORS.severity.extreme.surface,
+    solid: APPLE_NATIVE_COLORS.primary,
     onSolid: WHITE,
   },
   warning: {
-    label: MERIDIAN_SEVERITY.moderate.color,
-    surface: MERIDIAN_SEVERITY.moderate.surface,
-    solid: MERIDIAN_SEVERITY.moderate.color,
+    label: APPLE_NATIVE_COLORS.severity.moderate.color,
+    surface: APPLE_NATIVE_COLORS.severity.moderate.surface,
+    solid: APPLE_NATIVE_COLORS.severity.moderate.color,
     onSolid: WHITE,
   },
   watch: {
-    label: nasaColors.seqOrange80,
-    surface: nasaColors.seqYellow10,
-    solid: nasaColors.seqYellow30,
-    onSolid: nasaColors.seqOrange90,
+    label: APPLE_NATIVE_DATAVIZ.seqOrange80,
+    surface: APPLE_NATIVE_DATAVIZ.seqYellow10,
+    solid: APPLE_NATIVE_DATAVIZ.seqYellow30,
+    onSolid: APPLE_NATIVE_DATAVIZ.seqOrange90,
   },
   allClear: {
-    label: MERIDIAN_SEVERITY.low.color,
-    surface: MERIDIAN_SEVERITY.low.surface,
+    label: APPLE_NATIVE_COLORS.severity.low.color,
+    surface: APPLE_NATIVE_COLORS.severity.low.surface,
     // Use the darker text role as a fill too: white text on the brighter map
     // solid (#16a34a) misses AA for small labels.
-    solid: MERIDIAN_SEVERITY.low.color,
+    solid: APPLE_NATIVE_COLORS.severity.low.color,
     onSolid: WHITE,
   },
 } as const;
 
 const DARK_ALERTS = {
   severe: {
-    label: MERIDIAN_PRIMITIVES.darkCrimsonTint,
+    label: APPLE_NATIVE_COLORS.primaryOnDark,
     surface: 'rgba(255, 107, 96, 0.16)',
-    solid: MERIDIAN_THEMES.dark.actionHazard,
-    onSolid: MERIDIAN_THEMES.dark.actionHazardForeground,
+    solid: APPLE_NATIVE_THEMES.dark.action,
+    onSolid: APPLE_NATIVE_THEMES.dark.actionForeground,
   },
   warning: {
-    label: nasaColors.seqYellow30,
+    label: APPLE_NATIVE_DATAVIZ.seqYellow30,
     surface: 'rgba(245, 175, 12, 0.18)',
-    solid: nasaColors.seqYellow30,
+    solid: APPLE_NATIVE_DATAVIZ.seqYellow30,
     onSolid: INK,
   },
   watch: {
-    label: nasaColors.seqYellow20,
+    label: APPLE_NATIVE_DATAVIZ.seqYellow20,
     surface: 'rgba(255, 203, 71, 0.16)',
-    solid: nasaColors.seqYellow20,
+    solid: APPLE_NATIVE_DATAVIZ.seqYellow20,
     onSolid: INK,
   },
   allClear: {
-    label: nasaColors.activeGreen,
+    label: APPLE_NATIVE_DATAVIZ.activeGreen,
     surface: 'rgba(71, 218, 132, 0.16)',
-    solid: nasaColors.activeGreen,
+    solid: APPLE_NATIVE_DATAVIZ.activeGreen,
     onSolid: INK,
   },
 } as const;
 
 function makeTheme(mode: ThemeMode): Theme {
   const dark = mode !== 'light';
-  const roles = dark ? MERIDIAN_THEMES.dark : MERIDIAN_THEMES.light;
+  const roles = dark ? APPLE_NATIVE_THEMES.dark : APPLE_NATIVE_THEMES.light;
   const alertRoles = dark ? DARK_ALERTS : LIGHT_ALERTS;
   const oled = mode === 'oled';
 
@@ -143,19 +143,22 @@ function makeTheme(mode: ThemeMode): Theme {
     surfaceTint: oled ? '#0b0e11' : roles.backgroundGrouped,
     textPrimary: roles.label,
     textSecondary: roles.labelSecondary,
-    // Meridian's tertiary label is a 14px+ role. Native metadata is 12px, so
+    // Apple's tertiary label is a 14px+ role. Native metadata is 12px, so
     // it deliberately uses the AA/AAA secondary role instead of that weaker tint.
     textMuted: roles.labelSecondary,
     textOnColor: dark ? INK : WHITE,
-    hairline: oled ? MERIDIAN_PRIMITIVES.darkHairline : roles.separator,
-    divider: oled ? MERIDIAN_PRIMITIVES.darkHairline : roles.separator,
-    primaryAction: roles.actionInk,
-    primaryActionText: roles.actionInkForeground,
-    interactive: roles.actionInteractive,
-    interactiveText: roles.actionInteractive,
-    interactiveOnColor: roles.actionInteractiveForeground,
-    dangerAction: roles.actionHazard,
-    dangerActionText: roles.actionHazardForeground,
+    hairline: oled ? APPLE_NATIVE_COLORS.darkHairline : roles.separator,
+    divider: oled ? APPLE_NATIVE_COLORS.darkHairline : roles.separator,
+    // Apple's filled primary is Action Blue, not ink. A black filled button was
+    // the previous system's grammar; under one accent it is the same blue the
+    // links and the tab bar use.
+    primaryAction: roles.action,
+    primaryActionText: roles.actionForeground,
+    interactive: roles.action,
+    interactiveText: roles.action,
+    interactiveOnColor: roles.actionForeground,
+    dangerAction: roles.action,
+    dangerActionText: roles.actionForeground,
     secondaryAction: oled ? '#14191e' : roles.backgroundGrouped,
     skeleton: oled ? '#14191e' : roles.backgroundGrouped,
     skeletonHighlight: oled ? '#1b2128' : roles.backgroundElevated,
@@ -199,7 +202,7 @@ export const OLED_THEME = makeTheme('oled');
 
 function highContrastTheme(mode: ThemeMode): Theme {
   const base = mode === 'light' ? LIGHT_THEME : mode === 'oled' ? OLED_THEME : DARK_THEME;
-  const lightRoles = MERIDIAN_THEMES.highContrast;
+  const lightRoles = APPLE_NATIVE_THEMES.highContrast;
 
   if (mode === 'light') {
     return {
@@ -217,25 +220,25 @@ function highContrastTheme(mode: ThemeMode): Theme {
         textOnColor: WHITE,
         hairline: lightRoles.separator,
         divider: lightRoles.separator,
-        primaryAction: lightRoles.actionInk,
-        primaryActionText: lightRoles.actionInkForeground,
-        interactive: lightRoles.actionInteractive,
-        interactiveText: lightRoles.actionInteractive,
-        interactiveOnColor: lightRoles.actionInteractiveForeground,
-        dangerAction: lightRoles.actionHazard,
-        dangerActionText: lightRoles.actionHazardForeground,
+        primaryAction: lightRoles.action,
+        primaryActionText: lightRoles.actionForeground,
+        interactive: lightRoles.action,
+        interactiveText: lightRoles.action,
+        interactiveOnColor: lightRoles.actionForeground,
+        dangerAction: lightRoles.action,
+        dangerActionText: lightRoles.actionForeground,
         secondaryAction: '#ffffff',
         severe: '#7A0001',
         severeSolid: '#7A0001',
         severeOnSolid: WHITE,
-        warning: nasaColors.seqOrange90,
-        warningSolid: nasaColors.seqOrange90,
+        warning: APPLE_NATIVE_DATAVIZ.seqOrange90,
+        warningSolid: APPLE_NATIVE_DATAVIZ.seqOrange90,
         warningOnSolid: WHITE,
-        watch: nasaColors.seqOrange90,
-        watchSolid: nasaColors.seqYellow30,
+        watch: APPLE_NATIVE_DATAVIZ.seqOrange90,
+        watchSolid: APPLE_NATIVE_DATAVIZ.seqYellow30,
         watchOnSolid: INK,
-        allClear: MERIDIAN_SEVERITY.low.color,
-        allClearSolid: MERIDIAN_SEVERITY.low.color,
+        allClear: APPLE_NATIVE_COLORS.severity.low.color,
+        allClearSolid: APPLE_NATIVE_COLORS.severity.low.color,
         allClearOnSolid: WHITE,
       },
     };
@@ -246,8 +249,8 @@ function highContrastTheme(mode: ThemeMode): Theme {
     contrast: 'high',
     colors: {
       ...base.colors,
-      textSecondary: MERIDIAN_PRIMITIVES.darkLabel,
-      textMuted: MERIDIAN_PRIMITIVES.darkLabel,
+      textSecondary: APPLE_NATIVE_COLORS.onDark,
+      textMuted: APPLE_NATIVE_COLORS.onDark,
       hairline: '#8A939B',
       divider: '#8A939B',
       interactive: '#8AB8FF',

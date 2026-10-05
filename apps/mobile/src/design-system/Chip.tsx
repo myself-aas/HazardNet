@@ -1,5 +1,5 @@
 /**
- * Meridian chip and alert-severity badge primitives.
+ * Apple chip and alert-severity badge primitives.
  *
  * Small chips use an 8-unit surrounding hit area in addition to their visual
  * bounds. Severity badges keep fill, foreground, shared icon and word separate

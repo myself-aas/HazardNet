@@ -1,32 +1,123 @@
-/* Leaflet must stay interactive; chrome is opaque HDS, not glass. */
+/* ─────────────────────────────────────────────────────────────────────────────
+   Leaflet chrome, re-dressed in Apple tokens.
+
+   Leaflet ships its own stylesheet, and whatever it paints is real pixels on
+   the two busiest pages in the app. None of it knows about the theme, so every
+   piece of chrome here is either re-pointed at an --ap-* token or left to the
+   map tiles. Three of these were not cosmetic:
+
+   1. The popup wrapper was `background: #ffffff` under `color: var(--ap-n-90)`.
+      The ink is on the inverting ramp and the ground was a literal, so in dark
+      mode the text went white and the card stayed white — 1.00:1. Same failure
+      shape as the 324 `bg-white` call sites, hiding in a CSS file where the
+      className scanner could not see it.
+
+   2. `.leaflet-tooltip` is stock `#fff` on `#222` with a 3px radius, and the
+      app calls `bindTooltip` 50 times. A white tooltip on a dark map is a
+      flash, and 3px is not on the Apple radius scale.
+
+   3. The marker clusters were the worst of them. Leaflet colours clusters
+      green / yellow / orange by COUNT, which is a traffic-light scale pointed
+      at the wrong variable: a green bubble means "few markers here", but on a
+      hazard map it reads as "low severity". Severity has its own ramp and its
+      own meaning, and nothing else may borrow those hues. Clusters are now
+      neutral chrome — count is carried by the number printed inside, which is
+      the only thing that was ever actually encoding it.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Leaflet must stay interactive; chrome is opaque Apple, not glass. */
 .leaflet-container {
-    background: var(--hds-color-carbon-10, #f4f4f4) !important;
+  background: var(--ap-n-10) !important;
 }
 .leaflet-pane, .leaflet-tile, .leaflet-marker-icon, .leaflet-marker-shadow, .leaflet-tile-container, .leaflet-pane > svg, .leaflet-pane > canvas, .leaflet-zoom-box, .leaflet-image-layer, .leaflet-layer {
-    pointer-events: none !important;
+  pointer-events: none !important;
 }
 .leaflet-interactive {
-    pointer-events: auto !important;
+  pointer-events: auto !important;
 }
 .leaflet-control-container .leaflet-control {
-    pointer-events: auto !important;
+  pointer-events: auto !important;
 }
+
+/* Popups — ground and ink must invert together. */
 .leaflet-popup-content-wrapper,
 .leaflet-popup-tip {
-    background: #ffffff;
-    color: var(--hds-color-carbon-90, #17171b);
-    border-radius: 0;
-    box-shadow: none;
-    border: 1px solid var(--hds-color-carbon-20, #d1d1d1);
+  background: var(--ap-bg-canvas);
+  color: var(--ap-label);
+  border-radius: 0;
+  box-shadow: none;
+  border: 1px solid var(--ap-separator-opaque);
 }
 .leaflet-popup-content-wrapper {
-    border-bottom: 0;
+  border-bottom: 0;
 }
 .leaflet-container a.leaflet-popup-close-button {
-    width: 44px;
-    height: 44px;
-    font-size: 16px;
-    line-height: 44px;
-    padding: 0;
-    color: var(--hds-color-carbon-70, #58585b);
+  width: 44px;
+  height: 44px;
+  font-size: 16px;
+  line-height: 44px;
+  padding: 0;
+  color: var(--ap-label-secondary);
+}
+.leaflet-container a.leaflet-popup-close-button:hover,
+.leaflet-container a.leaflet-popup-close-button:focus {
+  color: var(--ap-label);
+}
+
+/* Tooltips — 50 call sites, previously stock #fff/#222. */
+.leaflet-tooltip {
+  background-color: var(--ap-bg-canvas);
+  border: 1px solid var(--ap-separator-opaque);
+  border-radius: var(--ap-radius-xs);
+  box-shadow: var(--ap-elev-hairline);
+  color: var(--ap-label);
+  font-family: var(--ap-font-text);
+  font-size: var(--ap-text-caption);
+  line-height: var(--ap-leading-caption);
+  padding: 4px 8px;
+}
+.leaflet-tooltip-top::before { border-top-color: var(--ap-separator-opaque); }
+.leaflet-tooltip-bottom::before { border-bottom-color: var(--ap-separator-opaque); }
+.leaflet-tooltip-left::before { border-left-color: var(--ap-separator-opaque); }
+.leaflet-tooltip-right::before { border-right-color: var(--ap-separator-opaque); }
+
+/* Zoom / attribution chrome. */
+.leaflet-bar a,
+.leaflet-control-attribution {
+  background: var(--ap-bg-canvas);
+  color: var(--ap-label-secondary);
+  border-color: var(--ap-separator-opaque);
+}
+.leaflet-bar a:hover,
+.leaflet-bar a:focus {
+  background: var(--ap-bg-grouped);
+  color: var(--ap-label);
+}
+.leaflet-bar a.leaflet-disabled {
+  background: var(--ap-bg-grouped);
+  color: var(--ap-label-quaternary);
+}
+.leaflet-control-attribution a {
+  color: var(--ap-action);
+}
+
+/* Clusters — neutral chrome. The count inside carries the magnitude; the hue
+   is not available to encode it, because severity owns those hues. */
+.marker-cluster,
+.marker-cluster-small,
+.marker-cluster-medium,
+.marker-cluster-large {
+  background-color: color-mix(in srgb, var(--ap-label) 18%, transparent);
+}
+.marker-cluster div,
+.marker-cluster-small div,
+.marker-cluster-medium div,
+.marker-cluster-large div {
+  background-color: var(--ap-bg-canvas);
+  color: var(--ap-label);
+  border: 1px solid var(--ap-separator-opaque);
+}
+.marker-cluster span {
+  font-family: var(--ap-font-text);
+  font-weight: var(--ap-weight-semibold);
 }

@@ -1,5 +1,6 @@
 import MaterialIcon from "./MaterialIcon";
 import React from 'react';
+import { hazardPalette } from '@hazardnet/design-system';
 import { AlertTriangle, ArrowRight, BarChart3, MapPin } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { ALL_8_DIVISIONS, DistrictData, DivisionData } from '../data/bangladeshDistricts';
@@ -48,14 +49,24 @@ export interface DivisionSummary {
   districts: DistrictData[];
 }
 
-const HAZARD_METADATA: Record<string, { icon: string; color: string; bg: string; border: string }> = {
-  'Monsoon Flood': { icon: 'water', color: '#38bdf8', bg: 'bg-sky-500/10', border: 'border-sky-500/30' },
-  'Flash Flood': { icon: 'bolt', color: '#06b6d4', bg: 'bg-cyan-500/10', border: 'border-cyan-500/30' },
-  'Tropical Cyclone': { icon: 'cyclone', color: '#f43f5e', bg: 'bg-rose-500/10', border: 'border-rose-500/30' },
-  'Drought': { icon: 'sunny', color: '#f59e0b', bg: 'bg-amber-500/10', border: 'border-amber-500/30' },
-  'Cold Wave': { icon: 'ac_unit', color: '#a855f7', bg: 'bg-purple-500/10', border: 'border-purple-500/30' },
-  'Severe Storm': { icon: 'thunderstorm', color: '#eab308', bg: 'bg-yellow-500/10', border: 'border-yellow-500/30' },
-  'Severe Local Storm': { icon: 'thunderstorm', color: '#eab308', bg: 'bg-yellow-500/10', border: 'border-yellow-500/30' }
+/**
+ * Icon per hazard. The colour is resolved from the one hazard palette rather
+ * than declared here — this map previously held eight Tailwind defaults that
+ * disagreed with the two other copies of it elsewhere in the app. The `bg` and
+ * `border` Tailwind class names it also carried were never read, so they are
+ * gone rather than ported.
+ */
+const HAZARD_ICONS: Record<string, string> = {
+  'Monsoon Flood': 'water',
+  'Flood': 'water',
+  'Flash Flood': 'bolt',
+  'Tropical Cyclone': 'cyclone',
+  'Drought': 'sunny',
+  'Heat Wave': 'thermostat',
+  'Cold Wave': 'ac_unit',
+  'Severe Storm': 'thunderstorm',
+  'Severe Local Storm': 'thunderstorm',
+  'Fire': 'local_fire_department',
 };
 
 export const NationalOverview: React.FC<NationalOverviewProps> = ({
@@ -104,11 +115,9 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
         if (d.division) divisionsSet.add(d.division);
       });
 
-      const meta = HAZARD_METADATA[hazardName] || {
-        icon: 'warning',
-        color: '#ef4444',
-        bg: 'bg-red-500/10',
-        border: 'border-red-500/30'
+      const meta = {
+        icon: HAZARD_ICONS[hazardName] ?? 'warning',
+        color: hazardPalette(hazardName).text,
       };
 
       return {
@@ -205,10 +214,10 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
       <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-carbon-20">
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2.5">
-            <span className="px-3 py-1 rounded-full text-xs font-mono font-black uppercase tracking-wider bg-nasa-red/10 text-nasa-red-shade border border-nasa-blue/20 shadow-2xs flex items-center gap-1.5">
+            <span className="px-3 py-1 rounded-full text-xs font-mono font-black uppercase tracking-wider bg-ap-primary/10 text-ap-link border border-ap-primary/20 shadow-2xs flex items-center gap-1.5">
               National AI Overview Mode
             </span>
-            <span className="text-carbon-30 hidden sm:inline">•</span>
+            <span className="text-carbon-60 hidden sm:inline">•</span>
             <span className="text-xs font-mono text-carbon-60 bg-carbon-05 px-2.5 py-1 rounded-lg border border-carbon-20/90">
               Formula: <code className="text-emerald-600 font-bold">{`{unique_hazard_name} + {district_counts} + {avg_severity}`}</code>
             </span>
@@ -251,7 +260,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
             onClick={() => setActiveTab('top3')}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 ${
               activeTab === 'top3'
-                ? 'bg-primary text-carbon-90 shadow-xs scale-[1.02]'
+                ? 'bg-primary text-ap-action-fg shadow-xs scale-[1.02]'
                 : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
             }`}
           >
@@ -262,7 +271,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
             onClick={() => setActiveTab('divisions')}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 ${
               activeTab === 'divisions'
-                ? 'bg-primary text-carbon-90 shadow-xs scale-[1.02]'
+                ? 'bg-primary text-ap-action-fg shadow-xs scale-[1.02]'
                 : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
             }`}
           >
@@ -276,7 +285,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
             onClick={() => setActiveTab('all_hazards')}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 ${
               activeTab === 'all_hazards'
-                ? 'bg-primary text-carbon-90 shadow-xs scale-[1.02]'
+                ? 'bg-primary text-ap-action-fg shadow-xs scale-[1.02]'
                 : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
             }`}
           >
@@ -287,7 +296,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
             onClick={() => setActiveTab('formula')}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 ${
               activeTab === 'formula'
-                ? 'bg-primary text-carbon-90 shadow-xs scale-[1.02]'
+                ? 'bg-primary text-ap-action-fg shadow-xs scale-[1.02]'
                 : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
             }`}
           >
@@ -327,9 +336,9 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {top3Hazards.map((hazard, index) => {
               const ranks = [
-                { badge: '#1 Highest Threat', bg: 'bg-rose-50/60', border: 'border-rose-200', badgeColor: 'bg-rose-600 text-white' },
-                { badge: '#2 Severe Risk', bg: 'bg-amber-50/60', border: 'border-amber-200', badgeColor: 'bg-amber-500 text-carbon-90' },
-                { badge: '#3 Major Concern', bg: 'bg-sky-50/60', border: 'border-sky-200', badgeColor: 'bg-sky-500 text-carbon-90' }
+                { badge: '#1 Highest Threat', bg: 'bg-rose-50/60', border: 'border-rose-200', badgeColor: 'bg-rose-600 text-ap-on-sev' },
+                { badge: '#2 Severe Risk', bg: 'bg-amber-50/60', border: 'border-amber-200', badgeColor: 'bg-amber-500 text-ap-on-sev' },
+                { badge: '#3 Major Concern', bg: 'bg-sky-50/60', border: 'border-sky-200', badgeColor: 'bg-sky-500 text-ap-on-sev' }
               ];
               const rankInfo = ranks[index] || ranks[2];
               const isSelected = selectedHazardFilter === hazard.hazardName;
@@ -536,17 +545,17 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={hazardSummaries} margin={{ top: 10, right: 20, left: -10, bottom: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                   <XAxis
                     dataKey="hazardName"
-                    stroke="#77777a"
+                    stroke="#6e6e73"
                     fontSize={12}
-                    tick={{ fill: '#444447' }}
+                    tick={{ fill: '#333333' }}
                     interval={0}
                     angle={-15}
                     textAnchor="end"
                   />
-                  <YAxis stroke="#77777a" fontSize={12} tick={{ fill: '#444447' }} />
+                  <YAxis stroke="#6e6e73" fontSize={12} tick={{ fill: '#333333' }} />
                   <Tooltip
                     content={({ active, payload }) => {
                       if (active && payload && payload.length) {
@@ -599,7 +608,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
                     onClick={() => setSelectedHazardFilter(isSelected ? null : hazard.hazardName)}
                     className={`min-h-[44px] rounded-xl border px-3 py-1.5 font-mono text-xs font-bold transition-all ${
                       isSelected
-                        ? 'border-rose-500 bg-rose-600 text-white'
+                        ? 'border-rose-500 bg-rose-600 text-ap-on-sev'
                         : 'border-carbon-20 bg-carbon-05 text-sky-800 hover:bg-carbon-10'
                     }`}
                   >
@@ -689,7 +698,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
                           onClick={() => setSelectedHazardFilter(isSelected ? null : hazard.hazardName)}
                           className={`px-3 py-1.5 rounded-xl font-mono text-xs font-bold border transition-all ${
                             isSelected
-                              ? 'bg-rose-600 text-white border-rose-500'
+                              ? 'bg-rose-600 text-ap-on-sev border-rose-500'
                               : 'bg-carbon-05 text-sky-800 border-carbon-20 hover:bg-carbon-10'
                           }`}
                         >
@@ -744,7 +753,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
               district count and the mean of the published per-district severity —
               no weights, no thresholds, no clusters. This panel also renders on the
               `top3` tab, so it is the disclosure that stands next to the
-              "Composite Index" figure on each Top-3 card. The embargo gate fails
+"Composite Index" figure on each Top-3 card. The embargo gate fails
               the build if the phrase below loses its label. */}
           <div className="bg-sky-50 border border-sky-200 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs font-mono text-sky-900">
             <div>

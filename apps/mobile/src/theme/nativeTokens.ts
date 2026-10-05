@@ -1,17 +1,18 @@
 /**
  * Native-specific implementation values for HazardNet Mobile.
  *
- * Semantic color roles and the type-scale decisions come from Meridian. This
+ * Semantic colour roles and the type-scale decisions come from the Apple design system
+ * (`packages/design-system/src/appleNative.ts`). This
  * file only translates those roles into React Native units and adds layout
  * values that belong to a device shell: touch targets, safe areas and spacing.
  */
 
-import { HDS_NASA_TOKENS, MERIDIAN_RADIUS_ROLES, MERIDIAN_TYPE_SCALE } from '@hazardnet/design-system';
+import { APPLE_NATIVE, APPLE_NATIVE_RADIUS, APPLE_NATIVE_TYPE } from '@hazardnet/design-system';
 
-const { spacing } = HDS_NASA_TOKENS;
+const { spacing } = APPLE_NATIVE;
 
 /**
- * Meridian's web floor is 44 CSS px, Apple's touch-target floor is 44 pt, and
+ * Apple's touch-target floor is 44 pt, and
  * Android's is 48 dp. Native controls use the stricter cross-platform 48 unit
  * floor; only the iOS tab-bar row uses Apple's compact 49 pt system height.
  */
@@ -39,20 +40,20 @@ export const MOTION = {
 } as const;
 
 /**
- * Radius roles are shared with the web scale. The native editorial shell uses
+ * Radius roles are the Apple scale, shared with the web. The native editorial shell uses
  * the same 16-unit card and pill-control roles; the web console can opt into
  * the tighter control radius through its track scope.
  */
 export const NATIVE_RADIUS = {
   none: 0,
-  chip: MERIDIAN_RADIUS_ROLES.chip,
-  control: MERIDIAN_RADIUS_ROLES.control,
-  media: MERIDIAN_RADIUS_ROLES.media,
-  card: MERIDIAN_RADIUS_ROLES.card,
-  sheet: MERIDIAN_RADIUS_ROLES.sheet,
-  feature: MERIDIAN_RADIUS_ROLES.feature,
-  pill: MERIDIAN_RADIUS_ROLES.pill,
-  sheetIndicator: MERIDIAN_RADIUS_ROLES.pill,
+  chip: APPLE_NATIVE_RADIUS.chip,
+  control: APPLE_NATIVE_RADIUS.control,
+  media: APPLE_NATIVE_RADIUS.media,
+  card: APPLE_NATIVE_RADIUS.card,
+  sheet: APPLE_NATIVE_RADIUS.sheet,
+  feature: APPLE_NATIVE_RADIUS.feature,
+  pill: APPLE_NATIVE_RADIUS.pill,
+  sheetIndicator: APPLE_NATIVE_RADIUS.pill,
 } as const;
 
 export { spacing };
@@ -65,55 +66,65 @@ export { spacing };
 export const NATIVE_FONT_SCALE_MAX = 0;
 
 /**
- * React Native translation of Meridian's named type roles. Display3 is fixed
+ * React Native translation of Apple's named type roles. Display3 is fixed
  * at Apple's 34pt Large Title on native; the web's clamp remains fluid. Body,
- * callout, subhead and caption sizes follow the shared Meridian scale.
+ * callout, subhead and caption sizes follow the shared Apple scale.
  */
-const pxFromRem = (value: string): number => {
-  const match = /^([\d.]+)rem$/.exec(value);
-  return match ? Number(match[1]) * 16 : 0;
-};
-
-function nativeRole(name: keyof typeof MERIDIAN_TYPE_SCALE, sizeOverride?: number) {
-  const role = MERIDIAN_TYPE_SCALE[name];
-  const size = sizeOverride ?? pxFromRem(role.size);
-  const weight = role.weight >= 600 ? '600' : role.weight >= 500 ? '500' : '400';
+/**
+ * Native type roles, resolved from the Apple scale.
+ *
+ * The native shell keeps its own role NAMES (displayLarge, subhead, metadata…) because that is
+ * the vocabulary a React Native screen reads in, but every value behind them is an Apple style —
+ * so a "title2" on iOS is the same 21pt tagline as on the web, not a near-miss.
+ *
+ * `APPLE_NATIVE_TYPE.scale` has already done the rem→pt and ratio→absolute conversions, so this
+ * is a straight lookup rather than a second unit system.
+ */
+function nativeRole(name: keyof typeof APPLE_NATIVE_TYPE.scale, sizeOverride?: number) {
+  const role = APPLE_NATIVE_TYPE.scale[name];
+  const size = sizeOverride ?? role.fontSize;
+  const scaled = size / role.fontSize;
   return {
     size,
-    weight,
-    lineHeight: Math.round(size * role.line),
-    letterSpacing: Number.parseFloat(role.tracking) * size,
+    weight: role.fontWeight,
+    lineHeight: Math.round(role.lineHeight * scaled),
+    letterSpacing: role.letterSpacing * scaled,
   } as const;
 }
 
-/** Native role names mapped to the canonical web scale (display3 is fixed at 34pt). */
+/** Native role names mapped onto the canonical Apple scale. */
 export const NATIVE_TYPE_ROLE_MAP = {
-  displayLarge: 'display3',
-  displaySmall: 'title1',
-  title1: 'title1',
-  title2: 'title2',
-  title3: 'title3',
+  displayLarge: 'displayMd',
+  displaySmall: 'lead',
+  title1: 'lead',
+  title2: 'tagline',
+  title3: 'bodyStrong',
   body: 'body',
-  bodyBold: 'body',
-  callout: 'callout',
-  subhead: 'subhead',
+  bodyBold: 'bodyStrong',
+  callout: 'body',
+  subhead: 'captionStrong',
   caption: 'caption',
-  metadata: 'caption',
+  metadata: 'finePrint',
+  /** The mono readout is caption-sized; only the family differs. */
+  mono: 'caption',
 } as const;
 
 export const TYPE_ROLES = {
-  displayLarge: nativeRole('display3', 34),
-  displaySmall: nativeRole('title1'),
-  title1: nativeRole('title1'),
-  title2: nativeRole('title2'),
-  title3: nativeRole('title3'),
+  displayLarge: nativeRole('displayMd'),
+  displaySmall: nativeRole('lead'),
+  title1: nativeRole('lead'),
+  title2: nativeRole('tagline'),
+  title3: nativeRole('bodyStrong'),
   body: nativeRole('body'),
-  bodyBold: { ...nativeRole('body'), weight: '600' as const },
-  callout: nativeRole('callout'),
-  subhead: nativeRole('subhead'),
+  bodyBold: nativeRole('bodyStrong'),
+  callout: nativeRole('body'),
+  subhead: nativeRole('captionStrong'),
   caption: nativeRole('caption'),
-  metadata: { ...nativeRole('caption'), weight: '500' as const },
-  mono: { size: 13, weight: '400' as const, lineHeight: 20, letterSpacing: 0 },
+  metadata: nativeRole('finePrint'),
+  // Resolved from the Apple scale like every other role — the mono *family* is
+  // applied by the Text component; the metrics stay on-scale so a mono figure
+  // and the caption beside it sit on the same baseline.
+  mono: nativeRole('caption'),
 } as const;
 
 export const SEVERITY_EDGE_WIDTH = 3;

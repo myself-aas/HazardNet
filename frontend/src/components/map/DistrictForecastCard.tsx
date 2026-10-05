@@ -76,7 +76,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
       aria-label={`${district.name} district forecast`}
       data-testid="district-forecast-card"
       data-disclosure-stage={disclosureStage}
-      className="flex flex-col min-h-0 w-full bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-80 text-carbon-80 dark:text-carbon-10 rounded-t-3xl sm:rounded-2xl shadow-md"
+      className="flex flex-col min-h-0 w-full bg-white border border-carbon-20 text-carbon-80 rounded-t-3xl sm:rounded-2xl shadow-md"
     >
       {/* 3-stage progressive disclosure handle (peek / half / expanded) */}
       <button
@@ -84,25 +84,25 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
         onClick={cycleDisclosureStage}
         data-testid="disclosure-stage-toggle"
         aria-label={`Cycle forecast disclosure stage (current: ${disclosureStage})`}
-        className="w-full min-h-[44px] flex flex-col items-center justify-center gap-1 pt-2 pb-1 px-4 text-xs font-mono text-carbon-60 dark:text-carbon-40 hover:bg-carbon-05 dark:hover:bg-carbon-80/50 touch-manipulation transition-colors border-b border-carbon-10 dark:border-carbon-80"
+        className="w-full min-h-[44px] flex flex-col items-center justify-center gap-1 pt-2 pb-1 px-4 text-xs font-mono text-carbon-60 hover:bg-carbon-05 dark:hover:bg-carbon-80/50 touch-manipulation transition-colors border-b border-carbon-20"
       >
-        <span className="w-10 h-1.5 rounded-full bg-carbon-30 dark:bg-carbon-60" aria-hidden="true" />
+        <span className="w-10 h-1.5 rounded-full bg-carbon-30" aria-hidden="true" />
         <span className="sr-only">
           Stage: {disclosureStage}
         </span>
       </button>
 
-      <div className="flex items-start justify-between gap-2 sm:gap-3 border-b border-carbon-10 dark:border-carbon-80 p-3 sm:p-4 shrink-0">
+      <div className="flex items-start justify-between gap-2 sm:gap-3 border-b border-carbon-20 p-3 sm:p-4 shrink-0">
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5 sm:gap-2 text-xs font-bold text-carbon-60 dark:text-carbon-40 uppercase tracking-wide">
-            <span className="w-6 h-6 rounded-full bg-nasa-blue/10 flex items-center justify-center shrink-0">
-              <MaterialIcon name="radar" className="w-3.5 h-3.5 text-nasa-blue" />
+          <div className="flex items-center gap-1.5 sm:gap-2 text-xs font-bold text-carbon-60 uppercase tracking-wide">
+            <span className="w-6 h-6 rounded-full bg-ap-primary/10 flex items-center justify-center shrink-0">
+              <MaterialIcon name="radar" className="w-3.5 h-3.5 text-ap-link" />
             </span>
             <span>Forecast</span>
           </div>
           <h4 className="text-sm sm:text-base font-bold text-carbon-90 dark:text-white tracking-tight mt-1 sm:mt-1.5 truncate">
             {district.name}
-            <span className="ml-1.5 sm:ml-2 font-mono text-xs font-semibold text-carbon-60 dark:text-carbon-40">
+            <span className="ml-1.5 sm:ml-2 font-mono text-xs font-semibold text-carbon-60">
               {district.division.toUpperCase()}
             </span>
           </h4>
@@ -114,7 +114,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="tap-target min-w-[44px] min-h-[44px] w-11 h-11 rounded-full bg-carbon-05 dark:bg-carbon-80 hover:bg-carbon-10 dark:hover:bg-carbon-70 text-carbon-70 dark:text-carbon-30 flex items-center justify-center touch-manipulation transition-colors"
+            className="tap-target min-w-[44px] min-h-[44px] w-11 h-11 rounded-full bg-carbon-05 hover:bg-carbon-10 dark:hover:bg-carbon-70 text-carbon-70 flex items-center justify-center touch-manipulation transition-colors"
             title="Close district forecast"
             aria-label="Close district forecast"
           >
@@ -127,9 +127,9 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
           hairline dividers, grey labels with icon bubbles on the left, bold
           values right-aligned — the way the reference tracking sheets read
           their data. The contract strings tests assert stay exact:
-          "Severity score 0.88", "28m MSL", coordinates, main-crop title. */}
+"Severity score 0.88", "28m MSL", coordinates, main-crop title. */}
       <div className="flex flex-col overflow-y-auto overscroll-contain min-h-0 px-4 sm:px-5">
-        <div className="divide-y divide-carbon-10 dark:divide-carbon-80">
+        <div className="divide-y divide-carbon-10">
           {/* hazard + severity row: label left, score right, slim meter under */}
           <div className="flex flex-col gap-2 py-3.5 sm:py-4">
             <div className="flex items-center justify-between gap-3">
@@ -142,7 +142,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
               </span>
             </div>
             <div
-              className="w-full h-1.5 bg-carbon-10 dark:bg-carbon-70 overflow-hidden rounded-full"
+              className="w-full h-1.5 bg-carbon-10 overflow-hidden rounded-full"
               role="meter"
               aria-valuenow={severityPct}
               aria-valuemin={0}
@@ -160,9 +160,9 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
                 className="flex items-center justify-between gap-3 py-3 sm:py-3.5"
                 title={`Main crop: ${district.mainCrop}`}
               >
-                <span className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide text-carbon-50 dark:text-carbon-40">
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-carbon-05 dark:bg-carbon-80">
-                    <MaterialIcon name="agriculture" className="h-4 w-4 text-nasa-green" />
+                <span className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide text-carbon-50">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-carbon-05">
+                    <MaterialIcon name="agriculture" className="h-4 w-4 text-severity-low" />
                   </span>
                   Crop
                 </span>
@@ -171,8 +171,8 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
 
               {/* elevation row */}
               <div className="flex items-center justify-between gap-3 py-3 sm:py-3.5">
-                <span className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide text-carbon-50 dark:text-carbon-40">
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-carbon-05 dark:bg-carbon-80">
+                <span className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide text-carbon-50">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-carbon-05">
                     <MaterialIcon name="terrain" className="h-4 w-4 text-amber-600" />
                   </span>
                   Elevation
@@ -182,9 +182,9 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
 
               {/* location row */}
               <div className="flex items-center justify-between gap-3 py-3 sm:py-3.5">
-                <span className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide text-carbon-50 dark:text-carbon-40">
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-carbon-05 dark:bg-carbon-80">
-                    <MaterialIcon name="my_location" className="h-4 w-4 text-nasa-blue" />
+                <span className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide text-carbon-50">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-carbon-05">
+                    <MaterialIcon name="my_location" className="h-4 w-4 text-ap-link" />
                   </span>
                   Location
                 </span>
@@ -203,10 +203,10 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
                   });
                 }}
                 aria-expanded={showLocationMap}
-                className="my-2 flex min-h-[44px] items-center justify-between gap-2 rounded-full border border-carbon-10 dark:border-carbon-70 bg-carbon-05 dark:bg-carbon-80 px-4 py-2 text-xs sm:text-sm font-bold text-carbon-70 dark:text-carbon-30 hover:bg-carbon-10 dark:hover:bg-carbon-70 hover:text-carbon-90 dark:hover:text-white touch-manipulation transition-colors"
+                className="my-2 flex min-h-[44px] items-center justify-between gap-2 rounded-full border border-carbon-20 bg-carbon-05 px-4 py-2 text-xs sm:text-sm font-bold text-carbon-70 hover:bg-carbon-10 dark:hover:bg-carbon-70 hover:text-carbon-90 dark:hover:text-white touch-manipulation transition-colors"
               >
                 <span className="flex items-center gap-2 min-w-0">
-                  <MaterialIcon name="map" className="w-4 h-4 text-nasa-blue shrink-0" />
+                  <MaterialIcon name="map" className="w-4 h-4 text-ap-link shrink-0" />
                   <span className="truncate">Location Map</span>
                 </span>
                 <MaterialIcon
@@ -216,7 +216,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
                 />
               </button>
               {showLocationMap && (
-                <div className="overflow-hidden rounded-2xl border border-carbon-10 dark:border-carbon-70 mb-3">
+                <div className="overflow-hidden rounded-2xl border border-carbon-20 mb-3">
                   <LocationMap
                     location={`${district.name} District, ${district.division}`}
                     coordinates={`${district.lat.toFixed(4)}° N, ${district.lng.toFixed(4)}° E`}
@@ -240,16 +240,16 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
           <button
             type="button"
             onClick={onOpenAdvisory}
-            className="w-full min-h-[44px] py-2.5 bg-carbon-90 hover:bg-carbon-80 text-white font-semibold text-sm flex items-center justify-center gap-2 touch-manipulation rounded-full"
+            className="w-full min-h-[44px] py-2.5 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 font-semibold text-sm flex items-center justify-center gap-2 touch-manipulation rounded-full"
           >
-            <MaterialIcon name="insights" className="w-4 h-4 text-nasa-red" />
+            <MaterialIcon name="insights" className="w-4 h-4 text-blue-300" />
             Open district intelligence
           </button>
         )}
         <button
           type="button"
           onClick={() => onOpenAnalytics(district.id)}
-          className="w-full min-h-[44px] py-3 bg-nasa-blue hover:bg-nasa-blue-shade text-white font-semibold text-base flex items-center justify-center gap-2 touch-manipulation rounded-full"
+          className="w-full min-h-[44px] py-3 bg-primary hover:bg-primary-strong text-ap-action-fg font-semibold text-base flex items-center justify-center gap-2 touch-manipulation rounded-full"
         >
           <MaterialIcon name="analytics" className="w-4 h-4" />
           View Detailed Disaster Analytics

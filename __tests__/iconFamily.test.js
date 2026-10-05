@@ -181,7 +181,7 @@ describe('one icon family', () => {
   });
 
   it('sets one stroke weight on web through the CSS rule, not at 500 call sites', () => {
-    const css = readFileSync(join(SRC, 'styles/meridian.css'), 'utf8');
+    const css = readFileSync(join(SRC, 'styles/apple.css'), 'utf8');
     const rule = css.match(/svg\.lucide\s*\{\s*stroke-width:\s*([\d.]+)/);
     expect(rule).not.toBeNull();
     // The number is the same one the native shell passes to <Svg strokeWidth>.

@@ -16,8 +16,8 @@
   "statusDots": {
     "kept": {
       "components/BangladeshSvgMap.tsx": {
-        "count": 4,
-        "reason": "one live-alert marker on the map plus the three severity swatches of the map legend: the colour is the datum, and the legend is what makes the map readable."
+        "count": 1,
+        "reason": "the live-alert marker plus the legend swatch, which is now a single element rendered once per severity tier from SEVERITY_TIERS instead of three hand-written spans - the colour is the datum, and the legend is what makes the map readable."
       },
       "components/DistrictRiskMap.tsx": {
         "count": 1,

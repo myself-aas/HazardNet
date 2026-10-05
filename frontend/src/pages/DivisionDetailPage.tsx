@@ -148,7 +148,7 @@ export const DivisionDetailPage: React.FC = () => {
           <p className="text-xs text-carbon-60 mt-2">{error || 'Division data not found.'}</p>
           <Link
             to="/divisions"
-            className="mt-5 inline-flex min-h-[44px] items-center px-4 bg-nasa-blue text-white text-sm font-semibold hover:bg-nasa-blue-shade"
+            className="mt-5 inline-flex min-h-[44px] items-center px-4 bg-primary text-ap-action-fg text-sm font-semibold hover:bg-primary-strong"
           >
             Back to Divisions
           </Link>
@@ -161,9 +161,9 @@ export const DivisionDetailPage: React.FC = () => {
     <div className="min-h-dvh bg-carbon-05 text-carbon-80 pb-8 pt-6 px-4 sm:px-6 lg:px-8 max-w-[1200px] mx-auto">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-carbon-60 mb-4">
-        <Link to="/" className="hover:text-nasa-blue-shade transition-colors">Home</Link>
+        <Link to="/" className="hover:text-ap-link transition-colors">Home</Link>
         <span>/</span>
-        <Link to="/divisions" className="hover:text-nasa-blue-shade transition-colors">Divisions</Link>
+        <Link to="/divisions" className="hover:text-ap-link transition-colors">Divisions</Link>
         <span>/</span>
         <span className="text-carbon-80 font-medium">{data.division}</span>
       </div>
@@ -178,7 +178,7 @@ export const DivisionDetailPage: React.FC = () => {
               onClick={() => navigate(`/divisions/${d.id}`)}
               className={`inline-flex min-h-[44px] items-center px-3 text-sm font-semibold whitespace-nowrap touch-manipulation ${
                 isActive
-                  ? 'bg-nasa-blue text-white'
+                  ? 'bg-primary text-ap-action-fg'
                   : 'bg-white border border-carbon-20 text-carbon-70 hover:bg-carbon-10 hover:text-carbon-90'
               }`}
             >
@@ -192,11 +192,11 @@ export const DivisionDetailPage: React.FC = () => {
       <div className="bg-white border border-carbon-20 p-6 sm:p-8 mb-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold bg-carbon-05 text-nasa-blue-shade border border-carbon-20 mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold bg-carbon-05 text-ap-link border border-carbon-20 mb-3">
               <MapPin className="w-3.5 h-3.5" />
               <span>Administrative Division Dashboard</span>
             </div>
-            <h1 className="text-[28px] font-bold sm:text-[32px] text-carbon-90 tracking-tight">
+            <h1 className="text-ap-lead font-bold sm:text-ap-display-md text-carbon-90 tracking-tight">
               {data.division} Division
             </h1>
             <p className="mt-1.5 text-base leading-[1.62] text-carbon-70 max-w-2xl">
@@ -210,7 +210,7 @@ export const DivisionDetailPage: React.FC = () => {
               <div className="text-xs text-carbon-60 font-medium">Districts</div>
             </div>
             <div className="bg-carbon-05 border border-carbon-20/80 p-3 text-center">
-              <div className="text-xl font-bold text-nasa-blue-shade">{data.totalEvents.toLocaleString()}</div>
+              <div className="text-xl font-bold text-ap-link">{data.totalEvents.toLocaleString()}</div>
               <div className="text-xs text-carbon-60 font-medium">Recorded Events</div>
             </div>
             <div className="bg-carbon-05 border border-carbon-20/80 p-3 text-center">
@@ -228,17 +228,17 @@ export const DivisionDetailPage: React.FC = () => {
       {/* Real-time Forecast Alert Matrix for this Division */}
       {data.forecasts.length > 0 && (
         <div className="bg-white border border-carbon-20 p-6 mb-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-carbon-10 gap-2">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-carbon-20 gap-2">
             <div>
               <h2 className="text-base font-semibold text-carbon-90 flex items-center gap-2">
-                <CloudRain className="w-4 h-4 text-nasa-blue-shade" />
+                <CloudRain className="w-4 h-4 text-ap-link" />
                 Active Model Forecasts Across {data.division} Districts
               </h2>
               <p className="text-xs text-carbon-60">
                 Directly from the latest 7-day and 15-day AI predictions (hazardnet_forecasts_latest.csv)
               </p>
             </div>
-            <span className="text-xs font-semibold px-2.5 py-1 bg-carbon-05 text-nasa-blue-shade rounded-md">
+            <span className="text-xs font-semibold px-2.5 py-1 bg-carbon-05 text-ap-link rounded-md">
               {data.forecasts.length} Records Active
             </span>
           </div>
@@ -251,15 +251,15 @@ export const DivisionDetailPage: React.FC = () => {
             <div className="h-64 sm:h-72 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={forecastChartData} margin={{ top: 10, right: 20, left: -10, bottom: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--mrd-hairline)" vertical={false} />
-                  <XAxis dataKey="district" tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} />
-                  <YAxis tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} domain={[0, 4]} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--ap-separator)" vertical={false} />
+                  <XAxis dataKey="district" tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
+                  <YAxis tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} domain={[0, 4]} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: 'var(--mrd-surface)', borderColor: 'var(--mrd-hairline-strong)', borderRadius: 'var(--mrd-radius-md)', boxShadow: 'var(--mrd-shadow-card)' }}
+                    contentStyle={{ backgroundColor: 'var(--ap-bg-canvas)', borderColor: 'var(--ap-separator-opaque)', borderRadius: 'var(--ap-radius-md)', boxShadow: 'var(--ap-elev-flat)' }}
                   />
                   <Legend wrapperStyle={{ paddingTop: '8px' }} />
-                  <Bar dataKey="7-Day Severity" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="15-Day Severity" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="7-Day Severity" fill="var(--ap-primary)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="15-Day Severity" fill="var(--ap-sev-low)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -268,7 +268,7 @@ export const DivisionDetailPage: React.FC = () => {
           {/* District Forecast Table. Below md the same rows render as cards: eight numeric
               columns at 390px was a sideways scroll, and the card names each figure. */}
           <CardStackRows
-            className="mt-4 pt-4 border-t border-carbon-10"
+            className="mt-4 pt-4 border-t border-carbon-20"
             rows={data.districtRankings.map((dr) => {
               const f7 = data.forecasts.find(f => f.districtName.toLowerCase() === dr.district.toLowerCase() && f.horizon === '7_days');
               const targetDistrictSlug = dr.district.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -286,7 +286,7 @@ export const DivisionDetailPage: React.FC = () => {
                 footer: (
                   <Link
                     to={`/forecast/district/${targetDistrictSlug}`}
-                    className="inline-flex min-h-[44px] items-center gap-1 font-semibold text-nasa-blue-shade hover:text-nasa-blue-shade"
+                    className="inline-flex min-h-[44px] items-center gap-1 font-semibold text-ap-link hover:text-ap-link"
                   >
                     <span>District Page</span>
                     <ArrowRight className="w-3 h-3" />
@@ -319,7 +319,7 @@ export const DivisionDetailPage: React.FC = () => {
                     <tr key={dr.district} className="hover:bg-carbon-05/80 transition-colors">
                       <td className="p-3 font-semibold text-carbon-90">{dr.district}</td>
                       <td className="p-3">
-                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-carbon-05 text-nasa-blue-shade border border-carbon-20">
+                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-carbon-05 text-ap-link border border-carbon-20">
                           {dr.forecast7DHazard || 'No threat'}
                         </span>
                       </td>
@@ -353,7 +353,7 @@ export const DivisionDetailPage: React.FC = () => {
                       <td className="p-3 text-right">
                         <Link
                           to={`/forecast/district/${targetDistrictSlug}`}
-                          className="inline-flex items-center gap-1 text-nasa-blue-shade hover:text-nasa-blue-shade font-semibold"
+                          className="inline-flex items-center gap-1 text-ap-link hover:text-ap-link font-semibold"
                         >
                           <span>District Page</span>
                           <ArrowRight className="w-3 h-3" />
@@ -372,10 +372,10 @@ export const DivisionDetailPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Chart 1: Yearly Trend 2000-2026 */}
         <div className="bg-white border border-carbon-20 p-6">
-          <div className="flex items-center justify-between pb-3 border-b border-carbon-10">
+          <div className="flex items-center justify-between pb-3 border-b border-carbon-20">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-nasa-blue-shade" />
+                <TrendingUp className="w-4 h-4 text-ap-link" />
                 26-Year Historical Disaster Trend (2000–2026)
               </h3>
               <p className="text-xs text-carbon-60">Total events recorded per year in {data.division}</p>
@@ -389,17 +389,17 @@ export const DivisionDetailPage: React.FC = () => {
               <AreaChart data={data.yearlyTrend} margin={{ top: 10, right: 10, left: -15, bottom: 10 }}>
                 <defs>
                   <linearGradient id="divAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0.0} />
+                    <stop offset="5%" stopColor="var(--ap-primary)" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="var(--ap-primary)" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--mrd-hairline)" vertical={false} />
-                <XAxis dataKey="year" tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} />
-                <YAxis tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--ap-separator)" vertical={false} />
+                <XAxis dataKey="year" tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
+                <YAxis tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: 'var(--mrd-surface)', borderColor: 'var(--mrd-hairline-strong)', borderRadius: 'var(--mrd-radius-md)', boxShadow: 'var(--mrd-shadow-card)' }}
+                  contentStyle={{ backgroundColor: 'var(--ap-bg-canvas)', borderColor: 'var(--ap-separator-opaque)', borderRadius: 'var(--ap-radius-md)', boxShadow: 'var(--ap-elev-flat)' }}
                 />
-                <Area type="monotone" dataKey="total" name="Disaster Events" stroke="var(--chart-1)" strokeWidth={2} fillOpacity={1} fill="url(#divAreaGrad)" />
+                <Area type="monotone" dataKey="total" name="Disaster Events" stroke="var(--ap-primary)" strokeWidth={2} fillOpacity={1} fill="url(#divAreaGrad)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -407,10 +407,10 @@ export const DivisionDetailPage: React.FC = () => {
 
         {/* Chart 2: District Vulnerability Ranking */}
         <div className="bg-white border border-carbon-20 p-6">
-          <div className="flex items-center justify-between pb-3 border-b border-carbon-10">
+          <div className="flex items-center justify-between pb-3 border-b border-carbon-20">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-                <Layers className="w-4 h-4 text-nasa-blue-shade" />
+                <Layers className="w-4 h-4 text-ap-link" />
                 Constituent Districts Disaster Exposure
               </h3>
               <p className="text-xs text-carbon-60">Historical disaster frequency across {data.division} districts</p>
@@ -419,13 +419,13 @@ export const DivisionDetailPage: React.FC = () => {
           <div className="h-64 w-full pt-4">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.districtRankings} layout="vertical" margin={{ top: 10, right: 20, left: 20, bottom: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--mrd-hairline)" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} />
-                <YAxis dataKey="district" type="category" tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} width={80} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--ap-separator)" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
+                <YAxis dataKey="district" type="category" tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} width={80} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: 'var(--mrd-surface)', borderColor: 'var(--mrd-hairline-strong)', borderRadius: 'var(--mrd-radius-md)', boxShadow: 'var(--mrd-shadow-card)' }}
+                  contentStyle={{ backgroundColor: 'var(--ap-bg-canvas)', borderColor: 'var(--ap-separator-opaque)', borderRadius: 'var(--ap-radius-md)', boxShadow: 'var(--ap-elev-flat)' }}
                 />
-                <Bar dataKey="eventCount" name="Total Events (2000-2026)" fill="var(--chart-1)" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="eventCount" name="Total Events (2000-2026)" fill="var(--ap-primary)" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -433,10 +433,10 @@ export const DivisionDetailPage: React.FC = () => {
 
         {/* Chart 3: Monthly Seasonality Curve */}
         <div className="bg-white border border-carbon-20 p-6">
-          <div className="flex items-center justify-between pb-3 border-b border-carbon-10">
+          <div className="flex items-center justify-between pb-3 border-b border-carbon-20">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-nasa-blue-shade" />
+                <Calendar className="w-4 h-4 text-ap-link" />
                 Monthly Seasonality Curve (Jan–Dec)
               </h3>
               <p className="text-xs text-carbon-60">Calendar month disaster distribution in {data.division}</p>
@@ -445,13 +445,13 @@ export const DivisionDetailPage: React.FC = () => {
           <div className="h-64 w-full pt-4">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data.seasonalPattern} margin={{ top: 10, right: 10, left: -15, bottom: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--mrd-hairline)" vertical={false} />
-                <XAxis dataKey="monthName" tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} />
-                <YAxis tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--ap-separator)" vertical={false} />
+                <XAxis dataKey="monthName" tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
+                <YAxis tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: 'var(--mrd-surface)', borderColor: 'var(--mrd-hairline-strong)', borderRadius: 'var(--mrd-radius-md)', boxShadow: 'var(--mrd-shadow-card)' }}
+                  contentStyle={{ backgroundColor: 'var(--ap-bg-canvas)', borderColor: 'var(--ap-separator-opaque)', borderRadius: 'var(--ap-radius-md)', boxShadow: 'var(--ap-elev-flat)' }}
                 />
-                <Line type="monotone" dataKey="count" name="Monthly Events" stroke="var(--chart-2)" strokeWidth={2.5} dot={{ r: 4, fill: 'var(--chart-2)' }} />
+                <Line type="monotone" dataKey="count" name="Monthly Events" stroke="var(--ap-sev-low)" strokeWidth={2.5} dot={{ r: 4, fill: 'var(--ap-sev-low)' }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -459,10 +459,10 @@ export const DivisionDetailPage: React.FC = () => {
 
         {/* Chart 4: Hazard Mix Breakdown */}
         <div className="bg-white border border-carbon-20 p-6">
-          <div className="flex items-center justify-between pb-3 border-b border-carbon-10">
+          <div className="flex items-center justify-between pb-3 border-b border-carbon-20">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-nasa-blue-shade" />
+                <AlertTriangle className="w-4 h-4 text-ap-link" />
                 Hazard Type Composition
               </h3>
               <p className="text-xs text-carbon-60">Breakdown of disaster types experienced in this division</p>
@@ -487,7 +487,7 @@ export const DivisionDetailPage: React.FC = () => {
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{ backgroundColor: 'var(--mrd-surface)', borderColor: 'var(--mrd-hairline-strong)', borderRadius: 'var(--mrd-radius-md)', boxShadow: 'var(--mrd-shadow-card)' }}
+                    contentStyle={{ backgroundColor: 'var(--ap-bg-canvas)', borderColor: 'var(--ap-separator-opaque)', borderRadius: 'var(--ap-radius-md)', boxShadow: 'var(--ap-elev-flat)' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -509,10 +509,10 @@ export const DivisionDetailPage: React.FC = () => {
 
       {/* Historical Disaster Events Archive Table (Real data from CSV) */}
       <div className="bg-white border border-carbon-20 p-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-carbon-10 gap-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-carbon-20 gap-4">
           <div>
             <h3 className="text-base font-bold text-carbon-90 flex items-center gap-2">
-              <Layers className="w-4 h-4 text-nasa-blue-shade" />
+              <Layers className="w-4 h-4 text-ap-link" />
               Historical Climatic Events Archive ({data.division} Division)
             </h3>
             <p className="text-xs text-carbon-60">
@@ -567,7 +567,7 @@ export const DivisionDetailPage: React.FC = () => {
               { label: 'District', value: (
                 <Link
                   to={`/forecast/district/${event.district.toLowerCase().replace(/[^a-z0-9]/g, '')}`}
-                  className="font-semibold text-nasa-blue-shade"
+                  className="font-semibold text-ap-link"
                 >
                   {event.district}
                 </Link>
@@ -582,7 +582,7 @@ export const DivisionDetailPage: React.FC = () => {
             footer: (
               <Link
                 to={`/forecast/district/${event.district.toLowerCase().replace(/[^a-z0-9]/g, '')}`}
-                className="inline-flex min-h-[44px] items-center gap-1 font-semibold text-nasa-blue-shade"
+                className="inline-flex min-h-[44px] items-center gap-1 font-semibold text-ap-link"
               >
                 <span>Go to {event.district} District Dashboard</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -613,7 +613,7 @@ export const DivisionDetailPage: React.FC = () => {
                     <tr className="hover:bg-carbon-05/80 transition-colors">
                       <td className="p-3 font-medium text-carbon-90 whitespace-nowrap">{event.date}</td>
                       <td className="p-3 font-semibold text-carbon-80">
-                        <Link to={`/forecast/district/${districtSlug}`} className="hover:text-nasa-blue-shade">
+                        <Link to={`/forecast/district/${districtSlug}`} className="hover:text-ap-link">
                           {event.district}
                         </Link>
                       </td>
@@ -622,7 +622,7 @@ export const DivisionDetailPage: React.FC = () => {
                           className="px-2 py-0.5 rounded text-xs font-semibold"
                           style={{
                             backgroundColor: getHazardSurface(event.hazard),
-                            color: 'var(--mrd-ink)',
+                            color: 'var(--ap-label)',
                             borderColor: getHazardBorder(event.hazard),
                             borderWidth: 1,
                             borderStyle: 'solid',
@@ -634,7 +634,7 @@ export const DivisionDetailPage: React.FC = () => {
                       <td className="p-3 font-mono text-carbon-60 whitespace-nowrap">{event.glide || '—'}</td>
                       <td className="p-3 font-bold text-carbon-70">
                         <span className={`px-2 py-0.5 rounded text-xs ${
-                          event.severity >= 3.0 ? 'bg-carbon-05 text-nasa-red-shade border border-carbon-20' :
+                          event.severity >= 3.0 ? 'bg-carbon-05 text-ap-link border border-carbon-20' :
                           event.severity >= 2.0 ? 'bg-amber-50 text-amber-700 border border-amber-200' :
                           'bg-carbon-10 text-carbon-70'
                         }`}>
@@ -647,7 +647,7 @@ export const DivisionDetailPage: React.FC = () => {
                       <td className="p-3 text-right whitespace-nowrap">
                         <button
                           onClick={() => setExpandedEventId(isExpanded ? null : event.id)}
-                          className="text-nasa-blue-shade font-semibold inline-flex min-h-[44px] items-center gap-1 cursor-pointer touch-manipulation"
+                          className="text-ap-link font-semibold inline-flex min-h-[44px] items-center gap-1 cursor-pointer touch-manipulation"
                         >
                           <span>{isExpanded ? 'Less' : 'Details'}</span>
                           {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -658,7 +658,7 @@ export const DivisionDetailPage: React.FC = () => {
                       <tr className="bg-carbon-05/30">
                         <td colSpan={7} className="p-4 border-b border-carbon-20">
                           <div className="bg-white border border-carbon-20 p-4 text-xs space-y-2">
-                            <div className="flex items-center justify-between text-carbon-60 pb-2 border-b border-carbon-10">
+                            <div className="flex items-center justify-between text-carbon-60 pb-2 border-b border-carbon-20">
                               <span><strong>Event ID:</strong> {event.id}</span>
                               <span><strong>Coordinates:</strong> {event.lat.toFixed(4)}, {event.lng.toFixed(4)}</span>
                               <span><strong>GLIDE Reference:</strong> {event.glide || 'None assigned'}</span>
@@ -669,7 +669,7 @@ export const DivisionDetailPage: React.FC = () => {
                             <div className="pt-2 flex justify-end">
                               <Link
                                 to={`/forecast/district/${districtSlug}`}
-                                className="inline-flex items-center gap-1 text-nasa-blue-shade hover:text-nasa-blue-shade font-semibold"
+                                className="inline-flex items-center gap-1 text-ap-link hover:text-ap-link font-semibold"
                               >
                                 <span>Go to {event.district} District Dashboard</span>
                                 <ArrowRight className="w-3.5 h-3.5" />

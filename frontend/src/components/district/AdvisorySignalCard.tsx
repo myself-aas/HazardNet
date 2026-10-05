@@ -48,8 +48,8 @@ export const AdvisorySignalCard: React.FC<AdvisorySignalCardProps> = ({ rows, ho
   const published = typeof row.advisory_tier === 'string' && row.advisory_tier.length > 0;
 
   const tracks = [
-    { key: 'advisory.track.modelRaw', value: signal.raw, tone: 'bg-nasa-blue/30' },
-    { key: 'advisory.track.modelCalibrated', value: signal.calibrated, tone: 'bg-nasa-blue' },
+    { key: 'advisory.track.modelRaw', value: signal.raw, tone: 'bg-ap-primary/30' },
+    { key: 'advisory.track.modelCalibrated', value: signal.calibrated, tone: 'bg-ap-primary' },
     { key: 'advisory.track.physics', value: signal.physics, tone: 'bg-amber-500' },
     { key: 'advisory.track.final', value: signal.final, tone: 'bg-carbon-90' },
   ].filter((track) => track.value !== null);

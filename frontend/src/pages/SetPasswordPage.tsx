@@ -86,7 +86,7 @@ export default function SetPasswordPage() {
   }
 
   const inputClass =
-    'mt-1.5 h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 outline-none focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/40'
+    'mt-1.5 h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 outline-none focus:border-ap-primary focus:ring-2 focus:ring-ap-primary/40'
 
   if (phase === 'done') {
     return (
@@ -123,7 +123,7 @@ export default function SetPasswordPage() {
       ) : (
         <form onSubmit={submit} className="space-y-4" data-testid="set-password-form">
           {!user && phase === 'ready' && (
-            <p role="alert" className="border-l-2 border-nasa-orange bg-white p-4 text-sm font-medium text-carbon-80">
+            <p role="alert" className="border-l-2 border-severity-high bg-white p-4 text-sm font-medium text-carbon-80">
               We couldn’t detect your verification session. Open the newest link we emailed you; it must be
               opened on this browser. Or{' '}
               <Link to="/signup" className="font-extrabold underline underline-offset-2">
@@ -134,7 +134,7 @@ export default function SetPasswordPage() {
           )}
 
           {error && (
-            <p role="alert" className="border-l-2 border-nasa-red bg-white p-4 text-sm font-medium text-nasa-red-shade">
+            <p role="alert" className="border-l-2 border-ap-primary bg-white p-4 text-sm font-medium text-ap-link">
               {error}
             </p>
           )}
@@ -197,21 +197,21 @@ export default function SetPasswordPage() {
               className={inputClass}
             />
             {confirmation.length > 0 && confirmation !== password && (
-              <p className="mt-1 text-sm font-semibold text-nasa-red-shade">Passwords don’t match yet.</p>
+              <p className="mt-1 text-sm font-semibold text-ap-link">Passwords don’t match yet.</p>
             )}
           </div>
 
           <button
             type="submit"
             disabled={saving || (!user && !isAuthConfigured)}
-            className="min-h-[44px] w-full cursor-pointer bg-primary-strong py-3 text-base font-semibold text-white hover:bg-primary disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2 touch-manipulation"
+            className="min-h-[44px] w-full cursor-pointer bg-primary py-3 text-base font-semibold text-ap-action-fg hover:bg-primary-strong disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary/60 focus-visible:ring-offset-2 touch-manipulation"
           >
             {saving ? 'Saving password…' : 'Save password & open my dashboard'}
           </button>
 
           <p className="text-center text-sm text-carbon-60">
             Already set a password?{' '}
-            <Link to="/login" className="font-bold text-nasa-blue-shade hover:underline">
+            <Link to="/login" className="font-bold text-ap-link hover:underline">
               Sign in
             </Link>
           </p>

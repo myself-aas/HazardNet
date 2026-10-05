@@ -85,17 +85,17 @@ export const DistrictBriefHeader: React.FC = () => {
             <div className="text-xs font-mono font-bold text-carbon-60 uppercase tracking-wider">
               DISTRICT DISASTER INTELLIGENCE BRIEF
             </div>
-            <h1 className="text-[28px] sm:text-[32px] font-bold text-carbon-90 tracking-tight leading-[1.2]">
-              {data.districtName} District <span className="text-carbon-30 font-light mx-1">|</span> {data.hazardType}
+            <h1 className="text-ap-lead sm:text-ap-display-md font-bold text-carbon-90 tracking-tight leading-[1.2]">
+              {data.districtName} District <span className="text-carbon-60 font-light mx-1">|</span> {data.hazardType}
             </h1>
           </div>
 
           {/* Prominent Risk Badge */}
           <div className="shrink-0">
             <span className={`inline-flex min-h-6 items-center gap-2 px-3 py-1 rounded-control text-xs font-mono font-bold ${
-              data.modelAssessment.riskCategory === 'High' ? 'bg-[#dc2626] text-white' :
-              data.modelAssessment.riskCategory === 'Moderate' ? 'bg-[#f59e0b] text-carbon-black' :
-              'bg-[#16a34a] text-white'
+              data.modelAssessment.riskCategory === 'High' ? 'bg-[#c01f1f] text-white' :
+              data.modelAssessment.riskCategory === 'Moderate' ? 'bg-[#8a5a00] text-carbon-black' :
+              'bg-[#1d7a3e] text-white'
             }`}>
               <span className={`w-2 h-2 rounded-full ${
                 data.modelAssessment.riskCategory === 'High' ? 'bg-white animate-pulse' :
@@ -143,14 +143,14 @@ export const DistrictBriefHeader: React.FC = () => {
         {/* Highlighted Hazard & Peak Severity Occurrence Date Banner */}
         <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-mono">
           <div className="flex items-center gap-3">
-            <span className="p-2.5 bg-amber-500 text-carbon-black font-black">
+            <span className="p-2.5 bg-amber-500 text-ap-on-sev font-black">
               <Calendar className="w-5 h-5" />
             </span>
             <div>
               <div className="text-carbon-60 font-semibold uppercase tracking-wider text-xs">Peak Severity Occurrence Date</div>
-              <div className="text-carbon-black font-black text-sm sm:text-base flex items-center gap-2">
+              <div className="text-carbon-90 font-black text-sm sm:text-base flex items-center gap-2">
                 <span>{peakSeverityInfo.peakDate}</span>
-                <span className="px-2 py-0.5 rounded bg-red-600 text-white text-xs font-black">
+                <span className="px-2 py-0.5 rounded bg-red-600 text-ap-on-sev text-xs font-black">
                   {Math.round(peakSeverityInfo.peakScore * 100)}% Severity
                 </span>
               </div>
@@ -163,7 +163,7 @@ export const DistrictBriefHeader: React.FC = () => {
             </div>
             <div>
               <div className="text-carbon-60 font-semibold uppercase tracking-wider text-xs">Model Confidence</div>
-              <div className="text-carbon-black font-extrabold text-sm">{Math.round(peakSeverityInfo.confidence * 100)}%</div>
+              <div className="text-carbon-90 font-extrabold text-sm">{Math.round(peakSeverityInfo.confidence * 100)}%</div>
             </div>
           </div>
         </div>

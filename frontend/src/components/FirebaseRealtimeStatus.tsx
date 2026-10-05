@@ -212,7 +212,7 @@ export const FirebaseRealtimeStatus: React.FC<FirebaseRealtimeStatusProps> = ({
             className="overflow-hidden pt-1"
           >
             <div className="bg-white border border-carbon-20 rounded-lg p-3 space-y-2 text-xs">
-              <div className="font-bold text-carbon-90 pb-1 border-b border-carbon-10 flex items-center justify-between">
+              <div className="font-bold text-carbon-90 pb-1 border-b border-carbon-20 flex items-center justify-between">
                 <span>Firebase RTDB Endpoint Specifications</span>
                 <button
                   type="button"

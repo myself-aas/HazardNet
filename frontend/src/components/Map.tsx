@@ -56,7 +56,7 @@ const Map: React.FC<MapProps> = ({
               aria-pressed={mapMode === 'leaflet'}
               className={`min-h-[44px] px-3 py-2 font-semibold text-sm flex items-center gap-2 touch-manipulation border ${
                 mapMode === 'leaflet'
-                  ? 'bg-nasa-blue text-white border-nasa-blue'
+                  ? 'bg-primary text-ap-action-fg border-ap-primary'
                   : 'bg-white text-carbon-70 border-carbon-20'
               }`}
             >
@@ -69,7 +69,7 @@ const Map: React.FC<MapProps> = ({
               aria-pressed={mapMode === 'svg'}
               className={`min-h-[44px] px-3 py-2 font-semibold text-sm flex items-center gap-2 touch-manipulation border ${
                 mapMode === 'svg'
-                  ? 'bg-nasa-blue text-white border-nasa-blue'
+                  ? 'bg-primary text-ap-action-fg border-ap-primary'
                   : 'bg-white text-carbon-70 border-carbon-20'
               }`}
             >

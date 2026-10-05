@@ -176,7 +176,7 @@ export const InfinityLoader: React.FC<InfinityLoaderProps> = ({
                   strokeDasharray={`${layer.len} ${100 - layer.len}`}
                   style={{
                     animationDelay: `${delay(layer.len, comet).toFixed(3)}s`,
-                    ['--hn-loop-still' as string]: still(layer.len, comet),
+                    ['--ap-loop-still' as string]: still(layer.len, comet),
                   }}
                 />
               ))}
