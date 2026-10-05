@@ -52,15 +52,15 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ customItems }) => {
   const items = getBreadcrumbsFromPath();
 
   return (
-    <nav className="flex items-center justify-between gap-4 py-2.5 px-4 bg-white border border-carbon-20 rounded-xl mb-6 text-xs shadow-xs text-carbon-60">
+    <nav aria-label="Breadcrumb" className="flex items-center justify-between gap-4 py-2.5 px-4 bg-white border border-carbon-20 mb-6 text-xs text-carbon-60">
       <div className="flex items-center gap-1.5 flex-wrap">
         {items.map((item, index) => {
           const isLast = index === items.length - 1;
           return (
             <React.Fragment key={index}>
-              {index > 0 && <span className="text-carbon-60 font-mono">/</span>}
+              {index > 0 && <span aria-hidden="true" className="text-carbon-40 font-mono">/</span>}
               {isLast || !item.path ? (
-                <span className="font-bold text-carbon-90">{item.label}</span>
+                <span aria-current="page" className="font-semibold text-carbon-90">{item.label}</span>
               ) : (
                 <Link to={item.path} className="text-carbon-60 hover:text-ap-link font-medium transition-colors">
                   {item.label}
@@ -73,7 +73,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ customItems }) => {
 
       <Link
         to="/"
-        className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 font-bold transition-all text-xs"
+        className="shrink-0 flex items-center gap-1 min-h-[44px] px-3 py-1.5 bg-white hover:bg-carbon-05 text-ap-link border border-carbon-20 font-semibold transition-colors text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary/60"
       >
         <span>Live map</span>
       </Link>

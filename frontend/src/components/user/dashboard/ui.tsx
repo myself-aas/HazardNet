@@ -23,7 +23,7 @@ export const Card: React.FC<{
       <header className="flex items-start justify-between gap-3 border-b border-carbon-20 px-6 py-4">
         <div className="flex items-start gap-3">
           {icon && (
-            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center bg-amber-50 text-amber-700">
+            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center bg-ap-primary/10 text-ap-link">
               {icon}
             </span>
           )}
@@ -236,11 +236,11 @@ export const SaveBar: React.FC<{
         message
           ? 'border-carbon-20 bg-white'
           : dirty
-            ? 'border-amber-200 bg-amber-50/95'
+            ? 'border-ap-primary bg-ap-primary/8'
             : 'border-carbon-20 bg-white/95'
       }`}
     >
-      <p className={`text-sm font-semibold ${message ? 'text-carbon-80' : dirty ? 'text-amber-800' : 'text-carbon-60'}`}>
+      <p className={`text-sm font-semibold ${message ? 'text-carbon-80' : dirty ? 'text-ap-link' : 'text-carbon-60'}`}>
         {message ?? (dirty ? 'You have unsaved changes.' : 'No unsaved changes.')}
       </p>
       <div className="flex items-center gap-2">

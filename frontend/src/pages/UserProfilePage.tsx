@@ -5,7 +5,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { useAuth, UserRolePersona } from '../context/AuthContext';
-import { detectExactPinpointLocation, LocationDetectionResult, findNearestDistrict, isValidLatLng, isValidCoordinate } from '../services/geolocationService';
+import { detectExactPinpointLocation, LocationDetectionResult, findNearestDistrict, isValidLatLng, isValidCoordinate, getSeverityTier } from '../services/geolocationService';
 import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
 import { getGranularDisasterData } from '../data/disasterDetails';
 import { FirebaseRealtimeStatus } from '../components/FirebaseRealtimeStatus';
@@ -13,6 +13,7 @@ import IdentityConnections from '../components/IdentityConnections';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { profilePath } from '../lib/username';
 import { InfinityLoader } from '../components/brand';
+import { NumberField, SelectField, TextField } from '../components/user/dashboard/ui';
 
 /**
  * Signed-in user profile — unique URL: /profile
@@ -20,6 +21,20 @@ import { InfinityLoader } from '../components/brand';
  * Replaces the navbar UserProfileModal overlay. The public-facing page for
  * the same person lives at /u/<username>.
  */
+
+/**
+ * Severity ink for the inverted hazard tile. Severity is a protected data
+ * encoding, so this one keeps its hue — but it has to TRACK the reading. It
+ * was a fixed rose, which painted a 20% score the same red as a 95% one.
+ * The -300 steps are the tints that clear AA on a carbon-80 tile.
+ */
+const SEVERITY_INK_ON_TILE: Record<string, string> = {
+  low: 'text-emerald-300',
+  moderate: 'text-amber-300',
+  high: 'text-orange-300',
+  veryHigh: 'text-rose-300',
+  extreme: 'text-rose-300',
+};
 
 const PERSONA_LABELS: Record<UserRolePersona, { label: string; tag: string }> = {
   smallholder_farmer: { label: 'Rural Smallholder Farmer', tag: 'Micro-Farm & Local Advisory' },
@@ -258,14 +273,14 @@ export const UserProfilePage: React.FC = () => {
             {publicUsername && (
               <Link
                 to={profilePath(publicUsername)}
-                className="min-h-[44px] px-3 py-2 text-base font-semibold text-ap-link hover:bg-carbon-05 rounded-sm border border-carbon-20 flex items-center gap-1 touch-manipulation"
+                className="min-h-[44px] px-3 py-2 text-base font-semibold text-ap-link hover:bg-carbon-05 border border-carbon-20 flex items-center gap-1 touch-manipulation"
               >
                 Public page /u/{publicUsername}
               </Link>
             )}
             <Link
               to="/dashboard"
-              className="min-h-[44px] px-3 py-2 text-base font-semibold text-carbon-60 hover:text-carbon-90 rounded-sm hover:bg-carbon-10 border border-carbon-20 flex items-center gap-1 touch-manipulation"
+              className="min-h-[44px] px-3 py-2 text-base font-semibold text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10 border border-carbon-20 flex items-center gap-1 touch-manipulation"
             >
               Dashboard
             </Link>
@@ -302,7 +317,7 @@ export const UserProfilePage: React.FC = () => {
                     onClick={() => setUserRole(roleKey)}
                     className={`min-h-[44px] p-3 text-left border transition-all flex items-center gap-2.5 touch-manipulation tap-target ${
                       isSelected
-                        ? 'bg-amber-50 text-ap-link border-ap-primary font-bold'
+                        ? 'bg-ap-primary/8 text-ap-link border-ap-primary font-bold'
                         : 'bg-white text-carbon-70 border-carbon-20 hover:border-carbon-40'
                     }`}
                   >
@@ -319,19 +334,19 @@ export const UserProfilePage: React.FC = () => {
           </div>
 
           {/* Use Current Location for District Setting Toggle */}
-          <div className="bg-carbon-05 border border-carbon-20 p-4 transition-all">
+          <section aria-labelledby="profile-autolocate-h" className="bg-carbon-05 border border-carbon-20 p-4 transition-all">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-start gap-3">
                 <div className={`w-9 h-9 flex items-center justify-center font-bold text-sm shrink-0 transition-colors ${
-                  autoDetectLocationEnabled ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-carbon-20 text-carbon-60 border border-carbon-30'
+                  autoDetectLocationEnabled ? 'bg-ap-primary/10 text-ap-link border border-ap-primary' : 'bg-carbon-20 text-carbon-60 border border-carbon-30'
                 }`}>
                   <MaterialIcon name="my_location" className="w-5 h-5 text-current" filled />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h4 className="text-xs font-extrabold text-carbon-90">Use Current Location for District</h4>
+                    <h2 id="profile-autolocate-h" className="text-xs font-extrabold text-carbon-90">Use Current Location for District</h2>
                     <span className={`px-2 py-0.5 rounded-full text-xs font-black ${
-                      autoDetectLocationEnabled ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 'bg-carbon-20 text-carbon-70 border border-carbon-30'
+                      autoDetectLocationEnabled ? 'bg-ap-primary/10 text-ap-link border border-ap-primary' : 'bg-carbon-20 text-carbon-70 border border-carbon-30'
                     }`}>
                       {autoDetectLocationEnabled ? 'ENABLED' : 'DISABLED'}
                     </span>
@@ -342,32 +357,38 @@ export const UserProfilePage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Interactive Switch */}
+              {/* Interactive switch.
+                  This was a second toggle design: an amber thumb on a carbon
+                  track with an amber focus ring, next to the kit's switch on
+                  /dashboard which is a white thumb on the severity-low track
+                  with the accent focus ring. Same control, same product, two
+                  appearances — and amber is the severity vocabulary, not
+                  chrome. Uses the shared switch styling now. */}
               <button
                 type="button"
                 role="switch"
                 aria-checked={autoDetectLocationEnabled}
                 onClick={() => handleToggleAutoDetect(!autoDetectLocationEnabled)}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-1 ${
-                  autoDetectLocationEnabled ? 'bg-carbon-90' : 'bg-carbon-30'
+                className={`relative h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary/60 ${
+                  autoDetectLocationEnabled ? 'bg-severity-low' : 'bg-carbon-30'
                 }`}
                 title={autoDetectLocationEnabled ? 'Disable automatic location detection' : 'Enable automatic location detection'}
               >
-                <span className="sr-only">Use Current Location for District</span>
+                <span className="sr-only">Use current location for district</span>
                 <span
-                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-amber-400 ring-0 transition duration-200 ease-in-out ${
-                    autoDetectLocationEnabled ? 'translate-x-5' : 'translate-x-0'
+                  className={`pointer-events-none absolute top-0.5 inline-block h-5 w-5 rounded-full bg-white shadow transition-all duration-200 ease-in-out ${
+                    autoDetectLocationEnabled ? 'left-[22px]' : 'left-0.5'
                   }`}
                 />
               </button>
             </div>
-          </div>
+          </section>
 
           {/* Pinpoint Geolocation Box */}
-          <div className="bg-carbon-05 border border-carbon-20 p-4 space-y-3">
+          <section aria-labelledby="profile-pinpoint-h" className="bg-carbon-05 border border-carbon-20 p-4 space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="text-xs font-extrabold text-carbon-90">IP & GPS Precise Pinpoint Coordinates</h4>
+                <h2 id="profile-pinpoint-h" className="text-xs font-extrabold text-carbon-90">IP & GPS Precise Pinpoint Coordinates</h2>
                 <p className="text-xs text-carbon-60">Auto-detect nearest Bangladesh district and exact lat/lng</p>
               </div>
               <button
@@ -408,7 +429,7 @@ export const UserProfilePage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleSetHomeDistrict(locResult.nearestDistrict.id)}
-                    className="min-h-[44px] py-2 px-3 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-extrabold text-xs transition-colors flex items-center justify-center gap-1.5 touch-manipulation tap-target"
+                    className="min-h-[44px] py-2 px-3 bg-white hover:bg-carbon-05 text-carbon-80 border border-carbon-20 font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 touch-manipulation tap-target"
                   >
                     <MaterialIcon name="home" className="w-4 h-4 inline-block mr-1" /><span>Set as Default Home District</span>
                   </button>
@@ -422,22 +443,22 @@ export const UserProfilePage: React.FC = () => {
                 <span className="text-xs text-carbon-60 font-sans">Synced with Firestore</span>
               </div>
             )}
-          </div>
+          </section>
 
           {/* Dedicated Default Home District Preference Card */}
-          <div className="bg-amber-50/70 border border-amber-200 p-4 space-y-3">
+          <section aria-labelledby="profile-homedistrict-h" className="bg-carbon-05 border border-carbon-20 p-4 space-y-3">
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm"><MaterialIcon name="home" className="w-4 h-4 inline-block mr-1" /></span>
-                  <h4 className="text-xs font-extrabold text-carbon-90">Default Home District Preference</h4>
+                  <h2 id="profile-homedistrict-h" className="text-xs font-extrabold text-carbon-90">Default Home District Preference</h2>
                 </div>
                 <p className="text-xs text-carbon-60 mt-0.5">
                   The application will automatically load and map this district on every visit.
                 </p>
               </div>
               {homeDistrictId ? (
-                <span className="px-2.5 py-1 rounded-full text-xs font-extrabold bg-amber-200 text-amber-950 border border-amber-300 flex items-center gap-1">
+                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-ap-primary/10 text-ap-link border border-ap-primary flex items-center gap-1">
                   <MaterialIcon name="home" className="w-4 h-4 inline-block mr-1" />
                   <span>{ALL_64_DISTRICTS.find(d => d.id === homeDistrictId)?.name || homeDistrictId}</span>
                 </span>
@@ -448,20 +469,19 @@ export const UserProfilePage: React.FC = () => {
               )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
+            <div className="grid grid-cols-1 items-end gap-2 sm:grid-cols-12">
               <div className="sm:col-span-8">
-                <select
+                <SelectField
+                  id="profile-home-district"
+                  label="Default home district"
                   value={homeDistrictId}
-                  onChange={(e) => handleSetHomeDistrict(e.target.value)}
-                  className="w-full px-3.5 py-2 bg-white border border-amber-300 text-xs font-bold text-carbon-90 focus:outline-none focus:border-amber-500"
-                >
-                  <option value="">-- Select Default Home District (64 Districts) --</option>
-                  {ALL_64_DISTRICTS.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.name} District ({d.division} Division)
-                    </option>
-                  ))}
-                </select>
+                  onChange={handleSetHomeDistrict}
+                  placeholder="Select a district (64 available)"
+                  options={ALL_64_DISTRICTS.map((d) => ({
+                    value: d.id,
+                    label: `${d.name} District (${d.division} Division)`,
+                  }))}
+                />
               </div>
               <div className="sm:col-span-4">
                 {homeDistrictId && (
@@ -471,14 +491,14 @@ export const UserProfilePage: React.FC = () => {
                       setHomeDistrictId('');
                       try { localStorage.removeItem('hazardnet_home_district'); } catch { /* best-effort */ }
                     }}
-                    className="w-full py-2 px-3 bg-white hover:bg-white text-ap-link border border-ap-primary font-bold text-xs transition-colors cursor-pointer"
+                    className="min-h-[44px] w-full cursor-pointer border border-carbon-20 bg-white px-3 py-2 text-base font-semibold text-carbon-70 transition-colors hover:bg-carbon-05 touch-manipulation"
                   >
-                    Clear Home District
+                    Clear home district
                   </button>
                 )}
               </div>
             </div>
-          </div>
+          </section>
 
           {/* District-Based Hazard & Severity Identification Card */}
           {(() => {
@@ -490,11 +510,11 @@ export const UserProfilePage: React.FC = () => {
               <div className="bg-carbon-90 text-carbon-05 border border-carbon-80 p-4 space-y-3 relative overflow-hidden">
                 <div className="flex items-center justify-between border-b border-carbon-80 pb-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="text-amber-300 font-bold text-sm"><MaterialIcon name="shield" className="w-4 h-4 inline-block mr-1" /></span>
+                    <span className="text-ap-on-inverse font-semibold text-sm"><MaterialIcon name="shield" className="w-4 h-4 inline-block mr-1" /></span>
                     <div>
-                      <h4 className="text-xs font-extrabold text-ap-on-inverse tracking-wide uppercase font-mono">
+                      <h2 className="text-xs font-extrabold text-ap-on-inverse tracking-wide uppercase font-mono">
                         District Hazard & Severity Identification
-                      </h4>
+                      </h2>
                       <p className="text-xs text-carbon-30 font-sans">
                         Identified using user district ({currentDistrictObj.name}) instead of raw lat/lon coordinates
                       </p>
@@ -512,7 +532,7 @@ export const UserProfilePage: React.FC = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                   <div className="bg-carbon-80/80 p-2.5 border border-carbon-70/60">
                     <span className="text-xs font-mono text-carbon-30 block uppercase">Selected District</span>
-                    <strong className="text-amber-300 font-black truncate block mt-0.5">{currentDistrictObj.name} ({currentDistrictObj.division})</strong>
+                    <strong className="text-ap-on-inverse font-bold truncate block mt-0.5">{currentDistrictObj.name} ({currentDistrictObj.division})</strong>
                   </div>
                   <div className="bg-carbon-80/80 p-2.5 border border-carbon-70/60">
                     <span className="text-xs font-mono text-carbon-30 block uppercase">Primary Hazard</span>
@@ -520,11 +540,11 @@ export const UserProfilePage: React.FC = () => {
                   </div>
                   <div className="bg-carbon-80/80 p-2.5 border border-carbon-70/60">
                     <span className="text-xs font-mono text-carbon-30 block uppercase">Severity Score</span>
-                    <strong className="text-rose-300 font-mono font-black block mt-0.5">{severityScorePct}%</strong>
+                    <strong data-severity-ink className={`${SEVERITY_INK_ON_TILE[getSeverityTier(currentDistrictObj.severity)]} font-mono font-bold block mt-0.5`}>{severityScorePct}%</strong>
                   </div>
                   <div className="bg-carbon-80/80 p-2.5 border border-carbon-70/60">
                     <span className="text-xs font-mono text-carbon-30 block uppercase">Vulnerable Crop</span>
-                    <strong className="text-emerald-300 font-black truncate block mt-0.5">{currentDistrictObj.mainCrop}</strong>
+                    <strong className="text-ap-on-inverse font-bold truncate block mt-0.5">{currentDistrictObj.mainCrop}</strong>
                   </div>
                 </div>
 
@@ -535,9 +555,9 @@ export const UserProfilePage: React.FC = () => {
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {granular.modelAssessment.confidenceProbabilities.map((item: { hazard: string; probability: number }, idx: number) => (
-                        <div key={idx} className="px-2.5 py-1 rounded-sm bg-carbon-80 border border-carbon-70 text-xs flex items-center gap-1.5 font-mono">
+                        <div key={idx} className="px-2.5 py-1 bg-carbon-80 border border-carbon-70 text-xs flex items-center gap-1.5 font-mono">
                           <span className="text-carbon-30 font-bold">{item.hazard}:</span>
-                          <span className="text-amber-300 font-black">{Math.round(item.probability * 100)}%</span>
+                          <span className="text-ap-on-inverse font-bold">{Math.round(item.probability * 100)}%</span>
                         </div>
                       ))}
                     </div>
@@ -547,94 +567,80 @@ export const UserProfilePage: React.FC = () => {
             );
           })()}
 
-          {/* Form Fields */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-semibold text-carbon-70 mb-1">Display Name</label>
-              <input
-                type="text"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-ap-primary"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-carbon-70 mb-1">Phone Number</label>
-              <input
-                type="text"
-                placeholder="+880 1712-345678"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-ap-primary"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-carbon-70 mb-1">Organization / Department</label>
-              <input
-                type="text"
-                placeholder="e.g. DAE Rangpur / Self Farm"
-                value={organization}
-                onChange={(e) => setOrganization(e.target.value)}
-                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-ap-primary"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-carbon-70 mb-1">Farm / Land Area (Hectares)</label>
-              <input
-                type="number"
-                step="0.1"
-                min="0"
-                value={farmSizeHectares}
-                onChange={(e) => setFarmSizeHectares(parseFloat(e.target.value) || 0)}
-                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-ap-primary"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-carbon-70 mb-1">Primary Division</label>
-              <input
-                type="text"
-                value={primaryDivision}
-                onChange={(e) => setPrimaryDivision(e.target.value)}
-                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-ap-primary"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-carbon-70 mb-1">Primary District</label>
-              <input
-                type="text"
-                value={primaryDistrict}
-                onChange={(e) => setPrimaryDistrict(e.target.value)}
-                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-ap-primary"
-              />
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="block text-sm font-semibold text-carbon-70 mb-1">Target Crops / Cultivations</label>
-              <input
-                type="text"
-                placeholder="e.g. Boro Paddy, Aman Rice, Jute, Potato, Maize"
-                value={targetCrops}
-                onChange={(e) => setTargetCrops(e.target.value)}
-                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-ap-primary"
-              />
-            </div>
+          {/* Form fields.
+              These are the shared user-area primitives, the same ones
+              /dashboard's ProfileSection uses. Hand-rolled inputs here
+              previously carried a visible <label> with no htmlFor and no id on
+              the control, so not one field on this settings page had a
+              programmatic name — a screen reader read them all as "edit text,
+              blank". TextField wires the pair for free, and brings the
+              canonical focus ring with it. */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <TextField
+              id="profile-display-name"
+              label="Display name"
+              value={displayName}
+              onChange={setDisplayName}
+              autoComplete="name"
+            />
+            <TextField
+              id="profile-phone"
+              label="Phone number"
+              type="tel"
+              value={phoneNumber}
+              onChange={setPhoneNumber}
+              placeholder="+880 1712-345678"
+              autoComplete="tel"
+            />
+            <TextField
+              id="profile-organization"
+              label="Organization / department"
+              value={organization}
+              onChange={setOrganization}
+              placeholder="e.g. DAE Rangpur / Self Farm"
+              autoComplete="organization"
+            />
+            <NumberField
+              id="profile-farm-size"
+              label="Farm / land area"
+              value={farmSizeHectares}
+              onChange={(value) => setFarmSizeHectares(value ?? 0)}
+              min={0}
+              step={0.1}
+              suffix="ha"
+            />
+            <TextField
+              id="profile-primary-division"
+              label="Primary division"
+              value={primaryDivision}
+              onChange={setPrimaryDivision}
+            />
+            <TextField
+              id="profile-primary-district"
+              label="Primary district"
+              value={primaryDistrict}
+              onChange={setPrimaryDistrict}
+            />
+            <TextField
+              id="profile-target-crops"
+              label="Target crops / cultivations"
+              value={targetCrops}
+              onChange={setTargetCrops}
+              placeholder="e.g. Boro Paddy, Aman Rice, Jute, Potato, Maize"
+              className="sm:col-span-2"
+            />
           </div>
 
           {/* Account Security & Session Management Card */}
-          <div className="bg-carbon-05 border border-carbon-20 p-4 space-y-3">
+          <section aria-labelledby="profile-security-h" className="bg-carbon-05 border border-carbon-20 p-4 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-sm"><MaterialIcon name="lock" className="w-4 h-4 inline-block mr-1" /></span>
-                <h4 className="text-xs font-extrabold text-carbon-90 uppercase tracking-wide">
+                <h2 id="profile-security-h" className="text-xs font-extrabold text-carbon-90 uppercase tracking-wide">
                   Account Security & Active Session
-                </h4>
+                </h2>
               </div>
-              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-carbon-80 border border-carbon-20">
+              <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-carbon-10 text-carbon-80 border border-carbon-20">
                 Authenticated
               </span>
             </div>
@@ -643,7 +649,7 @@ export const UserProfilePage: React.FC = () => {
               You are signed in as <strong className="text-carbon-90">{user.email || user.displayName || 'User'}</strong>. Logging out terminates your sign-in session and clears local application caches and cached district preferences from this browser.
             </p>
 
-            <div className="p-3 bg-amber-50 rounded-sm border border-amber-200 text-xs text-carbon-60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="p-3 bg-carbon-05 border border-carbon-20 text-xs text-carbon-60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="space-y-0.5">
                 <div className="font-bold text-carbon-80 flex items-center gap-1.5">
                   <MaterialIcon name="grid_view" className="w-4 h-4" />
@@ -658,14 +664,14 @@ export const UserProfilePage: React.FC = () => {
                 onClick={() => {
                   navigate('/dashboard');
                 }}
-                className="px-3 py-1.5 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 font-bold rounded-sm text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+                className="px-3 py-1.5 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
               >
                 <MaterialIcon name="arrow_right" className="w-4 h-4" />
                 <span>Open Dashboard</span>
               </button>
             </div>
 
-            <div className="p-3 bg-white rounded-sm border border-carbon-20 text-xs text-carbon-60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="p-3 bg-white border border-carbon-20 text-xs text-carbon-60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="space-y-0.5">
                 <div className="font-mono text-carbon-60">
                   <span className="font-semibold text-carbon-70">Account UID:</span> {user.uid}
@@ -679,7 +685,7 @@ export const UserProfilePage: React.FC = () => {
                 type="button"
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="min-h-[44px] px-3.5 py-2 bg-white hover:bg-white text-ap-link hover:text-ap-link font-bold rounded-sm border border-ap-primary text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0 touch-manipulation tap-target"
+                className="min-h-[44px] px-3.5 py-2 bg-white hover:bg-carbon-05 text-ap-link hover:text-ap-link font-bold border border-ap-primary text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0 touch-manipulation tap-target"
               >
                 {isLoggingOut ? (
                   <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -691,7 +697,7 @@ export const UserProfilePage: React.FC = () => {
             </div>
 
             {user.email && (
-              <div className="p-3 bg-white rounded-sm border border-carbon-20 text-xs text-carbon-60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="p-3 bg-white border border-carbon-20 text-xs text-carbon-60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="space-y-0.5">
                   <div className="font-bold text-carbon-80 flex items-center gap-1.5">
                     <MaterialIcon name="key" className="w-4 h-4" />
@@ -707,7 +713,7 @@ export const UserProfilePage: React.FC = () => {
                   type="button"
                   onClick={handleSendResetEmail}
                   disabled={isSendingReset}
-                  className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold rounded-sm border border-amber-200 text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0"
+                  className="px-3 py-1.5 bg-white hover:bg-carbon-05 text-carbon-80 font-semibold border border-carbon-20 text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0"
                 >
                   {isSendingReset ? (
                     <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -718,7 +724,7 @@ export const UserProfilePage: React.FC = () => {
                 </button>
               </div>
             )}
-          </div>
+          </section>
 
           {/* Connected Accounts (social identity linking) */}
           <IdentityConnections />
@@ -738,7 +744,7 @@ export const UserProfilePage: React.FC = () => {
                   type="button"
                   onClick={handleLogout}
                   disabled={isLoggingOut}
-                  className="min-h-[44px] px-3.5 py-2 bg-white hover:bg-white text-ap-link font-bold border border-ap-primary text-xs cursor-pointer transition-colors disabled:opacity-50 touch-manipulation tap-target inline-flex items-center justify-center"
+                  className="min-h-[44px] px-3.5 py-2 bg-white hover:bg-carbon-05 text-ap-link font-bold border border-ap-primary text-xs cursor-pointer transition-colors disabled:opacity-50 touch-manipulation tap-target inline-flex items-center justify-center"
                   title="Sign out and clear local state"
                 >
                   {isLoggingOut ? 'Signing Out...' : 'Sign Out'}
