@@ -3,6 +3,9 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import ForecastDashboard from '../components/ForecastDashboard';
 import { DataStateEmpty, DataStateError, DataStateLoading } from '../components/ui/DataState';
+import EmdatComparisonChart from '../components/EmdatComparisonChart';
+import hazardCatalog from '../../public/data/historical/hazard-catalog-index.json';
+import modelPerformance from '../../public/data/model-performance.json';
 
 /** Shape of `public/data/forecasts-latest.json` (hazardnet-forecast-snapshot/v2). */
 interface ForecastSnapshot {
@@ -241,10 +244,16 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-6"
           >
             <h2 className="text-xl font-bold text-carbon-90">EM-DAT International Disaster Database vs HazardNet Predictions</h2>
-            <p className="text-sm text-carbon-60 leading-relaxed">Comparative analysis of historical flood, cyclone, and drought events (1990-2026) in Bangladesh mapped against neural record forecasts.</p>
-            <div className="h-64 bg-carbon-05/80 rounded-2xl border border-carbon-20/90 shadow-2xs flex items-center justify-center text-carbon-60 font-mono text-xs px-4 text-center">
-              Interactive EM-DAT Comparison Chart (Authorized Researcher View)
-            </div>
+            <p className="text-sm text-carbon-60 leading-relaxed">
+              The catalogued historical record for Bangladesh plotted against the episodes HazardNet has been
+              scored on. The two are different kinds of measurement and are drawn as different marks: the record
+              spans every year, the benchmark covers five episodes and reports detection only.
+            </p>
+            <EmdatComparisonChart
+              events={hazardCatalog as { year: number; hazard_type: string }[]}
+              episodes={modelPerformance.episodes}
+              caveats={modelPerformance.how_to_read}
+            />
           </motion.div>
         )}
       </AnimatePresence>
