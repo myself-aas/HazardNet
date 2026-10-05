@@ -400,7 +400,7 @@ export const FrontDoor: React.FC = () => {
       {/* `pt-[calc(var(--navbar-height)+44px)]` instead of a hard 100px: the bar is 3.5rem plus
           `env(safe-area-inset-top)`, so a fixed number collided with it on notched phones. The
           variable now carries the inset, which makes this clearance correct on both. */}
-      <header className="ap-on-dark relative w-full overflow-hidden bg-carbon-90 text-white min-h-[600px] lg:min-h-[100dvh] flex items-center -mt-14 sm:-mt-16 pt-[calc(var(--navbar-height)+20px)] sm:pt-[calc(var(--navbar-height)+44px)] pb-8 sm:pb-16 shadow-2xl">
+      <header className="ap-on-dark relative w-full overflow-hidden bg-carbon-90 text-carbon-05 min-h-[600px] lg:min-h-[100dvh] flex items-center -mt-14 sm:-mt-16 pt-[calc(var(--navbar-height)+20px)] sm:pt-[calc(var(--navbar-height)+44px)] pb-8 sm:pb-16 shadow-2xl">
         {/* Mesh → photograph → grade → vignette. */}
         <HeroCinematicBackground paused={heroPaused} />
         {/* Pause control — keyboard-reachable, respects reduced-motion (audit #1) */}
@@ -409,7 +409,7 @@ export const FrontDoor: React.FC = () => {
           onClick={() => setHeroPaused((v) => !v)}
           aria-pressed={heroPaused}
           aria-label={heroPaused ? t('frontdoor.hero.resumeMotion') : t('frontdoor.hero.pauseMotion')}
-          className="absolute bottom-4 right-4 z-10 inline-flex min-h-[44px] items-center gap-1.5 bg-carbon-90/60 px-3 py-2 text-xs font-semibold text-white border border-white/20 backdrop-blur-sm hover:bg-carbon-90/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+          className="absolute bottom-4 right-4 z-10 inline-flex min-h-[44px] items-center gap-1.5 bg-carbon-black/60 px-3 py-2 text-xs font-semibold text-white border border-white/20 backdrop-blur-sm hover:bg-carbon-black/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
         >
           <MaterialIcon name={heroPaused ? 'play_arrow' : 'pause'} className="text-sm" />
           <span>{heroPaused ? t('frontdoor.hero.resumeMotion') : t('frontdoor.hero.pauseMotion')}</span>
@@ -620,7 +620,7 @@ export const FrontDoor: React.FC = () => {
           {!alertsLoading && topAlerts.length > 0 && (
             <ul className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
               {topAlerts.map((alert) => (
-                <li key={alert.id} className="border-b border-carbon-10 pb-3 md:border-b-0 md:pb-0">
+                <li key={alert.id} className="border-b border-carbon-20 pb-3 md:border-b-0 md:pb-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <AlertLevelBadge
                       level={alert.level}
@@ -694,7 +694,7 @@ export const FrontDoor: React.FC = () => {
               the links are just as reachable as a labelled list. */}
           <ul
             aria-label={t('frontdoor.run.alertNav')}
-            className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-carbon-10 pt-3"
+            className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-carbon-20 pt-3"
           >
             <li>
               <Link to="/alerts" className="text-xs font-bold text-nasa-blue-shade underline underline-offset-2">

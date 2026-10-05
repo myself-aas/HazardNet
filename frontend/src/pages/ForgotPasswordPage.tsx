@@ -115,7 +115,7 @@ const ForgotPasswordPage: React.FC = () => {
               )}
             </button>
 
-            <div className="text-center text-xs text-carbon-60 pt-2 space-y-1.5 border-t border-carbon-10">
+            <div className="text-center text-xs text-carbon-60 pt-2 space-y-1.5 border-t border-carbon-20">
               <p>
                 Remembered your password?{' '}
                 <Link to="/login" className="text-nasa-blue-shade hover:underline font-extrabold">Log In</Link>

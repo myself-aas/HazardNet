@@ -40,7 +40,7 @@
     "build:frontend:copy": "npm run build",
     "build:events-summary": "node scripts/build_climatic_hazards_summary.mjs",
     "check:events-summary": "node scripts/build_climatic_hazards_summary.mjs --check",
-    "check:device": "npm run check:tokens && npm run check:prose && npm run icons:check && npm run check:events-summary && npm run check:important",
+    "check:device": "npm run check:tokens && npm run check:prose && npm run icons:check && npm run check:events-summary && npm run check:important && npm run check:contrast && npm run check:contrast:css",
     "lint": "tsc -p frontend/tsconfig.json --noEmit",
     "test": "jest --passWithNoTests",
     "lint:eslint": "eslint . --max-warnings 685",
@@ -67,7 +67,10 @@
     "icons:check": "node scripts/generate-icon-glyphs.mjs --check",
     "check:prose": "node scripts/check-prose-dashes.mjs",
     "check:important": "node scripts/check-css-important.mjs",
-    "check:important:report": "node scripts/check-css-important.mjs --report"
+    "check:important:report": "node scripts/check-css-important.mjs --report",
+    "check:contrast": "node scripts/check-contrast.mjs",
+    "check:contrast:report": "node scripts/check-contrast.mjs --report",
+    "check:contrast:css": "node scripts/check-contrast.mjs --check-css"
   },
   "dependencies": {
     "@google-cloud/firestore": "^7.11.6",

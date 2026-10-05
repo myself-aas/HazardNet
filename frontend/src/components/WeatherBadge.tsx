@@ -36,7 +36,7 @@ export const WeatherBadge: React.FC<WeatherBadgeProps> = ({
 
   if (loading && !data) {
     return (
-      <span className={`${base} bg-carbon-10 text-carbon-60 dark:bg-carbon-80 dark:text-carbon-40`}>
+      <span className={`${base} bg-carbon-10 text-carbon-60`}>
         <Loader2 size={12} className="animate-spin" />
         <span>Weather…</span>
       </span>

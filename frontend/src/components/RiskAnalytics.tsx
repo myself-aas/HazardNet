@@ -154,7 +154,7 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
     <div className="space-y-6">
 
       {/* Top Banner KPI Header — Modernized Mobile-First */}
-      <div className="bg-white border border-carbon-10 rounded-lg sm:rounded-xl md:rounded-xl lg:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm relative overflow-hidden">
+      <div className="bg-white border border-carbon-20 rounded-lg sm:rounded-xl md:rounded-xl lg:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm relative overflow-hidden">
         
         {/* Subtle Ambient Glow */}
         <div className="absolute top-0 right-0 w-64 sm:w-96 h-64 sm:h-96 bg-carbon-10/30 rounded-full blur-3xl pointer-events-none"></div>
@@ -206,7 +206,7 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
         {/* 4 KPI Stat Cards — Responsive Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 md:gap-4 mt-4 sm:mt-6 pt-3 sm:pt-5 border-t border-carbon-20/90">
           
-          <div className="bg-carbon-05/80 border border-carbon-10 p-3 sm:p-4 rounded-lg sm:rounded-2xl space-y-1 shadow-sm hover:shadow-md transition-all">
+          <div className="bg-carbon-05/80 border border-carbon-20 p-3 sm:p-4 rounded-lg sm:rounded-2xl space-y-1 shadow-sm hover:shadow-md transition-all">
             <span className="text-xs sm:text-xs font-mono text-carbon-60 uppercase tracking-wider block font-bold">
               Highest Risk
             </span>
@@ -217,7 +217,7 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
             <p className="text-xs sm:text-xs text-carbon-60 line-clamp-1 sm:line-clamp-2">Pre-monsoon vulnerability</p>
           </div>
 
-          <div className="bg-carbon-05/80 border border-carbon-10 p-3 sm:p-4 rounded-lg sm:rounded-2xl space-y-1 shadow-sm hover:shadow-md transition-all">
+          <div className="bg-carbon-05/80 border border-carbon-20 p-3 sm:p-4 rounded-lg sm:rounded-2xl space-y-1 shadow-sm hover:shadow-md transition-all">
             <span className="text-xs sm:text-xs font-mono text-carbon-60 uppercase tracking-wider block font-bold">
               Fastest Spike
             </span>
@@ -228,7 +228,7 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
             <p className="text-xs sm:text-xs text-carbon-60 line-clamp-1 sm:line-clamp-2">Drought & heat</p>
           </div>
 
-          <div className="bg-carbon-05/80 border border-carbon-10 p-3 sm:p-4 rounded-lg sm:rounded-2xl space-y-1 shadow-sm hover:shadow-md transition-all">
+          <div className="bg-carbon-05/80 border border-carbon-20 p-3 sm:p-4 rounded-lg sm:rounded-2xl space-y-1 shadow-sm hover:shadow-md transition-all">
             <span className="text-xs sm:text-xs font-mono text-carbon-60 uppercase tracking-wider block font-bold">
               Cyclone Zone
             </span>
@@ -239,7 +239,7 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
             <p className="text-xs sm:text-xs text-carbon-60 line-clamp-1 sm:line-clamp-2">Oct-Nov peak</p>
           </div>
 
-          <div className="bg-carbon-05/80 border border-carbon-10 p-3 sm:p-4 rounded-lg sm:rounded-2xl space-y-1 shadow-sm hover:shadow-md transition-all">
+          <div className="bg-carbon-05/80 border border-carbon-20 p-3 sm:p-4 rounded-lg sm:rounded-2xl space-y-1 shadow-sm hover:shadow-md transition-all">
             <span className="text-xs sm:text-xs font-mono text-carbon-60 uppercase tracking-wider block font-bold">
               Protected Area
             </span>
@@ -255,7 +255,7 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
       </div>
 
       {/* Main Chart 1: Multi-Year Regional Trend Lines */}
-      <div className="bg-white border border-carbon-10 rounded-lg sm:rounded-xl md:rounded-xl lg:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm space-y-3 sm:space-y-4">
+      <div className="bg-white border border-carbon-20 rounded-lg sm:rounded-xl md:rounded-xl lg:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm space-y-3 sm:space-y-4">
         
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3 border-b border-carbon-20 pb-2.5 sm:pb-3">
           <div className="min-w-0 flex-1">

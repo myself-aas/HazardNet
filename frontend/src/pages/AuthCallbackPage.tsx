@@ -167,7 +167,7 @@ export default function AuthCallbackPage() {
       <div className="flex items-center gap-2">
         <Link
           to="/login"
-          className="inline-flex min-h-[44px] items-center bg-carbon-90 px-6 py-3 text-base font-semibold text-white hover:bg-carbon-70"
+          className="inline-flex min-h-[44px] items-center bg-carbon-90 px-6 py-3 text-base font-semibold text-carbon-05 hover:bg-carbon-70"
         >
           Back to sign in
         </Link>

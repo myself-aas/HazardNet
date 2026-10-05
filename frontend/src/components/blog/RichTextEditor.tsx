@@ -231,7 +231,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           onChange={(e) => onChange(e.target.value)}
           spellCheck={false}
           aria-label="HTML source"
-          className={`w-full ${minHeightClass} p-4 font-mono text-xs text-carbon-80 outline-none resize-y bg-carbon-black text-carbon-10`}
+          className={`w-full ${minHeightClass} p-4 font-mono text-xs outline-none resize-y bg-carbon-black text-white`}
         />
       ) : (
         <div

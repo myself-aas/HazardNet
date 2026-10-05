@@ -149,7 +149,7 @@ export const BlogStudioPage: React.FC = () => {
           </div>
         ) : articles.length === 0 ? (
           <div className="p-10 text-center space-y-3">
-            <FileText className="mx-auto h-8 w-8 text-carbon-40" aria-hidden="true" />
+            <FileText className="mx-auto h-8 w-8 text-carbon-50" aria-hidden="true" />
             <p className="text-sm font-bold text-carbon-80">No articles yet</p>
             <p className="text-xs text-carbon-60">Write the first HazardNet field report or research deep-dive.</p>
             <Link

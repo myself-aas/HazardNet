@@ -110,7 +110,7 @@ const PublicProfilePreview: React.FC = () => {
               ))}
           </dl>
           {socials.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2 border-t border-carbon-10 pt-3">
+            <div className="mt-4 flex flex-wrap gap-2 border-t border-carbon-20 pt-3">
               {socials.map(([key, label, url]) => (
                 <a
                   key={key}
@@ -300,7 +300,7 @@ const UserDashboardPage: React.FC = () => {
                 </button>
               );
             })}
-            <div className="hidden lg:mt-2 lg:block lg:border-t lg:border-carbon-10 lg:pt-2">
+            <div className="hidden lg:mt-2 lg:block lg:border-t lg:border-carbon-20 lg:pt-2">
               <Link
                 to="/"
                 className="flex items-center gap-2.5 px-4 py-3 text-xs font-extrabold text-carbon-60 transition-colors hover:bg-carbon-10"

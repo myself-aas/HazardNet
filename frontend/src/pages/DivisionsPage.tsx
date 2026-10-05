@@ -156,7 +156,7 @@ export const DivisionsPage: React.FC = () => {
 
       {/* Interactive Division Comparative Chart */}
       <div className="bg-white border border-carbon-20 p-6 mb-8">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-carbon-10 gap-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-carbon-20 gap-2">
           <div>
             <h2 className="text-base font-semibold text-carbon-90 flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-nasa-blue-shade" />
@@ -244,7 +244,7 @@ export const DivisionsPage: React.FC = () => {
                 </h3>
                 <p className="text-xs text-carbon-60 mt-0.5">Capital: {division.capital}</p>
 
-                <div className="mt-4 pt-3 border-t border-carbon-10 space-y-2 text-xs">
+                <div className="mt-4 pt-3 border-t border-carbon-20 space-y-2 text-xs">
                   <div className="flex justify-between items-center">
                     <span className="text-carbon-60">2000–2026 Events:</span>
                     <span className="font-semibold text-carbon-80">
@@ -277,7 +277,7 @@ export const DivisionsPage: React.FC = () => {
                 )}
               </div>
 
-              <div className="mt-5 pt-3 border-t border-carbon-10 flex min-h-[44px] items-center justify-between text-sm font-semibold text-nasa-blue-shade">
+              <div className="mt-5 pt-3 border-t border-carbon-20 flex min-h-[44px] items-center justify-between text-sm font-semibold text-nasa-blue-shade">
                 <span>View division</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </div>

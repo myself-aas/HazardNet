@@ -76,7 +76,7 @@ export const BentoCard: React.FC<BentoCardProps> = ({
       whileHover={{ y: -2, transition: { duration: 0.15 } }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className={`p-4 rounded-2xl bg-white dark:bg-carbon-90 border border-carbon-20/60 dark:border-carbon-70/60 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between ${
+      className={`p-4 rounded-2xl bg-white border border-carbon-20/60 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between ${
         onClick ? 'cursor-pointer' : ''
       } ${className}`}
     >
@@ -84,7 +84,7 @@ export const BentoCard: React.FC<BentoCardProps> = ({
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           {icon && <span className="text-nasa-blue text-lg">{icon}</span>}
-          <span className="font-heading font-medium text-xs text-carbon-60 dark:text-carbon-40 uppercase tracking-wider">
+          <span className="font-heading font-medium text-xs text-carbon-60 uppercase tracking-wider">
             {title}
           </span>
         </div>
@@ -100,11 +100,11 @@ export const BentoCard: React.FC<BentoCardProps> = ({
 
       {/* Main Metric Value */}
       <div className="my-1 flex items-baseline gap-1.5">
-        <span className="font-mono font-bold text-2xl sm:text-3xl text-carbon-90 dark:text-carbon-05 tracking-tight tabular-nums">
+        <span className="font-mono font-bold text-2xl sm:text-3xl text-carbon-90 tracking-tight tabular-nums">
           {value}
         </span>
         {unit && (
-          <span className="font-sans font-medium text-sm text-carbon-60 dark:text-carbon-40">
+          <span className="font-sans font-medium text-sm text-carbon-60">
             {unit}
           </span>
         )}
@@ -113,7 +113,7 @@ export const BentoCard: React.FC<BentoCardProps> = ({
       {/* Optional SVG Progress Gauge */}
       {typeof gaugePercent === 'number' && (
         <div className="mt-2 space-y-1">
-          <div className="w-full h-1.5 bg-carbon-10 dark:bg-carbon-80 rounded-full overflow-hidden">
+          <div className="w-full h-1.5 bg-carbon-10 rounded-full overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${Math.min(100, Math.max(0, gaugePercent))}%` }}
@@ -134,7 +134,7 @@ export const BentoCard: React.FC<BentoCardProps> = ({
 
       {/* Subtitle / Micro Copy */}
       {subtitle && (
-        <p className="mt-2 text-xs font-sans text-carbon-60 dark:text-carbon-40">
+        <p className="mt-2 text-xs font-sans text-carbon-60">
           {subtitle}
         </p>
       )}

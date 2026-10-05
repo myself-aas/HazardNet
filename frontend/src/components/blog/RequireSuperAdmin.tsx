@@ -54,7 +54,7 @@ export const RequireSuperAdmin: React.FC<{ children: React.ReactNode }> = ({ chi
           <Link to="/" className="rounded-2xl border border-carbon-20 bg-white px-4 py-2.5 text-xs font-black text-carbon-70 hover:bg-carbon-05">
             Back to home
           </Link>
-          <Link to="/blogs" className="rounded-2xl bg-carbon-90 px-4 py-2.5 text-xs font-black text-white hover:bg-carbon-70">
+          <Link to="/blogs" className="rounded-2xl bg-carbon-90 px-4 py-2.5 text-xs font-black text-carbon-05 hover:bg-carbon-70">
             Read the blog
           </Link>
         </div>

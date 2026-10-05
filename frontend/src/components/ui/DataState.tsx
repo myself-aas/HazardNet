@@ -53,7 +53,7 @@ export interface DataStateEmptyProps {
 
 export const DataStateEmpty: React.FC<DataStateEmptyProps> = ({ title, body, className = '' }) => (
   <div className={`border border-carbon-20 bg-white p-6 text-center ${className}`}>
-    <Inbox className="mx-auto mb-3 h-6 w-6 text-carbon-40" aria-hidden="true" />
+    <Inbox className="mx-auto mb-3 h-6 w-6 text-carbon-50" aria-hidden="true" />
     <h3 className="text-sm font-bold text-carbon-90">{title}</h3>
     {body && <p className="mx-auto mt-1 max-w-prose text-xs text-carbon-60">{body}</p>}
   </div>

@@ -30,22 +30,22 @@ export const PWAInstallButton: React.FC = () => {
       <>
         <button
           onClick={() => setShowIOSGuide(true)}
-          className="flex items-center gap-2 rounded-lg border border-carbon-30 px-3 py-1.5 text-xs font-medium text-carbon-70 hover:bg-carbon-05 dark:border-carbon-60 dark:text-carbon-20 dark:hover:bg-carbon-80"
+          className="flex items-center gap-2 rounded-lg border border-carbon-30 px-3 py-1.5 text-xs font-medium text-carbon-70 hover:bg-carbon-05 dark:hover:bg-carbon-80"
         >
           Install on iOS
         </button>
 
         {showIOSGuide && (
           <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/50 p-3 sm:p-4">
-            <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl dark:bg-carbon-90">
+            <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
               <h3 className="text-lg font-semibold text-carbon-90 dark:text-white">Install on iPhone / iPad</h3>
-              <p className="mt-2 text-sm text-carbon-60 dark:text-carbon-30">
+              <p className="mt-2 text-sm text-carbon-60">
                 1. Tap the <strong>Share</strong> button in Safari toolbar.<br />
                 2. Scroll down and tap <strong>Add to Home Screen</strong>.
               </p>
               <button
                 onClick={() => setShowIOSGuide(false)}
-                className="mt-4 w-full rounded-lg bg-carbon-10 py-2 text-sm font-medium text-carbon-80 hover:bg-carbon-20 dark:bg-carbon-80 dark:text-carbon-20"
+                className="mt-4 w-full rounded-lg bg-carbon-10 py-2 text-sm font-medium text-carbon-80 hover:bg-carbon-20"
               >
                 Close
               </button>

@@ -150,12 +150,12 @@ const Stat: React.FC<{
   value: string;
   sub?: React.ReactNode;
 }> = ({ icon, label, value, sub }) => (
-  <div className="flex items-start gap-3 rounded-lg bg-carbon-05 dark:bg-carbon-80/60 p-3">
-    <div className="mt-0.5 text-carbon-60 dark:text-carbon-40">{icon}</div>
+  <div className="flex items-start gap-3 rounded-lg bg-carbon-05 p-3">
+    <div className="mt-0.5 text-carbon-60">{icon}</div>
     <div className="min-w-0">
-      <div className="text-xs uppercase tracking-wide text-carbon-60 dark:text-carbon-40">{label}</div>
-      <div className="text-sm font-semibold text-carbon-80 dark:text-carbon-10 leading-tight">{value}</div>
-      {sub && <div className="text-xs text-carbon-60 dark:text-carbon-40 mt-0.5">{sub}</div>}
+      <div className="text-xs uppercase tracking-wide text-carbon-60">{label}</div>
+      <div className="text-sm font-semibold text-carbon-80 leading-tight">{value}</div>
+      {sub && <div className="text-xs text-carbon-60 mt-0.5">{sub}</div>}
     </div>
   </div>
 );
@@ -165,13 +165,13 @@ const Section: React.FC<{ title: string; icon?: React.ReactNode; children: React
 }) => {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="rounded-xl border border-carbon-20 dark:border-carbon-70 bg-white/70 dark:bg-carbon-90/40 overflow-hidden">
+    <div className="rounded-xl border border-carbon-20 bg-white/70 overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         className="w-full flex items-center justify-between gap-2 px-4 py-3 text-left hover:bg-carbon-05 dark:hover:bg-carbon-80/50 transition-colors"
       >
-        <div className="flex items-center gap-2 text-sm font-semibold text-carbon-80 dark:text-carbon-10">
+        <div className="flex items-center gap-2 text-sm font-semibold text-carbon-80">
           {icon}
           {title}
         </div>
@@ -209,7 +209,7 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
   const SunMoon = isDay ? Sun : Moon;
 
   return (
-    <div className="w-full space-y-4 text-carbon-80 dark:text-carbon-10">
+    <div className="w-full space-y-4 text-carbon-80">
       {/* ── Header / current conditions ───────────────────────────── */}
       <div className="rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 text-white p-5 shadow-lg relative overflow-hidden">
         <div className="flex items-start justify-between gap-3 relative z-10">
@@ -271,8 +271,8 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
 
       {/* ── Forecasted Agrometeorological Parameters (TASK-006) ── */}
       {forecast && (
-        <div className="rounded-xl border border-carbon-20 dark:border-carbon-70 bg-carbon-05 dark:bg-carbon-80 p-3.5 space-y-2">
-          <div className="flex items-center justify-between text-xs font-heading font-bold text-carbon-80 dark:text-carbon-20">
+        <div className="rounded-xl border border-carbon-20 bg-carbon-05 p-3.5 space-y-2">
+          <div className="flex items-center justify-between text-xs font-heading font-bold text-carbon-80">
             <span className="flex items-center gap-1.5">
               <Calendar size={14} className="text-sky-600" />
               <span>Pipeline Agrometeorological Forecast ({forecast.horizon || 'Daily Advisory'})</span>
@@ -282,25 +282,25 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
             )}
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs font-mono">
-            <div className="p-2 rounded bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-70">
+            <div className="p-2 rounded bg-white border border-carbon-20">
               <span className="text-xs text-carbon-60 uppercase block">Max Temp</span>
               <span className="font-bold text-rose-600 dark:text-rose-400">
                 {forecast.temperature_max !== undefined ? `${forecast.temperature_max}°C` : '—'}
               </span>
             </div>
-            <div className="p-2 rounded bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-70">
+            <div className="p-2 rounded bg-white border border-carbon-20">
               <span className="text-xs text-carbon-60 uppercase block">Min Temp</span>
               <span className="font-bold text-sky-600 dark:text-sky-400">
                 {forecast.temperature_min !== undefined ? `${forecast.temperature_min}°C` : '—'}
               </span>
             </div>
-            <div className="p-2 rounded bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-70">
+            <div className="p-2 rounded bg-white border border-carbon-20">
               <span className="text-xs text-carbon-60 uppercase block">Precipitation</span>
               <span className="font-bold text-blue-600 dark:text-blue-400">
                 {forecast.precipitation_mm !== undefined ? `${forecast.precipitation_mm} mm` : '—'}
               </span>
             </div>
-            <div className="p-2 rounded bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-70">
+            <div className="p-2 rounded bg-white border border-carbon-20">
               <span className="text-xs text-carbon-60 uppercase block">Wind Speed</span>
               <span className="font-bold text-teal-600 dark:text-teal-400">
                 {forecast.wind_max_kmh !== undefined ? `${forecast.wind_max_kmh} km/h` : '—'}
@@ -493,7 +493,7 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
         <div className="mt-2 hidden overflow-x-auto md:block">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs uppercase tracking-wide text-carbon-60 dark:text-carbon-40 border-b border-carbon-20 dark:border-carbon-70">
+              <tr className="text-left text-xs uppercase tracking-wide text-carbon-60 border-b border-carbon-20">
                 <th className="py-2 pr-3">Day</th>
                 <th className="py-2 px-3">Cond.</th>
                 <th className="py-2 px-3 text-right">Hi / Lo</th>
@@ -511,7 +511,7 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
                 return (
                   <tr
                     key={String(d.iso)}
-                    className="border-b border-carbon-10 dark:border-carbon-80 last:border-0"
+                    className="border-b border-carbon-20 last:border-0"
                   >
                     <td className="py-2 pr-3 font-medium whitespace-nowrap">{String(d.date)}</td>
                     <td className="py-2 px-3">
@@ -572,7 +572,7 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
       </Section>
 
       {/* ── Footer / source ─────────────────────────────────────── */}
-      <div className="text-center text-xs text-carbon-60 dark:text-carbon-50 pt-2 pb-1">
+      <div className="text-center text-xs text-carbon-60 pt-2 pb-1">
         Data from <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-sky-500">Open-Meteo</a>
         {' · '}
         {data._meta.license}

@@ -115,7 +115,7 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
           <button
             type="button"
             onClick={() => onCollapsedChange(false)}
-            className="min-h-[44px] px-4 py-2 bg-carbon-90 hover:bg-carbon-80 text-white text-xs font-semibold touch-manipulation rounded-full transition-colors"
+            className="min-h-[44px] px-4 py-2 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 text-xs font-semibold touch-manipulation rounded-full transition-colors"
             title="Expand map controls and filters"
           >
             Controls
@@ -169,7 +169,7 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
           <button
             type="button"
             onClick={() => onCollapsedChange(true)}
-            className="min-h-[44px] px-4 py-2 bg-carbon-90 hover:bg-carbon-80 text-white text-xs font-semibold touch-manipulation rounded-full transition-colors"
+            className="min-h-[44px] px-4 py-2 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 text-xs font-semibold touch-manipulation rounded-full transition-colors"
             title="Collapse map controls"
           >
             Collapse

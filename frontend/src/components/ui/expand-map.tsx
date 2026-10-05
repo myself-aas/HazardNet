@@ -295,7 +295,7 @@ export function LocationMap({
   return (
     <div
       ref={containerRef}
-      className={`relative w-full rounded-2xl overflow-hidden border border-carbon-20 shadow-md bg-carbon-90 text-white select-none ${className}`}
+      className={`relative w-full rounded-2xl overflow-hidden border border-carbon-20 shadow-md bg-carbon-90 text-carbon-05 select-none ${className}`}
     >
       {/* Map View Container with Dynamic Height */}
       <motion.div
@@ -333,7 +333,7 @@ export function LocationMap({
             <button
               type="button"
               onClick={handleRecenter}
-              className="w-7 h-7 rounded-full bg-carbon-black/80 hover:bg-carbon-80 text-carbon-20 hover:text-white backdrop-blur-md border border-carbon-70/80 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
+              className="w-7 h-7 rounded-full bg-carbon-black/80 hover:bg-carbon-80 text-white hover:text-white backdrop-blur-md border border-white/20 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
               title="Recenter Map on Target Coordinates"
               aria-label="Recenter Map"
             >
@@ -344,7 +344,7 @@ export function LocationMap({
             <button
               type="button"
               onClick={handleZoomIn}
-              className="w-7 h-7 rounded-full bg-carbon-black/80 hover:bg-carbon-80 text-carbon-20 hover:text-white backdrop-blur-md border border-carbon-70/80 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
+              className="w-7 h-7 rounded-full bg-carbon-black/80 hover:bg-carbon-80 text-white hover:text-white backdrop-blur-md border border-white/20 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
               title="Zoom In"
               aria-label="Zoom In"
             >
@@ -355,7 +355,7 @@ export function LocationMap({
             <button
               type="button"
               onClick={handleZoomOut}
-              className="w-7 h-7 rounded-full bg-carbon-black/80 hover:bg-carbon-80 text-carbon-20 hover:text-white backdrop-blur-md border border-carbon-70/80 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
+              className="w-7 h-7 rounded-full bg-carbon-black/80 hover:bg-carbon-80 text-white hover:text-white backdrop-blur-md border border-white/20 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
               title="Zoom Out"
               aria-label="Zoom Out"
             >

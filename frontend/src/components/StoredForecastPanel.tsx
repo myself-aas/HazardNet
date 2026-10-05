@@ -119,7 +119,7 @@ function ReadyForecast({
           </dd>
         </div>
       </dl>
-      <details className="mt-6 border-t border-carbon-10 pt-4">
+      <details className="mt-6 border-t border-carbon-20 pt-4">
         <summary className="min-h-11 cursor-pointer text-base font-semibold text-carbon-90">
           {t('lookup.evidence.summary')}
         </summary>
@@ -133,7 +133,7 @@ function ReadyForecast({
         </dl>
         <p className="mt-4 text-base leading-[1.62] text-carbon-70">{t('lookup.evidence.missingDrivers')}</p>
       </details>
-      <p className="mt-6 border-t border-carbon-10 pt-4 text-base leading-[1.62] text-carbon-70">{t('lookup.disclaimer')}</p>
+      <p className="mt-6 border-t border-carbon-20 pt-4 text-base leading-[1.62] text-carbon-70">{t('lookup.disclaimer')}</p>
     </section>
   );
 }

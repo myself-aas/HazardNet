@@ -209,7 +209,7 @@ export const DistrictBriefActions: React.FC = () => {
           <button
             onClick={handleDownloadReport}
             title="Download Raw Machine-Readable JSON Telemetry"
-            className="inline-flex min-h-[44px] items-center gap-2 px-3.5 py-2 bg-carbon-90 hover:bg-carbon-80 text-white text-sm font-semibold cursor-pointer touch-manipulation"
+            className="inline-flex min-h-[44px] items-center gap-2 px-3.5 py-2 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 text-sm font-semibold cursor-pointer touch-manipulation"
           >
             <Download className="w-4 h-4 text-amber-400" />
             <span>Export Data</span>

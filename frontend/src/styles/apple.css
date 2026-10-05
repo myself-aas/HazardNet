@@ -293,6 +293,132 @@
   }
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   `bg-white` is a SURFACE, so it has to follow the theme
+
+   Tailwind's `bg-white` resolves to a literal #ffffff that never flips. 324 call
+   sites use it to mean "the card/page surface", which in dark mode painted a
+   white card — and because the neutral ramp *does* invert, the text on that card
+   flipped to near-white too. White on white, 1.12:1.
+
+   Only backgrounds are redirected. `text-white` keeps meaning white — it is
+   drawn on coloured fills, where it is correct.
+
+   The alpha variants split by weight, because they are two different things
+   wearing one name: at 40% and above `bg-white/NN` is a frosted PANEL and
+   follows the theme; below that it is a highlight drawn over media or a dark
+   ground, and it stays white.
+   ───────────────────────────────────────────────────────────────────────────── */
+[data-theme='dark'] .bg-white,
+[data-theme='dark'] .hover\:bg-white:hover,
+[data-theme='dark'] .focus\:bg-white:focus {
+  background-color: var(--ap-bg-canvas);
+}
+
+[data-theme='dark'] .bg-white\/40 {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 40%, transparent);
+}
+
+[data-theme='dark'] .bg-white\/60,
+[data-theme='dark'] .hover\:bg-white\/60:hover {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 60%, transparent);
+}
+
+[data-theme='dark'] .bg-white\/70,
+[data-theme='dark'] .hover\:bg-white\/70:hover {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 70%, transparent);
+}
+
+[data-theme='dark'] .bg-white\/80 {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 80%, transparent);
+}
+
+[data-theme='dark'] .bg-white\/90 {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 90%, transparent);
+}
+
+[data-theme='dark'] .bg-white\/92 {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 92%, transparent);
+}
+
+[data-theme='dark'] .bg-white\/95 {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 95%, transparent);
+}
+
+.dark .bg-white,
+.dark .hover\:bg-white:hover,
+.dark .focus\:bg-white:focus {
+  background-color: var(--ap-bg-canvas);
+}
+
+.dark .bg-white\/40 {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 40%, transparent);
+}
+
+.dark .bg-white\/60,
+.dark .hover\:bg-white\/60:hover {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 60%, transparent);
+}
+
+.dark .bg-white\/70,
+.dark .hover\:bg-white\/70:hover {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 70%, transparent);
+}
+
+.dark .bg-white\/80 {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 80%, transparent);
+}
+
+.dark .bg-white\/90 {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 90%, transparent);
+}
+
+.dark .bg-white\/92 {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 92%, transparent);
+}
+
+.dark .bg-white\/95 {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 95%, transparent);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .bg-white,
+  :root:not([data-theme='light']) .hover\:bg-white:hover,
+  :root:not([data-theme='light']) .focus\:bg-white:focus {
+    background-color: var(--ap-bg-canvas);
+  }
+
+  :root:not([data-theme='light']) .bg-white\/40 {
+    background-color: color-mix(in srgb, var(--ap-bg-canvas) 40%, transparent);
+  }
+
+  :root:not([data-theme='light']) .bg-white\/60,
+  :root:not([data-theme='light']) .hover\:bg-white\/60:hover {
+    background-color: color-mix(in srgb, var(--ap-bg-canvas) 60%, transparent);
+  }
+
+  :root:not([data-theme='light']) .bg-white\/70,
+  :root:not([data-theme='light']) .hover\:bg-white\/70:hover {
+    background-color: color-mix(in srgb, var(--ap-bg-canvas) 70%, transparent);
+  }
+
+  :root:not([data-theme='light']) .bg-white\/80 {
+    background-color: color-mix(in srgb, var(--ap-bg-canvas) 80%, transparent);
+  }
+
+  :root:not([data-theme='light']) .bg-white\/90 {
+    background-color: color-mix(in srgb, var(--ap-bg-canvas) 90%, transparent);
+  }
+
+  :root:not([data-theme='light']) .bg-white\/92 {
+    background-color: color-mix(in srgb, var(--ap-bg-canvas) 92%, transparent);
+  }
+
+  :root:not([data-theme='light']) .bg-white\/95 {
+    background-color: color-mix(in srgb, var(--ap-bg-canvas) 95%, transparent);
+  }
+}
+
 [data-theme='dark'],
 .dark {
   color-scheme: dark;

@@ -109,7 +109,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
         initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.15 }}
-        className="fixed inset-0 h-dvh bg-carbon-90/40 z-[var(--z-overlay)]"
+        className="fixed inset-0 h-dvh bg-carbon-black/40 z-[var(--z-overlay)]"
         onClick={onClose}
         {...({ inert: true } as Record<string, unknown>)}
       />

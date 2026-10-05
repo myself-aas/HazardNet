@@ -20,7 +20,7 @@ export const Card: React.FC<{
 }> = ({ title, subtitle, icon, actions, children, className = '' }) => (
   <section className={`border border-carbon-20 bg-white ${className}`}>
     {(title || actions) && (
-      <header className="flex items-start justify-between gap-3 border-b border-carbon-10 px-6 py-4">
+      <header className="flex items-start justify-between gap-3 border-b border-carbon-20 px-6 py-4">
         <div className="flex items-start gap-3">
           {icon && (
             <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center bg-amber-50 text-amber-700">

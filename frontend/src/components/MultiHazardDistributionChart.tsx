@@ -112,7 +112,7 @@ export const MultiHazardDistributionChart: React.FC<MultiHazardDistributionChart
               {data.length} Hazard Classes
             </span>
           </div>
-          <p className="text-xs text-carbon-40 mt-1">
+          <p className="text-xs text-carbon-50 mt-1">
             Empirical historical frequency distribution of meteorological and geophysical hazards.
           </p>
         </div>
@@ -154,7 +154,7 @@ export const MultiHazardDistributionChart: React.FC<MultiHazardDistributionChart
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
               {hoveredHazard ? (
                 <>
-                  <span className="text-xs font-medium text-carbon-40 max-w-[100px] truncate">
+                  <span className="text-xs font-medium text-carbon-50 max-w-[100px] truncate">
                     {hoveredHazard.hazard_type}
                   </span>
                   <span className="text-lg font-bold font-mono text-white">
@@ -166,7 +166,7 @@ export const MultiHazardDistributionChart: React.FC<MultiHazardDistributionChart
                 </>
               ) : (
                 <>
-                  <span className="text-xs text-carbon-40">Total Recorded</span>
+                  <span className="text-xs text-carbon-50">Total Recorded</span>
                   <span className="text-xl font-bold font-mono text-white">
                     {totalEvents.toLocaleString()}
                   </span>
@@ -202,7 +202,7 @@ export const MultiHazardDistributionChart: React.FC<MultiHazardDistributionChart
                   </span>
                 </div>
                 <div className="flex items-center gap-3 font-mono text-xs shrink-0">
-                  <span className="text-carbon-40">{item.event_count.toLocaleString()}</span>
+                  <span className="text-carbon-50">{item.event_count.toLocaleString()}</span>
                   <span className="text-carbon-20 font-bold w-12 text-right">
                     {item.percentage}%
                   </span>

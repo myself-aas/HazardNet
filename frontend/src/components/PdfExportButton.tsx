@@ -191,7 +191,7 @@ export const PdfExportButton: React.FC<PdfExportButtonProps> = ({
           <button
             onClick={handlePrimaryClick}
             disabled={isExporting}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-carbon-90 hover:bg-carbon-80 text-white text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${className}`}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-carbon-90 hover:bg-carbon-80 text-carbon-05 text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${className}`}
             title="Configure Filename & Download PDF"
           >
             {isExporting ? (
@@ -264,7 +264,7 @@ export const PdfExportButton: React.FC<PdfExportButtonProps> = ({
           <>
             <div className="fixed inset-0 z-[9994]" onClick={() => setIsOpenMenu(false)} />
             <div className="absolute right-0 top-full mt-1.5 w-72 max-w-[calc(100vw-2rem)] bg-white border border-carbon-20 rounded-xl shadow-xl z-[9994] p-1.5 text-xs animate-in fade-in slide-in-from-top-1 duration-150">
-              <div className="px-2.5 py-1.5 text-xs font-mono font-bold text-carbon-60 uppercase tracking-wider border-b border-carbon-10 flex items-center justify-between">
+              <div className="px-2.5 py-1.5 text-xs font-mono font-bold text-carbon-60 uppercase tracking-wider border-b border-carbon-20 flex items-center justify-between">
                 <span>Official PDF & Print</span>
                 <span className="text-amber-600 font-bold">SOD 2019</span>
               </div>
@@ -312,7 +312,7 @@ export const PdfExportButton: React.FC<PdfExportButtonProps> = ({
               {/* Native Print */}
               <button
                 onClick={handleNativePrint}
-                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-carbon-70 hover:bg-carbon-10 hover:text-carbon-90 font-medium text-left cursor-pointer transition-colors border-t border-carbon-10 mt-1"
+                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-carbon-70 hover:bg-carbon-10 hover:text-carbon-90 font-medium text-left cursor-pointer transition-colors border-t border-carbon-20 mt-1"
               >
                 <Printer className="w-4 h-4 text-carbon-70 shrink-0" />
                 <div>

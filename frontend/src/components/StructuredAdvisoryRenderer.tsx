@@ -212,7 +212,7 @@ export const StructuredAdvisoryRenderer: React.FC<StructuredAdvisoryRendererProp
       </div>
 
       {/* MAIN SOURCE ATTRIBUTION */}
-      <div className="flex justify-end pt-2 border-t border-carbon-10">
+      <div className="flex justify-end pt-2 border-t border-carbon-20">
         <span className="px-3 py-1 rounded-full text-xs font-mono font-extrabold bg-carbon-10 text-carbon-60 border border-carbon-20 shadow-sm">
           Report Source: {providerSource}
         </span>

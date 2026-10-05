@@ -141,7 +141,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ mode, intervalMs = 5200 
   const animateStats = !reduceMotion;
 
   return (
-    <aside className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-carbon-black text-carbon-10 flex-col justify-between p-8">
+    <aside className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-carbon-black text-white flex-col justify-between p-8">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 opacity-[0.06] [background-image:linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] [background-size:44px_44px]" />
       </div>

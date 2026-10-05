@@ -284,13 +284,13 @@ const PublicProfilePage: React.FC = () => {
             </div>
 
             {(SOCIALS.some(([key]) => profile[key]) || profile.website) && (
-              <div className="mt-5 flex flex-wrap gap-2 border-t border-carbon-10 pt-4">
+              <div className="mt-5 flex flex-wrap gap-2 border-t border-carbon-20 pt-4">
                 {profile.website && (
                   <a
                     href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-carbon-90 px-3.5 py-2 text-xs font-bold text-white transition-colors hover:bg-carbon-80"
+                    className="bg-carbon-90 px-3.5 py-2 text-xs font-bold text-carbon-05 transition-colors hover:bg-carbon-80"
                   >
                     <Globe className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />Website
                   </a>

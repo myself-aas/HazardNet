@@ -249,7 +249,7 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
         className="print-preview-modal-root fixed inset-0 z-[9999] flex flex-col bg-carbon-black/90 backdrop-blur-md animate-in fade-in duration-200"
       >
         {/* 1. TOP CONTROL TOOLBAR */}
-        <div className="print-preview-toolbar screen-only flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-2.5 bg-carbon-90 border-b border-carbon-80 text-white shrink-0 shadow-lg">
+        <div className="print-preview-toolbar screen-only flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-2.5 bg-carbon-90 border-b border-carbon-80 text-carbon-05 shrink-0 shadow-lg">
           {/* Left: Title, Badges & Verification */}
           <div className="flex items-center gap-3 min-w-0">
             <div className="p-2 rounded-xl bg-amber-400/10 border border-amber-400/30 text-amber-400 shrink-0">
@@ -388,7 +388,7 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
             {/* Close Modal */}
             <button
               onClick={onClose}
-              className="p-1.5 sm:p-2 rounded-xl bg-carbon-80 hover:bg-carbon-70 text-carbon-40 hover:text-white transition-colors cursor-pointer"
+              className="p-1.5 sm:p-2 rounded-xl bg-carbon-80 hover:bg-carbon-70 text-carbon-30 hover:text-white transition-colors cursor-pointer"
               title="Close Preview (Esc)"
             >
               <X className="w-5 h-5" />
@@ -425,7 +425,7 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
 
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
-                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-carbon-90 text-white font-mono text-[7.5pt] font-extrabold uppercase mb-1">
+                    <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-carbon-90 text-carbon-05 font-mono text-[7.5pt] font-extrabold uppercase mb-1">
                       OFFICIAL DISASTER EARLY WARNING DIRECTIVE
                     </div>
                     <h1 className="text-xl sm:text-2xl font-black text-carbon-90 tracking-tight uppercase">
@@ -498,7 +498,7 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
         </div>
 
         {/* 3. BOTTOM STATUS & SHORTCUTS FOOTER */}
-        <div className="print-preview-footer screen-only px-4 sm:px-6 py-2 bg-carbon-90 border-t border-carbon-80 text-carbon-40 text-xs flex flex-wrap items-center justify-between gap-2 shrink-0">
+        <div className="print-preview-footer screen-only px-4 sm:px-6 py-2 bg-carbon-90 border-t border-carbon-80 text-carbon-30 text-xs flex flex-wrap items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
             <span className="text-xs sm:text-xs">

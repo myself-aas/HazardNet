@@ -114,11 +114,11 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
                   <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
               ) : (
-                <span className="text-xs font-mono text-carbon-40">
+                <span className="text-xs font-mono text-carbon-50">
                   {event.glide || 'Domestic Catalog'}
                 </span>
               )}
-              <span className="text-xs font-mono text-carbon-40">
+              <span className="text-xs font-mono text-carbon-50">
                 {event.date}
               </span>
             </div>
@@ -131,7 +131,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
             <button
               type="button"
               onClick={handleShare}
-              className="p-1.5 text-carbon-40 hover:text-white rounded-lg hover:bg-carbon-80 transition-colors"
+              className="p-1.5 text-carbon-50 hover:text-white rounded-lg hover:bg-carbon-80 transition-colors"
               title="Share report"
               aria-label="Share report"
             >
@@ -140,7 +140,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
             <button
               type="button"
               onClick={handlePrint}
-              className="p-1.5 text-carbon-40 hover:text-white rounded-lg hover:bg-carbon-80 transition-colors"
+              className="p-1.5 text-carbon-50 hover:text-white rounded-lg hover:bg-carbon-80 transition-colors"
               title="Print report"
               aria-label="Print report"
             >
@@ -149,7 +149,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 text-carbon-40 hover:text-white rounded-lg hover:bg-carbon-80 transition-colors"
+              className="p-1.5 text-carbon-50 hover:text-white rounded-lg hover:bg-carbon-80 transition-colors"
               aria-label="Close disaster report modal"
             >
               <X className="h-4 w-4" aria-hidden="true" />
@@ -162,7 +162,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
           {/* Metadata Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="bg-carbon-black/60 border border-carbon-80 rounded-xl p-3">
-              <span className="text-xs text-carbon-40 font-medium">Impacted Districts</span>
+              <span className="text-xs text-carbon-50 font-medium">Impacted Districts</span>
               <p className="text-sm font-semibold text-white mt-0.5">
                 {event.location_districts && event.location_districts.length > 0
                   ? event.location_districts.join(', ')
@@ -171,7 +171,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
             </div>
 
             <div className="bg-carbon-black/60 border border-carbon-80 rounded-xl p-3">
-              <span className="text-xs text-carbon-40 font-medium">Affected Population</span>
+              <span className="text-xs text-carbon-50 font-medium">Affected Population</span>
               <p className="text-sm font-mono font-bold text-rose-400 mt-0.5">
                 {event.validated_affected && event.validated_affected > 0
                   ? event.validated_affected.toLocaleString()
@@ -180,7 +180,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
             </div>
 
             <div className="bg-carbon-black/60 border border-carbon-80 rounded-xl p-3">
-              <span className="text-xs text-carbon-40 font-medium">GEE Observation Window</span>
+              <span className="text-xs text-carbon-50 font-medium">GEE Observation Window</span>
               <p className="text-xs font-mono text-carbon-30 mt-1">
                 {event.gee_start && event.gee_end
                   ? `${event.gee_start} to ${event.gee_end}`
@@ -191,10 +191,10 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
 
           {/* Full Narrative Text */}
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-carbon-40 mb-2">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-carbon-50 mb-2">
               Humanitarian Situation Report & Grounding Narrative
             </h3>
-            <div className="bg-carbon-black/80 border border-carbon-80/80 rounded-xl p-4 text-xs sm:text-sm text-carbon-30 leading-relaxed max-h-[300px] overflow-y-auto whitespace-pre-line font-sans scrollbar-thin">
+            <div className="bg-carbon-black/80 border border-white/15 rounded-xl p-4 text-xs sm:text-sm text-white/80 leading-relaxed max-h-[300px] overflow-y-auto whitespace-pre-line font-sans scrollbar-thin">
               {event.full_description || 'No detailed situation report available for this entry.'}
             </div>
           </div>
@@ -202,7 +202,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
           {/* Multilateral Reference Links */}
           {hasGlide && event.links && (
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-carbon-40 mb-2">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-carbon-50 mb-2">
                 Multilateral References
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">

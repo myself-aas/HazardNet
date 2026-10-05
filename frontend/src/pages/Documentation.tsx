@@ -97,7 +97,7 @@ export const Documentation: React.FC = () => {
       <Breadcrumbs />
 
       {/* Title banner */}
-      <div className="bg-carbon-05 border border-carbon-10 rounded-2xl p-6 md:p-8">
+      <div className="bg-carbon-05 border border-carbon-20 rounded-2xl p-6 md:p-8">
         <div className="flex items-center gap-2 mb-2">
           <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-nasa-red/10 text-nasa-red-shade border border-nasa-blue/20">
             Documentation
@@ -125,13 +125,13 @@ export const Documentation: React.FC = () => {
             <Link
               key={topic.to}
               to={topic.to}
-              className="group bg-carbon-05 border border-carbon-10 rounded-2xl p-5 hover:border-carbon-20 transition-colors flex flex-col gap-2"
+              className="group bg-carbon-05 border border-carbon-20 rounded-2xl p-5 hover:border-carbon-20 transition-colors flex flex-col gap-2"
             >
               <div className="flex items-center justify-between">
-                <span className="font-mono text-xs font-bold text-carbon-40">{topic.kicker}</span>
+                <span className="font-mono text-xs font-bold text-carbon-50">{topic.kicker}</span>
                 <MaterialIcon
                   name={topic.icon}
-                  className="w-4 h-4 text-carbon-40 group-hover:text-nasa-blue-shade transition-colors"
+                  className="w-4 h-4 text-carbon-50 group-hover:text-nasa-blue-shade transition-colors"
                 />
               </div>
               <span className="text-sm font-bold text-carbon-90 group-hover:text-nasa-blue-shade transition-colors">
@@ -144,7 +144,7 @@ export const Documentation: React.FC = () => {
       </section>
 
       {/* Honesty strip */}
-      <section className="bg-carbon-05 border border-carbon-10 rounded-2xl p-6 space-y-2">
+      <section className="bg-carbon-05 border border-carbon-20 rounded-2xl p-6 space-y-2">
         <h2 className="text-sm font-bold text-carbon-90">Three standing rules</h2>
         <ul className="text-xs text-carbon-70 space-y-1.5 list-disc pl-5">
           <li>
@@ -170,7 +170,7 @@ export const Documentation: React.FC = () => {
           <Link
             key={link.to}
             to={link.to}
-            className="px-3 py-1.5 bg-carbon-05 hover:bg-carbon-10 border border-carbon-10 rounded-full text-xs font-bold text-carbon-80 transition-colors"
+            className="px-3 py-1.5 bg-carbon-05 hover:bg-carbon-10 border border-carbon-20 rounded-full text-xs font-bold text-carbon-80 transition-colors"
           >
             {link.label}
           </Link>

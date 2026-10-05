@@ -203,7 +203,7 @@ export const FreshnessPanel: React.FC = () => {
           </thead>
           <tbody>
             {sources.map((source) => (
-              <tr key={source.id} className="border-b border-carbon-10 align-top">
+              <tr key={source.id} className="border-b border-carbon-20 align-top">
                 <th scope="row" className="py-2 pr-3 font-semibold text-carbon-80">
                   {source.label}
                   {source.reason && (
@@ -248,7 +248,7 @@ export const FreshnessPanel: React.FC = () => {
               </thead>
               <tbody>
                 {coverage.horizons.map((horizon) => (
-                  <tr key={horizon} className="border-b border-carbon-10">
+                  <tr key={horizon} className="border-b border-carbon-20">
                     <th scope="row" className="py-1.5 pr-3 font-semibold text-carbon-80">{horizon}</th>
                     <td className="py-1.5 tabular-nums text-carbon-70">
                       {coverage.units_per_horizon?.[horizon] ?? '—'}
@@ -324,7 +324,7 @@ export const FreshnessPanel: React.FC = () => {
             </thead>
             <tbody>
               {probeChecks.map((check) => (
-                <tr key={check.id} className="border-b border-carbon-10">
+                <tr key={check.id} className="border-b border-carbon-20">
                   <th scope="row" className="py-1.5 pr-3 font-semibold text-carbon-80">{check.id}</th>
                   <td className="py-1.5 pr-3">
                     {check.outcome === 'success' ? (

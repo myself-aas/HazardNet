@@ -117,7 +117,7 @@ export const BlogArticlePage: React.FC = () => {
   if (notFound || !article) {
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-3xl mx-auto min-h-[55vh] flex flex-col items-center justify-center gap-4 text-center px-4">
-        <Compass className="h-10 w-10 text-carbon-40" aria-hidden="true" />
+        <Compass className="h-10 w-10 text-carbon-50" aria-hidden="true" />
         <h1 className="text-xl font-black text-carbon-90">Article not found</h1>
         <p className="text-sm text-carbon-60 max-w-md leading-relaxed">
           This URL does not match a published HazardNet article. It may be a draft, renamed, or removed.
@@ -176,7 +176,7 @@ export const BlogArticlePage: React.FC = () => {
           <h1 className="text-2xl sm:text-3xl font-black text-carbon-90 tracking-tight leading-tight">{article.title}</h1>
           <p className="text-sm text-carbon-60 leading-relaxed">{article.excerpt}</p>
 
-          <div className="flex items-center justify-between gap-3 border-y border-carbon-10 py-3">
+          <div className="flex items-center justify-between gap-3 border-y border-carbon-20 py-3">
             <div className="flex items-center gap-2.5 min-w-0">
               {article.authorAvatarUrl ? (
                 <img src={article.authorAvatarUrl} alt="" className="h-10 w-10 rounded-full border border-carbon-20 object-cover shrink-0" />
@@ -215,7 +215,7 @@ export const BlogArticlePage: React.FC = () => {
           )}
 
           {article.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 pt-2 border-t border-carbon-10">
+            <div className="flex flex-wrap gap-1.5 pt-2 border-t border-carbon-20">
               {article.tags.map((tag) => (
                 <span key={tag} className="px-2 py-1 rounded-sm bg-carbon-10 border border-carbon-20 text-xs font-bold text-carbon-60">
                   #{tag}
@@ -226,7 +226,7 @@ export const BlogArticlePage: React.FC = () => {
 
           {/* Author bio box (E-E-A-T) */}
           {(article.authorBio || article.authorWebsite) && (
-            <div className="flex items-start gap-3 bg-carbon-05 border border-carbon-10 p-4">
+            <div className="flex items-start gap-3 bg-carbon-05 border border-carbon-20 p-4">
               {article.authorAvatarUrl ? (
                 <img src={article.authorAvatarUrl} alt="" className="h-12 w-12 rounded-full border border-carbon-20 object-cover shrink-0" />
               ) : (

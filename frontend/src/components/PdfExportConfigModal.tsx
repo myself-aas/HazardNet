@@ -293,7 +293,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
         className="relative w-full max-w-xl bg-white border border-carbon-20 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-5 py-4 bg-carbon-90 text-white border-b border-carbon-80 shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 bg-carbon-90 text-carbon-05 border-b border-carbon-80 shrink-0">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-amber-400/10 border border-amber-400/30 text-amber-400">
               <FileDown className="w-5 h-5" />
@@ -314,7 +314,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
           <button
             onClick={onClose}
             disabled={isExporting}
-            className="p-1.5 rounded-lg text-carbon-40 hover:text-white hover:bg-carbon-80 transition-colors cursor-pointer disabled:opacity-50"
+            className="p-1.5 rounded-lg text-carbon-50 hover:text-white hover:bg-carbon-80 transition-colors cursor-pointer disabled:opacity-50"
             title="Close dialog (Esc)"
           >
             <X className="w-5 h-5" />
@@ -530,7 +530,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
               type="button"
               onClick={handleStartExport}
               disabled={isExporting}
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-carbon-90 hover:bg-carbon-80 text-white text-xs font-bold transition-all shadow-md cursor-pointer hover:scale-102 active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-carbon-90 hover:bg-carbon-80 text-carbon-05 text-xs font-bold transition-all shadow-md cursor-pointer hover:scale-102 active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isExporting ? (
                 <>

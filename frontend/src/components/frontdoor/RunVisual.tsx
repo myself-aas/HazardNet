@@ -76,7 +76,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
        (`landmark-complementary-is-top-level`), not just a style choice. The caption gives the
        figure its accessible name, so the eyebrow is read rather than skipped. */
     <figure id="last-run-visual" aria-labelledby="last-run-visual-caption" className="border border-carbon-20 bg-white p-5 sm:p-6 shadow-sm" data-testid="last-run-visual">
-      <figcaption id="last-run-visual-caption" className="flex flex-wrap items-center justify-between gap-3 border-b border-carbon-10 pb-3.5">
+      <figcaption id="last-run-visual-caption" className="flex flex-wrap items-center justify-between gap-3 border-b border-carbon-20 pb-3.5">
         <div className="flex items-center gap-2.5 min-w-0">
           <Interactive.Div
             name="Live pulse — freshness indicator"
@@ -256,7 +256,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                     }),
               }}
               aria-hidden="true"
-              className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-carbon-10 border border-carbon-10/60"
+              className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-carbon-10 border border-carbon-20/60"
             >
               <div
                 style={{
@@ -352,7 +352,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
               {freshness.sources.map((source) => (
                 <li
                   key={source.id}
-                  className="flex min-w-0 items-center justify-between gap-2.5 rounded-sm border border-carbon-10 bg-carbon-05/70 px-3 py-2 text-xs transition-colors hover:bg-carbon-05"
+                  className="flex min-w-0 items-center justify-between gap-2.5 rounded-sm border border-carbon-20 bg-carbon-05/70 px-3 py-2 text-xs transition-colors hover:bg-carbon-05"
                 >
                   <div className="flex min-w-0 items-center gap-2.5">
                     <span
@@ -405,7 +405,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                   ))}
                 </ul>
                 {honesty.length > 3 && (
-                  <div className="mt-2.5 border-t border-carbon-10 pt-2 space-y-2">
+                  <div className="mt-2.5 border-t border-carbon-20 pt-2 space-y-2">
                     {!honestyExpanded && (
                       <p className="font-mono text-xs leading-[1.62] text-carbon-60">
                         {t('frontdoor.runVisual.moreHonesty', { total: formatNumber(honesty.length) })}{' '}
@@ -441,7 +441,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
           )}
 
           {/* ── provenance line ────────────────────────────────────────── */}
-          <div className="border-t border-carbon-10 pt-3.5 flex flex-wrap items-center justify-between gap-2 font-mono text-xs leading-[1.62] text-carbon-60">
+          <div className="border-t border-carbon-20 pt-3.5 flex flex-wrap items-center justify-between gap-2 font-mono text-xs leading-[1.62] text-carbon-60">
             <p className="min-w-0 break-words">
               {t('frontdoor.runVisual.provenance')} · built {freshness.built_at ?? 'timestamp not reported'}
             </p>

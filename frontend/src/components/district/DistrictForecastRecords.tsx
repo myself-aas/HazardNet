@@ -193,7 +193,7 @@ export const DistrictForecastRecords: React.FC = () => {
           <div className="hidden overflow-x-auto border border-carbon-20/90 md:block">
             <table className="w-full text-left border-collapse text-xs font-sans">
               <thead>
-                <tr className="bg-carbon-90 text-white font-bold text-xs uppercase tracking-wider font-mono">
+                <tr className="bg-carbon-90 text-carbon-05 font-bold text-xs uppercase tracking-wider font-mono">
                   <th className="px-3.5 py-3">Target Date</th>
                   <th className="px-3.5 py-3">Prediction</th>
                   <th className="px-3.5 py-3">Hazard Type</th>
@@ -238,7 +238,7 @@ export const DistrictForecastRecords: React.FC = () => {
                             {row.advisory_tier}
                           </span>
                         ) : (
-                          <span className="text-carbon-40" title="This row predates the advisory tier column">—</span>
+                          <span className="text-carbon-50" title="This row predates the advisory tier column">—</span>
                         )}
                       </td>
                       <td className="px-3.5 py-3 font-mono font-bold whitespace-nowrap">

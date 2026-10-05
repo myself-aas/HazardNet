@@ -254,7 +254,7 @@ export const Contact: React.FC = () => {
                   href={issueUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="min-h-[44px] bg-carbon-90 px-4 py-2 font-bold text-white hover:bg-carbon-70 touch-manipulation tap-target inline-flex items-center justify-center"
+                  className="min-h-[44px] bg-carbon-90 px-4 py-2 font-bold text-carbon-05 hover:bg-carbon-70 touch-manipulation tap-target inline-flex items-center justify-center"
                 >
                   Open a prefilled GitHub issue
                 </a>

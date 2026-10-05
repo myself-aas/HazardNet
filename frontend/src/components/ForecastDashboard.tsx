@@ -331,7 +331,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleExportCsv}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-carbon-90 text-white text-xs font-extrabold shadow-sm hover:bg-carbon-80 transition-colors cursor-pointer min-h-[44px]"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-carbon-90 text-carbon-05 text-xs font-extrabold shadow-sm hover:bg-carbon-80 transition-colors cursor-pointer min-h-[44px]"
             >
               <MaterialIcon name="download" className="w-4 h-4 text-amber-400" />
               <span>Export CSV Data</span>
@@ -452,7 +452,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
 
       {/* Main Charts Container */}
       <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 shadow-md space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-carbon-10 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-carbon-20 pb-4">
           <div>
             <h2 className="text-lg font-bold text-carbon-90 flex items-center gap-2">
               <MaterialIcon name="show_chart" className="w-5 h-5 text-amber-500" />

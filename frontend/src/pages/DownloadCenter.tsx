@@ -112,7 +112,7 @@ const ChannelCard: React.FC<{ channel: DownloadChannel; state: ChannelState }> =
       className="scroll-mt-28 bg-white border border-carbon-20/90 rounded-3xl p-6 shadow-sm hover:border-amber-400/80 hover:shadow-xl transition-all duration-300 space-y-4 relative overflow-hidden"
     >
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-carbon-10 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-carbon-20 pb-4">
         <div className="flex items-start gap-3.5">
           <div className="w-12 h-12 rounded-2xl bg-amber-50/80 border border-amber-200 flex items-center justify-center shrink-0 shadow-2xs">
             <MaterialIcon name={channel.icon} className="w-6 h-6 text-amber-700" />

@@ -83,7 +83,7 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="text-carbon-40 hover:text-white p-1 rounded-lg hover:bg-carbon-80 transition-colors"
+            className="text-carbon-50 hover:text-white p-1 rounded-lg hover:bg-carbon-80 transition-colors"
             aria-label="Close GLIDE resources popover"
           >
             <X className="h-4 w-4" aria-hidden="true" />
@@ -93,7 +93,7 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
         {/* Links listing */}
         {valid && links ? (
           <div className="space-y-2">
-            <p className="text-xs text-carbon-40 mb-2">
+            <p className="text-xs text-carbon-50 mb-2">
               Official multilateral agencies tracking this disaster event. All links open securely in a new window.
             </p>
 
@@ -107,7 +107,7 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
                 <span className="font-semibold text-carbon-20 group-hover:text-blue-400">
                   ReliefWeb Disaster Registry (UN OCHA)
                 </span>
-                <span className="text-xs text-carbon-40">
+                <span className="text-xs text-carbon-50">
                   Situation reports, sitreps, humanitarian maps, and appeals
                 </span>
               </div>
@@ -124,7 +124,7 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
                 <span className="font-semibold text-carbon-20 group-hover:text-blue-400">
                   FAO GIEWS Country Brief (Bangladesh)
                 </span>
-                <span className="text-xs text-carbon-40">
+                <span className="text-xs text-carbon-50">
                   Crop prospects, agricultural damage, food security assessment
                 </span>
               </div>
@@ -141,7 +141,7 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
                 <span className="font-semibold text-carbon-20 group-hover:text-blue-400">
                   WHO Public Health Emergencies
                 </span>
-                <span className="text-xs text-carbon-40">
+                <span className="text-xs text-carbon-50">
                   Disease surveillance, epidemiological alerts, health cluster
                 </span>
               </div>
@@ -158,7 +158,7 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
                 <span className="font-semibold text-carbon-20 group-hover:text-blue-400">
                   Asian Disaster Reduction Center (ADRC)
                 </span>
-                <span className="text-xs text-carbon-40">
+                <span className="text-xs text-carbon-50">
                   Multilateral GLIDE register and regional catastrophe database
                 </span>
               </div>
@@ -175,7 +175,7 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
                 <span className="font-semibold text-carbon-20 group-hover:text-blue-400">
                   IFRC GO Emergency Platform
                 </span>
-                <span className="text-xs text-carbon-40">
+                <span className="text-xs text-carbon-50">
                   Red Cross / Red Crescent field operations and DREF emergency appeals
                 </span>
               </div>
@@ -183,7 +183,7 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
             </a>
           </div>
         ) : (
-          <div className="py-6 text-center text-xs text-carbon-40">
+          <div className="py-6 text-center text-xs text-carbon-50">
             <p className="font-medium text-amber-400 mb-1">Domestic Record</p>
             <p>
               This disaster record is cataloged domestically. No multilateral GLIDE identifier was registered for this local event.

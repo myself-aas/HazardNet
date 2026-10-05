@@ -374,7 +374,7 @@ export const UserProfilePage: React.FC = () => {
                 type="button"
                 onClick={handleDetectLocation}
                 disabled={detectingLoc}
-                className="min-h-[44px] px-3.5 py-2 bg-carbon-90 hover:bg-carbon-80 text-white font-bold text-xs border border-carbon-90 transition-all disabled:opacity-50 touch-manipulation tap-target inline-flex items-center justify-center"
+                className="min-h-[44px] px-3.5 py-2 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 font-bold text-xs border border-carbon-90 transition-all disabled:opacity-50 touch-manipulation tap-target inline-flex items-center justify-center"
               >
                 {detectingLoc ? 'Detecting...' : 'Pinpoint Location'}
               </button>
@@ -401,7 +401,7 @@ export const UserProfilePage: React.FC = () => {
                     onClick={() => {
                       navigate(`/?district=${locResult.nearestDistrict.id}`);
                     }}
-                    className="min-h-[44px] py-2 px-3 bg-carbon-90 hover:bg-carbon-80 text-white border border-carbon-90 font-bold text-xs transition-colors touch-manipulation tap-target inline-flex items-center justify-center"
+                    className="min-h-[44px] py-2 px-3 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 border border-carbon-90 font-bold text-xs transition-colors touch-manipulation tap-target inline-flex items-center justify-center"
                   >
                     Sync Map to {locResult.nearestDistrict.name}
                   </button>
@@ -487,7 +487,7 @@ export const UserProfilePage: React.FC = () => {
             const severityScorePct = currentDistrictObj ? Math.round(currentDistrictObj.severity * 100) : 75;
 
             return (
-              <div className="bg-carbon-90 text-white border border-carbon-80 p-4 space-y-3 relative overflow-hidden">
+              <div className="bg-carbon-90 text-carbon-05 border border-carbon-80 p-4 space-y-3 relative overflow-hidden">
                 <div className="flex items-center justify-between border-b border-carbon-80 pb-2.5">
                   <div className="flex items-center gap-2">
                     <span className="text-amber-400 font-bold text-sm"><MaterialIcon name="shield" className="w-4 h-4 inline-block mr-1" /></span>
@@ -658,7 +658,7 @@ export const UserProfilePage: React.FC = () => {
                 onClick={() => {
                   navigate('/dashboard');
                 }}
-                className="px-3 py-1.5 bg-carbon-90 hover:bg-carbon-80 text-white font-bold rounded-sm text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+                className="px-3 py-1.5 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 font-bold rounded-sm text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
               >
                 <MaterialIcon name="arrow_right" className="w-4 h-4" />
                 <span>Open Dashboard</span>

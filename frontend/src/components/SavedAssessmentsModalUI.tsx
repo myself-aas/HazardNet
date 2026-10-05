@@ -36,7 +36,7 @@ export const SavedAssessmentsModalUI: React.FC<SavedAssessmentsModalUIProps> = (
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
-          className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center p-4 bg-carbon-90/50"
+          className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center p-4 bg-carbon-black/50"
           onClick={(e) => {
             if (e.target === e.currentTarget) onClose();
           }}

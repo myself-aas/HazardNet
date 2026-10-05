@@ -206,7 +206,7 @@ export const AdvisoriesPage: React.FC = () => {
 
       {/* 1. SECTOR ROUTE NAVIGATOR (Unique URL per Sector) */}
       <div className="bg-white border border-carbon-20/90 rounded-3xl p-4 sm:p-6 shadow-md space-y-4 screen-only">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-carbon-10 pb-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-carbon-20 pb-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-carbon-10 border border-carbon-20 text-carbon-80 text-xs font-mono font-bold mb-2">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
@@ -324,7 +324,7 @@ export const AdvisoriesPage: React.FC = () => {
           </div>
 
           {/* Quick Action Box */}
-          <div className="bg-carbon-90 text-white rounded-2xl p-5 sm:p-6 lg:w-80 shrink-0 space-y-4 shadow-md border border-carbon-80">
+          <div className="bg-carbon-90 text-carbon-05 rounded-2xl p-5 sm:p-6 lg:w-80 shrink-0 space-y-4 shadow-md border border-carbon-80">
             <div className="flex items-center gap-2 text-amber-400">
               <ShieldAlert className="w-5 h-5" />
               <span className="text-xs font-mono font-black tracking-wider uppercase">Emergency Action Desk</span>
@@ -356,7 +356,7 @@ export const AdvisoriesPage: React.FC = () => {
         </div>
 
         {/* Issuing Authorities & Vulnerability Profiles */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-carbon-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-carbon-20">
           <div className="space-y-2">
             <span className="text-xs font-mono font-black text-carbon-90 uppercase tracking-wider block">
               Lead Issuing Authorities:
@@ -394,7 +394,7 @@ export const AdvisoriesPage: React.FC = () => {
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
           >
-            <div className="bg-carbon-90 text-white rounded-3xl p-6 sm:p-8 border border-carbon-80 shadow-xl space-y-6">
+            <div className="bg-carbon-90 text-carbon-05 rounded-3xl p-6 sm:p-8 border border-carbon-80 shadow-xl space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-carbon-80 pb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-2xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-400">
@@ -412,7 +412,7 @@ export const AdvisoriesPage: React.FC = () => {
                 </div>
                 <button
                   onClick={() => setShowAiSynthesizer(false)}
-                  className="text-carbon-40 hover:text-white p-1 rounded-lg hover:bg-carbon-80 self-start sm:self-auto cursor-pointer"
+                  className="text-carbon-50 hover:text-white p-1 rounded-lg hover:bg-carbon-80 self-start sm:self-auto cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -425,7 +425,7 @@ export const AdvisoriesPage: React.FC = () => {
                   <select
                     value={aiDistrict}
                     onChange={(e) => setAiDistrict(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-carbon-80 border border-carbon-70 text-white text-xs font-semibold focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 rounded-xl bg-carbon-80 border border-carbon-70 text-carbon-05 text-xs font-semibold focus:outline-none focus:border-amber-400"
                   >
                     {ALL_64_DISTRICTS.map((d) => (
                       <option key={d.id} value={d.name}>
@@ -440,7 +440,7 @@ export const AdvisoriesPage: React.FC = () => {
                   <select
                     value={aiHazard}
                     onChange={(e) => setAiHazard(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-carbon-80 border border-carbon-70 text-white text-xs font-semibold focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 rounded-xl bg-carbon-80 border border-carbon-70 text-carbon-05 text-xs font-semibold focus:outline-none focus:border-amber-400"
                   >
                     <option value="Monsoon Flood">Monsoon Riverine Flood</option>
                     <option value="Flash Flood">Northeastern Flash Flood (Haor)</option>
@@ -532,7 +532,7 @@ export const AdvisoriesPage: React.FC = () => {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-carbon-20 pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-carbon-90 text-white flex items-center justify-center font-mono font-bold text-xs">
+            <div className="w-8 h-8 rounded-xl bg-carbon-90 text-carbon-05 flex items-center justify-center font-mono font-bold text-xs">
               SOP
             </div>
             <div>
@@ -594,7 +594,7 @@ export const AdvisoriesPage: React.FC = () => {
                 className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-7 shadow-md space-y-4 hover:border-carbon-30 transition-all"
               >
                 {/* Step Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-carbon-10 pb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-carbon-20 pb-3">
                   <div className="flex items-center gap-3">
                     <span className="w-8 h-8 rounded-xl bg-carbon-10 border border-carbon-20 flex items-center justify-center font-mono font-black text-xs text-carbon-90 shrink-0">
                       {step.stepNumber}
@@ -689,7 +689,7 @@ export const AdvisoriesPage: React.FC = () => {
 
       {/* 5. TECHNICAL CULTIVARS, AGROCHEMICALS & MATERIAL SPECIFICATION MATRIX */}
       <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-5">
-        <div className="flex items-center justify-between border-b border-carbon-10 pb-3">
+        <div className="flex items-center justify-between border-b border-carbon-20 pb-3">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700">
               <Wheat className="w-4 h-4" />
@@ -755,7 +755,7 @@ export const AdvisoriesPage: React.FC = () => {
 
       {/* 6. OFFICIAL DOCUMENTATION & HYPERLINKED PORTALS */}
       <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-5">
-        <div className="flex items-center justify-between border-b border-carbon-10 pb-3">
+        <div className="flex items-center justify-between border-b border-carbon-20 pb-3">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700">
               <BookOpen className="w-4 h-4" />
@@ -814,7 +814,7 @@ export const AdvisoriesPage: React.FC = () => {
 
       {/* 7. OFFICIAL CONTACT INFORMATION & EMERGENCY SUPPORT DIRECTORY */}
       <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-carbon-10 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-carbon-20 pb-4">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-700">
               <PhoneCall className="w-4 h-4" />
@@ -831,7 +831,7 @@ export const AdvisoriesPage: React.FC = () => {
 
           <button
             onClick={() => setIsEmailModalOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-carbon-90 text-white text-xs font-bold hover:bg-carbon-80 transition-all cursor-pointer shadow-xs self-start sm:self-auto"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-carbon-90 text-carbon-05 text-xs font-bold hover:bg-carbon-80 transition-all cursor-pointer shadow-xs self-start sm:self-auto"
           >
             <Mail className="w-3.5 h-3.5 text-amber-400" />
             <span>Open Emergency Email Composer</span>
@@ -1049,7 +1049,7 @@ export const AdvisoriesPage: React.FC = () => {
 
                   <button
                     onClick={handleLaunchMailClient}
-                    className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-carbon-90 text-white text-xs font-bold hover:bg-carbon-80 flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                    className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-carbon-90 text-carbon-05 text-xs font-bold hover:bg-carbon-80 flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                   >
                     <Send className="w-4 h-4 text-amber-400" />
                     <span>Open in Email App</span>

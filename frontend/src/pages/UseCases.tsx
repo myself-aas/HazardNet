@@ -214,7 +214,7 @@ export const UseCases: React.FC = () => {
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
               <Link
                 to={`/?district=${activeCase.districtId}&report=true`}
-                className="px-4 py-2.5 bg-carbon-90 hover:bg-carbon-80 text-white text-xs font-black transition-all hover:shrink-0 text-center inline-block cursor-pointer"
+                className="px-4 py-2.5 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 text-xs font-black transition-all hover:shrink-0 text-center inline-block cursor-pointer"
               >
                 <MaterialIcon name="satellite_alt" className="w-4 h-4" /> Simulate Hazard on Live GIS
               </Link>

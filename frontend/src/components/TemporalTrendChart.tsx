@@ -103,7 +103,7 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
               26-Year Empirical Record
             </span>
           </div>
-          <p className="text-xs text-carbon-40 mt-1">
+          <p className="text-xs text-carbon-50 mt-1">
             Annual event frequency across all 64 districts with historical milestone disaster annotations.
           </p>
         </div>
@@ -129,7 +129,7 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
         {/* Tooltip Overlay */}
         {hoveredPoint && (
           <div
-            className="absolute top-3 left-16 z-20 bg-carbon-90/95 backdrop-blur-md border border-carbon-70 px-3 py-2 rounded-lg shadow-xl text-xs space-y-1 pointer-events-none"
+            className="absolute top-3 left-16 z-20 bg-carbon-black/90 backdrop-blur-md border border-white/15 px-3 py-2 rounded-lg shadow-xl text-xs space-y-1 pointer-events-none"
             role="tooltip"
           >
             <div className="flex items-center justify-between gap-4 font-mono font-bold text-white">

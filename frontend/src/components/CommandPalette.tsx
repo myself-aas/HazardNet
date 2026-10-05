@@ -412,7 +412,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="fixed inset-0 z-[var(--z-overlay)] bg-carbon-90/40 flex items-start justify-center pt-12 sm:pt-20 px-4"
+              className="fixed inset-0 z-[var(--z-overlay)] bg-carbon-black/40 flex items-start justify-center pt-12 sm:pt-20 px-4"
               onClick={(e) => {
                 if (e.target === e.currentTarget) setIsOpen(false);
               }}
@@ -527,7 +527,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                           className={`p-3 min-h-[44px] cursor-pointer transition-colors flex items-center justify-between gap-3 border ${
                             isSelected
                               ? 'bg-amber-50 border-amber-300 text-carbon-90 shadow-sm'
-                              : 'bg-white border-carbon-10 hover:bg-carbon-05 text-carbon-70'
+                              : 'bg-white border-carbon-20 hover:bg-carbon-05 text-carbon-70'
                           }`}
                         >
                           <div className="flex items-center gap-3 min-w-0">

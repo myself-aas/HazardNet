@@ -105,7 +105,7 @@ export const DistrictRiskMap: React.FC<DistrictRiskMapProps> = ({
               64 Districts Analyzed (2000–2026)
             </span>
           </div>
-          <p className="text-xs text-carbon-40 mt-1">
+          <p className="text-xs text-carbon-50 mt-1">
             Continuous empirical vulnerability ramp based on multi-hazard recurrence, frequency, and impacts.
           </p>
         </div>
@@ -138,7 +138,7 @@ export const DistrictRiskMap: React.FC<DistrictRiskMapProps> = ({
         {/* Tooltip Overlay */}
         {hoveredDistrict && (
           <div
-            className="absolute top-4 right-4 z-30 bg-carbon-90/95 backdrop-blur-md border border-carbon-70 p-3.5 rounded-xl shadow-2xl text-xs space-y-1.5 w-[min(220px,calc(100%-1.5rem))] pointer-events-none text-carbon-20"
+            className="absolute top-4 right-4 z-30 bg-carbon-black/90 backdrop-blur-md border border-white/15 p-3.5 rounded-xl shadow-2xl text-xs space-y-1.5 w-[min(220px,calc(100%-1.5rem))] pointer-events-none text-white"
             role="tooltip"
           >
             <div className="flex items-center justify-between border-b border-carbon-80 pb-1.5">
@@ -156,20 +156,20 @@ export const DistrictRiskMap: React.FC<DistrictRiskMapProps> = ({
                 Rank #{hoveredDistrict.rank || 'N/A'}
               </span>
             </div>
-            <div className="text-carbon-40">
+            <div className="text-carbon-50">
               Division:{' '}
               <strong className="text-carbon-20">{hoveredDistrict.division}</strong>
             </div>
-            <div className="text-carbon-40">
+            <div className="text-carbon-50">
               Primary Hazard:{' '}
               <strong className="text-carbon-20">{hoveredDistrict.hazardType}</strong>
             </div>
-            <div className="text-carbon-40">
+            <div className="text-carbon-50">
               Historical Events:{' '}
               <strong className="text-carbon-20">{hoveredDistrict.events}</strong>
             </div>
             <div className="flex items-center justify-between pt-1 border-t border-carbon-80 font-mono">
-              <span className="text-carbon-40">Vulnerability Index:</span>
+              <span className="text-carbon-50">Vulnerability Index:</span>
               <span
                 className="font-bold text-sm"
                 style={{ color: getVulnerabilityColor(hoveredDistrict.score) }}
@@ -305,22 +305,22 @@ export const DistrictRiskMap: React.FC<DistrictRiskMapProps> = ({
       {/* Vulnerability Color Ramp Legend */}
       <div className="mt-4 pt-3 border-t border-carbon-80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2">
-          <span className="text-carbon-40 font-medium">Vulnerability Index:</span>
+          <span className="text-carbon-50 font-medium">Vulnerability Index:</span>
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-[#1d7a3e]" />
-            <span className="text-carbon-40 text-xs">Low (&lt;0.40)</span>
+            <span className="text-carbon-50 text-xs">Low (&lt;0.40)</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-[#b3400f]" />
-            <span className="text-carbon-40 text-xs">Moderate (0.40–0.65)</span>
+            <span className="text-carbon-50 text-xs">Moderate (0.40–0.65)</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-[#c01f1f]" />
-            <span className="text-carbon-40 text-xs">High (0.65–0.85)</span>
+            <span className="text-carbon-50 text-xs">High (0.65–0.85)</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-[#8b0f3a]" />
-            <span className="text-carbon-40 text-xs">Critical (&ge;0.85)</span>
+            <span className="text-carbon-50 text-xs">Critical (&ge;0.85)</span>
           </div>
         </div>
 

@@ -212,7 +212,7 @@ export const DistrictAlertTable: React.FC<DistrictAlertTableProps> = ({
               return (
                 <tr
                   key={row.district}
-                  className="border-t border-carbon-10"
+                  className="border-t border-carbon-20"
                 >
                   <th scope="row" className="px-3 py-3 text-left font-semibold text-carbon-90">
                     {onSelectDistrict ? (

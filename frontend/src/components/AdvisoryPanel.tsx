@@ -84,10 +84,10 @@ const AdvisoryPanel: React.FC<AdvisoryPanelProps> = ({
 
   if (loading) {
     return (
-      <div className="w-full bg-white dark:bg-carbon-90 rounded-lg sm:rounded-xl border border-carbon-10 dark:border-carbon-80 shadow-sm sm:shadow-md p-3 sm:p-6 mt-4 sm:mt-6 animate-pulse space-y-4">
-        <div className="h-5 sm:h-6 bg-carbon-10 dark:bg-carbon-80 rounded-full w-1/3 mb-2"></div>
-        <div className="h-3 sm:h-4 bg-carbon-10 dark:bg-carbon-80 rounded-full w-full"></div>
-        <div className="h-3 sm:h-4 bg-carbon-10 dark:bg-carbon-80 rounded-full w-5/6"></div>
+      <div className="w-full bg-white rounded-lg sm:rounded-xl border border-carbon-20 shadow-sm sm:shadow-md p-3 sm:p-6 mt-4 sm:mt-6 animate-pulse space-y-4">
+        <div className="h-5 sm:h-6 bg-carbon-10 rounded-full w-1/3 mb-2"></div>
+        <div className="h-3 sm:h-4 bg-carbon-10 rounded-full w-full"></div>
+        <div className="h-3 sm:h-4 bg-carbon-10 rounded-full w-5/6"></div>
       </div>
     );
   }
@@ -104,8 +104,8 @@ const AdvisoryPanel: React.FC<AdvisoryPanelProps> = ({
   if (!advisory) return null;
 
   return (
-    <div id="advisory-panel-container" className="w-full bg-white dark:bg-carbon-90 rounded-lg sm:rounded-xl border border-carbon-10 dark:border-carbon-80 shadow-sm sm:shadow-md p-3 sm:p-6 space-y-4 sm:space-y-6 transition-shadow duration-300 hover:shadow-sm sm:hover:shadow-lg text-carbon-90 dark:text-carbon-10">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 pb-3 sm:pb-4 border-b border-carbon-10 dark:border-carbon-80">
+    <div id="advisory-panel-container" className="w-full bg-white rounded-lg sm:rounded-xl border border-carbon-20 shadow-sm sm:shadow-md p-3 sm:p-6 space-y-4 sm:space-y-6 transition-shadow duration-300 hover:shadow-sm sm:hover:shadow-lg text-carbon-90">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 pb-3 sm:pb-4 border-b border-carbon-20">
         <div className="space-y-1.5 sm:space-y-2 flex-1 min-w-0">
           <h3 className="text-base sm:text-lg font-bold text-carbon-90 dark:text-white tracking-tight flex items-center gap-2">
             <span className="truncate">AI Advisory</span>
@@ -120,7 +120,7 @@ const AdvisoryPanel: React.FC<AdvisoryPanelProps> = ({
               </span>
             )}
             {advisory.provider_source && (
-              <span className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-xs font-mono font-semibold bg-carbon-10 dark:bg-carbon-80 text-carbon-80 dark:text-carbon-20 border border-carbon-20 dark:border-carbon-70 truncate">
+              <span className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-xs font-mono font-semibold bg-carbon-10 text-carbon-80 border border-carbon-20 truncate">
                 {advisory.provider_source}
               </span>
             )}

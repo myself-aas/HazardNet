@@ -18,6 +18,7 @@
  */
 
 import { readFileSync, existsSync } from 'node:fs';
+import { execSync } from 'node:child_process';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -249,11 +250,46 @@ describe("the rules that make this Apple and not just 'a blue design system'", (
     // DESIGN.md: "Never document hover." Press is the interaction. The one hover rule the
     // system allows is a link underline, which is additive — it is not carrying meaning
     // on its own, and the link is already blue without it.
+    //
+    // There is a second shape that is not an affordance either, and the difference is worth
+    // being precise about. A selector like `.dark .hover\:bg-white\/60:hover` does not
+    // *introduce* a hover state: the call site already wrote `hover:bg-white/60`, so the
+    // interaction exists in light mode with or without this rule. All the dark-scoped rule
+    // does is pick the colour that hover lands on, because `bg-white` is a surface here and
+    // has to follow the theme. Removing it would not remove an affordance — it would leave a
+    // white flash on a dark page. So the exemption is deliberately narrow: an *escaped
+    // Tailwind utility* (`.hover\:…`), and only under a dark scope.
+    const isThemeCorrection = (selector) =>
+      /\\:hover\\?:hover|\.hover\\:/.test(selector) &&
+      /\[data-theme='dark'\]|\.dark\s|:root:not\(\[data-theme='light'\]\)/.test(selector);
+
     const hoverRules = [...CSS.matchAll(/^([^\n{]*:hover[^\n{]*)\{([\s\S]*?)\}/gm)];
     const offenders = hoverRules
-      .filter(([, selector]) => !selector.includes('.ap-link'))
-      .map(([, selector]) => selector.trim());
+      .map(([, selector]) => selector.trim())
+      .filter((selector) => !selector.includes('.ap-link'))
+      .filter((selector) => !isThemeCorrection(selector));
     expect(offenders).toEqual([]);
+  });
+
+  test('a dark-scoped hover correction never invents an affordance the call sites lack', () => {
+    // Guards the exemption above: every `.hover\:X:hover` rule in the dark scopes must
+    // correspond to a `hover:X` that components actually write. If one ever appears here
+    // without a call site, it is a hand-authored hover wearing the theme-correction
+    // exemption, and the rule in DESIGN.md applies to it after all.
+    const corrections = [...CSS.matchAll(/\.hover\\:([a-z0-9\\/-]+):hover/g)].map((m) =>
+      m[1].replace(/\\/g, ''),
+    );
+    const sources = execSync("find frontend/src -name '*.tsx' ! -path '*__tests__*'")
+      .toString()
+      .trim()
+      .split('\n')
+      .map((f) => readFileSync(f, 'utf8'))
+      .join('\n');
+
+    const unused = [...new Set(corrections)].filter(
+      (utility) => !sources.includes(`hover:${utility}`),
+    );
+    expect(unused).toEqual([]);
   });
 
   test('press is scale(0.95), system-wide', () => {

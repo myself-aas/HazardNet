@@ -228,7 +228,7 @@ export const DivisionDetailPage: React.FC = () => {
       {/* Real-time Forecast Alert Matrix for this Division */}
       {data.forecasts.length > 0 && (
         <div className="bg-white border border-carbon-20 p-6 mb-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-carbon-10 gap-2">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-carbon-20 gap-2">
             <div>
               <h2 className="text-base font-semibold text-carbon-90 flex items-center gap-2">
                 <CloudRain className="w-4 h-4 text-nasa-blue-shade" />
@@ -268,7 +268,7 @@ export const DivisionDetailPage: React.FC = () => {
           {/* District Forecast Table. Below md the same rows render as cards: eight numeric
               columns at 390px was a sideways scroll, and the card names each figure. */}
           <CardStackRows
-            className="mt-4 pt-4 border-t border-carbon-10"
+            className="mt-4 pt-4 border-t border-carbon-20"
             rows={data.districtRankings.map((dr) => {
               const f7 = data.forecasts.find(f => f.districtName.toLowerCase() === dr.district.toLowerCase() && f.horizon === '7_days');
               const targetDistrictSlug = dr.district.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -372,7 +372,7 @@ export const DivisionDetailPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Chart 1: Yearly Trend 2000-2026 */}
         <div className="bg-white border border-carbon-20 p-6">
-          <div className="flex items-center justify-between pb-3 border-b border-carbon-10">
+          <div className="flex items-center justify-between pb-3 border-b border-carbon-20">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-nasa-blue-shade" />
@@ -407,7 +407,7 @@ export const DivisionDetailPage: React.FC = () => {
 
         {/* Chart 2: District Vulnerability Ranking */}
         <div className="bg-white border border-carbon-20 p-6">
-          <div className="flex items-center justify-between pb-3 border-b border-carbon-10">
+          <div className="flex items-center justify-between pb-3 border-b border-carbon-20">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
                 <Layers className="w-4 h-4 text-nasa-blue-shade" />
@@ -433,7 +433,7 @@ export const DivisionDetailPage: React.FC = () => {
 
         {/* Chart 3: Monthly Seasonality Curve */}
         <div className="bg-white border border-carbon-20 p-6">
-          <div className="flex items-center justify-between pb-3 border-b border-carbon-10">
+          <div className="flex items-center justify-between pb-3 border-b border-carbon-20">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-nasa-blue-shade" />
@@ -459,7 +459,7 @@ export const DivisionDetailPage: React.FC = () => {
 
         {/* Chart 4: Hazard Mix Breakdown */}
         <div className="bg-white border border-carbon-20 p-6">
-          <div className="flex items-center justify-between pb-3 border-b border-carbon-10">
+          <div className="flex items-center justify-between pb-3 border-b border-carbon-20">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-nasa-blue-shade" />
@@ -509,7 +509,7 @@ export const DivisionDetailPage: React.FC = () => {
 
       {/* Historical Disaster Events Archive Table (Real data from CSV) */}
       <div className="bg-white border border-carbon-20 p-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-carbon-10 gap-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-carbon-20 gap-4">
           <div>
             <h3 className="text-base font-bold text-carbon-90 flex items-center gap-2">
               <Layers className="w-4 h-4 text-nasa-blue-shade" />
@@ -658,7 +658,7 @@ export const DivisionDetailPage: React.FC = () => {
                       <tr className="bg-carbon-05/30">
                         <td colSpan={7} className="p-4 border-b border-carbon-20">
                           <div className="bg-white border border-carbon-20 p-4 text-xs space-y-2">
-                            <div className="flex items-center justify-between text-carbon-60 pb-2 border-b border-carbon-10">
+                            <div className="flex items-center justify-between text-carbon-60 pb-2 border-b border-carbon-20">
                               <span><strong>Event ID:</strong> {event.id}</span>
                               <span><strong>Coordinates:</strong> {event.lat.toFixed(4)}, {event.lng.toFixed(4)}</span>
                               <span><strong>GLIDE Reference:</strong> {event.glide || 'None assigned'}</span>

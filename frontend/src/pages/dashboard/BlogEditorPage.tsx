@@ -305,10 +305,10 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
   if (loadError) {
     return (
       <div className="max-w-3xl mx-auto min-h-[50vh] flex flex-col items-center justify-center gap-4 text-center">
-        <FileText className="h-8 w-8 text-carbon-40" aria-hidden="true" />
+        <FileText className="h-8 w-8 text-carbon-50" aria-hidden="true" />
         <h1 className="text-lg font-black text-carbon-90">Article unavailable</h1>
         <p className="text-sm text-carbon-60">{loadError}</p>
-        <Link to="/dashboard/blog" className="bg-carbon-90 px-4 py-2.5 text-xs font-black text-white hover:bg-carbon-70">
+        <Link to="/dashboard/blog" className="bg-carbon-90 px-4 py-2.5 text-xs font-black text-carbon-05 hover:bg-carbon-70">
           Back to Blog Studio
         </Link>
       </div>

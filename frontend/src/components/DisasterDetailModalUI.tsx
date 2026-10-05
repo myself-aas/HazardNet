@@ -71,7 +71,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
 
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1">
-            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-carbon-90 text-white font-mono text-[7pt] font-extrabold uppercase">
+            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-carbon-90 text-carbon-05 font-mono text-[7pt] font-extrabold uppercase">
               DISTRICT SITUATION REPORT
             </div>
             <h2 className="text-xl font-black text-carbon-90 tracking-tight">
@@ -498,7 +498,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[1200] hidden sm:flex items-center justify-center p-3 sm:p-5 bg-carbon-90/50 backdrop-blur-md"
+            className="fixed inset-0 z-[1200] hidden sm:flex items-center justify-center p-3 sm:p-5 bg-carbon-black/50 backdrop-blur-md"
             onClick={onClose}
           >
             <motion.div
@@ -579,7 +579,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
 
               <button
                 onClick={onDownloadReport}
-                className="px-3.5 py-2 bg-carbon-90 hover:bg-carbon-80 text-white font-bold rounded-xl border border-carbon-90 transition-all flex items-center gap-2 shadow-xs min-h-[44px]"
+                className="px-3.5 py-2 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 font-bold rounded-xl border border-carbon-90 transition-all flex items-center gap-2 shadow-xs min-h-[44px]"
               >
                 <span>Download JSON</span>
               </button>
@@ -613,7 +613,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
         {/* Dim Backdrop when expanded */}
         {sheetMode !== 'peek' && (
           <div
-            className="fixed inset-0 bg-carbon-90/40 backdrop-blur-xs pointer-events-auto transition-opacity"
+            className="fixed inset-0 bg-carbon-black/40 backdrop-blur-xs pointer-events-auto transition-opacity"
             onClick={() => onSetSheetMode('peek')}
           />
         )}
@@ -755,7 +755,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
 
                 <button
                   onClick={onDownloadReport}
-                  className="w-full py-3 bg-carbon-90 active:bg-carbon-80 text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-2 min-h-[48px]"
+                  className="w-full py-3 bg-carbon-90 active:bg-carbon-80 text-carbon-05 font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-2 min-h-[48px]"
                 >
                   <span>Download Situation Report (JSON)</span>
                 </button>

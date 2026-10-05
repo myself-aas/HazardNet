@@ -127,7 +127,7 @@ export const DistrictOutlookCard: React.FC = () => {
             </div>
 
           {/* 3-Column Key Metrics Summary Card */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-carbon-10">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-carbon-20">
             {/* Metric 1: Severity Gauge */}
             <div className="metric-card bg-carbon-05 border border-carbon-20 p-4 sm:p-6 space-y-2">
               <div className="flex items-center justify-between text-xs">

@@ -335,7 +335,7 @@ export const HazardDetailPage: React.FC = () => {
       {/* Active Forecast Alert Matrix for this Hazard */}
       {data.forecasts.length > 0 && (
         <div className="bg-white border border-carbon-20 p-6 mb-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-carbon-10 gap-2">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-carbon-20 gap-2">
             <div>
               <h2 className="text-base font-semibold text-carbon-90 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-amber-600" />
@@ -441,7 +441,7 @@ export const HazardDetailPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Chart 1: 26-Year Historical Disaster Trend */}
         <div className="bg-white border border-carbon-20 p-6">
-          <div className="flex items-center justify-between pb-3 border-b border-carbon-10">
+          <div className="flex items-center justify-between pb-3 border-b border-carbon-20">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-nasa-blue-shade" />
@@ -470,7 +470,7 @@ export const HazardDetailPage: React.FC = () => {
 
         {/* Chart 2: Top 15 Most Impacted Districts */}
         <div className="bg-white border border-carbon-20 p-6">
-          <div className="flex items-center justify-between pb-3 border-b border-carbon-10">
+          <div className="flex items-center justify-between pb-3 border-b border-carbon-20">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-nasa-blue-shade" />
@@ -496,7 +496,7 @@ export const HazardDetailPage: React.FC = () => {
 
         {/* Chart 3: Monthly Seasonality Curve */}
         <div className="bg-white border border-carbon-20 p-6">
-          <div className="flex items-center justify-between pb-3 border-b border-carbon-10">
+          <div className="flex items-center justify-between pb-3 border-b border-carbon-20">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-nasa-blue-shade" />
@@ -528,7 +528,7 @@ export const HazardDetailPage: React.FC = () => {
 
         {/* Chart 4: Division Exposure Breakdown */}
         <div className="bg-white border border-carbon-20 p-6">
-          <div className="flex items-center justify-between pb-3 border-b border-carbon-10">
+          <div className="flex items-center justify-between pb-3 border-b border-carbon-20">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
                 <Layers className="w-4 h-4 text-nasa-blue-shade" />
@@ -555,7 +555,7 @@ export const HazardDetailPage: React.FC = () => {
 
       {/* Historical Disaster Events Archive Table for this Hazard */}
       <div className="bg-white border border-carbon-20 p-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-carbon-10 gap-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-carbon-20 gap-4">
           <div>
             <h3 className="text-base font-bold text-carbon-90 flex items-center gap-2">
               <Layers className="w-4 h-4 text-nasa-blue-shade" />
@@ -691,7 +691,7 @@ export const HazardDetailPage: React.FC = () => {
                       <tr className="bg-carbon-05/30">
                         <td colSpan={7} className="p-4 border-b border-carbon-20">
                           <div className="bg-white border border-carbon-20 p-4 text-xs space-y-2">
-                            <div className="flex items-center justify-between text-carbon-60 pb-2 border-b border-carbon-10">
+                            <div className="flex items-center justify-between text-carbon-60 pb-2 border-b border-carbon-20">
                               <span><strong>Event ID:</strong> {event.id}</span>
                               <span><strong>Coordinates:</strong> {event.lat.toFixed(4)}, {event.lng.toFixed(4)}</span>
                               <span><strong>GLIDE:</strong> {event.glide || 'None assigned'}</span>

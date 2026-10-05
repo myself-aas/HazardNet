@@ -145,7 +145,7 @@ export const DistrictBriefBody: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="space-y-1 pt-1 border-t border-carbon-10">
+            <div className="space-y-1 pt-1 border-t border-carbon-20">
               <div className="flex items-center justify-between text-xs text-carbon-60">
                 <span>District Exposure</span>
                 <strong className={`font-bold ${
@@ -180,7 +180,7 @@ export const DistrictBriefBody: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="space-y-1 pt-1 border-t border-carbon-10">
+            <div className="space-y-1 pt-1 border-t border-carbon-20">
               <div className="flex items-center justify-between text-xs text-carbon-60">
                 <span>Vulnerable Families</span>
                 <strong className="font-bold text-carbon-90">{data.affectedHouseholds.toLocaleString()} HH</strong>
@@ -207,7 +207,7 @@ export const DistrictBriefBody: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="space-y-1 pt-1 border-t border-carbon-10">
+            <div className="space-y-1 pt-1 border-t border-carbon-20">
               <div className="flex items-center justify-between text-xs text-carbon-60">
                 <span>Standing Crops</span>
                 <strong className="font-bold text-carbon-90 truncate ml-1">{data.primaryCropsAtRisk.join(', ')}</strong>
@@ -234,7 +234,7 @@ export const DistrictBriefBody: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="space-y-1 pt-1 border-t border-carbon-10">
+            <div className="space-y-1 pt-1 border-t border-carbon-20">
               <div className="flex items-center justify-between text-xs text-carbon-60">
                 <span>Capacity Utilized</span>
                 <strong className="font-bold text-carbon-80">{data.emergencyResponse.shelterCapacityUsedPercent}%</strong>
@@ -377,7 +377,7 @@ export const DistrictBriefBody: React.FC = () => {
               </div>
             </div>
 
-            <div className="pt-3 border-t border-carbon-10 space-y-2 text-xs">
+            <div className="pt-3 border-t border-carbon-20 space-y-2 text-xs">
               <div className="flex items-center justify-between text-carbon-60">
                 <span>Peak Hazard Window:</span>
                 <strong className="font-mono text-carbon-90">{data.peakImpactWindow}</strong>
@@ -486,7 +486,7 @@ export const DistrictBriefBody: React.FC = () => {
             </ResponsiveContainer>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-carbon-10 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-carbon-20 text-xs">
             <div className="bg-carbon-05 p-3 border border-carbon-20/80">
               <span className="font-mono text-carbon-60 font-bold block mb-1">Early Warning Indicator</span>
               <p className="text-carbon-70">Risk index crossed moderate threshold 4 days prior due to cumulative catchment basin rainfall.</p>
@@ -582,7 +582,7 @@ export const DistrictBriefBody: React.FC = () => {
               </div>
             </div>
 
-            <div className="pt-2 border-t border-carbon-10 flex items-center justify-between text-xs text-carbon-60 font-mono">
+            <div className="pt-2 border-t border-carbon-20 flex items-center justify-between text-xs text-carbon-60 font-mono">
               <span>Model Confidence: <strong className="text-carbon-80 font-bold">{data.modelAssessment.confidenceLevel}% (High)</strong></span>
               <span>Updated: {data.lastSatelliteUpdate.split('•')[0]}</span>
             </div>
@@ -693,7 +693,7 @@ export const DistrictBriefBody: React.FC = () => {
                   className="upazila-card pagination-protected break-inside-avoid bg-white border border-carbon-20 p-5 space-y-3 hover:border-carbon-30 transition-all flex flex-col justify-between"
                 >
                   {/* Card Header: Upazila Name + Geocode + Priority Badge */}
-                  <div className="flex items-start justify-between gap-3 border-b border-carbon-10 pb-3">
+                  <div className="flex items-start justify-between gap-3 border-b border-carbon-20 pb-3">
                     <div>
                       <h3 className="font-extrabold text-carbon-black text-base flex items-center gap-2">
                         <span>{up.name}</span>
@@ -724,7 +724,7 @@ export const DistrictBriefBody: React.FC = () => {
 
                   {/* 4-Item Sub-Grid Metrics */}
                   <div className="grid grid-cols-2 gap-3 text-xs pt-1">
-                    <div className="bg-carbon-05 p-2.5 border border-carbon-10 space-y-1">
+                    <div className="bg-carbon-05 p-2.5 border border-carbon-20 space-y-1">
                       <span className="text-xs font-mono text-carbon-60 font-bold uppercase block">Severity Score</span>
                       <div className="flex items-center justify-between">
                         <span className="text-base font-black text-carbon-90 font-mono">
@@ -742,7 +742,7 @@ export const DistrictBriefBody: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="bg-carbon-05 p-2.5 border border-carbon-10 space-y-1">
+                    <div className="bg-carbon-05 p-2.5 border border-carbon-20 space-y-1">
                       <span className="text-xs font-mono text-carbon-60 font-bold uppercase block">Exposed Households</span>
                       <div className="text-base font-black text-carbon-90 font-mono">
                         {up.householdsAffected.toLocaleString()}
@@ -754,7 +754,7 @@ export const DistrictBriefBody: React.FC = () => {
                   </div>
 
                   {/* Action Directive Footnote */}
-                  <div className="pt-2 border-t border-carbon-10 flex items-center justify-between text-xs text-carbon-60 font-medium">
+                  <div className="pt-2 border-t border-carbon-20 flex items-center justify-between text-xs text-carbon-60 font-medium">
                     <span className="truncate">
                       {up.severityScore >= 0.8
                         ? 'Immediate relief boats & evacuation required'
@@ -866,7 +866,7 @@ export const DistrictBriefBody: React.FC = () => {
 
         {/* Live AI Advisory Synthesizer (When toggled) */}
         {showLiveAiAdvisory && (
-          <div className="bg-carbon-90 text-white p-6 sm:p-8 border border-carbon-80 space-y-4 screen-only">
+          <div className="bg-carbon-90 text-carbon-05 p-6 sm:p-8 border border-carbon-80 space-y-4 screen-only">
             <div className="flex items-center justify-between border-b border-carbon-80 pb-4">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-400">
@@ -903,7 +903,7 @@ export const DistrictBriefBody: React.FC = () => {
         <section aria-label="Live weather forecast" className="max-w-4xl mx-auto w-full">
           <div className="flex items-center gap-2 mb-3 px-1">
             <Cloud className="w-4 h-4 text-sky-500" />
-            <h2 className="text-base font-bold text-carbon-80 dark:text-carbon-10">
+            <h2 className="text-base font-bold text-carbon-80">
               Live Weather: {data.districtName}
             </h2>
             <span className="text-xs font-mono text-carbon-60 ml-auto">
@@ -996,7 +996,7 @@ export const DistrictBriefBody: React.FC = () => {
               </div>
             </div>
 
-            <div className="pt-3 border-t border-carbon-10 text-xs text-carbon-60">
+            <div className="pt-3 border-t border-carbon-20 text-xs text-carbon-60">
               Department of Agricultural Extension Hotline: <strong className="font-mono text-carbon-80">16123</strong>
             </div>
           </div>
@@ -1092,7 +1092,7 @@ export const DistrictBriefBody: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
               {/* Chart 1: Multi-Year Historical Trend */}
               <div className="border border-carbon-20 p-5 bg-white space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-carbon-10">
+                <div className="flex items-center justify-between pb-2 border-b border-carbon-20">
                   <div>
                     <h4 className="text-xs font-bold text-carbon-90 flex items-center gap-1.5">
                       <TrendingUp className="w-3.5 h-3.5 text-blue-600" />
@@ -1121,7 +1121,7 @@ export const DistrictBriefBody: React.FC = () => {
 
               {/* Chart 2: Monthly Seasonality Curve */}
               <div className="border border-carbon-20 p-5 bg-white space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-carbon-10">
+                <div className="flex items-center justify-between pb-2 border-b border-carbon-20">
                   <div>
                     <h4 className="text-xs font-bold text-carbon-90 flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5 text-amber-600" />
@@ -1156,7 +1156,7 @@ export const DistrictBriefBody: React.FC = () => {
           {/* Interactive Historical Event Records Log */}
           {climaticEventsData && climaticEventsData.allEvents.length > 0 && (
             <div className="space-y-3 pt-2">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-carbon-10 gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-carbon-20 gap-2">
                 <div>
                   <h4 className="text-xs font-bold text-carbon-90 flex items-center gap-1.5">
                     <Layers className="w-3.5 h-3.5 text-blue-600" />
@@ -1249,7 +1249,7 @@ export const DistrictBriefBody: React.FC = () => {
                               <tr className="bg-blue-50/20">
                                 <td colSpan={6} className="p-3 border-b border-carbon-20">
                                   <div className="bg-white border border-carbon-20 p-3 text-xs space-y-1.5">
-                                    <div className="flex items-center justify-between text-carbon-60 border-b border-carbon-10 pb-1 text-xs">
+                                    <div className="flex items-center justify-between text-carbon-60 border-b border-carbon-20 pb-1 text-xs">
                                       <span><strong>ID:</strong> {event.id}</span>
                                       <span><strong>Coordinates:</strong> {event.lat.toFixed(4)}, {event.lng.toFixed(4)}</span>
                                       <span><strong>GLIDE:</strong> {event.glide || 'N/A'}</span>
