@@ -53,10 +53,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
-import { useReducedMotion } from 'framer-motion';
 import { ExternalLink } from 'lucide-react';
 import { Interactive } from '../components/interactive/Interactive';
-import { useWebFrame, interpolate, Easing } from '../lib/motion-interpolate';
 
 import MaterialIcon from '../components/MaterialIcon';
 import { ButtonLink, Card, PillTabs, ProvenanceNote, SectionHeading, SeverityBadge } from '../components/apple/primitives';
@@ -360,9 +358,6 @@ export const FrontDoor: React.FC = () => {
   const published = alertsReadable ? alerts.length : null;
   const withheld = counts?.not_published ?? notPublished ?? null;
 
-  const reduceMotion = useReducedMotion();
-  const frame = useWebFrame(30, 8);
-
   if (!content) return null;
   if (redirectToLive) return <Navigate to={redirectToLive} replace />;
 
@@ -378,20 +373,21 @@ export const FrontDoor: React.FC = () => {
         })
       : '—';
 
+  /* The page's arrival is a CSS entrance from the design system (`.ap-enter`, apple.css §11), not
+     a frame loop. It was `useWebFrame(30, 8)` + `interpolate(...opacity)` until 2026-10-06: eight
+     rAF ticks of React state, each re-rendering the entire front door — hero, backdrop, carousel
+     and all — to fade one wrapper in, plus a `will-change` layer on the page root for 267ms.
+     `.ap-enter` is 240ms of `--ap-ease` (`cubic-bezier(0.25, 0.1, 0.25, 1)`) against the old
+     267ms of `(0.16, 1, 0.3, 1)`; the difference is a few frames on one opacity, and the win is
+     that the fade now runs on the compositor with React never re-rendering for it. It is also why
+     this page no longer imports the motion bridge at all. Reduced motion is handled where it
+     belongs: `index.css` collapses every animation duration under `prefers-reduced-motion`, and
+     `.ap-enter`'s `both` fill leaves the page at its final state, so it still arrives — without
+     the fade. */
   return (
     <Interactive.Div
       name="FrontDoor page — editorial front door"
-      style={{
-        width: '100%',
-        opacity: reduceMotion
-          ? 1
-          : interpolate(frame, [0, 8], [0, 1], {
-              easing: Easing.bezier(0.16, 1, 0.3, 1),
-              extrapolateLeft: 'clamp',
-              extrapolateRight: 'clamp',
-            }),
-      }}
-      className="w-full"
+      className="w-full ap-enter"
     >
       {/* ── Hero: one photograph, one claim, one action ──
           The backdrop was a five-layer motion build with a decorative telemetry HUD and a film

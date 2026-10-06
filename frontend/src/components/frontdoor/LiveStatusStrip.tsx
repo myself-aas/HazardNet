@@ -132,7 +132,13 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
         translate: reduceMotion
           ? '0px 0px'
           : interpolate(frame, [0, 10], ['0px 8px', '0px 0px'], {
-              easing: Easing.spring({ damping: 200 }),
+              /* `Easing.spring({ damping: 200 })` until 2026-10-06 — a critically damped
+                 spring, i.e. a smooth decelerate with no overshoot, which is exactly what
+                 the house curve is (`--ap-ease`, and the opacity arm directly above). The
+                 spring was the last web-app caller of `Easing` from the `remotion` package
+                 root, and that import pulled the whole studio runtime into the entry chunk;
+                 a 10-frame entrance is not worth ~100 kB of renderer. */
+              easing: Easing.bezier(0.16, 1, 0.3, 1),
               extrapolateLeft: 'clamp',
               extrapolateRight: 'clamp',
             }),

@@ -8,14 +8,26 @@
  * - Keep composition metadata inline (see Root.tsx)
  * - Effects inline, not computed
  *
- * For Remotion Studio: use `interpolate` from 'remotion' directly with `frame` from `useCurrentFrame()`.
+ * For Remotion Studio: use `interpolate`/`Easing` from 'remotion' directly with `frame` from
+ * `useCurrentFrame()` — the studio entry must stay React-aware and is not this module's concern.
  * For Web (framer-motion): use `interpolateWeb` with a frame-like value from `useWebFrame()`.
+ *
+ * **`remotion/no-react`, not `remotion`** (2026-10-06). The web app needs `interpolate` and
+ * `Easing` from this library, and importing them from the package root pulled the whole Remotion
+ * studio runtime (React renderer, player, audio, player-state) into the *entry* chunk every
+ * visitor downloads before the front door paints. That is the single heaviest thing in the shell,
+ * and it was there for a fade. `remotion/no-react` is Remotion's own React-free entry point: the
+ * same `interpolate`, the same `perceptual-scale` output, none of the renderer — but it does not
+ * export `Easing`, so `bezier` is ported bit-for-bit in `./easing` and asserted against the real
+ * package in `__tests__/easing.test.ts`. Compositions still import from `'remotion'`, which is
+ * correct: they run in the Studio/CLI, not in the browser bundle.
  *
  * Performance: GPU-only properties (scale, translate, opacity), will-change where needed,
  * respects prefers-reduced-motion via useReducedMotion. LazyMotion + domAnimation in App.tsx.
  */
 
-import { interpolate as remotionInterpolate, Easing } from 'remotion';
+import { interpolate as remotionInterpolate } from 'remotion/no-react';
+import { Easing } from './easing';
 
 export { remotionInterpolate as interpolate, Easing };
 
@@ -87,7 +99,7 @@ export const useWebVideoConfig = () => {
  * Example (correct):
  *   const frame = useWebFrame();
  *   const { fps } = useWebVideoConfig();
- *   <div style={{ scale: interpolate(frame, [0, fps], [0, 1], { easing: Easing.spring({damping:200}), extrapolateLeft:'clamp', extrapolateRight:'clamp' }) }}/>
+ *   <div style={{ scale: interpolate(frame, [0, fps], [0, 1], { easing: Easing.bezier(0.16, 1, 0.3, 1), extrapolateLeft:'clamp', extrapolateRight:'clamp' }) }}/>
  *
  * Do NOT:
  *   const scale = interpolate(frame, [0, fps], [0, 1]); // ❌ extracted

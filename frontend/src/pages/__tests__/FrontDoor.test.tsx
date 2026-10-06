@@ -286,6 +286,27 @@ describe('the front door', () => {
     expect(hero.querySelectorAll('.bg-carbon-90\\/40').length).toBe(0);
   });
 
+  it('enters on the design system’s CSS entrance, not on a frame loop', async () => {
+    const { container } = renderPage();
+
+    // The page arrives as ONE compositor animation — `.ap-enter`, the same 240ms `--ap-ease`
+    // every other entrance in the design system uses (apple.css §11). Nothing about the fade
+    // touches React, so the hero, the backdrop and the carousel are not re-rendered for it.
+    expect(container.firstElementChild).toHaveClass('ap-enter');
+
+    // And it stays that way: this module may not reach for the motion bridge again. Until
+    // 2026-10-06 the root ran `useWebFrame(30, 8)` and interpolated its own opacity, so eight
+    // rAF ticks re-rendered the entire front door per page load — including the live-fact hooks
+    // that read the artifacts, which is ~60 renders a second for 267ms.
+    const source = readFileSync(join(__dirname, '../FrontDoor.tsx'), 'utf8')
+      // Comments are allowed to name the old code (this file's own history explains the change);
+      // only executable source counts.
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+    expect(source).not.toMatch(/useWebFrame\(/);
+    expect(source).not.toMatch(/motion-interpolate/);
+  });
+
   it('renders the Bengali editorial copy, and writes the language on the document', async () => {
     renderPage();
 

@@ -13,43 +13,24 @@
  * container's near-black fill. That is a silent blank, which is exactly how the previous
  * video implementation failed.
  *
- * The local `EARTH_HERO_VIDEO_*` constants below are retained but unreferenced —
- * the files still ship in `frontend/assets/hero-section/` and
- * `frontend/public/hero-section/`, so they remain available if a deployment ever needs a
- * real video element instead.
+ * The five local `EARTH_HERO_VIDEO_*` constants were deleted on 2026-10-06 (see the note where
+ * they were). The MP4s themselves are still on disk, in `frontend/assets/hero-section/` and
+ * `frontend/public/hero-section/`, so a deployment that needs a real `<video>` element is one
+ * source line away — but nothing in the app reads them, so nothing in the app names them.
  */
 
-/**
- * Local 1080p (Full HD) Earth and Moon animation loop.
- * Fast, offline-capable, and immune to third-party CSP/network blocking.
- * Retired from the hero — see the note at the top of this file.
- */
-export const EARTH_HERO_VIDEO_1080P = '/hero-section/Hero_Section_hd_1920_1080_30fps.mp4';
+/* ── The retired hero videos ──────────────────────────────────────────────────
+   Five MP4s (113 MB) still sit in `frontend/public/hero-section/` and
+   `frontend/assets/hero-section/`. Playback ended when the carousel replaced them, and on
+   2026-10-06 the five `EARTH_HERO_VIDEO_*` exports below this note were deleted: a repo-wide grep
+   found no importer, no test and no script, and the audit trail already records them as dead
+   (`docs/audits/2026-10-02-frontend-design-system-audit-apple-meta.md` §P2, which also notes the
+   files themselves are deliberately left on disk). The build's `excludeUnreferencedHeroVideos()`
+   plugin strips them from `dist/` so they never ship. To bring video back, add a source here and
+   wire the element — the files are one directory away.
 
-/**
- * Local 720p version for tablet devices.
- */
-export const EARTH_HERO_VIDEO_720P = '/hero-section/Hero_Section_hd_1280_720_30fps.mp4';
-
-/**
- * Local 4K (UHD 2160p) version for ultra-high-DPI displays.
- */
-export const EARTH_HERO_VIDEO_4K = '/hero-section/Hero_Section_hd_3840_2160_30fps.mp4';
-
-/**
- * Local 2K (1440p) version.
- */
-export const EARTH_HERO_VIDEO_1440P = '/hero-section/Hero_Section_hd_2560_1440_30fps.mp4';
-
-/**
- * Local SD (540p) version for mobile devices and low-bandwidth connections.
- */
-export const EARTH_HERO_VIDEO_540P = '/hero-section/Hero_Section_sd_960_540_30fps.mp4';
-
-/**
- * Primary default video source for the Hero section.
- */
-export const EARTH_HERO_VIDEO_MP4 = EARTH_HERO_VIDEO_1080P;
+   Kept as a comment rather than as five unreferenced exports: a constant nothing reads is not a
+   spare part, it is a thing the next reader has to check. */
 
 /**
  * High-resolution inline SVG poster depicting the Earth glowing in deep space against stars.

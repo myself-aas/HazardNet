@@ -36,6 +36,45 @@ export const MAP_LAYERS = {
 
 export type MapLayerKey = keyof typeof MAP_LAYERS;
 
+/* ── The attribution, decoded once ────────────────────────────────────────────────────────────
+   `attribution` above is written in HTML entities because Leaflet renders that string as HTML in
+   its own corner control. The map's own footer prints the same credit as TEXT, and it used to do
+   the decoding inline in JSX:
+
+     MAP_LAYERS[activeLayer]?.attribution?.replace(/&copy;/g, ©).replace(/&mdash;/g, —)
+
+   which built two RegExp literals and made two passes over a 170-character string on every render
+   of the map, including the renders the marker and tile effects trigger — for two strings that
+   cannot change (Vercel React guidance: `js-hoist-regexp`). The decode is a property of the data,
+   so it lives here, next to the data, and happens once at module load.
+
+   The `/g` flag is safe at module scope: `String.prototype.replace` resets `lastIndex`, so a shared
+   global regex cannot carry state between calls. */
+
+/** The sentence the map printed inline as its fallback, named once. */
+export const DEFAULT_ATTRIBUTION_TEXT = 'Map data \u00A9 OpenStreetMap contributors';
+
+const ENTITY_COPY_RE = /&copy;/g;
+const ENTITY_MDASH_RE = /&mdash;/g;
+
+/**
+ * The attribution for each basemap as plain text, ready for a text surface rather than Leaflet's
+ * HTML control: HTML entities decoded, and the named fallback where a layer carries none, so a
+ * layer added without a credit still credits the map data.
+ */
+export const ATTRIBUTION_TEXT = Object.fromEntries(
+  Object.entries(MAP_LAYERS).map(([key, layer]) => [
+    key,
+    (layer as { attribution?: string }).attribution
+      ?.replace(ENTITY_COPY_RE, '\u00A9')
+      .replace(ENTITY_MDASH_RE, '\u2014') || DEFAULT_ATTRIBUTION_TEXT,
+  ]),
+) as Record<MapLayerKey, string>;
+
+export function attributionFor(key: MapLayerKey): string {
+  return ATTRIBUTION_TEXT[key] || DEFAULT_ATTRIBUTION_TEXT;
+}
+
 /**
  * Layer actually used for a request (Phase 5: low-bandwidth mode).
  *

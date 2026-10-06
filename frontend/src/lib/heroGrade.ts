@@ -22,8 +22,9 @@
  * safety-statement failure, not a taste call. The panel is gone; the grade is what replaces it,
  * and the copy is anchored to the band it darkens (see the hero block in `pages/FrontDoor.tsx`).
  *
- * `heroGrade.test.ts` pins the floor: no stop in this file may come out lighter than the values
- * that were audited, and the exposure curve must stay monotonic towards its foot. These are
+ * `components/__tests__/HeroCinematicBackground.test.tsx` pins the floor: no stop in this file may
+ * come out lighter than the values that were audited, and the exposure curve must stay monotonic
+ * towards its foot. These are
  * media colours, in the same category as the photographs — see the exemption note in
  * `__tests__/colourDiscipline.test.js`. They deliberately do not come from `apple.css`.
  */

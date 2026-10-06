@@ -17,7 +17,7 @@ import {
 } from '../services/geolocationService';
 import { useAuth } from '../context/AuthContext';
 import DataProcessingSkeleton from './DataProcessingSkeleton';
-import { useLeafletMap, MAP_LAYERS, MapLayerKey } from '../hooks/useLeafletMap';
+import { useLeafletMap, MAP_LAYERS, MapLayerKey, attributionFor } from '../hooks/useLeafletMap';
 import { useBandwidthMode } from '../hooks/useBandwidthMode';
 import {
   useMapMeasurements,
@@ -84,6 +84,24 @@ import {
   MAP_RAIN_RAMP,
   MAP_RISK_RAMP,
 } from '@hazardnet/design-system';
+
+/* ── Hoisted module scope (2026-10-06, Vercel React guidance) ─────────────────────────────────
+   `PIN_GLYPH_SVG` — the 260-character crosshair glyph inside the two location pins (the user's
+   pinpoint and the live GPS dot) was written out twice, verbatim. One constant, interpolated into
+   both templates, so the two pins cannot drift apart and neither one re-parses the markup on every
+   marker rebuild (`rendering-hoist-jsx`, applied to the HTML-string form this module uses).
+
+   The basemap attribution that used to be decoded here moved to `useLeafletMap.attributionFor`,
+   next to the data it decodes — this component now just calls it. */
+
+const PIN_GLYPH_SVG =
+  '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:block;">' +
+  '<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>' +
+  '<circle cx="12" cy="12" r="3" fill="currentColor"/>' +
+  '<line x1="12" y1="2" x2="12" y2="6" stroke="currentColor" stroke-width="2"/>' +
+  '<line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" stroke-width="2"/>' +
+  '<line x1="2" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2"/>' +
+  '<line x1="18" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/></svg>';
 
 interface LiveMapViewProps {
   onSelectDistrict?: (district: { id: string; name: string; division: string; lat: number; lng: number; risk: 'Low' | 'Moderate' | 'High'; mainCrop: string }) => void;
@@ -1034,7 +1052,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             <div style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; outline: none; cursor: pointer;">
               <div style="position: absolute; inset: -8px; border-radius: 50%; background: rgba(2, 132, 199, 0.4); filter: blur(4px);" class="radar-ping-ring"></div>
               <div style="position: relative; width: 32px; height: 32px; border-radius: 50%; background: ${MAP_INTERACTIVE.blue}; border: 2.5px solid ${MAP_CHROME.surface}; display: flex; align-items: center; justify-content: center; color: ${MAP_CHROME.surface}; box-shadow: 0 4px 16px rgba(2, 132, 199, 0.6);">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:block;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" fill="currentColor"/><line x1="12" y1="2" x2="12" y2="6" stroke="currentColor" stroke-width="2"/><line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" stroke-width="2"/><line x1="2" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2"/><line x1="18" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/></svg>
+                ${PIN_GLYPH_SVG}
               </div>
             </div>
           `,
@@ -1100,7 +1118,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             <div style="position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; outline: none; cursor: pointer;">
               <div style="position: absolute; inset: -10px; border-radius: 50%; background: rgba(2, 132, 199, 0.45); filter: blur(6px);" class="radar-ping-ring"></div>
               <div style="position: relative; width: 36px; height: 36px; border-radius: 50%; background: ${MAP_INTERACTIVE.blue}; border: 2.5px solid ${MAP_CHROME.surface}; display: flex; align-items: center; justify-content: center; color: ${MAP_CHROME.surface}; box-shadow: 0 4px 20px rgba(2, 132, 199, 0.7);">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:block;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" fill="currentColor"/><line x1="12" y1="2" x2="12" y2="6" stroke="currentColor" stroke-width="2"/><line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" stroke-width="2"/><line x1="2" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2"/><line x1="18" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/></svg>
+                ${PIN_GLYPH_SVG}
               </div>
             </div>
           `,
@@ -2528,7 +2546,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               not collapsible), it just stops pretending to be chrome. */}
           <div className="absolute bottom-1.5 left-2 z-[var(--ap-z-sticky)] text-xs leading-snug text-carbon-60 [text-shadow:0_1px_2px_rgba(255,255,255,0.7),0_0_6px_rgba(255,255,255,0.5)] dark:[text-shadow:0_1px_2px_rgba(0,0,0,0.8),0_0_6px_rgba(0,0,0,0.6)] pointer-events-auto max-w-[calc(100%-7rem)]">
             <p className="leading-snug">
-              {MAP_LAYERS[activeLayer]?.attribution?.replace(/&copy;/g, '©').replace(/&mdash;/g, '—') || 'Map data © OpenStreetMap contributors'}
+              {attributionFor(activeLayer)}
             </p>
           </div>
 
