@@ -1,6 +1,7 @@
 # Apple-like design and motion: port, review, and handoff
 
-**Date:** 2026-10-06 · **Branch:** `arena/7e20c674-hazardnet` · **Report commit:** `7e351a2` (pushed)
+**Date:** 2026-10-06 · **Branch:** `arena/7e20c674-hazardnet` (pushed)
+**Work under review:** `7e351a2` · **This report and the briefs:** `29ea7ea`
 
 | Commit | What it is |
 | --- | --- |
@@ -140,12 +141,17 @@ issues, one per agent**, each self-contained with scope, files, acceptance crite
 run and the prohibitions. The briefs are also committed under `docs/agents/briefs/` so an agent
 pointed at the repository finds them without network access.
 
-| Agent | Brief | Issue |
+| Agent | Brief | Dispatched as |
 | --- | --- | --- |
-| **A · Materials** | `docs/agents/briefs/A-materials.md` | see §5 table in the issue tracker |
-| **B · Typography** | `docs/agents/briefs/B-typography.md` | ditto |
-| **C · Console controls** | `docs/agents/briefs/C-console-controls.md` | ditto |
-| **D · Verification** | `docs/agents/briefs/D-verification.md` | ditto |
+| **A · Materials** (tokenise the glass, materialise it, add the haptic helper) | `docs/agents/briefs/A-materials.md` | [#78](https://github.com/myself-aas/HazardNet/issues/78) |
+| **B · Typography** (prove the scale as a test, then use it in the signed-in area) | `docs/agents/briefs/B-typography.md` | [#79](https://github.com/myself-aas/HazardNet/issues/79) |
+| **C · Console controls** (a press on every control, and no motion on the data) | `docs/agents/briefs/C-console-controls.md` | [#80](https://github.com/myself-aas/HazardNet/issues/80) |
+| **D · Verification** (frame-by-frame review, preference matrix, break attempts) | `docs/agents/briefs/D-verification.md` | [#81](https://github.com/myself-aas/HazardNet/issues/81) |
+
+Issues #78–#81 are the dispatch: each carries its brief verbatim plus the report it came from, so
+an agent that only sees the issue tracker has everything it needs, and an agent that only sees the
+repository has the same text on disk. Two things are deliberately **not** dispatched: the frozen
+console view swap and the rejected list in §2 are constraints on the briefs, not work items.
 
 Every brief carries the same non-negotiables, because they are the ones this task learned the hard
 way: only `opacity` and `transform` animate, one duration scale and one curve, no motion on
