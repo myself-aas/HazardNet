@@ -406,12 +406,18 @@ export const FrontDoor: React.FC = () => {
           one tagline, one primary action, and the small print that carries everything else (the
           standfirst, the three links, the run's own coverage pointer and the authority boundary).
           Nothing in this block paints a surface over the image. The only thing between the type
-          and the photograph is the exposure curve `HeroCinematicBackground` already draws, which
-          is why the copy is anchored to its lower band (the 0.68 to 0.92 stops) instead of being
-          centred on the brightest pixels: 12px small print needs a dark ground to clear 4.5:1,
-          and that band is where the hero already provides one. The drop shadows are the second
-          line of defence over the brightest frame the carousel publishes. Nothing was deleted,
-          the panel is the only thing that left. */}
+          and the photograph is the grade `HeroCinematicBackground` draws, which is why the copy is
+          anchored to the lower band of its exposure curve (now the 0.80 to 0.96 stops) instead of
+          being centred on the brightest pixels: 12px small print needs a dark ground to clear
+          4.5:1, and that band is where the hero provides one.
+
+          Type protection is the second line of defence and it is a token, not a literal: the h1
+          wears `text-shadow-hero-display` and every piece of small print wears
+          `text-shadow-hero-fine`, both published from `index.css`. Before 2026-10-06 these were
+          seven hand-copied `drop-shadow-[…]` arbitrary values in two tiers, which is how the 999
+          boundary sentence came to be fixed separately from the rest (audit H-P1-4) instead of
+          wearing the same published tier. Nothing was deleted; the panel is the only thing that
+          left. */}
       {/* `ap-on-dark` scopes the outline button's inversion to this hero, so the
           same primitive renders white-on-dark here and ink-on-light everywhere
           else without a second variant existing. */}
@@ -451,7 +457,7 @@ export const FrontDoor: React.FC = () => {
           </div>
 
           <div className="min-w-0 max-w-3xl pb-14 sm:pb-2">
-            <h1 className="ap-hero text-balance text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+            <h1 className="ap-hero text-balance text-white text-shadow-hero-display">
               {localised.h1 ?? localised.title}
             </h1>
             {language === 'bn' && (
@@ -463,7 +469,7 @@ export const FrontDoor: React.FC = () => {
             {/* The tagline. Short by construction: it names the product (7- and 15-day horizons),
                 the coverage and the provenance rule, and it leaves the arithmetic to the trust
                 strip below. Nothing claimed here is not stated at length further down the page. */}
-            <p className="mt-4 max-w-3xl text-base font-semibold leading-snug text-white/95 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] sm:text-lg">
+            <p className="mt-4 max-w-3xl text-base font-semibold leading-snug text-white/95 text-shadow-hero-fine sm:text-lg">
               {t('frontdoor.hero.slogan')}
             </p>
 
@@ -491,7 +497,7 @@ export const FrontDoor: React.FC = () => {
               <>
                 <p
                   id="front-door-standfirst"
-                  className={`mt-5 max-w-2xl text-xs leading-[1.6] text-white/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] ${
+                  className={`mt-5 max-w-2xl text-xs leading-[1.6] text-white/80 text-shadow-hero-fine ${
                     standfirstOpen ? '' : 'line-clamp-2'
                   }`}
                 >
@@ -518,7 +524,7 @@ export const FrontDoor: React.FC = () => {
               <li>
                 <Link
                   to="/methodology"
-                  className="inline-flex min-h-[44px] min-w-[44px] items-center font-bold text-white underline decoration-white/40 underline-offset-4 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+                  className="inline-flex min-h-[44px] min-w-[44px] items-center font-bold text-white underline decoration-white/40 underline-offset-4 text-shadow-hero-fine hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
                 >
                   {t('frontdoor.hero.ctaMethodology')}
                 </Link>
@@ -526,7 +532,7 @@ export const FrontDoor: React.FC = () => {
               <li>
                 <Link
                   to="/model-performance"
-                  className="inline-flex min-h-[44px] min-w-[44px] items-center font-bold text-white underline decoration-white/40 underline-offset-4 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+                  className="inline-flex min-h-[44px] min-w-[44px] items-center font-bold text-white underline decoration-white/40 underline-offset-4 text-shadow-hero-fine hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
                 >
                   {t('frontdoor.hero.ctaScorecard')}
                 </Link>
@@ -534,7 +540,7 @@ export const FrontDoor: React.FC = () => {
               <li>
                 <Link
                   to="/last-run"
-                  className="inline-flex min-h-[44px] min-w-[44px] items-center font-bold text-white underline decoration-white/40 underline-offset-4 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+                  className="inline-flex min-h-[44px] min-w-[44px] items-center font-bold text-white underline decoration-white/40 underline-offset-4 text-shadow-hero-fine hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
                 >
                   {coverageArtifact?.districts_covered != null && coverageArtifact?.districts_expected
                     ? t('frontdoor.hero.evidencePointer', {
@@ -553,7 +559,7 @@ export const FrontDoor: React.FC = () => {
             {/* The boundary sentence, last and smallest: 12px `text-white/75`, no rule above it
                 (a hairline over a photograph is decoration), and a drop shadow so the one
                 sentence that must not be missed is legible over the brightest frame. */}
-            <p className="mt-2 max-w-3xl text-xs leading-[1.6] text-white/75 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+            <p className="mt-2 max-w-3xl text-xs leading-[1.6] text-white/75 text-shadow-hero-fine">
               {t('frontdoor.hero.authority')}{' '}
               <Link to="/live" className="font-bold text-white underline underline-offset-2 hover:text-white/90">
                 {t('frontdoor.hero.authorityMap')}

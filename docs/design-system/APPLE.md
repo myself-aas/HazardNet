@@ -220,8 +220,9 @@ kind; "it was easier" is not one.
 - **Third-party brand marks** — `ProviderGlyph.tsx`, `oauthProviders.ts`, `connectors.ts`. A
   Google "G" in the wrong blue is wrong, and the same goes for Slack, Discord and GitHub.
 - **Cinematic media** — `heroMedia.ts`, `remotionTheme.ts`, the Remotion compositions, the WebGL
-  globe, the hero background. These are *content*, the same category as a photograph. The system
-  governs the chrome around media, not the pixels inside it.
+  globe. These are *content*, the same category as a photograph. The system governs the chrome
+  around media, not the pixels inside it. (The hero background left this list on 2026-10-06: its
+  colour is `lib/heroGrade.ts`, a token it reads like any other component.)
 - **Generated assets** — `infinity.generated.ts` is produced by a script, not authored.
 
 The test also asserts every exempt file *still* carries off-system colour, so a file cannot sit on

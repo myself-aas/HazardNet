@@ -82,6 +82,24 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ── Component-scoped decisions that are genuinely app-specific ───────────── */
 :root {
+  /* ── The hero's type protection ───────────────────────────────────────────
+     Type over a photograph does not take its contrast from the photograph. The hero's grade
+     (`lib/heroGrade.ts`) darkens the ground; these two shadows give the glyphs a local dark as
+     well, so legibility survives the brightest frame the carousel can show. Two tiers, because
+     12px and 48px do not need the same shadow: the display tier can carry a wide halo, the fine
+     tier needs a tight one that does not bloom.
+
+     `text-shadow` rather than `filter: drop-shadow()`: the filter rasterises the whole element
+     through a filter layer, and this is what text-shadow is for. Print and PDF capture contexts
+     strip both (the `text-shadow: none` rules further down this sheet).
+
+     Published to the utility layer as `text-shadow-hero-display` / `text-shadow-hero-fine` in the
+     @theme block below, and the hero's only two: the two tiers replaced seven copies of the same
+     arbitrary value. (The map chrome and the dashboard's floating labels keep their own, because
+     they invert between themes and sit on light grounds too.) */
+  --hero-type-shadow-display: 0 1px 2px rgba(3, 5, 11, 0.92), 0 2px 12px rgba(3, 5, 11, 0.55);
+  --hero-type-shadow-fine: 0 1px 2px rgba(3, 5, 11, 0.95), 0 1px 6px rgba(3, 5, 11, 0.55);
+
   --hero-glow-blur-primary: 90px;
   /* `--hero-glass-blur` was here for the landing hero's copy panel. The panel is gone
      (2026-10-06: type on the photograph, no surface over it), so the only reader left is
@@ -668,6 +686,12 @@ html[data-map-debug-fx='true'] .marker-high-risk {
   --text-ap-fine: var(--ap-text-fine-print);
   --text-ap-micro: var(--ap-text-micro-legal);
   --text-ap-nav: var(--ap-text-nav-link);
+
+  /* The hero's two type shadows. Values live in `:root` (see "The hero's type protection");
+     `inline` puts the var() reference in the utility rather than a copy of the value, so the
+     token stays overridable in a media query. */
+  --text-shadow-hero-display: var(--hero-type-shadow-display);
+  --text-shadow-hero-fine: var(--hero-type-shadow-fine);
 
   /* Weight ladder: 300/400/600/700. DESIGN.md omits 500 on purpose, so
      `font-medium` is mapped to 400 rather than silently inventing a weight. */

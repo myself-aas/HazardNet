@@ -38,10 +38,10 @@ const EXEMPT = [
   'frontend/src/components/ProviderGlyph.tsx',
   'frontend/src/lib/oauthProviders.ts',
   'frontend/src/lib/connectors.ts',
-  // Cinematic media — content, not chrome.
+  // Cinematic media — content, not chrome. The hero background left this list on 2026-10-06:
+  // its colour is the grade in `lib/heroGrade.ts`, a token it reads like any other component.
   'frontend/src/lib/heroMedia.ts',
   'frontend/src/lib/remotionTheme.ts',
-  'frontend/src/components/HeroCinematicBackground.tsx',
   'frontend/src/components/ui/3d-globe.tsx',
   'frontend/src/remotion/compositions/HeroComposition.tsx',
   'frontend/src/remotion/compositions/HazardAlertStory.tsx',

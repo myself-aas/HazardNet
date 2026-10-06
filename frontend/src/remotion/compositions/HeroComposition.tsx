@@ -5,10 +5,12 @@
  * - All CSS inline, plain object, no spreading, no constants, no math
  * - Animate via interpolate(frame, [...], [...], {easing, extrapolate, output}) inline, hardcoded
  * - Use scale / translate / rotate (never transform)
- * - Effects array inline, hardcoded
+ * - Effects array inline, hardcoded — except the hero grade, which is a design token from
+ *   `lib/heroGrade.ts` so the page and this export cannot disagree about it
  * - Composition metadata inline in Root.tsx
  *
- * Layers: BgMesh → Title → Grade → Vignette (4 layers, matching the web hero)
+ * Layers: BgMesh → Title → Grade (matching the web hero, and reading its grade from
+ * `lib/heroGrade.ts` rather than carrying a second copy of the stops)
  *
  * **Simplified 2026-10-05, to match `components/HeroCinematicBackground.tsx`.** This composition
  * is the 16:9 export of the web hero (Root.tsx calls it "web hero preview"), so when the web hero
@@ -24,6 +26,7 @@
 import React from 'react';
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from 'remotion';
 import { Interactive } from 'remotion';
+import { HERO_GRADE } from '../../lib/heroGrade';
 
 /**
  * Defaults are the front door's own words, not a slogan: the h1 and the coverage facts are the
@@ -127,35 +130,24 @@ export const HeroComposition: React.FC<{
         </div>
       </Interactive.Div>
 
-      {/* Layer 4: Grade — soft-light + linear */}
+      {/* Layer: Grade — soft-light wash, then the exposure curve + vignette the page paints.
+          The four values come from `lib/heroGrade.ts`; this composition used to carry its own
+          copies of the three gradients, which is how the export and the page drift apart. */}
       <Interactive.Div
         name="Cinematic soft-light grade"
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundColor: '#0f3a7a',
-          opacity: 0.2,
+          backgroundColor: HERO_GRADE.gradeWash,
           mixBlendMode: 'soft-light' as const,
         }}
       />
       <Interactive.Div
-        name="Exposure curve"
+        name="Grade — exposure curve + vignette"
         style={{
           position: 'absolute',
           inset: 0,
-          background:
-            'linear-gradient(180deg, rgba(0,0,0,0.32) 0%, rgba(5,7,14,0.18) 32%, rgba(5,7,14,0.68) 72%, rgba(5,7,14,0.92) 100%)',
-        }}
-      />
-
-      {/* Layer 4: Vignette — the ellipse the web hero paints, same stops */}
-      <Interactive.Div
-        name="Vignette — dual-zone elliptical"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background:
-            'radial-gradient(ellipse at center, transparent 38%, rgba(5,7,14,0.55) 75%, rgba(5,7,14,0.95) 100%)',
+          background: `${HERO_GRADE.vignette}, ${HERO_GRADE.exposure}`,
         }}
       />
 

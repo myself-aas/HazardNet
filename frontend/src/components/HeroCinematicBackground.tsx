@@ -1,10 +1,10 @@
 /**
- * HeroCinematicBackground — the hero's backdrop, four layers, one loop.
+ * HeroCinematicBackground — the hero's backdrop, three layers, one arc.
  *
  *   1. the mesh         one brand-blue orbital glow, breathing on a slow sine
  *   2. the photograph   the self-hosted carousel, cross-fading (see HeroImageCarousel)
- *   3. the grade        soft-light wash + exposure curve, which is what makes white type readable
- *   4. the vignette     an ellipse that pulls the eye to the middle
+ *   3. the grade        soft-light wash + exposure curve + vignette, which is what makes white
+ *                       type readable over a bright frame (`lib/heroGrade.ts`)
  *
  * **Simplified 2026-10-05.** This was a five-layer build with nine nodes. Three of them are gone:
  *
@@ -19,8 +19,27 @@
  *   · the second mesh blob (a cyan 900x900 at 100px blur) — two blurred blobs for one brand hue
  *     was a second thing to keep in step; the blue glow carries the identity on its own.
  *
- * What is left is four layers and six nodes, and the composition reads the same: a blue-lit
- * photograph, graded down, vignetted, with a photograph and copy on top.
+ * **Simplified again 2026-10-06.** Four changes, all of them "fewer places for the hero to
+ * disagree with itself", none of them a thing you can see go away:
+ *
+ *   · the grade's four values moved out of this file into `lib/heroGrade.ts`, which the Remotion
+ *     export now reads as well. The page and the MP4 were two hand-kept copies of the same three
+ *     gradients; there is one copy now, and `heroGrade.test.ts` pins it. Nothing in this file
+ *     paints a colour literal any more (it left the colour-discipline exemption list with them).
+ *   · the exposure curve and the vignette were two full-bleed nodes stacked on each other. They
+ *     are one node with two background layers — the vignette listed first, so it still paints on
+ *     top. Two gradients that never move relative to each other do not need two elements to
+ *     composite, and on the 2 GB device class this page targets that is one less layer.
+ *   · the mesh's own clipping wrapper is gone too: the root clips, and the wrapper was a second
+ *     `overflow: hidden` inside the first.
+ *   · the three mesh interpolations now share a single arc over the frame budget (fps * 14, mid
+ *     key at fps * 7) instead of running 8 s, 14 s and 9 s against each other — and the drift used
+ *     to hold at -10px for the rest of the page's life, because `useWebFrame` counts up to
+ *     `maxFrames` and stops. One breath that starts and ends at rest is what "ambient" means here.
+ *
+ * The grade is also a little deeper than it was (see `lib/heroGrade.ts` for the numbers and for
+ * the audit finding behind them). That is the same change the audit asked for on the copy panel
+ * that used to cover this photograph.
  *
  * Strictly follows https://github.com/remotion-dev/remotion/blob/main/packages/docs/docs/studio/interactivity-best-practices.mdx
  * - Interactive elements have descriptive name
@@ -41,6 +60,7 @@ import HeroImageCarousel from './HeroImageCarousel';
 import { Interactive } from './interactive/Interactive';
 import { useWebFrame, useWebVideoConfig, interpolate, Easing } from '../lib/motion-interpolate';
 import { readLowBandwidth } from '../lib/bandwidth';
+import { HERO_GRADE } from '../lib/heroGrade';
 
 export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused = false }) => {
   const isTest = typeof process !== 'undefined' && process.env.NODE_ENV === 'test';
@@ -61,7 +81,7 @@ export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused
 
   return (
     <Interactive.Div
-      name="Hero cinematic background — 4-layer"
+      name="Hero cinematic background — 3-layer"
       style={{
         position: 'absolute',
         inset: 0,
@@ -72,53 +92,46 @@ export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused
         backgroundColor: 'var(--color-carbon-90)',
       }}
     >
-      {/* ── Layer 1: Background Mesh (BgMesh) ────────────────────────── */}
+      {/* ── Layer 1: the mesh ──────────────────────────────────────────
+             Brand blue orbital glow — breathing scale + translate drift, all three properties on
+             one arc so the glow comes to rest when the frame budget does. */}
+
       <Interactive.Div
-        name="BgMesh container"
+        name="Primary orbital glow"
         style={{
           position: 'absolute',
-          inset: 0,
-          overflow: 'hidden',
+          top: '-25%',
+          left: '-15%',
+          width: 1100,
+          height: 1100,
+          borderRadius: '50%',
+          background: HERO_GRADE.meshGlow,
+          opacity: shouldAnimate
+            ? interpolate(frame, [0, fps * 7, fps * 14], [0.30, 0.44, 0.32], {
+                easing: Easing.bezier(0.4, 0, 0.2, 1),
+                extrapolateLeft: 'clamp',
+                extrapolateRight: 'clamp',
+              })
+            : 0.32,
+          scale: shouldAnimate
+            ? interpolate(frame, [0, fps * 7, fps * 14], [1, 1.05, 1], {
+                easing: Easing.bezier(0.65, 0, 0.35, 1),
+                extrapolateLeft: 'clamp',
+                extrapolateRight: 'clamp',
+                output: 'perceptual-scale',
+              })
+            : 1,
+          translate: shouldAnimate
+            ? interpolate(frame, [0, fps * 7, fps * 14], ['0px 0px', '0px -9px', '0px 0px'], {
+                easing: Easing.bezier(0.4, 0, 0.2, 1),
+                extrapolateLeft: 'clamp',
+                extrapolateRight: 'clamp',
+              })
+            : '0px 0px',
+          filter: 'blur(var(--hero-glow-blur-primary))',
+          willChange: shouldAnimate ? 'transform, opacity' : undefined,
         }}
-      >
-        {/* Brand blue orbital glow — breathing scale + translate drift */}
-        <Interactive.Div
-          name="Primary orbital glow"
-          style={{
-            position: 'absolute',
-            top: '-25%',
-            left: '-15%',
-            width: 1100,
-            height: 1100,
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, #1c67e355 0%, #0f3a7a22 50%, transparent 70%)',
-            opacity: shouldAnimate
-              ? interpolate(frame, [0, fps * 4, fps * 8], [0.35, 0.45, 0.35], {
-                  easing: Easing.bezier(0.4, 0, 0.2, 1),
-                  extrapolateLeft: 'clamp',
-                  extrapolateRight: 'clamp',
-                })
-              : 0.4,
-            scale: shouldAnimate
-              ? interpolate(frame, [0, fps * 7, fps * 14], [1, 1.04, 1], {
-                  easing: Easing.bezier(0.65, 0, 0.35, 1),
-                  extrapolateLeft: 'clamp',
-                  extrapolateRight: 'clamp',
-                  output: 'perceptual-scale',
-                })
-              : 1,
-            translate: shouldAnimate
-              ? interpolate(frame, [0, fps * 9], ['0px 0px', '0px -10px'], {
-                  easing: Easing.bezier(0.4, 0, 0.2, 1),
-                  extrapolateLeft: 'clamp',
-                  extrapolateRight: 'clamp',
-                })
-              : '0px 0px',
-            filter: 'blur(var(--hero-glow-blur-primary))',
-            willChange: shouldAnimate ? 'transform, opacity' : undefined,
-          }}
-        />
-      </Interactive.Div>
+      />
 
       {/* ── Layer 2: the photograph ────────────────────────────────────
              Contextual image carousel, cross-fading local frames. Replaces the stock-video
@@ -153,7 +166,10 @@ export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused
         <HeroImageCarousel paused={paused} reducedMotion={!!reduceMotion || isTest} lowBandwidth={lowBandwidth} />
       </Interactive.Div>
 
-      {/* ── Layer 3: Cinematic Color Grade Overlay (Grade) ──────────── */}
+      {/* ── Layer 3: Cinematic Color Grade ─────────────────────────────
+             The blend-mode wash has to stay its own node: `mix-blend-mode` applies to the element
+             against its backdrop, so it cannot be one layer of a stack. */}
+
       <Interactive.Div
         name="Soft-light grade"
         style={{
@@ -161,33 +177,22 @@ export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused
           inset: 0,
           zIndex: 3,
           pointerEvents: 'none',
-          backgroundColor: '#0f3a7a',
-          opacity: 0.2,
+          backgroundColor: HERO_GRADE.gradeWash,
           mixBlendMode: 'soft-light',
         }}
       />
+
+      {/* Exposure curve over vignette, in one node, vignette-listed-first so it still paints on
+          top. These are the two layers the copy leans on: the curve darkens towards the foot of
+          the hero where the type sits, the ellipse darkens the corners. */}
       <Interactive.Div
-        name="Exposure curve"
+        name="Grade — exposure curve + vignette"
         style={{
           position: 'absolute',
           inset: 0,
           zIndex: 4,
           pointerEvents: 'none',
-          background:
-            'linear-gradient(180deg, rgba(0,0,0,0.32) 0%, rgba(5,7,14,0.18) 32%, rgba(5,7,14,0.68) 72%, rgba(5,7,14,0.92) 100%)',
-        }}
-      />
-
-      {/* ── Layer 4: Vignette ────────────────────────────────────────── */}
-      <Interactive.Div
-        name="Vignette — dual-zone elliptical"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 6,
-          pointerEvents: 'none',
-          background:
-            'radial-gradient(ellipse at center, transparent 38%, rgba(5,7,14,0.55) 75%, rgba(5,7,14,0.95) 100%)',
+          background: `${HERO_GRADE.vignette}, ${HERO_GRADE.exposure}`,
         }}
       />
     </Interactive.Div>

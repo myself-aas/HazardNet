@@ -212,6 +212,15 @@ describe('the front door', () => {
     // One big heading: the same `ap-hero` style the front door has always used.
     expect(hero.querySelector('h1')!.className).toContain('ap-hero');
 
+    // Type protection is two published tokens, not seven hand-copied arbitrary values: the h1
+    // wears the display tier, every piece of small print (tagline, standfirst, the three links, the
+    // 999 boundary sentence) wears the fine one. Both utilities come from `index.css`; the values
+    // are pinned there by `HeroCinematicBackground.test.tsx`.
+    expect(hero.querySelector('h1')!.className).toContain('text-shadow-hero-display');
+    const fine = Array.from(hero.querySelectorAll('.text-shadow-hero-fine'));
+    expect(fine.length).toBeGreaterThanOrEqual(5); // tagline, standfirst, 3 links, boundary
+    expect(hero.querySelectorAll('[class*="drop-shadow-["]').length).toBe(0);
+
     // One primary action in the hero, and it is the navigation one. The other destinations are
     // in the small-print link row (the 2026-10-03 audit's L-P1-1: three equal-weight buttons read
     // as none). `ap-btn` is the Apple primitive's own marker; the hero renders exactly one.
