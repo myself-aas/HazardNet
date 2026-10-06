@@ -83,7 +83,9 @@ h1, h2, h3, h4, h5, h6 {
 /* ── Component-scoped decisions that are genuinely app-specific ───────────── */
 :root {
   --hero-glow-blur-primary: 90px;
-  --hero-glass-blur: 8px;
+  /* `--hero-glass-blur` was here for the landing hero's copy panel. The panel is gone
+     (2026-10-06: type on the photograph, no surface over it), so the only reader left is
+     the pause control's own `backdrop-blur-sm` utility, which is a fixed value in Tailwind. */
   --control-min-size: var(--ap-touch-min);
   --navbar-height: calc(3.5rem + env(safe-area-inset-top, 0px));
 }

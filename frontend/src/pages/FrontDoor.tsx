@@ -39,7 +39,10 @@
  *     repository under a licence the project can stand behind, and a stock image of a flood
  *     would date the page to a disaster it is not describing. On 2026-10-05 the card moved out
  *     of the hero to a page of its own (`/last-run`, `pages/LastRunPage.tsx`); the hero keeps
- *     the claim, the action and a hyperlink to the card that checks the claim.
+ *     the claim, the action and a hyperlink to the card that checks the claim. On 2026-10-06 the
+ *     copy panel around all of it was removed as well, so the hero is a photograph with type on
+ *     it: one heading, one tagline, one action, and the small print (see the hero block below for
+ *     what the small print carries, and why it is still legible without a panel).
  *   · The map stays at `/live`. The split was re-affirmed on 2026-09-19: `/` answers "who is
  *     telling me this, and how would I know if it stopped working", `/live` answers "where".
  *     A second map surface is a second thing to keep honest, for no reader who was lost.
@@ -289,10 +292,12 @@ export const FrontDoor: React.FC = () => {
   const content = usePageSeo('/');
   const { freshness, scorecard, loading, failed, retry: retryLiveFacts } = useLiveFacts();
   const [heroPaused, setHeroPaused] = useState(false);
-  // The full standfirst is 70 words; below `sm` it is clamped to three lines with this control.
+  // The standfirst is 70 words. Since 2026-10-06 it is small print in the hero (the copy panel it
+  // used to sit in is gone), clamped to two lines at every width with this disclosure — claim,
+  // tagline and action come first, and the reader asks for the rest.
   const [standfirstOpen, setStandfirstOpen] = useState(false);
-  // The phone-only evidence pointer under the CTA reads the same artifact the proof card does, so
-  // the first viewport on a phone is claim -> action -> one fact from the run (see the hero comment).
+  // The evidence pointer under the action reads the same artifact the proof card does: one fact
+  // from the run, pointing at the page that carries the card (/last-run).
   const coverageArtifact = freshness?.coverage ?? null;
   const { alerts, assessed, counts, notPublished, generatedAt, loading: alertsLoading, error, refresh: refreshAlerts } = useAlertsData();
   const hazardLabel = useHazardLabel();
@@ -393,7 +398,20 @@ export const FrontDoor: React.FC = () => {
           grain; it is four layers now (see HeroCinematicBackground). Keeping the composition
           honest rather than busy is the whole job of this block: a claim (h1), the sentence that
           qualifies it, one primary action, and a hyperlink to the page that carries the artifact
-          card checking the claim (/last-run — the card itself moved there from this hero). */}
+          card checking the claim (/last-run — the card itself moved there from this hero).
+
+          **2026-10-06, the copy panel is gone.** Every word in this hero used to sit inside a
+          near-opaque panel (`bg-carbon-black/65` plus a `backdrop-filter`), so the photograph was
+          legible only in the frame around a black box. The type is now on the photograph: the h1,
+          one tagline, one primary action, and the small print that carries everything else (the
+          standfirst, the three links, the run's own coverage pointer and the authority boundary).
+          Nothing in this block paints a surface over the image. The only thing between the type
+          and the photograph is the exposure curve `HeroCinematicBackground` already draws, which
+          is why the copy is anchored to its lower band (the 0.68 to 0.92 stops) instead of being
+          centred on the brightest pixels: 12px small print needs a dark ground to clear 4.5:1,
+          and that band is where the hero already provides one. The drop shadows are the second
+          line of defence over the brightest frame the carousel publishes. Nothing was deleted,
+          the panel is the only thing that left. */}
       {/* `ap-on-dark` scopes the outline button's inversion to this hero, so the
           same primitive renders white-on-dark here and ink-on-light everywhere
           else without a second variant existing. */}
@@ -415,7 +433,11 @@ export const FrontDoor: React.FC = () => {
           <span>{heroPaused ? t('frontdoor.hero.resumeMotion') : t('frontdoor.hero.pauseMotion')}</span>
         </button>
 
-        <div className="relative z-10 w-full max-w-[1200px] mx-auto px-4 xl:px-8">
+        {/* `self-stretch` + `justify-between`: the language switch keeps the top-right corner
+            while the copy takes the lower band of the frame, the part the exposure curve already
+            darkens. The extra bottom padding below `sm` is clearance for the pause control, which
+            is pinned to the same corner at that width. */}
+        <div className="relative z-10 w-full max-w-[1200px] mx-auto px-4 xl:px-8 self-stretch flex flex-col justify-between">
           {/* The masthead strip ("Overview · HazardNet · reviewed <date>") used to sit here. It
               was a middot row of the kind the design skill bans: a version-style eyebrow, half of
               it repeating the wordmark directly above a wordmark, and the only reader-facing fact
@@ -428,123 +450,115 @@ export const FrontDoor: React.FC = () => {
             <LanguageToggle variant="switch" tone="hds" />
           </div>
 
-          <div className="mt-4 grid grid-cols-1 items-center gap-6 sm:mt-6 sm:gap-8">
-            {/* One flat scrim, not a two-stop gradient. The gradient existed to keep the
-                authority paragraph (12px `text-white/75`) off the weak end of its own surface:
-                at the old `to-black/35` the same pixel measured 2.45:1 over a light frame, at
-                `to-black/60` 6.40:1. A single `bg-carbon-black/65` clears that everywhere on the
-                card instead of only at the bottom of it, and `carbon-black` is pinned dark in
-                both themes (it is a scrim, see dark.css §1) so this holds in dark mode too. */}
-            <div className="min-w-0 rounded-sm border border-white/15 bg-carbon-black/65 p-4 sm:p-5" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
-              <h1 className="ap-hero max-w-3xl text-balance text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                {localised.h1 ?? localised.title}
-              </h1>
-              {language === 'bn' && (
-                <p role="status" aria-live="polite" className="mt-3 inline-flex items-center gap-1.5 bg-warning-surface px-2 py-1 text-xs font-bold text-carbon-90 border border-warning-border">
-                  <MaterialIcon name="translate" className="text-xs" />
-                  {t('frontdoor.bengaliDraft')}
+          <div className="min-w-0 max-w-3xl pb-14 sm:pb-2">
+            <h1 className="ap-hero text-balance text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+              {localised.h1 ?? localised.title}
+            </h1>
+            {language === 'bn' && (
+              <p role="status" aria-live="polite" className="mt-3 inline-flex items-center gap-1.5 bg-warning-surface px-2 py-1 text-xs font-bold text-carbon-90 border border-warning-border">
+                <MaterialIcon name="translate" className="text-xs" />
+                {t('frontdoor.bengaliDraft')}
+              </p>
+            )}
+            {/* The tagline. Short by construction: it names the product (7- and 15-day horizons),
+                the coverage and the provenance rule, and it leaves the arithmetic to the trust
+                strip below. Nothing claimed here is not stated at length further down the page. */}
+            <p className="mt-4 max-w-3xl text-base font-semibold leading-snug text-white/95 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] sm:text-lg">
+              {t('frontdoor.hero.slogan')}
+            </p>
+
+            {/* One primary action. "Open the map" is a NAVIGATION action, so it takes the Action
+                Blue pill — not crimson. Under HDS 2.2 this button was `bg-primary-strong`
+                (crimson), which spent the hazard colour on a browse action and trained the reader
+                that crimson means "clickable". On a warning service that is a safety bug, not a
+                style preference: the crimson has to still mean something when the district under
+                it is under warning.
+                Three equal full-width buttons on a phone is three primaries, which reads as none;
+                the other destinations are in the links row below, and the scorecard has a whole
+                section under this hero that argues for it. */}
+            <div className="mt-6 sm:mt-7">
+              <ButtonLink href="/live" intent="primary" size="lg" className="w-full sm:w-auto">
+                <MaterialIcon name="public" className="text-base" />
+                {t('frontdoor.hero.ctaMap')}
+              </ButtonLink>
+            </div>
+
+            {/* Small print, first block: what this is. The standfirst is 70 words, so it is 12px
+                and clamped to two lines here and expanded in place on request; the seven sections
+                under this hero make the same argument at length, which is what makes the clamp
+                safe. The 44px control is the touch target the clamp needs, not decoration. */}
+            {localised.standfirst && (
+              <>
+                <p
+                  id="front-door-standfirst"
+                  className={`mt-5 max-w-2xl text-xs leading-[1.6] text-white/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] ${
+                    standfirstOpen ? '' : 'line-clamp-2'
+                  }`}
+                >
+                  {localised.standfirst}
                 </p>
-              )}
-              {localised.standfirst && (
-                <>
-                  {/* The standfirst is 70 words - about eleven lines at this size on a 390px
-                      phone, which was most of the viewport before the reader reached a button.
-                      It is clamped below `sm` and expanded in place; the same argument is made
-                      in full by the seven sections under this hero, so nothing is hidden that
-                      the page does not say again. Two lines, not three: the third line cost 26px
-                      of the first viewport, and the phone budget belongs to the action and the
-                      evidence pointer (docs/audits/2026-10-03-landing-live-hero-audit.md, H-P1-3). */}
-                  <p
-                    id="front-door-standfirst"
-                    className={`mt-5 max-w-2xl text-base leading-[1.62] text-white/90 md:text-lg md:leading-[1.5] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] ${
-                      standfirstOpen ? '' : 'line-clamp-2 sm:line-clamp-none'
-                    }`}
-                  >
-                    {localised.standfirst}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setStandfirstOpen((v) => !v)}
-                    aria-expanded={standfirstOpen}
-                    aria-controls="front-door-standfirst"
-                    className="mt-1 inline-flex min-h-[44px] items-center text-xs font-bold text-white underline underline-offset-4 sm:hidden"
-                  >
-                    {standfirstOpen ? t('frontdoor.hero.readLess') : t('frontdoor.hero.readMore')}
-                  </button>
-                </>
-              )}
+                <button
+                  type="button"
+                  onClick={() => setStandfirstOpen((v) => !v)}
+                  aria-expanded={standfirstOpen}
+                  aria-controls="front-door-standfirst"
+                  className="mt-1 inline-flex min-h-[44px] items-center text-xs font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+                >
+                  {standfirstOpen ? t('frontdoor.hero.readLess') : t('frontdoor.hero.readMore')}
+                </button>
+              </>
+            )}
 
-              {/* Dual-primary, applied. "Open the map" is a NAVIGATION
-                  action, so it takes the Action Blue pill — not crimson. Under HDS 2.2
-                  this button was `bg-primary-strong` (crimson), which spent the
-                  hazard colour on a browse action and trained the reader that
-                  crimson means "clickable". On a warning service that is a
-                  safety bug, not a style preference: the crimson has to still
-                  mean something when the district under it is under warning.
-                  The two secondary links stay outlined. */}
-              {/* One primary action. Three equal full-width buttons on a phone is three
-                  primaries, which reads as none; the other destinations stay here as text
-                  links, and the scorecard has a whole section below that argues for it. The
-                  run card used to sit beside this copy as the hero's second column; since
-                  2026-10-05 it has a page of its own, and the hero reaches it as a link. */}
-              <div className="mt-5 sm:mt-7">
-                <ButtonLink href="/live" intent="primary" size="lg" className="w-full sm:w-auto">
-                  <MaterialIcon name="public" className="text-base" />
-                  {t('frontdoor.hero.ctaMap')}
-                </ButtonLink>
-                <div className="mt-2 flex flex-wrap gap-x-6">
-                  <Link
-                    to="/methodology"
-                    className="inline-flex min-h-[44px] min-w-[44px] items-center text-sm font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white"
-                  >
-                    {t('frontdoor.hero.ctaMethodology')}
-                  </Link>
-                  <Link
-                    to="/model-performance"
-                    className="inline-flex min-h-[44px] min-w-[44px] items-center text-sm font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white"
-                  >
-                    {t('frontdoor.hero.ctaScorecard')}
-                  </Link>
-                  <Link
-                    to="/last-run"
-                    className="inline-flex min-h-[44px] min-w-[44px] items-center text-sm font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white"
-                  >
-                    {t('frontdoor.hero.viewLastRun')}
-                  </Link>
-                </div>
-              </div>
-
-              {/* The one evidence pointer is deliberately the last hero element on a phone. It
-                  borrows the run card's own text (it is not a second copy) and links to the card's
-                  page, so the hierarchy stands - claim, action, then the card that checks the
-                  claim. The card moved to `/last-run` on 2026-10-05, so this anchor is now a
-                  route link rather than an in-page fragment; on the wide layout the text link above
-                  already reaches it and this line does not render.
-                  docs/audits/2026-10-03-landing-live-hero-audit.md, H-P1-3. */}
-              {coverageArtifact?.districts_covered != null && coverageArtifact?.districts_expected ? (
+            {/* Small print, second block: how to check the claim. A list, not a `<nav>` - the page
+                keeps its one navigation landmark (the table of contents) - and one row, so the
+                three destinations cost a line rather than a button each. The last entry is the
+                run's own coverage sentence, read from the same artifact the /last-run card reads,
+                with the links wording kept as the fallback when that artifact is unreadable. */}
+            <ul className="mt-3 flex flex-wrap gap-x-5 text-xs text-white/90">
+              <li>
+                <Link
+                  to="/methodology"
+                  className="inline-flex min-h-[44px] min-w-[44px] items-center font-bold text-white underline decoration-white/40 underline-offset-4 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+                >
+                  {t('frontdoor.hero.ctaMethodology')}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/model-performance"
+                  className="inline-flex min-h-[44px] min-w-[44px] items-center font-bold text-white underline decoration-white/40 underline-offset-4 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+                >
+                  {t('frontdoor.hero.ctaScorecard')}
+                </Link>
+              </li>
+              <li>
                 <Link
                   to="/last-run"
-                  className="mt-3 inline-flex min-h-[44px] min-w-[44px] items-center text-xs font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white sm:hidden"
+                  className="inline-flex min-h-[44px] min-w-[44px] items-center font-bold text-white underline decoration-white/40 underline-offset-4 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
                 >
-                  {t('frontdoor.hero.evidencePointer', {
-                    covered: formatNumber(coverageArtifact.districts_covered),
-                    expected: formatNumber(coverageArtifact.districts_expected),
-                    published:
-                      published != null
-                        ? t('frontdoor.hero.evidencePointerAlerts', { count: formatNumber(published) })
-                        : t('frontdoor.hero.evidencePointerNoAlerts'),
-                  })}
+                  {coverageArtifact?.districts_covered != null && coverageArtifact?.districts_expected
+                    ? t('frontdoor.hero.evidencePointer', {
+                        covered: formatNumber(coverageArtifact.districts_covered),
+                        expected: formatNumber(coverageArtifact.districts_expected),
+                        published:
+                          published != null
+                            ? t('frontdoor.hero.evidencePointerAlerts', { count: formatNumber(published) })
+                            : t('frontdoor.hero.evidencePointerNoAlerts'),
+                      })
+                    : t('frontdoor.hero.viewLastRun')}
                 </Link>
-              ) : null}
+              </li>
+            </ul>
 
-              <p className="mt-6 max-w-2xl border-t border-white/20 pt-4 text-xs leading-[1.62] text-white/75">
-                {t('frontdoor.hero.authority')}{' '}
-                <Link to="/live" className="font-bold text-white underline underline-offset-2 hover:text-white/90">
-                  {t('frontdoor.hero.authorityMap')}
-                </Link>
-              </p>
-
-            </div>
+            {/* The boundary sentence, last and smallest: 12px `text-white/75`, no rule above it
+                (a hairline over a photograph is decoration), and a drop shadow so the one
+                sentence that must not be missed is legible over the brightest frame. */}
+            <p className="mt-2 max-w-3xl text-xs leading-[1.6] text-white/75 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+              {t('frontdoor.hero.authority')}{' '}
+              <Link to="/live" className="font-bold text-white underline underline-offset-2 hover:text-white/90">
+                {t('frontdoor.hero.authorityMap')}
+              </Link>
+            </p>
           </div>
         </div>
       </header>

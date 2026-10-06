@@ -185,7 +185,7 @@ describe('the front door', () => {
     }
   });
 
-  it('keeps the hero simple: one scrim, one primary action, no second frame', async () => {
+  it('keeps the hero open: no surface over the photograph, one primary action, small print', async () => {
     renderPage();
     await screen.findByTestId('front-door-status-strip');
     const hero = document.querySelector('header.ap-on-dark') as HTMLElement;
@@ -196,18 +196,35 @@ describe('the front door', () => {
     expect(hero.querySelector('[data-testid="last-run-visual"]')).toBeNull();
     expect(Array.from(hero.querySelectorAll('a[href="/last-run"]')).length).toBeGreaterThanOrEqual(1);
 
-    // One flat scrim over the photograph. It was a `from-black/70 to-black/60` gradient, which
-    // put the authority sentence at the weak end of its own surface (2.45:1 over a bright frame
-    // at the old `to-black/35`); a single `bg-carbon-black/65` clears that everywhere on the card.
-    const card = hero.querySelector('h1')!.closest('div') as HTMLElement;
-    expect(card.className).toContain('bg-carbon-black/65');
-    expect(card.className).not.toMatch(/from-black\//);
+    // 2026-10-06: the copy panel is gone. Every word in the hero now sits on the photograph, with
+    // nothing painted between them - no scrim, no blur, no frame, no inline filter - so the one
+    // surface behind the type is the exposure curve HeroCinematicBackground already draws, and the
+    // copy is anchored to the band that gradient darkens. The panel this replaces was
+    // `bg-carbon-black/65` plus `backdrop-filter: blur(var(--hero-glass-blur))`; both are asserted
+    // absent, so putting a box back over the hero fails here instead of quietly covering it again.
+    const copy = hero.querySelector('h1')!.closest('div') as HTMLElement;
+    expect(copy.className).toContain('max-w-3xl');
+    expect(copy.className).not.toMatch(/bg-|border|rounded-|backdrop-/);
+    expect(copy.getAttribute('style')).toBeNull();
+    expect(copy.querySelector('[class*="backdrop-blur"]')).toBeNull();
+    expect(copy.querySelectorAll('[style*="backdrop"]').length).toBe(0);
 
-    // One primary action in the hero, and it is the navigation one. The other two destinations
-    // are text links (the 2026-10-03 audit's L-P1-1: three equal-weight buttons read as none).
-    // `ap-btn` is the Apple primitive's own marker; the hero renders exactly one of them.
+    // One big heading: the same `ap-hero` style the front door has always used.
+    expect(hero.querySelector('h1')!.className).toContain('ap-hero');
+
+    // One primary action in the hero, and it is the navigation one. The other destinations are
+    // in the small-print link row (the 2026-10-03 audit's L-P1-1: three equal-weight buttons read
+    // as none). `ap-btn` is the Apple primitive's own marker; the hero renders exactly one.
     const buttons = Array.from(hero.querySelectorAll('a.ap-btn'));
     expect(buttons.map((link) => link.getAttribute('href'))).toEqual(['/live']);
+
+    // The tagline is the hero's one subheading, and the small print carries everything else: the
+    // authority boundary (still in the hero - 2026-10-03 audit H-P1-4) and the three destinations
+    // as one row of links rather than a column of buttons.
+    expect(within(hero).getByText(/every number traces to a dated artifact/i)).toBeInTheDocument();
+    expect(within(hero).getByText(/not an official warning service/)).toBeInTheDocument();
+    expect(within(hero).getByRole('link', { name: /how a forecast is produced/i })).toHaveAttribute('href', '/methodology');
+    expect(within(hero).getByRole('link', { name: /read the validation scorecard/i })).toHaveAttribute('href', '/model-performance');
 
     // The language switch carries its own chip; the glass frame that used to wrap it was a box
     // inside a box. Nothing else in the hero draws a translucent surface.

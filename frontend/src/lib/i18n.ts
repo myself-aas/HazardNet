@@ -246,12 +246,21 @@ const EN = {
      by the project owner on 2026-09-19 (owner Action 6c, closed for this surface). The
      approval is recorded on the route itself — `i18n.bn.review` in `site-routes.json` — so
      the copy and its review status cannot drift apart. New Bengali copy starts as
-     `pending-native-speaker` and is not announced until it is read. */
+     `pending-native-speaker` and is not announced until it is read.
+
+     The one string added since that review is `frontdoor.hero.slogan` (2026-10-06, the hero's
+     copy panel was replaced by a tagline). Its Bengali is drafted, not read: composed from the
+     vocabulary the approved `bn` standfirst already uses, and carried by the page's own
+     `frontdoor.bengaliDraft` notice ("Bengali draft. Awaiting native-speaker review"), which
+     renders on `/` in Bengali for exactly this reason. It is the one key here that still needs
+     a native speaker's pass. */
   'frontdoor.language.other': 'বাংলায় পড়ুন',
   'frontdoor.relatedPages': 'Related pages',
   'frontdoor.hero.reviewed': 'reviewed {date}',
   'frontdoor.hero.reviewedUnknown': 'review date unknown',
   'frontdoor.hero.ctaMap': 'Open the live map',
+  'frontdoor.hero.slogan':
+    '7- and 15-day outlooks for 64 districts: every number traces to a dated artifact.',
   'frontdoor.hero.ctaMethodology': 'How a forecast is produced',
   'frontdoor.hero.ctaScorecard': 'Read the validation scorecard',
   'frontdoor.hero.viewLastRun': 'View the last run, from the committed artifacts',
@@ -658,6 +667,8 @@ const BN: Record<string, string> = {
   'frontdoor.hero.reviewed': 'পর্যালোচনা {date}',
   'frontdoor.hero.reviewedUnknown': 'পর্যালোচনার তারিখ অজানা',
   'frontdoor.hero.ctaMap': 'লাইভ মানচিত্র খুলুন',
+  'frontdoor.hero.slogan':
+    '৬৪টি জেলার জন্য ৭ ও ১৫ দিনের পূর্বাভাস: প্রতিটি সংখ্যা আসে একটি তারিখযুক্ত আর্টিফ্যাক্ট থেকে।',
   'frontdoor.hero.ctaMethodology': 'কীভাবে পূর্বাভাস তৈরি হয়',
   'frontdoor.hero.ctaScorecard': 'যাচাই স্কোরকার্ড পড়ুন',
   'frontdoor.hero.viewLastRun': 'সংরক্ষিত আর্টিফ্যাক্ট অনুযায়ী শেষ রানটি দেখুন',
