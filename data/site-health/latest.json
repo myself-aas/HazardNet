@@ -1,7 +1,7 @@
 {
   "schema": "hazardnet-site-probe/v1",
-  "ran_at": "2026-10-06T01:48:21Z",
-  "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/37400973181",
+  "ran_at": "2026-10-06T08:15:48Z",
+  "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/37434891562",
   "site_url": "https://hazardnet.live",
   "outcome": "fail",
   "checks": [
