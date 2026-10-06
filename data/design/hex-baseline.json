@@ -8,7 +8,7 @@
     "never raise one - add the colour to the design system instead (see MAP_* in",
     "packages/design-system/src/mapPalette.ts for the map-stage pattern)."
   ],
-  "total": 488,
+  "total": 484,
   "files": {
     "frontend/src/hooks/useMapSnapshot.ts": 42,
     "frontend/src/components/ForecastDashboard.tsx": 32,
@@ -41,7 +41,6 @@
     "frontend/src/remotion/compositions/HazardAlertStory.tsx": 5,
     "frontend/src/remotion/compositions/LiveStatusComposition.tsx": 5,
     "frontend/src/components/ui/expand-map.tsx": 4,
-    "frontend/src/components/user/dashboard/OverviewSection.tsx": 4,
     "frontend/src/remotion/compositions/HeroComposition.tsx": 4,
     "frontend/src/App.tsx": 3,
     "frontend/src/components/LiveVoiceAdvisor.tsx": 3,

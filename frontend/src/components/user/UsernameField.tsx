@@ -109,12 +109,17 @@ export const UsernameField: React.FC<UsernameFieldProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, currentUsername, checkUsernameAvailability]);
 
+  /* Status is carried by the ICON and the words; colour stays inside the system. This map used to
+     paint "available" with severity-low green, "invalid" with severity-high and "taken" with a
+     second amber — three hazard levels spent on a validation state, on a page whose only accent is
+     Action Blue. Available now reads as a confirmed fact (ink + check), and a problem reads in ink
+     with the reason spelled out next to it, which is also the only thing a greyscale printout keeps. */
   const statusStyles: Record<UsernameStatus, { ring: string; icon: string; text: string; iconClass: string }> = {
-    idle: { ring: 'focus-within:border-ap-primary focus-within:ring-ap-primary/40', icon: '', text: 'text-carbon-60', iconClass: '' },
-    invalid: { ring: 'border-severity-high focus-within:ring-severity-high/30', icon: 'error', text: 'text-severity-high', iconClass: 'text-severity-high' },
-    checking: { ring: 'focus-within:border-ap-primary focus-within:ring-ap-primary/40', icon: 'hourglass_top', text: 'text-carbon-60', iconClass: 'text-carbon-60' },
-    available: { ring: 'border-severity-low focus-within:ring-severity-low/30', icon: 'check_circle', text: 'text-carbon-80', iconClass: 'text-severity-low' },
-    taken: { ring: 'border-orange-300 focus-within:ring-orange-200', icon: 'error', text: 'text-orange-700', iconClass: 'text-orange-500' },
+    idle: { ring: 'focus-within:border-ap-primary', icon: '', text: 'text-carbon-60', iconClass: '' },
+    invalid: { ring: '', icon: 'error', text: 'text-carbon-90', iconClass: 'text-carbon-70' },
+    checking: { ring: 'focus-within:border-ap-primary', icon: 'hourglass_top', text: 'text-carbon-60', iconClass: 'text-carbon-60' },
+    available: { ring: '', icon: 'check_circle', text: 'text-carbon-90', iconClass: 'text-carbon-70' },
+    taken: { ring: '', icon: 'error', text: 'text-carbon-90', iconClass: 'text-carbon-70' },
   };
   const style = statusStyles[status];
 
@@ -123,10 +128,11 @@ export const UsernameField: React.FC<UsernameFieldProps> = ({
       <label className="block text-sm font-semibold text-carbon-80 mb-1.5" htmlFor={id}>
         {label}
       </label>
-      <div
-        className={`flex h-12 items-center gap-0 rounded-sm border border-carbon-20 bg-white focus-within:ring-2 ${style.ring}`}
-      >
-        <span className="pl-4 text-sm font-bold text-carbon-60 select-none" aria-hidden="true">
+      {/* The same pill the other fields use (`.ap-input`), with the @ set beside it instead of
+          inside it — the field is then the system's input rather than a second bordered shell with
+          an input nested in it. */}
+      <div className="flex items-center gap-2">
+        <span className="text-base font-semibold text-carbon-60 select-none" aria-hidden="true">
           @
         </span>
         <input
@@ -143,21 +149,27 @@ export const UsernameField: React.FC<UsernameFieldProps> = ({
           autoFocus={autoFocus}
           onChange={(event) => onChange(sanitizeUsernameInput(event.target.value))}
           aria-describedby={`${id}-status`}
-          className="h-12 w-full bg-transparent px-2 text-base text-carbon-90 placeholder-carbon-40 font-medium outline-none"
+          className={`ap-input min-w-0 flex-1 ${style.ring}`}
         />
-        {status !== 'idle' && (
-          <span className="pr-4 flex items-center" aria-hidden="true">
-            {status === 'checking' ? (
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-carbon-30 border-t-carbon-50" />
-            ) : (
-              <MaterialIcon name={style.icon} className={style.iconClass} size={18} />
-            )}
-          </span>
-        )}
       </div>
 
-      {/* Live status line */}
-      <p id={`${id}-status`} aria-live="polite" className={`mt-1 text-base leading-[1.62] font-semibold ${style.text}`} data-testid="username-status">
+      {/* Live status line — icon and words together, never colour alone. */}
+      <p
+        id={`${id}-status`}
+        aria-live="polite"
+        className={`mt-1.5 flex items-center gap-1.5 text-sm leading-[1.62] font-semibold ${style.text}`}
+        data-testid="username-status"
+      >
+        {status === 'checking' ? (
+          <span
+            aria-hidden="true"
+            className="h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-carbon-20 border-t-carbon-60"
+          />
+        ) : (
+          status !== 'idle' && (
+            <MaterialIcon name={style.icon} className={`${style.iconClass} shrink-0`} size={16} />
+          )
+        )}
         {statusMessage}
       </p>
 
@@ -165,7 +177,7 @@ export const UsernameField: React.FC<UsernameFieldProps> = ({
       {showRules && (
         <ul className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1" data-testid="username-rules">
           {USERNAME_RULES.map((rule) => (
-            <li key={rule} className="flex items-center gap-1 text-base leading-[1.62] font-medium text-carbon-60">
+            <li key={rule} className="flex items-center gap-1 text-sm leading-[1.62] font-medium text-carbon-60">
               <span aria-hidden="true">•</span>
               {rule}
             </li>
@@ -184,15 +196,15 @@ export const UsernameField: React.FC<UsernameFieldProps> = ({
             className="overflow-hidden"
             data-testid="username-suggestions"
           >
-            <div className="mt-2 border border-carbon-20 bg-carbon-05/70 p-2.5">
-              <p className="text-xs font-bold uppercase tracking-wider text-carbon-60 mb-1.5">Try one of these</p>
+            <div className="mt-2 bg-carbon-05 p-3">
+              <p className="mb-1.5 text-xs font-semibold text-carbon-60">Try one of these</p>
               <div className="flex flex-wrap gap-1.5">
                 {suggestions.map((suggestion) => (
                   <button
                     key={suggestion}
                     type="button"
                     onClick={() => onChange(suggestion)}
-                    className="min-h-[44px] rounded-sm border border-carbon-20 bg-white px-3 py-2 text-base font-semibold text-carbon-70 hover:border-ap-primary hover:bg-carbon-05 cursor-pointer touch-manipulation"
+                    className="ap-focusable min-h-[44px] rounded-full border border-carbon-20 bg-white px-4 text-base font-semibold text-carbon-70 hover:border-ap-primary"
                   >
                     @{suggestion}
                   </button>

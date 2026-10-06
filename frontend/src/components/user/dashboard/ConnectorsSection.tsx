@@ -10,13 +10,20 @@ import {
   fetchUserConnectors,
   saveUserConnector,
 } from '../../../lib/connectors';
-import { Card, inputClass } from './ui';
+import { Button } from '../../apple/primitives';
+import { Panel, inputClass } from './ui';
 import { useI18n } from '../../../hooks/useI18n';
 
 /**
  * "Connectors" tab — one-click integrations between a HazardNet account and
  * external services (data sources, alert channels, productivity, developer
  * webhooks). Per-user state persists in the `user_connectors` table.
+ *
+ * Each connector is one bordered cell; the cells sit directly on the page under
+ * a category heading, so there is no card row inside a card. The provider
+ * accent colour is gone: twenty inline hexes meant twenty brands' palettes
+ * asserting themselves over the one accent this product has, and the icon and
+ * the name already identify the provider.
  */
 
 const ConnectorCard: React.FC<{
@@ -41,30 +48,28 @@ const ConnectorCard: React.FC<{
 
   return (
     <div
-      className={`group relative flex flex-col border p-4 transition-all ${
-        connected ? 'border-carbon-20 bg-carbon-05/40' : 'border-carbon-20 bg-white hover:border-carbon-30 hover:shadow-sm'
-      }`}
+      className={`flex flex-col border p-5 ${connected ? 'border-carbon-30 bg-carbon-05' : 'border-carbon-20 bg-white'}`}
       data-testid={`connector-${connector.key}`}
     >
-      <div className="flex items-start justify-between gap-2">
-        <span
-          className="flex h-10 w-10 items-center justify-center text-white"
-          style={{ backgroundColor: connector.accent }}
-        >
+      <div className="flex items-start justify-between gap-3">
+        <span className="flex h-10 w-10 items-center justify-center bg-carbon-05 text-carbon-70">
           <MaterialIcon name={connector.icon} size={20} />
         </span>
         {connected && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-extrabold uppercase tracking-wider text-carbon-80">
-            Connected
+          <span className="text-xs font-semibold text-carbon-60">
+            Connected{state?.connectedAt ? ` · ${formatDate(state.connectedAt)}` : ''}
           </span>
         )}
       </div>
-      <h4 className="mt-3 text-sm font-extrabold text-carbon-90">{connector.name}</h4>
-      <p className="mt-1 flex-1 text-xs leading-relaxed text-carbon-60">{connector.tagline}</p>
+      <h3 className="mt-3 text-sm font-bold text-carbon-90">{connector.name}</h3>
+      <p className="mt-1 flex-1 text-sm leading-[1.62] text-carbon-70">{connector.tagline}</p>
 
       {connector.asksFor && configOpen && !connected && (
-        <div className="mt-3 space-y-1.5">
-          <label htmlFor={`connector-config-${connector.key}`} className="text-xs font-bold uppercase tracking-wide text-carbon-60">
+        <div className="mt-4 space-y-1.5">
+          <label
+            htmlFor={`connector-config-${connector.key}`}
+            className="text-sm font-semibold text-carbon-80"
+          >
             {connector.asksFor.label}
           </label>
           <input
@@ -78,39 +83,26 @@ const ConnectorCard: React.FC<{
         </div>
       )}
 
-      <div className="mt-3 flex items-center gap-2">
+      <div className="mt-4 flex items-center gap-2">
         {connected ? (
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => onDisconnect(connector)}
-            className="flex-1 border border-carbon-20 bg-white px-3 py-2 text-xs font-extrabold text-carbon-70 transition-colors hover:bg-carbon-05 disabled:opacity-50 cursor-pointer"
-          >
+          <Button size="sm" disabled={busy} onClick={() => onDisconnect(connector)} className="flex-1">
             Disconnect
-          </button>
+          </Button>
         ) : (
-          <button
-            type="button"
-            disabled={busy}
-            onClick={startConnect}
-            className="flex-1 bg-carbon-90 px-3 py-2 text-xs font-extrabold text-carbon-05 transition-colors hover:bg-carbon-80 disabled:opacity-50 cursor-pointer"
-          >
-            {busy ? '…' : configOpen && connector.asksFor ? 'Save & connect' : 'Connect'}
-          </button>
+          <Button size="sm" disabled={busy} onClick={startConnect} className="flex-1">
+            {busy ? 'Working…' : configOpen && connector.asksFor ? 'Save & connect' : 'Connect'}
+          </Button>
         )}
         <a
           href={connector.docsUrl}
           target="_blank"
           rel="noopener noreferrer"
-          title="Documentation"
-          className="border border-carbon-20 p-2 text-carbon-60 transition-colors hover:text-carbon-70"
+          className="ap-btn ap-btn-secondary"
         >
-          <MaterialIcon name="info" size={13} />
+          <MaterialIcon name="info" size={14} />
+          Docs
         </a>
       </div>
-      {connected && state?.connectedAt && (
-        <p className="mt-1.5 text-xs text-carbon-60">Since {formatDate(state.connectedAt)}</p>
-      )}
     </div>
   );
 };
@@ -133,7 +125,10 @@ export const ConnectorsSection: React.FC = () => {
     };
   }, [user]);
 
-  const connectedCount = useMemo(() => Object.values(states).filter((state) => state.status === 'connected').length, [states]);
+  const connectedCount = useMemo(
+    () => Object.values(states).filter((state) => state.status === 'connected').length,
+    [states],
+  );
 
   const handleConnect = async (connector: ConnectorDefinition, config: Record<string, string>) => {
     if (!user) return;
@@ -142,7 +137,12 @@ export const ConnectorsSection: React.FC = () => {
       await saveUserConnector(user.uid, connector.key, 'connected', config);
       setStates((current) => ({
         ...current,
-        [connector.key]: { connectorKey: connector.key, status: 'connected', config, connectedAt: new Date().toISOString() },
+        [connector.key]: {
+          connectorKey: connector.key,
+          status: 'connected',
+          config,
+          connectedAt: new Date().toISOString(),
+        },
       }));
       toast.success(`${connector.name} connected.`);
     } catch (error) {
@@ -173,37 +173,28 @@ export const ConnectorsSection: React.FC = () => {
   };
 
   return (
-    <div className="space-y-5">
-      <Card
-        title="Your integrations"
-        subtitle="Wire HazardNet into the tools you already use. Forecasts in, alerts out."
-        icon={<MaterialIcon name="hub" size={18} />}
-        actions={
-          <span className="rounded-full bg-carbon-10 px-3 py-1 text-xs font-extrabold text-carbon-70">
-            {connectedCount} connected
-          </span>
-        }
-      >
-        <p className="text-xs leading-relaxed text-carbon-60">
-          Connectors store only non-secret identifiers (webhook URLs, phone numbers) on your profile. Secrets for
-          production pipelines live server-side. The built-in connectors (weather and email digest) work out of
-          the box.
+    <div className="space-y-6">
+      <Panel title="Your integrations" description={`${connectedCount} connected. Forecasts in, alerts out.`}>
+        <p className="max-w-prose text-sm leading-[1.62] text-carbon-70">
+          Connect an account to receive hazard alerts where you already work, or to pull your own data into HazardNet.
+          Connectors store only non-secret identifiers such as a webhook URL or a phone number; secrets for production
+          pipelines stay server-side. The built-in weather and email-digest connectors work without setup.
         </p>
-      </Card>
+      </Panel>
 
       {loading ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true" aria-label="Loading connectors">
           {Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="h-44 animate-pulse bg-carbon-10" />
+            <div key={index} className="h-48 animate-pulse bg-carbon-10" />
           ))}
         </div>
       ) : (
         CONNECTOR_CATEGORIES.map((category) => {
           const connectors = CONNECTOR_CATALOG.filter((connector) => connector.category === category);
           return (
-            <section key={category}>
-              <h3 className="mb-2.5 text-xs font-extrabold uppercase tracking-wider text-carbon-60">{category}</h3>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <section key={category} className="space-y-3">
+              <h2 className="text-lg font-bold tracking-tight text-carbon-90">{category}</h2>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {connectors.map((connector) => (
                   <ConnectorCard
                     key={connector.key}
@@ -222,3 +213,5 @@ export const ConnectorsSection: React.FC = () => {
     </div>
   );
 };
+
+export default ConnectorsSection;

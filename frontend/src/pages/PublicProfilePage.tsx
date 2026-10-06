@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Droplets, ExternalLink, Globe, Wheat } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { db } from '../services/firebase';
-import { collection, query, getDocs, where, getDoc, doc, limit } from 'firebase/firestore';
+import { collection, query, getDocs, where, limit } from 'firebase/firestore';
 const isProfileStoreConfigured = true;
 import { HazardNetBrand } from '../components/HazardNetLogo';
 import MaterialIcon from '../components/MaterialIcon';
+import { PublicProfileCard } from '../components/user/PublicProfileCard';
 import { sanitizeUsernameInput } from '../lib/username';
 import { useI18n } from '../hooks/useI18n';
 import { InfinityLoader } from '../components/brand';
@@ -158,10 +159,9 @@ const PublicProfilePage: React.FC = () => {
     <div className="mx-auto w-full max-w-3xl">
       <div className="mb-6 flex items-center justify-between">
         <HazardNetBrand size="sm" />
-        <Link to="/" className="inline-flex min-h-[44px] items-center border border-carbon-20 bg-white px-4 py-2 text-base font-semibold text-carbon-70 hover:bg-carbon-05 touch-manipulation">
-          <span className="inline-flex items-center gap-1.5">
-            Explore forecasts <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </span>
+        <Link to="/" className="ap-btn ap-btn-secondary">
+          Explore forecasts
+          <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
       </div>
 
@@ -175,13 +175,13 @@ const PublicProfilePage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="border border-carbon-20 bg-white p-6 sm:p-10 text-center"
+          className="border border-carbon-20 bg-carbon-05 p-6 sm:p-10 text-center"
           data-testid="profile-not-found"
         >
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-sm bg-carbon-10 text-carbon-60">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white text-carbon-60">
             <MaterialIcon name="person" size={26} />
           </span>
-          <h1 className="mt-4 text-lg font-black text-carbon-90">
+          <h1 className="mt-4 text-lg font-bold text-carbon-90">
             {state === 'offline' ? `@${username} hasn’t synced yet` : `@${username} isn’t on HazardNet… yet`}
           </h1>
           <p className="mx-auto mt-1.5 max-w-sm text-base leading-[1.62] text-carbon-60">
@@ -189,10 +189,7 @@ const PublicProfilePage: React.FC = () => {
               ? 'This deployment isn’t connected to the profile store, so public profiles can’t be loaded right now.'
               : 'The username may be unclaimed or the profile is set to private.'}
           </p>
-          <Link
-            to="/signup"
-            className="mt-5 inline-flex min-h-[44px] items-center bg-primary px-5 py-3 text-base font-semibold text-ap-action-fg hover:bg-primary-strong touch-manipulation"
-          >
+          <Link to="/signup" className="ap-btn mt-5">
             Claim this username
           </Link>
         </motion.div>
@@ -202,13 +199,13 @@ const PublicProfilePage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="border border-carbon-20 bg-white p-6 sm:p-10 text-center"
+          className="border border-carbon-20 bg-carbon-05 p-6 sm:p-10 text-center"
           data-testid="profile-private"
         >
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-sm bg-carbon-10 text-carbon-60">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white text-carbon-60">
             <MaterialIcon name="lock" size={24} />
           </span>
-          <h1 className="mt-4 text-lg font-black text-carbon-90">This profile is private</h1>
+          <h1 className="mt-4 text-lg font-bold text-carbon-90">This profile is private</h1>
           <p className="mx-auto mt-1.5 max-w-sm text-base leading-[1.62] text-carbon-60">
             @{username} keeps their details visible only to themselves.
           </p>
@@ -216,105 +213,33 @@ const PublicProfilePage: React.FC = () => {
       )}
 
       {state === 'found' && profile && (
-        <motion.article
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="overflow-hidden border border-carbon-20 bg-white"
-          data-testid="public-profile-card"
-        >
-          <div className="h-16 bg-carbon-90" />
-          <div className="px-6 pb-6 sm:px-8">
-            <div className="-mt-12 mb-4">
-              {profile.photoURL ? (
-                <img src={profile.photoURL} alt={profile.displayName} className="h-24 w-24 rounded-full border-4 border-white object-cover" />
-              ) : (
-                <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-white bg-primary text-3xl font-black text-ap-action-fg">
-                  {profile.displayName.charAt(0).toUpperCase()}
-                </div>
-              )}
-            </div>
-
-            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <h1 className="text-ap-lead font-bold leading-tight tracking-tight text-carbon-90 sm:text-ap-display-md">{profile.displayName}</h1>
-              <span className="text-sm font-bold text-amber-700">@{profile.username ?? username}</span>
-            </div>
-            <p className="mt-1 text-base leading-[1.62] font-semibold text-carbon-60">
-              {profile.userRole?.replace(/_/g, ' ')}
-              {profile.organization ? ` · ${profile.organization}` : ''}
-              {memberSince ? ` · Member since ${memberSince}` : ''}
-            </p>
-
-            {profile.bio && <p className="mt-3 max-w-xl text-base leading-[1.62] text-carbon-60">{profile.bio}</p>}
-
-            <div className="mt-4 flex flex-wrap gap-1.5">
-              {(district || division) && (
-                <span className="rounded-sm bg-carbon-10 px-3 py-1.5 text-xs font-bold text-carbon-70">
-                  <MaterialIcon name="pin" size={12} className="mr-1 inline text-carbon-60" />
-                  {[district, division, profile.country ?? 'Bangladesh'].filter(Boolean).join(', ')}
-                </span>
-              )}
-              {profile.targetCrops && (
-                <span className="rounded-sm bg-carbon-05 px-3 py-1.5 text-xs font-bold text-carbon-80">
-                  <Wheat className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />
-                  {profile.targetCrops}
-                </span>
-              )}
-              {profile.farmSizeHectares != null && profile.farmSizeHectares > 0 && (
-                <span className="rounded-sm bg-carbon-10 px-3 py-1.5 text-xs font-bold text-carbon-80">
-                  {profile.farmSizeHectares} ha
-                </span>
-              )}
-              {profile.irrigationType && (
-                <span className="rounded-sm bg-carbon-05 px-3 py-1.5 text-xs font-bold text-ap-link">
-                  <Droplets className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />
-                  {profile.irrigationType}
-                </span>
-              )}
-              {profile.soilType && (
-                <span className="rounded-sm bg-carbon-10 px-3 py-1.5 text-xs font-bold text-carbon-60">
-                  {profile.soilType} soil
-                </span>
-              )}
-              {profile.farmingExperienceYears != null && profile.farmingExperienceYears > 0 && (
-                <span className="rounded-sm bg-carbon-05 px-3 py-1.5 text-xs font-bold text-carbon-80">
-                  {profile.farmingExperienceYears} yrs experience
-                </span>
-              )}
-            </div>
-
-            {(SOCIALS.some(([key]) => profile[key]) || profile.website) && (
-              <div className="mt-5 flex flex-wrap gap-2 border-t border-carbon-20 pt-4">
-                {profile.website && (
-                  <a
-                    href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-carbon-90 px-3.5 py-2 text-xs font-bold text-carbon-05 transition-colors hover:bg-carbon-80"
-                  >
-                    <Globe className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />Website
-                  </a>
-                )}
-                {SOCIALS.filter(([key]) => profile[key]).map(([key, label]) => {
-                  const url = profile[key] as string;
-                  return (
-                    <a
-                      key={key}
-                      href={url.startsWith('http') ? url : `https://${url}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="border border-carbon-20 px-3.5 py-2 text-xs font-bold text-carbon-70 transition-colors hover:bg-carbon-05"
-                    >
-                      <span className="inline-flex items-center gap-1.5">
-                        {label} <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-                      </span>
-                    </a>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </motion.article>
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+          <PublicProfileCard
+            headingLevel={1}
+            profile={{
+              displayName: profile.displayName,
+              username: profile.username ?? username,
+              photoURL: profile.photoURL,
+              bio: profile.bio,
+              userRole: profile.userRole,
+              organization: profile.organization,
+              district,
+              division,
+              country: profile.country,
+              targetCrops: profile.targetCrops,
+              farmSizeHectares: profile.farmSizeHectares,
+              farmingExperienceYears: profile.farmingExperienceYears,
+              irrigationType: profile.irrigationType,
+              soilType: profile.soilType,
+              website: profile.website,
+              links: SOCIALS.filter(([key]) => profile[key]).map(([key, label]) => ({
+                label,
+                url: profile[key] as string,
+              })),
+              memberSince,
+            }}
+          />
+        </motion.div>
       )}
 
       <p className="mt-6 text-center text-xs text-carbon-60">

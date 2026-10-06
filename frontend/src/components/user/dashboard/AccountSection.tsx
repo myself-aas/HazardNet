@@ -1,14 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../../context/AuthContext';
-import { Card, Field, inputClass } from './ui';
+import { Button } from '../../apple/primitives';
+import { Panel, TextField } from './ui';
 import MaterialIcon from '../../MaterialIcon';
 import { IdentityConnections } from '../../IdentityConnections';
 
 /**
  * "Account & Security" tab — email change (re-verified by Firebase), password
- * set/change, linked social identities, and session controls.
+ * set/change, linked social identities, and the session.
+ *
+ * Four bordered panels in a row, each with one job, and no bordered thing
+ * inside any of them: the two controls that used to be a boxed row inside a
+ * boxed panel are now just the panel's closing action. There is no emerald or
+ * amber badge either — "Verified" and "Pending verification" are sentences, and
+ * a state that only exists as a colour is a state a greyscale printout loses.
  */
 
 export const AccountSection: React.FC = () => {
@@ -71,91 +78,83 @@ export const AccountSection: React.FC = () => {
   };
 
   const emailVerified = Boolean(user?.emailVerified ?? user?.email_confirmed_at ?? user?.confirmed_at);
+  const address = user?.email ?? userProfile?.email ?? '—';
 
   return (
-    <div className="space-y-5">
-      {/* Email */}
-      <Card title="Email address" subtitle="Your sign-in address. Changes require confirming the new inbox." icon={<MaterialIcon name="mail" size={18} />}>
-        <div className="space-y-4">
-          <div className="flex flex-wrap items-center gap-2 bg-carbon-05 px-4 py-3">
-            <span className="text-sm font-bold text-carbon-80">{user?.email ?? userProfile?.email ?? '—'}</span>
-            {emailVerified ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-carbon-05 px-2.5 py-0.5 text-xs font-extrabold uppercase tracking-wide text-carbon-80">
-                <MaterialIcon name="check_badge" size={12} /> Verified
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-extrabold uppercase tracking-wide text-amber-700">
-                <MaterialIcon name="mail" size={12} /> Pending verification
-              </span>
-            )}
+    <div className="space-y-6">
+      <Panel title="Email address" description="Your sign-in address. A change takes effect once you confirm the new inbox.">
+        <p className="text-base font-semibold text-carbon-90">{address}</p>
+        <p className="mt-1 text-sm leading-[1.62] text-carbon-70">
+          {emailVerified
+            ? 'Confirmed. This address can recover your account.'
+            : 'Not confirmed yet. Check your inbox, or send a new link from the Overview tab.'}
+        </p>
+        <div className="mt-5 border-t border-carbon-10 pt-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+            <TextField
+              id="account-new-email"
+              label="Change email"
+              type="email"
+              value={newEmail}
+              onChange={setNewEmail}
+              placeholder="new-address@example.com"
+              hint="We email a verification link to the new address; the change completes after you confirm it."
+              className="flex-1"
+            />
+            <Button
+              intent="primary"
+              size="sm"
+              className="shrink-0 sm:mt-7"
+              onClick={handleEmailChange}
+              disabled={emailBusy || !newEmail.trim()}
+            >
+              {emailBusy ? 'Sending…' : 'Update email'}
+            </Button>
           </div>
-          <Field label="Change email" htmlFor="account-new-email" hint="We’ll email a verification link; the address updates after you confirm.">
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <input
-                id="account-new-email"
-                type="email"
-                placeholder="new-address@example.com"
-                value={newEmail}
-                onChange={(event) => setNewEmail(event.target.value)}
-                className={inputClass}
-              />
-              <button
-                type="button"
-                onClick={handleEmailChange}
-                disabled={emailBusy || !newEmail.trim()}
-                className="shrink-0 bg-carbon-90 px-4 py-2.5 text-xs font-extrabold text-carbon-05 transition-colors hover:bg-carbon-80 disabled:opacity-40 cursor-pointer"
-              >
-                {emailBusy ? 'Sending…' : 'Update email'}
-              </button>
-            </div>
-          </Field>
         </div>
-      </Card>
+      </Panel>
 
-      {/* Password */}
-      <Card
+      <Panel
         title="Password"
-        subtitle={
+        description={
           passwordProvider === 'social'
-            ? 'Your account currently uses social sign-in only. Set a password to also sign in with email.'
-            : 'Use a strong, unique password. You can change it as often as you like.'
+            ? 'This account signs in with a social provider. Set a password to also sign in with email.'
+            : 'Use a strong, unique password. You can request a new one as often as you like.'
         }
-        icon={<MaterialIcon name="key" size={18} />}
       >
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            type="button"
+        <div className="flex flex-wrap items-center gap-4">
+          <Button
+            intent="secondary"
+            size="sm"
             onClick={handlePasswordReset}
             disabled={resetBusy || !userProfile?.email}
-            className="flex items-center gap-2 bg-carbon-90 px-4 py-2.5 text-xs font-extrabold text-carbon-05 transition-colors hover:bg-carbon-80 disabled:opacity-40 cursor-pointer"
           >
-            {resetBusy && <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/40 border-t-white" />}
+            <MaterialIcon name="key" size={14} />
             {passwordProvider === 'social' ? 'Email me a password-setup link' : 'Email me a password-reset link'}
-          </button>
-          <p className="text-xs leading-relaxed text-carbon-60">
-            For security the link goes to <strong>{userProfile?.email ?? 'your inbox'}</strong> and opens the
-            set-password page.
+          </Button>
+          <p className="text-sm leading-[1.62] text-carbon-70">
+            The link goes to <strong className="font-semibold text-carbon-90">{userProfile?.email ?? 'your inbox'}</strong>.
           </p>
         </div>
-      </Card>
+      </Panel>
 
-      {/* Linked identities */}
-      <Card title="Connected accounts" subtitle="Sign in with one click using any linked provider." icon={<MaterialIcon name="link" size={18} />}>
+      <Panel title="Connected accounts" description="Sign in with one click using any linked provider.">
         <IdentityConnections />
-      </Card>
+      </Panel>
 
-      {/* Session */}
-      <Card title="Session" subtitle="Sign out of HazardNet on this device." icon={<MaterialIcon name="logout" size={18} />}>
-        <button
-          type="button"
-          onClick={handleSignOut}
-          disabled={signOutBusy}
-          className="flex items-center gap-2 border border-ap-primary bg-white px-4 py-2.5 text-xs font-extrabold text-ap-link transition-colors hover:bg-rose-100 disabled:opacity-40 cursor-pointer"
-        >
-          <MaterialIcon name="logout" size={14} />
-          {signOutBusy ? 'Signing out…' : 'Sign out'}
-        </button>
-      </Card>
+      <Panel title="Session" description="Signing out clears this device's local session and cached district preferences.">
+        <div className="flex flex-wrap items-center gap-4">
+          <Button intent="secondary" size="sm" onClick={handleSignOut} disabled={signOutBusy}>
+            <MaterialIcon name="logout" size={14} />
+            {signOutBusy ? 'Signing out…' : 'Sign out'}
+          </Button>
+          <Link to="/live" className="ap-btn ap-btn-secondary">
+            Open the live map
+          </Link>
+        </div>
+      </Panel>
     </div>
   );
 };
+
+export default AccountSection;
