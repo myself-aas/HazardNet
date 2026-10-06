@@ -1,7 +1,7 @@
 {
   "schema": "hazardnet-site-probe/v1",
-  "ran_at": "2026-10-05T13:27:31Z",
-  "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/37316906974",
+  "ran_at": "2026-10-06T01:48:21Z",
+  "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/37400973181",
   "site_url": "https://hazardnet.live",
   "outcome": "fail",
   "checks": [
@@ -17,12 +17,12 @@
     },
     {
       "id": "security_headers",
-      "outcome": "failure",
+      "outcome": "success",
       "detail": null
     },
     {
       "id": "sitemap",
-      "outcome": "failure",
+      "outcome": "success",
       "detail": null
     },
     {
