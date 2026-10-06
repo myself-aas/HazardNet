@@ -152,6 +152,16 @@ step can go green until the notebook publishes: the site has been serving the 20
 since, and `site-health.yml`'s forecast probe is red because
 `frontend/public/data/forecasts-latest.json` still carries `prediction_date: 2026-09-16`.
 
+**Measured 2026-10-05**: the scheduled 12:26 UTC run (commit `2ae5a6cb`) still failed in
+*"Validate Advisory CSV & Execute Ingestion"*, not at the fetch step — that commit predates the
+fetch-side age gate, which is on `main` from `40d01ef4` (12:35 UTC). So the run carried the
+pre-gate shape this file describes: the fetch accepted a publication newer than the committed
+2026-09-16 run and the ingest rejected it, skipping the same four downstream steps. The next
+scheduled run fails at the fetch step and names the age. The chain itself is healthy — the whole
+ingest (validate → map → snapshot → alert replay → alerts snapshot → freshness artifact) was
+reproduced locally from a fresh 128-row CSV on 2026-10-05 and exits 0 at every step — so the red
+remains the notebook's, not the pipeline's.
+
 ## Action 12 · Decide where analytics events are stored
 
 | | |
@@ -221,3 +231,4 @@ since, and `site-health.yml`'s forecast probe is red because
 | 2026-10-02 | File created from the 12 in-tree citations; Actions 10, 11 (later 12–15) added; Action 6c recorded as closed. Owner still unassigned. |
 | 2026-10-04 | Action 11 updated with the measured Kaggle publication gap (last update 2026-09-29, version 10); Actions 16 (canonical host) and 17 (deploy path) added after triaging the red site-health and advisory-ingest runs. Owner decisions recorded the same day: `www` stays the canonical host and is to be restored rather than replaced in code; deploys stay with Vercel and stay owner-run. |
 | 2026-10-04 | Action 6d opened: the appearance control (`System / Light / Dark`) adds four Bangla strings to `frontend/src/lib/i18n.ts`, which Action 6c's closure note says must be reviewed under a new ID. |
+| 2026-10-05 | CI: the one ESLint error on `main` — a literal two-space run inside a regex in `__tests__/darkTheme.test.js` (`no-regex-spaces`) — is fixed; it was failing the `Code Quality & Build` job and, with it, every open PR. The rest of that job (type-check, model handshake, serverless ESM, claims, design gates, build, bundle budget, content index, post-build suites) was re-run locally and is green. `site-health.yml`: a probe that cannot connect now reports `000` instead of `000000` (the `|| echo 000` fallback appended to curl's own `000`, naming a status code that does not exist) and the sitemap probe reports the no-response case as *unreachable* — pass/fail semantics unchanged. Actions 11, 16 and 17 remain owner-side and still red. |
