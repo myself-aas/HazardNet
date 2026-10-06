@@ -147,7 +147,11 @@ const UserDashboardPage: React.FC = () => {
 
   if (loading && !user) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center" role="status" aria-label="Loading dashboard">
+      <div
+        className="ap-enter flex min-h-[60vh] items-center justify-center"
+        role="status"
+        aria-label="Loading dashboard"
+      >
         <InfinityLoader size={88} label="Loading" announce={false} />
       </div>
     );
@@ -157,7 +161,7 @@ const UserDashboardPage: React.FC = () => {
   // an unreadable profiles row (`error`) and an account that has no row at all (`missing`).
   if (user && profileStatus === 'error') {
     return (
-      <div className="mx-auto w-full max-w-[720px] py-10">
+      <div className="ap-enter mx-auto w-full max-w-[720px] py-10">
         <DataStateError
           title="Your profile could not be read"
           detail="The dashboard is not showing partial profile data. Your account and its settings are untouched."
@@ -170,7 +174,7 @@ const UserDashboardPage: React.FC = () => {
 
   if (user && profileStatus === 'missing') {
     return (
-      <div className="mx-auto w-full max-w-[720px] py-10">
+      <div className="ap-enter mx-auto w-full max-w-[720px] py-10">
         <DataStateEmpty
           title="No profile is stored for this account yet"
           body="You are signed in, but this account has no profile document. Creating it seeds the same fields a first sign-in would, and nothing is overwritten."
@@ -254,8 +258,13 @@ const UserDashboardPage: React.FC = () => {
       />
       <p className="mt-2 text-xs leading-[1.62] text-carbon-60">{activeMeta?.hint}</p>
 
+      {/* The tab bodies are different components, so a tab switch is a mount, not a state change.
+          `key` gives the panel one identity per tab and `.ap-enter` carries the swap. 240ms, fade
+          only: the panel holds focusable fields, and translating it would move a control the
+          reader may already be reaching for. */}
       <div
-        className="mt-ap-md pb-ap-xl"
+        key={activeTab}
+        className="ap-enter mt-ap-md pb-ap-xl"
         role="tabpanel"
         id={`panel-${activeTab}`}
         aria-label={activeMeta?.label}

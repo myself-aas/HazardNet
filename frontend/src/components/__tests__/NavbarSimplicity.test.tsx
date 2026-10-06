@@ -172,7 +172,10 @@ describe('the drawer', () => {
     const drawer = await open();
     fireEvent.click(within(drawer).getByTestId('district-search-trigger'));
     expect(await screen.findByTestId('district-search-modal')).toBeInTheDocument();
-    expect(screen.queryByTestId('menu-drawer')).toBeNull();
+    // The drawer now leaves along the path it entered by (a spring, ~350ms) instead of vanishing in
+    // a single frame, so it is still unmounting while the palette paints. Waited for, not assumed —
+    // the same way the sibling test above waits after a navigation choice.
+    await waitFor(() => expect(screen.queryByTestId('menu-drawer')).toBeNull());
     // the header carries no search trigger and the drawer's went with the drawer: none left in the document
     expect(screen.queryAllByTestId('district-search-trigger')).toHaveLength(0);
   });

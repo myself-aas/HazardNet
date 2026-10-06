@@ -138,6 +138,9 @@
   /* DESIGN.md defines one interaction: scale(0.95) on press, and "never
      document hover". Durations/easing are the minimum needed to render it. */
   --ap-press-scale: 0.95;
+  /* The lighter dip for a cell-sized control (an option card, a chip-like tile): the pill's 0.95
+     is the navigation grammar, and a grid of option cells pressing that hard reads as a flicker. */
+  --ap-press-scale-soft: 0.97;
   --ap-duration-press: 120ms;
   --ap-duration-base: 240ms;
   --ap-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
@@ -698,7 +701,19 @@
   border-radius: var(--ap-radius-pill);
   padding: 12px 16px; min-height: var(--ap-touch-min);
 }
-.ap-chip[aria-selected='true'], .ap-chip[data-selected='true'] { border: 2px solid var(--ap-action-focus); }
+/* Press feedback belongs to every pill control, and `.ap-chip` was the one that never got it:
+   `.ap-btn` (§587) and `.ap-icon-btn` (§769) both carry the accent's one documented interaction.
+   It stays press-only — no entrance, no hover scale — because a tab row is used tens of times a
+   day, which is the frequency tier where motion has to be near-imperceptible or absent. */
+.ap-chip { transition: transform var(--ap-duration-press) var(--ap-ease), border-color var(--ap-duration-press) var(--ap-ease); }
+.ap-chip:active { transform: scale(var(--ap-press-scale)); }
+/* Selection is a 2px accent ring on a box that is ALWAYS 2px, so the label cannot shift 1px on the
+   frame where feedback lands. `.ap-btn-secondary` uses the same trick with an inset shadow; a chip
+   already carries a 1px hairline from the rule above, so the ring deepens it instead. */
+.ap-chip[aria-selected='true'], .ap-chip[data-selected='true'] {
+  border-color: var(--ap-action-focus);
+  box-shadow: inset 0 0 0 1px var(--ap-action-focus);
+}
 
 .ap-input {
   background: var(--ap-bg-canvas); color: var(--ap-label);
@@ -710,6 +725,41 @@
 }
 .ap-input::placeholder { color: var(--ap-label-tertiary); }
 .ap-input:focus-visible { outline: var(--ap-focus-width) solid var(--ap-focus-ring); outline-offset: var(--ap-focus-offset); }
+
+/* ── Press feedback / state change — the two motion roles components may use. ─
+   Both are press-only or state-only. Neither is an entrance (that is `.ap-enter`
+   in §11) and neither is a hover effect (DESIGN.md documents none). They exist
+   because otherwise every call site invents its own duration and curve, which is
+   how a system ends up with five of each. */
+
+/* A pressable cell that is NOT a pill: a selectable option, a suggestion chip's
+   container, a small card-sized control. 0.97 rather than the pill's 0.95 —
+   these are used less often than navigation, and the lighter dip
+   (`--ap-press-scale-soft`) keeps a grid of them from reading as a flicker. */
+.ap-pressable { transition: transform var(--ap-duration-press) var(--ap-ease); }
+.ap-pressable:active { transform: scale(var(--ap-press-scale-soft)); }
+
+/* A full-width row. Scaling one would pull its edges inside the panel, so a row
+   acknowledges the press with a background step instead, at the same duration. */
+.ap-press-row { transition: background-color var(--ap-duration-press) var(--ap-ease); }
+.ap-press-row:active { background-color: var(--ap-bg-grouped); }
+
+/* A state change that would otherwise land in a single frame: a connector card
+   going connected, a card swapping tone. Colours only — never size, never
+   position, so the thing the pointer is resting on cannot move. */
+.ap-state-transition { transition: background-color var(--ap-duration-base) var(--ap-ease), border-color var(--ap-duration-base) var(--ap-ease), color var(--ap-duration-base) var(--ap-ease); }
+
+/* Progress / completeness meter. The fill is authored at full width and revealed
+   with `scaleX`, because animating `width` re-lays-out the row on every frame and
+   `APPLE_MOTION.animatableProps` is `['opacity', 'transform']`. Set the value with
+   `--ap-meter-value: <0..1>`; a transition needs a previous value, so a first paint
+   simply appears at the right length with no animation. */
+.ap-meter { position: relative; overflow: hidden; }
+.ap-meter-fill {
+  width: 100%; height: 100%;
+  transform: scaleX(var(--ap-meter-value, 0)); transform-origin: left center;
+  transition: transform var(--ap-duration-base) var(--ap-ease);
+}
 
 /* ── Navigation. ───────────────────────────────────────────────────────────── */
 .ap-nav {
@@ -820,8 +870,86 @@ svg.lucide {
 .ap-enter      { animation: ap-enter      var(--ap-duration-base) var(--ap-ease) both; }
 .ap-enter-drop { animation: ap-enter-drop var(--ap-duration-base) var(--ap-ease) both; }
 
+/* A group arriving as ONE beat. Each child renders `.ap-enter` and carries its
+   index (`--i`, 0-based) and the group size (`--n`); the delay is
+   `min(60ms, 480ms / n) × i`, so a two-card grid and a nine-card grid both settle
+   inside half a second and a longer list cannot turn its own arrival into a
+   queue. The classes are static — only the two custom properties vary per card,
+   which means no animation is created or destroyed by a re-render. */
+.ap-stagger { animation-delay: calc(min(60ms, calc(480ms / max(var(--n, 1), 1))) * var(--i, 0)); }
+
+/* ── The theme flip, eased. ──────────────────────────────────────────────────
+   Switching theme is a whole-canvas brightness change, and a whole-canvas change
+   in one frame reads as a flash rather than as a state change. This is NOT a
+   document-wide crossfade — the live console must not look like a slideshow while
+   the reader is acting on it — it is the canvas plus the large STATIC shells, on
+   the same 240ms `--ap-ease` as everything else. Anything whose colour is a
+   *state* (the connected connector card, the selected chip, a severity badge) is
+   deliberately absent: a state change must never lag its own press, and those
+   carry `.ap-state-transition` / press timings of their own. */
+html, body, .ap-nav, .ap-subnav, .ap-sticky-bar, .ap-footer, .ap-card, .ap-input {
+  transition: background-color var(--ap-duration-base) var(--ap-ease),
+              color var(--ap-duration-base) var(--ap-ease),
+              border-color var(--ap-duration-base) var(--ap-ease);
+}
+
+/* ── Two more preferences the system has to answer. ──────────────────────────
+   Translucency and contrast are separate accessibility signals from motion, and
+   "reduce transparency" is not a request for a smaller blur — it is a request to
+   stop showing the content behind the chrome. Both arms work at the TOKEN level
+   first, so every consumer of `--ap-frosted-blur` / `--ap-frosted-bg` follows
+   (including the `.glass-*` utilities), and the blanket pass afterwards only has
+   to catch the Tailwind `backdrop-blur-*` utilities, which are not tokenised.
+
+   `--ap-frosted-bg: var(--ap-bg-canvas)` resolves against the element that
+   declares it (the root), where the dark scope has already re-pointed
+   `--ap-bg-canvas` — so the solid surface stays theme-correct in both themes. The
+   selector list mirrors the dark scopes' own specificity so this arm wins
+   wherever the theme was applied. */
+@media (prefers-reduced-transparency: reduce) {
+  :root,
+  :root:not([data-theme='light']) {
+    --ap-frosted-blur: 0px;
+    --ap-frosted-bg: var(--ap-bg-canvas);
+  }
+  * { -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+
+/* A defined, contrasting border at the edges the eye actually uses. The hairlines
+   are re-pointed rather than each component being re-declared, so a surface that
+   gets its border from `--ap-separator-opaque` (a card, a chip, an input) picks
+   this up for free — and `--ap-elev-hairline`, which is the rgba shadow several
+   panels use *as* their border, becomes a real one. */
+@media (prefers-contrast: more) {
+  :root,
+  :root:not([data-theme='light']) {
+    --ap-separator: var(--ap-label-secondary);
+    --ap-separator-opaque: var(--ap-label-secondary);
+    --ap-elev-hairline: 0 0 0 1px var(--ap-label-secondary);
+    --ap-frosted-blur: 0px;
+    --ap-frosted-bg: var(--ap-bg-canvas);
+  }
+  .ap-chip[aria-selected='true'], .ap-chip[data-selected='true'] {
+    border-color: var(--ap-label);
+    box-shadow: inset 0 0 0 1px var(--ap-label);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ap-btn, .ap-btn:active { transition-duration: var(--ap-duration-press); transform: none; }
+  /* The floor's blanket rule below zeroes durations but NOT a delay, so a
+     staggered group would still arrive one card at a time — the single beat is
+     the thing reduced motion is asking to be spared. */
+  .ap-stagger { animation-delay: 0ms; }
+  .ap-chip, .ap-chip:active,
+  .ap-icon-btn, .ap-icon-btn:active,
+  .ap-pressable, .ap-pressable:active,
+  .ap-press-row, .ap-press-row:active { transition-duration: 0.01ms; transform: none; }
+  /* The meter is the ONE place `transform` carries a value rather than a transit
+     (`scaleX(--ap-meter-value)`), so it must not be flattened to `none` here —
+     that would paint every reduced-motion reader a full bar. Only the duration
+     is floored. */
+  .ap-meter-fill { transition-duration: 0.01ms; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important; /* reduced-motion floor must beat later animation declarations */
     animation-iteration-count: 1 !important;

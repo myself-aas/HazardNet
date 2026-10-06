@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRef } from 'react';
 import { UserAssessment } from '../context/AuthContext';
 import { useDialogBehavior } from '../hooks/useDialogBehavior';
+import { AP_SPRING } from './apple/motion';
 
 export interface SavedAssessmentsModalUIProps {
   isOpen: boolean;
@@ -51,7 +52,7 @@ export const SavedAssessmentsModalUI: React.FC<SavedAssessmentsModalUIProps> = (
             initial={{ opacity: 0, scale: 0.9, y: 15 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 15 }}
-            transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+            transition={AP_SPRING}
             className="bg-white border border-carbon-20 max-w-2xl w-full p-6 space-y-5 max-h-[90vh] flex flex-col text-carbon-90"
           >
             {/* Header */}

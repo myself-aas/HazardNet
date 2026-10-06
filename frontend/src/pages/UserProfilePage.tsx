@@ -99,7 +99,11 @@ export const UserProfilePage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-[50vh] flex items-center justify-center" role="status" aria-label="Loading profile">
+      <div
+        className="ap-enter flex min-h-[50vh] items-center justify-center"
+        role="status"
+        aria-label="Loading profile"
+      >
         <InfinityLoader size={88} label="Loading" announce={false} />
       </div>
     );
@@ -133,7 +137,7 @@ export const UserProfilePage: React.FC = () => {
 
   return (
     <Container width="text">
-      <div className="space-y-6 pb-ap-xl" data-testid="user-profile-page">
+      <div className="ap-enter space-y-6 pb-ap-xl" data-testid="user-profile-page">
         <Breadcrumbs />
 
         {/* ── Identity header, on the canvas ───────────────────────────────── */}

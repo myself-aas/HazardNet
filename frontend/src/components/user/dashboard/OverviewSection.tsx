@@ -58,7 +58,7 @@ const ActionRow: React.FC<{ onClick: () => void; icon: string; label: string; me
   <button
     type="button"
     onClick={onClick}
-    className="ap-focusable flex min-h-[44px] w-full items-center justify-between gap-3 border-b border-carbon-10 py-3 text-left text-base font-semibold text-carbon-80 last:border-b-0 hover:text-carbon-90"
+    className="ap-focusable ap-press-row flex min-h-[44px] w-full items-center justify-between gap-3 border-b border-carbon-10 py-3 text-left text-base font-semibold text-carbon-80 last:border-b-0 hover:text-carbon-90"
   >
     <span className="flex min-w-0 items-center gap-3">
       <MaterialIcon name={icon} size={16} className="text-carbon-60" />
@@ -171,7 +171,7 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
         <ActionRow onClick={() => onNavigate('profile')} icon="person" label="Profile fields" />
         <Link
           to="/forecast/overview"
-          className="ap-focusable flex min-h-[44px] w-full items-center justify-between gap-3 py-3 text-left text-base font-semibold text-carbon-80 hover:text-carbon-90"
+          className="ap-focusable ap-press-row flex min-h-[44px] w-full items-center justify-between gap-3 py-3 text-left text-base font-semibold text-carbon-80 hover:text-carbon-90"
         >
           <span className="flex min-w-0 items-center gap-3">
             <MaterialIcon name="public" size={16} className="text-carbon-60" />

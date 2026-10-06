@@ -100,9 +100,13 @@ export const ProgressMeter: React.FC<{ value: number; label: string; id?: string
       aria-valuemax={100}
       aria-label={label}
       id={id}
-      className="h-1.5 w-full overflow-hidden rounded-full bg-carbon-10"
+      className="ap-meter h-1.5 w-full rounded-full bg-carbon-10"
     >
-      <div className="h-full rounded-full bg-primary" style={{ width: `${clamped}%` }} />
+      {/* The fill is authored full width and revealed with `scaleX`, the way the system's motion
+          contract requires (`APPLE_MOTION.animatableProps` is opacity + transform, and a `width`
+          tween re-lays-out the row on every frame). `--ap-meter-value` is therefore a *value*
+          carrier for `.ap-meter-fill`, not a motion token. Saving a field now slides the bar. */}
+      <div className="ap-meter-fill rounded-full bg-primary" style={{ '--ap-meter-value': clamped / 100 } as React.CSSProperties} />
     </div>
   );
 };
@@ -385,7 +389,7 @@ export const OptionCard: React.FC<OptionCardProps> = ({ label, description, sele
     aria-checked={selected}
     data-selected={selected ? 'true' : 'false'}
     onClick={onSelect}
-    className={`ap-focusable flex min-h-[44px] w-full items-start gap-3 rounded-md border-2 bg-white p-3.5 text-left transition-colors duration-[var(--ap-duration-base)] ${
+    className={`ap-focusable ap-pressable flex min-h-[44px] w-full items-start gap-3 rounded-md border-2 bg-white p-3.5 text-left transition-colors duration-[var(--ap-duration-base)] ${
       selected ? 'border-ap-primary' : 'border-carbon-20 hover:border-carbon-30 hover:bg-carbon-05'
     }`}
   >

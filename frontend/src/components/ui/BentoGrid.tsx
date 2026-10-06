@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, Variants } from 'framer-motion';
+import { AP_SPRING } from '../apple/motion';
 
 export interface BentoGridProps {
   children: React.ReactNode;
@@ -24,9 +25,7 @@ export const bentoItemVariants: Variants = {
     y: 0,
     scale: 1,
     transition: {
-      type: 'spring',
-      stiffness: 350,
-      damping: 26,
+      ...AP_SPRING,
     },
   },
 };

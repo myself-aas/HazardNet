@@ -30,9 +30,12 @@ const ConnectorCard: React.FC<{
   connector: ConnectorDefinition;
   state?: UserConnectorState;
   busy: boolean;
+  /** Position and group size feed the `.ap-stagger` arrival so a category settles as one beat. */
+  index: number;
+  groupSize: number;
   onConnect: (connector: ConnectorDefinition, config: Record<string, string>) => void;
   onDisconnect: (connector: ConnectorDefinition) => void;
-}> = ({ connector, state, busy, onConnect, onDisconnect }) => {
+}> = ({ connector, state, busy, index, groupSize, onConnect, onDisconnect }) => {
   const [configOpen, setConfigOpen] = useState(false);
   const [configValue, setConfigValue] = useState(state?.config?.[connector.asksFor?.key ?? ''] ?? '');
   const connected = state?.status === 'connected';
@@ -48,7 +51,10 @@ const ConnectorCard: React.FC<{
 
   return (
     <div
-      className={`flex flex-col border p-5 ${connected ? 'border-carbon-30 bg-carbon-05' : 'border-carbon-20 bg-white'}`}
+      className={`ap-enter ap-stagger ap-state-transition flex flex-col border p-5 ${
+        connected ? 'border-carbon-30 bg-carbon-05' : 'border-carbon-20 bg-white'
+      }`}
+      style={{ '--i': index, '--n': groupSize } as React.CSSProperties}
       data-testid={`connector-${connector.key}`}
     >
       <div className="flex items-start justify-between gap-3">
@@ -65,7 +71,7 @@ const ConnectorCard: React.FC<{
       <p className="mt-1 flex-1 text-sm leading-[1.62] text-carbon-70">{connector.tagline}</p>
 
       {connector.asksFor && configOpen && !connected && (
-        <div className="mt-4 space-y-1.5">
+        <div className="ap-enter-drop mt-4 space-y-1.5">
           <label
             htmlFor={`connector-config-${connector.key}`}
             className="text-sm font-semibold text-carbon-80"
@@ -195,12 +201,14 @@ export const ConnectorsSection: React.FC = () => {
             <section key={category} className="space-y-3">
               <h2 className="text-lg font-bold tracking-tight text-carbon-90">{category}</h2>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {connectors.map((connector) => (
+                {connectors.map((connector, index) => (
                   <ConnectorCard
                     key={connector.key}
                     connector={connector}
                     state={states[connector.key]}
                     busy={busyKey === connector.key}
+                    index={index}
+                    groupSize={connectors.length}
                     onConnect={handleConnect}
                     onDisconnect={handleDisconnect}
                   />
