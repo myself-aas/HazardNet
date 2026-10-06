@@ -185,6 +185,52 @@ describe('the front door', () => {
     }
   });
 
+  it('keeps the hero copy a thin, low band so the photograph reads', async () => {
+    renderPage();
+    await screen.findByTestId('front-door-status-strip');
+    const hero = document.querySelector('header.hero-frame') as HTMLElement;
+    expect(hero).not.toBeNull();
+
+    // The copy is bottom-anchored, so its top edge is the only one that can move: every line
+    // taken out of this block is a line of photograph the reader gets back. The claim is set
+    // from the viewport on phones (the rule is unlayered, because `.ap-hero` in apple.css is,
+    // so it cannot be a Tailwind utility), the tagline is one size step down, the small print
+    // is the 12px fine-print token rather than a size of its own, and the rhythm is tight.
+    const h1 = hero.querySelector('h1')!;
+    expect(h1.className).toContain('ap-hero');
+    const tagline = within(hero).getByText(/every number traces to a dated artifact/i);
+    expect(tagline.className).toContain('text-sm');
+    expect(tagline.className).toContain('sm:text-base');
+    expect(tagline.className).not.toContain('sm:text-lg');
+
+    const css = readFileSync(join(process.cwd(), 'frontend/src/index.css'), 'utf8');
+    expect(css).toMatch(/\.hero-frame \.ap-hero \{[^}]*font-size: clamp\(/);
+
+    // The standfirst is 70 words of method: one clamped line by default, the rest on request.
+    const standfirst = hero.querySelector('#front-door-standfirst') as HTMLElement;
+    expect(standfirst.className).toContain('line-clamp-1');
+    expect(standfirst.className).toContain('text-ap-fine');
+    expect(standfirst.className).toContain('leading-snug');
+    expect(standfirst.className).not.toContain('line-clamp-2');
+    expect(hero.querySelectorAll('[class*="leading-\\[1.6\\]"]').length).toBe(0);
+
+    // Touch targets: the two fine-print controls are text disclosures in a 12px band, sized
+    // clear of the 24px WCAG 2.5.8 AA floor. The icon-only pause control keeps its 44px.
+    const disclosure = within(hero).getByRole('button', { name: /read the full overview/i });
+    expect(disclosure.className).toContain('min-h-[36px]');
+    const links = Array.from(hero.querySelectorAll('a[href="/methodology"], a[href="/model-performance"], a[href="/last-run"]'));
+    expect(links.length).toBeGreaterThanOrEqual(3);
+    for (const link of links) expect(link.className).toContain('min-h-[32px]');
+    const pause = within(hero).getByRole('button', { name: /pause motion/i });
+    expect(pause.className).toContain('min-h-[44px]');
+
+    // And nothing was deleted to get there: the claim, the tagline, the action, the standfirst,
+    // the three destinations and the 999 boundary are all still in the hero.
+    expect(within(hero).getByRole('link', { name: /open the live map/i })).toHaveAttribute('href', '/live');
+    expect(within(hero).getByText(/not an official warning service/)).toBeInTheDocument();
+    expect(hero.querySelectorAll('.text-shadow-hero-fine').length).toBeGreaterThanOrEqual(5);
+  });
+
   it('keeps the hero open: no surface over the photograph, one primary action, small print', async () => {
     renderPage();
     await screen.findByTestId('front-door-status-strip');

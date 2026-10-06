@@ -411,6 +411,17 @@ export const FrontDoor: React.FC = () => {
           being centred on the brightest pixels: 12px small print needs a dark ground to clear
           4.5:1, and that band is where the hero provides one.
 
+          **2026-10-06, the band is thinner and lower.** The photograph is the reason this block
+          exists, and it has to survive the type laid over it. So the copy is one notch quieter and
+          a good deal shorter, with nothing dropped: the display line is set from the viewport on
+          phones only (`.hero-frame .ap-hero` in `index.css` — the 56px token is sized for a
+          document heading, which is four lines over a 390px frame), the tagline steps down one
+          size, every piece of small print tightens its leading from 1.6 to 1.375, the standfirst
+          clamps to one line instead of two, the three links keep one row, and the vertical rhythm
+          between all of them is roughly two thirds of what it was. The two fine-print links are
+          32px tall and the standfirst's disclosure is 36px, both clear of the 24px WCAG 2.5.8 AA
+          floor; the icon-only pause control keeps its 44px.
+
           Type protection is the second line of defence and it is a token, not a literal: the h1
           wears `text-shadow-hero-display` and every piece of small print wears
           `text-shadow-hero-fine`, both published from `index.css`. Before 2026-10-06 these were
@@ -424,7 +435,7 @@ export const FrontDoor: React.FC = () => {
       {/* `pt-[calc(var(--navbar-height)+44px)]` instead of a hard 100px: the bar is 3.5rem plus
           `env(safe-area-inset-top)`, so a fixed number collided with it on notched phones. The
           variable now carries the inset, which makes this clearance correct on both. */}
-      <header className="ap-on-dark relative w-full overflow-hidden bg-carbon-90 text-carbon-05 min-h-[600px] lg:min-h-[100dvh] flex items-center -mt-14 sm:-mt-16 pt-[calc(var(--navbar-height)+20px)] sm:pt-[calc(var(--navbar-height)+44px)] pb-8 sm:pb-16 shadow-2xl">
+      <header className="ap-on-dark hero-frame relative w-full overflow-hidden bg-carbon-90 text-carbon-05 min-h-[600px] lg:min-h-[100dvh] flex items-center -mt-14 sm:-mt-16 pt-[calc(var(--navbar-height)+20px)] sm:pt-[calc(var(--navbar-height)+44px)] pb-6 sm:pb-16 shadow-2xl">
         {/* Mesh → photograph → grade → vignette. */}
         <HeroCinematicBackground paused={heroPaused} />
         {/* Pause control — keyboard-reachable, respects reduced-motion (audit #1) */}
@@ -441,8 +452,10 @@ export const FrontDoor: React.FC = () => {
 
         {/* `self-stretch` + `justify-between`: the language switch keeps the top-right corner
             while the copy takes the lower band of the frame, the part the exposure curve already
-            darkens. The extra bottom padding below `sm` is clearance for the pause control, which
-            is pinned to the same corner at that width. */}
+            darkens. The copy is bottom-anchored, so shortening it is also what moves it DOWN -
+            its top edge is the only edge with room to move, and every line taken out of the block
+            is a line of photograph the reader gets back. The extra bottom padding below `sm` is
+            clearance for the pause control, which is pinned to the same corner at that width. */}
         <div className="relative z-10 w-full max-w-[1200px] mx-auto px-4 xl:px-8 self-stretch flex flex-col justify-between">
           {/* The masthead strip ("Overview · HazardNet · reviewed <date>") used to sit here. It
               was a middot row of the kind the design skill bans: a version-style eyebrow, half of
@@ -456,7 +469,7 @@ export const FrontDoor: React.FC = () => {
             <LanguageToggle variant="switch" tone="hds" />
           </div>
 
-          <div className="min-w-0 max-w-3xl pb-14 sm:pb-2">
+          <div className="min-w-0 max-w-3xl pb-12 sm:pb-2">
             <h1 className="ap-hero text-balance text-white text-shadow-hero-display">
               {localised.h1 ?? localised.title}
             </h1>
@@ -469,7 +482,7 @@ export const FrontDoor: React.FC = () => {
             {/* The tagline. Short by construction: it names the product (7- and 15-day horizons),
                 the coverage and the provenance rule, and it leaves the arithmetic to the trust
                 strip below. Nothing claimed here is not stated at length further down the page. */}
-            <p className="mt-4 max-w-3xl text-base font-semibold leading-snug text-white/95 text-shadow-hero-fine sm:text-lg">
+            <p className="mt-3 max-w-2xl text-sm font-semibold leading-snug text-white/95 text-shadow-hero-fine sm:text-base">
               {t('frontdoor.hero.slogan')}
             </p>
 
@@ -482,23 +495,25 @@ export const FrontDoor: React.FC = () => {
                 Three equal full-width buttons on a phone is three primaries, which reads as none;
                 the other destinations are in the links row below, and the scorecard has a whole
                 section under this hero that argues for it. */}
-            <div className="mt-6 sm:mt-7">
+            <div className="mt-4 sm:mt-5">
               <ButtonLink href="/live" intent="primary" size="lg" className="w-full sm:w-auto">
                 <MaterialIcon name="public" className="text-base" />
                 {t('frontdoor.hero.ctaMap')}
               </ButtonLink>
             </div>
 
-            {/* Small print, first block: what this is. The standfirst is 70 words, so it is 12px
-                and clamped to two lines here and expanded in place on request; the seven sections
-                under this hero make the same argument at length, which is what makes the clamp
-                safe. The 44px control is the touch target the clamp needs, not decoration. */}
+            {/* Small print, first block: what this is. The standfirst is 70 words of method at
+                12px, so it is clamped to ONE line here (two until 2026-10-06) and expanded in
+                place on request; the seven sections under this hero make the same argument at
+                length, which is what makes a one-line clamp honest rather than a truncation. The
+                control is 36px: a text disclosure in a fine-print band, clear of the 24px WCAG
+                2.5.8 AA floor, and small enough not to push the photograph up the frame. */}
             {localised.standfirst && (
               <>
                 <p
                   id="front-door-standfirst"
-                  className={`mt-5 max-w-2xl text-xs leading-[1.6] text-white/80 text-shadow-hero-fine ${
-                    standfirstOpen ? '' : 'line-clamp-2'
+                  className={`mt-3 max-w-2xl text-ap-fine leading-snug text-white/80 text-shadow-hero-fine ${
+                    standfirstOpen ? '' : 'line-clamp-1'
                   }`}
                 >
                   {localised.standfirst}
@@ -508,7 +523,7 @@ export const FrontDoor: React.FC = () => {
                   onClick={() => setStandfirstOpen((v) => !v)}
                   aria-expanded={standfirstOpen}
                   aria-controls="front-door-standfirst"
-                  className="mt-1 inline-flex min-h-[44px] items-center text-xs font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+                  className="mt-0.5 inline-flex min-h-[36px] items-center text-ap-fine font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
                 >
                   {standfirstOpen ? t('frontdoor.hero.readLess') : t('frontdoor.hero.readMore')}
                 </button>
@@ -520,11 +535,11 @@ export const FrontDoor: React.FC = () => {
                 three destinations cost a line rather than a button each. The last entry is the
                 run's own coverage sentence, read from the same artifact the /last-run card reads,
                 with the links wording kept as the fallback when that artifact is unreadable. */}
-            <ul className="mt-3 flex flex-wrap gap-x-5 text-xs text-white/90">
+            <ul className="mt-1.5 flex flex-wrap gap-x-4 text-ap-fine text-white/90">
               <li>
                 <Link
                   to="/methodology"
-                  className="inline-flex min-h-[44px] min-w-[44px] items-center font-bold text-white underline decoration-white/40 underline-offset-4 text-shadow-hero-fine hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+                  className="inline-flex min-h-[32px] items-center font-bold text-white underline decoration-white/40 underline-offset-4 text-shadow-hero-fine hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
                 >
                   {t('frontdoor.hero.ctaMethodology')}
                 </Link>
@@ -532,7 +547,7 @@ export const FrontDoor: React.FC = () => {
               <li>
                 <Link
                   to="/model-performance"
-                  className="inline-flex min-h-[44px] min-w-[44px] items-center font-bold text-white underline decoration-white/40 underline-offset-4 text-shadow-hero-fine hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+                  className="inline-flex min-h-[32px] items-center font-bold text-white underline decoration-white/40 underline-offset-4 text-shadow-hero-fine hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
                 >
                   {t('frontdoor.hero.ctaScorecard')}
                 </Link>
@@ -540,7 +555,7 @@ export const FrontDoor: React.FC = () => {
               <li>
                 <Link
                   to="/last-run"
-                  className="inline-flex min-h-[44px] min-w-[44px] items-center font-bold text-white underline decoration-white/40 underline-offset-4 text-shadow-hero-fine hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+                  className="inline-flex min-h-[32px] items-center font-bold text-white underline decoration-white/40 underline-offset-4 text-shadow-hero-fine hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
                 >
                   {coverageArtifact?.districts_covered != null && coverageArtifact?.districts_expected
                     ? t('frontdoor.hero.evidencePointer', {
@@ -559,7 +574,7 @@ export const FrontDoor: React.FC = () => {
             {/* The boundary sentence, last and smallest: 12px `text-white/75`, no rule above it
                 (a hairline over a photograph is decoration), and a drop shadow so the one
                 sentence that must not be missed is legible over the brightest frame. */}
-            <p className="mt-2 max-w-3xl text-xs leading-[1.6] text-white/75 text-shadow-hero-fine">
+            <p className="mt-1 max-w-3xl text-ap-fine leading-snug text-white/80 text-shadow-hero-fine">
               {t('frontdoor.hero.authority')}{' '}
               <Link to="/live" className="font-bold text-white underline underline-offset-2 hover:text-white/90">
                 {t('frontdoor.hero.authorityMap')}

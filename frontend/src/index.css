@@ -80,6 +80,22 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--ap-on-dark);
 }
 
+/* ── The hero frame ───────────────────────────────────────────────────────────
+   The front door's claim is set in the page-title face (`.ap-hero`, 56px). That size is right for
+   a document heading and wrong for a full-bleed photograph on a 390px screen, where the line runs
+   to four lines and the type covers the whole frame — the one thing the hero exists to show. On
+   phones only, and scoped to the hero, the same face is set from the viewport instead; the
+   `clamp()` reaches the 56px token by ~570px wide, so every other page title in the product, and
+   the hero on everything wider than a phone, is untouched.
+
+   This is a plain rule, not a Tailwind utility, and it has to be: `apple.css` is unlayered, so
+   `.ap-hero` outranks anything in the utilities layer. Two class selectors beat one. */
+@media (max-width: 639px) {
+  .hero-frame .ap-hero {
+    font-size: clamp(2.25rem, 7vw + 1rem, var(--ap-text-hero));
+  }
+}
+
 /* ── Component-scoped decisions that are genuinely app-specific ───────────── */
 :root {
   /* ── The hero's type protection ───────────────────────────────────────────
