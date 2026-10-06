@@ -89,14 +89,44 @@ const EN = {
   'alerts.tier.NORMAL': 'Normal',
   // Hazard classes as a person says them. `HAZARD_CLASSES` in lib/forecasts.ts is the
   // canonical list; a class with no key here falls back to its English name.
-  'hazard.Cold Wave': 'Cold wave',
-  'hazard.Drought': 'Drought',
-  'hazard.Fire': 'Fire',
-  'hazard.Flash Flood': 'Flash flood',
-  'hazard.Flood': 'Flood',
-  'hazard.Heat Wave': 'Heat wave',
-  'hazard.Severe Local Storm': 'Severe local storm',
-  'hazard.Tropical Cyclone': 'Tropical cyclone',
+  // ── The front-door verdict (components/frontdoor/StatusVerdict.tsx) ──────────────────────
+  // Three answers only: unknown, active, quiet. "Quiet" never claims every district is safe
+  // (see the component's header), so those words do not appear here either.
+  'verdict.reading': 'Reading the advisory file…',
+  'verdict.quiet.lead': 'Nothing is published above the watch threshold.',
+  'verdict.quiet.body': 'No district has an advisory at WATCH, WARNING or SEVERE in this run.',
+  'verdict.quiet.detail': '{assessed} district forecasts assessed, {withheld} held for review.',
+  'verdict.active.lead': 'Advisories are active.',
+  'verdict.active.body': '{count} district advisories are published at WATCH or above.',
+  'verdict.active.link': 'See the advisories',
+  'verdict.unknown.lead': 'The advisory file could not be read.',
+  'verdict.unknown.body':
+    'Conditions are unknown on this load, not confirmed safe. The map and district pages still carry the last stored forecast.',
+  'verdict.unknown.link': 'Why, and what to do',
+  'verdict.asOf': 'As of {time}',
+  // ── The advice layer (lib/advisoryActions.ts) ─────────────────────────────────────────────
+  // What a tier means for *when* to act, and what to do about one hazard on a farm. Kept
+  // short on purpose: this is read on a phone in sunlight and spoken aloud in one breath.
+  'advisory.action.NORMAL': 'No action needed. Carry on with normal farm work.',
+  'advisory.action.WATCH': 'Stay aware. Check the forecast again tomorrow morning.',
+  'advisory.action.WARNING': 'Prepare now, while roads and markets are still open.',
+  'advisory.action.SEVERE': 'Act now. Do not wait for the next update.',
+  'advisory.hint.Cold Wave':
+    'Protect seedlings and young animals from the cold, and cover nursery beds at night.',
+  'advisory.hint.Drought': 'Save water, mulch to hold soil moisture, and delay fertiliser.',
+  'advisory.hint.Fire': 'Keep dry residue away from the homestead, and light no fire.',
+  'advisory.hint.Flash Flood':
+    'Move to high ground, and keep seed, fodder and animals out of the water.',
+  'advisory.hint.Flood': 'Move seed, fodder and animals to higher ground early.',
+  'advisory.hint.Heat Wave':
+    'Water crops early and late, and keep people and animals in the shade at midday.',
+  'advisory.hint.Severe Local Storm':
+    'Bring in what can blow away, and keep clear of tin roofs and trees.',
+  'advisory.hint.Tropical Cyclone':
+    'Secure the roof and the animal shelter, and cover drinking water.',
+  'advisory.action.advice': 'Advice',
+  'advisory.action.fullProtocol': 'Full protocol for this hazard',
+  'advisory.action.notInPlace': 'Standard practice for this hazard.',
   // Confidence as three words instead of a decimal. Bins match `confidenceBin`.
   'confidence.Certain': 'Likely',
   'confidence.Probable': 'Possible',
@@ -115,6 +145,7 @@ const EN = {
   'advisory.card.derivedNote':
     'Tier derived on this device. The pipeline did not publish one for this row.',
   'advisory.tts.sentence': '{district}. {hazard}. Level: {tier}. Confidence: {confidence}. {horizon}.',
+  'advisory.tts.advice': 'Advice: {advice}',
   'advisory.horizon.7_days': 'Next 7 days',
   'advisory.horizon.15_days': 'Next 15 days',
   'alerts.level.NO_ALERT.desc': 'Nothing unusual for the season.',
@@ -551,14 +582,37 @@ const BN: Record<string, string> = {
   'alerts.tier.WARNING': 'সতর্কবার্তা',
   'alerts.tier.WATCH': 'পর্যবেক্ষণ',
   'alerts.tier.NORMAL': 'স্বাভাবিক',
-  'hazard.Cold Wave': 'শৈত্যপ্রবাহ',
-  'hazard.Drought': 'খরা',
-  'hazard.Fire': 'আগুন',
-  'hazard.Flash Flood': 'আকস্মিক বন্যা',
-  'hazard.Flood': 'বন্যা',
-  'hazard.Heat Wave': 'তাপপ্রবাহ',
-  'hazard.Severe Local Storm': 'তীব্র স্থানীয় ঝড়',
-  'hazard.Tropical Cyclone': 'গ্রীষ্মমণ্ডলীয় ঘূর্ণিঝড়',
+  'verdict.reading': 'সতর্কবার্তার ফাইল পড়া হচ্ছে…',
+  'verdict.quiet.lead': 'সতর্ক দৃষ্টির সীমার উপরে কোনো সতর্কবার্তা প্রকাশিত হয়নি।',
+  'verdict.quiet.body': 'এই রানে কোনো জেলার জন্য পর্যবেক্ষণ, সতর্কবার্তা বা গুরুতর স্তর প্রকাশিত হয়নি।',
+  'verdict.quiet.detail': '{assessed}টি জেলার পূর্বাভাস পর্যালোচনা করা হয়েছে, {withheld}টি যাচাইয়ের জন্য রাখা হয়েছে।',
+  'verdict.active.lead': 'সতর্কবার্তা সক্রিয়।',
+  'verdict.active.body': '{count}টি জেলার সতর্কবার্তা পর্যবেক্ষণ বা তার উপরের স্তরে প্রকাশিত হয়েছে।',
+  'verdict.active.link': 'সতর্কবার্তাগুলো দেখুন',
+  'verdict.unknown.lead': 'সতর্কবার্তার ফাইলটি পড়া যায়নি।',
+  'verdict.unknown.body':
+    'এই লোডে পরিস্থিতি অজানা, নিশ্চিত নিরাপদ নয়। মানচিত্র ও জেলার পাতায় সর্বশেষ সংরক্ষিত পূর্বাভাস আগের মতোই আছে।',
+  'verdict.unknown.link': 'কারণ ও করণীয়',
+  'verdict.asOf': '{time} অনুযায়ী',
+  'advisory.action.NORMAL': 'কোনো বিশেষ ব্যবস্থা লাগবে না। স্বাভাবিক কৃষিকাজ চালিয়ে যান।',
+  'advisory.action.WATCH': 'সতর্ক থাকুন। আগামীকাল সকালে আবার পূর্বাভাস দেখুন।',
+  'advisory.action.WARNING': 'এখনই প্রস্তুতি নিন, রাস্তা ও বাজার খোলা থাকতেই।',
+  'advisory.action.SEVERE': 'এখনই ব্যবস্থা নিন। পরের খবরের জন্য অপেক্ষা করবেন না।',
+  'advisory.hint.Cold Wave':
+    'চারাগাছ ও ছোট গবাদি পশুকে ঠান্ডা থেকে বাঁচান, রাতে বীজতলা ঢেকে রাখুন।',
+  'advisory.hint.Drought': 'পানি সাশ্রয় করুন, মাটিতে আর্দ্রতা ধরে রাখতে মালচ করুন, সার প্রয়োগ পিছিয়ে দিন।',
+  'advisory.hint.Fire': 'শুকনো খড়কুটো ঘর থেকে দূরে রাখুন, আগুন জ্বালাবেন না।',
+  'advisory.hint.Flash Flood':
+    'উঁচু জায়গায় যান, বীজ, গো-খাদ্য ও পশু পানি থেকে দূরে রাখুন।',
+  'advisory.hint.Flood': 'বীজ, গো-খাদ্য ও পশু আগেই উঁচু জায়গায় সরিয়ে নিন।',
+  'advisory.hint.Heat Wave':
+    'সকাল ও বিকেলে ফসলে পানি দিন, দুপুরে মানুষ ও পশুকে ছায়ায় রাখুন।',
+  'advisory.hint.Severe Local Storm':
+    'যা উড়ে যেতে পারে তা ঘরে তুলুন, টিনের চাল ও গাছ থেকে দূরে থাকুন।',
+  'advisory.hint.Tropical Cyclone': 'ঘরের চাল ও পশুর আশ্রয় মজবুত করুন, খাবার পানি ঢেকে রাখুন।',
+  'advisory.action.advice': 'পরামর্শ',
+  'advisory.action.fullProtocol': 'এই দুর্যোগের সম্পূর্ণ নির্দেশিকা',
+  'advisory.action.notInPlace': 'এই দুর্যোগের জন্য স্বাভাবিক প্রস্তুতি।',
   'confidence.Certain': 'প্রায় নিশ্চিত',
   'confidence.Probable': 'সম্ভাব্য',
   'confidence.Uncertain': 'অনিশ্চিত',
@@ -574,6 +628,7 @@ const BN: Record<string, string> = {
   'advisory.card.derivedNote':
     'স্তরটি এই যন্ত্রেই নির্ণয় করা হয়েছে। পাইপলাইন এই সারির জন্য কোনো স্তর প্রকাশ করেনি।',
   'advisory.tts.sentence': '{district}। {hazard}। স্তর: {tier}। নির্ভরযোগ্যতা: {confidence}। {horizon}।',
+  'advisory.tts.advice': 'পরামর্শ: {advice}',
   'advisory.horizon.7_days': 'আগামী ৭ দিন',
   'advisory.horizon.15_days': 'আগামী ১৫ দিন',
   'alerts.level.NO_ALERT.desc': 'এই মৌসুমে অস্বাভাবিক কিছু নেই।',

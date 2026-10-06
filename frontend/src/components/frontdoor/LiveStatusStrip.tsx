@@ -29,6 +29,7 @@ import { Interactive } from '../interactive/Interactive';
 import { useWebFrame, interpolate, Easing } from '../../lib/motion-interpolate';
 
 import { AlertLevelBadge } from '../alerts/AlertLevelBadge';
+import { StatusVerdict } from './StatusVerdict';
 import { useI18n } from '../../hooks/useI18n';
 import { useHazardLabel } from '../../hooks/useHazardLabel';
 import { describeAge, type FreshnessCoverage } from '../../lib/freshness';
@@ -142,6 +143,19 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
       className="border border-carbon-20 bg-carbon-05"
       data-testid="front-door-status-strip"
     >
+      {/* The answer first: one sentence, before the counts that support it. The counts are not
+          removed — they are the evidence a reader can check — but nothing has to be assembled
+          from them to learn whether the day is quiet. */}
+      <StatusVerdict
+        published={published}
+        worstLevel={LEVEL_ORDER.filter((level) => (counts?.[level] ?? 0) > 0)[0] ?? null}
+        assessed={assessed}
+        withheld={withheld}
+        loading={loading}
+        unread={!loading && counts === null}
+        generatedAt={generatedAt}
+      />
+
       <div className="flex flex-wrap items-center gap-x-5 gap-y-3 p-4 lg:p-6">
         {/* ── level counts ─────────────────────────────────────────────────── */}
         <div className="flex flex-wrap items-center gap-2">

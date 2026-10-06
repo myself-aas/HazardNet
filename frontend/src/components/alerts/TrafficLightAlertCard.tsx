@@ -22,17 +22,20 @@
  */
 
 import React, { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Volume2, VolumeX } from 'lucide-react';
 import { AlertLevelBadge, levelTokens } from './AlertLevelBadge';
 import MaterialIcon from '../MaterialIcon';
 import { Button } from '../apple/primitives';
 import { useI18n } from '../../hooks/useI18n';
+import { hazardLabel, useHazardIcon } from '../../hooks/useHazardLabel';
 import {
   advisoryTierOf,
   confidenceBin,
   type AdvisoryTier,
   type ForecastRow,
 } from '../../lib/forecasts';
+import { actionKeysFor } from '../../lib/advisoryActions';
 import { cancelSpeech, speak, speechSupported } from '../../lib/tts';
 
 /**
@@ -56,20 +59,6 @@ export interface TrafficLightAlertCardProps {
   className?: string;
 }
 
-/** Hazard class → the glyph the icon system already ships for it. */
-const HAZARD_ICONS: Record<string, string> = {
-  'Cold Wave': 'cold_wave',
-  Drought: 'drought',
-  Fire: 'fire',
-  'Flash Flood': 'flash_flood',
-  Flood: 'flood',
-  'Heat Wave': 'heat',
-  'Severe Local Storm': 'storm',
-  'Tropical Cyclone': 'tropical_cyclone',
-};
-
-const HAZARD_ICON_FALLBACK = 'warning';
-
 export const TrafficLightAlertCard: React.FC<TrafficLightAlertCardProps> = ({
   districtName,
   districtNameBn,
@@ -79,6 +68,7 @@ export const TrafficLightAlertCard: React.FC<TrafficLightAlertCardProps> = ({
   className = '',
 }) => {
   const { t, language, isBengali, formatDate, formatNumber } = useI18n();
+  const hazardIcon = useHazardIcon();
   const [speaking, setSpeaking] = useState(false);
   const [canSpeak, setCanSpeak] = useState(false);
 
@@ -119,6 +109,13 @@ export const TrafficLightAlertCard: React.FC<TrafficLightAlertCardProps> = ({
 
   const accent = resolvedState === 'unread' ? undefined : levelTokens(tier ?? 'NORMAL').solid;
 
+  // The instruction for the tier, and the protective action for this hazard. Composed from
+  // two short lines (see lib/advisoryActions.ts) so a new class costs one string, not four.
+  const action = actionKeysFor(tier, hazard);
+  const advice = [t(action.tierKey), action.hazardKey ? t(action.hazardKey) : '']
+    .filter(Boolean)
+    .join(' ');
+
   const primaryName = isBengali ? (districtNameBn ?? districtName) : districtName;
   const secondaryName = isBengali ? districtName : districtNameBn;
 
@@ -127,13 +124,20 @@ export const TrafficLightAlertCard: React.FC<TrafficLightAlertCardProps> = ({
       stop();
       return;
     }
-    const sentence = t('advisory.tts.sentence', {
-      district: primaryName,
-      hazard: hazard ? t(`hazard.${hazard}`) : '',
-      tier: t(`alerts.tier.${tier ?? 'NORMAL'}`),
-      confidence: confidenceLabel,
-      horizon: horizonLabel,
-    });
+    const sentence = [
+      t('advisory.tts.sentence', {
+        district: primaryName,
+        hazard: hazard ? hazardLabel(hazard, language) : '',
+        tier: t(`alerts.tier.${tier ?? 'NORMAL'}`),
+        confidence: confidenceLabel,
+        horizon: horizonLabel,
+      }),
+      // The advice is the part worth hearing: a listener who stops reading after the tier
+      // still needs to know what to do, and it costs one sentence.
+      advice ? t('advisory.tts.advice', { advice }) : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
     const started = speak(sentence, { language, onEnd: () => setSpeaking(false) });
     if (started) setSpeaking(true);
   }, [
@@ -145,6 +149,7 @@ export const TrafficLightAlertCard: React.FC<TrafficLightAlertCardProps> = ({
     tier,
     confidenceLabel,
     horizonLabel,
+    advice,
     language,
   ]);
 
@@ -178,11 +183,11 @@ export const TrafficLightAlertCard: React.FC<TrafficLightAlertCardProps> = ({
           {hazard && (
             <p className="ap-caption mt-1 flex items-center gap-1.5">
               <MaterialIcon
-                name={HAZARD_ICONS[hazard] ?? HAZARD_ICON_FALLBACK}
+                name={hazardIcon(hazard)}
                 className="text-base text-carbon-70"
                 aria-hidden="true"
               />
-              <span lang={isBengali ? 'bn' : 'en'}>{t(`hazard.${hazard}`)}</span>
+              <span lang={isBengali ? 'bn' : 'en'}>{hazardLabel(hazard, language)}</span>
               {/* The English class name is always available, because it is the one that
                   appears on the CSV, in the manuscript and on a duty officer's screen. */}
               {isBengali && (
@@ -254,6 +259,25 @@ export const TrafficLightAlertCard: React.FC<TrafficLightAlertCardProps> = ({
           <MaterialIcon name="verified" className="text-base" aria-hidden="true" />
           {t('advisory.physicsOverride')}
         </p>
+      )}
+
+      {resolvedState !== 'unread' && (
+        <div className="mt-4 border-t border-carbon-20 pt-3" data-testid="advisory-advice">
+          <p className="ap-fine-print font-semibold uppercase tracking-wide text-carbon-60">
+            {t('advisory.action.advice')}
+          </p>
+          <p className="ap-caption mt-1 text-carbon-90" lang={isBengali ? 'bn' : 'en'}>
+            {advice}
+          </p>
+          {hazard && (
+            <Link
+              to="/advisories"
+              className="ap-link ap-caption mt-1.5 inline-block font-semibold"
+            >
+              {t('advisory.action.fullProtocol')}
+            </Link>
+          )}
+        </div>
       )}
 
       {derived && (
