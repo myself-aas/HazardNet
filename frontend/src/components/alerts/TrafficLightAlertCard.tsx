@@ -280,6 +280,19 @@ export const TrafficLightAlertCard: React.FC<TrafficLightAlertCardProps> = ({
         </div>
       )}
 
+      {/* A tier above the auto-publish ceiling is a severity statement, not an alert:
+          `AUTO_PUBLISH_CEILING = 'WATCH'` exists because WARNING and SEVERE require a named
+          duty officer whose identity is stored on the published alert. Saying so on the card is
+          the difference between "the model says this district is severe" and "an official
+          warning has been issued", and a reader who cannot tell those apart will act on the
+          wrong one. */}
+      {resolvedState === 'advisory' && row?.requires_review && (
+        <p className="ap-fine-print mt-3 flex items-start gap-1.5 text-carbon-70" data-testid="advisory-review">
+          <MaterialIcon name="verified_user" className="mt-0.5 text-base" aria-hidden="true" />
+          <span>{t('advisory.card.reviewRequired')}</span>
+        </p>
+      )}
+
       {derived && (
         <p className="ap-fine-print mt-2 text-carbon-60">{t('advisory.card.derivedNote')}</p>
       )}

@@ -144,6 +144,8 @@ const EN = {
   'advisory.card.spoken': 'Read this advisory aloud',
   'advisory.card.derivedNote':
     'Tier derived on this device. The pipeline did not publish one for this row.',
+  'advisory.card.reviewRequired':
+    'Not yet an official alert: this tier needs a named duty officer to review it before it is issued.',
   'advisory.tts.sentence': '{district}. {hazard}. Level: {tier}. Confidence: {confidence}. {horizon}.',
   'advisory.tts.advice': 'Advice: {advice}',
   'advisory.horizon.7_days': 'Next 7 days',
@@ -627,6 +629,8 @@ const BN: Record<string, string> = {
   'advisory.card.spoken': 'এই সতর্কতা শুনুন',
   'advisory.card.derivedNote':
     'স্তরটি এই যন্ত্রেই নির্ণয় করা হয়েছে। পাইপলাইন এই সারির জন্য কোনো স্তর প্রকাশ করেনি।',
+  'advisory.card.reviewRequired':
+    'এখনো সরকারি সতর্কবার্তা নয়: প্রকাশের আগে এই স্তরটি একজন দায়িত্বপ্রাপ্ত কর্মকর্তার যাচাই দরকার।',
   'advisory.tts.sentence': '{district}। {hazard}। স্তর: {tier}। নির্ভরযোগ্যতা: {confidence}। {horizon}।',
   'advisory.tts.advice': 'পরামর্শ: {advice}',
   'advisory.horizon.7_days': 'আগামী ৭ দিন',

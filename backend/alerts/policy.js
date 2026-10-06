@@ -71,7 +71,12 @@ export const POLICY_DEFAULTS = Object.freeze({
    * labelled in every assessment as `severity_band`, so nobody mistakes it for the
    * calibrated rule.
    */
-  watch_severity: 0.55,
+  // On the manuscript's band since 2026-10-06. It read 0.55 while the band the pipeline
+  // stamps tiers on, and both clients display, was 0.40 — so a district at severity 0.45
+  // was WATCH to a reader and NO_ALERT to the engine. The two now agree. This is the
+  // *severity* route only: `watch_probability` / `warning_probability` are probability
+  // thresholds, a different quantity, and are unchanged.
+  watch_severity: 0.4,
   /** §1.3 WATCH: "or model/physics divergence > 0.30". */
   divergence_watch: 0.30,
   /** How close the two tracks must be to count as agreeing (|model − physics| ≤ ε). */

@@ -293,3 +293,33 @@ describe('TrafficLightAlertCard · the advice layer', () => {
     delete (window as unknown as Record<string, unknown>).SpeechSynthesisUtterance;
   });
 });
+
+describe('TrafficLightAlertCard · a tier is not an alert', () => {
+  it('says so when the row is above the ceiling and still needs a duty officer', () => {
+    // WARNING and SEVERE require a named reviewer before they are issued
+    // (`AUTO_PUBLISH_CEILING = 'WATCH'`). A reader who cannot tell "the model says severe" from
+    // "an official warning has been issued" will act on the wrong one.
+    renderCard(
+      <TrafficLightAlertCard
+        districtName="Sunamganj"
+        row={row({ advisory_tier: 'SEVERE', requires_review: true })}
+      />,
+    );
+    expect(screen.getByTestId('advisory-review')).toHaveTextContent(/not yet an official alert/i);
+  });
+
+  it('does not claim a review is pending for a tier the pipeline may publish unreviewed', () => {
+    renderCard(
+      <TrafficLightAlertCard
+        districtName="Sunamganj"
+        row={row({ advisory_tier: 'WATCH', requires_review: false })}
+      />,
+    );
+    expect(screen.queryByTestId('advisory-review')).not.toBeInTheDocument();
+  });
+
+  it('shows nothing about review on an unread card, where there is no row', () => {
+    renderCard(<TrafficLightAlertCard districtName="Sunamganj" state="unread" />);
+    expect(screen.queryByTestId('advisory-review')).not.toBeInTheDocument();
+  });
+});

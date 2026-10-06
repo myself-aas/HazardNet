@@ -30,11 +30,14 @@ const row = (over = {}) => ({
   division: 'Dhaka',
   horizon: '7_days',
   hazard_type: 'Flood',
-  severity_score: 0.42,
+  // BELOW every band, by construction: the base fixture is the row that raises nothing, and
+  // since 2026-10-06 the WATCH band is the manuscript's 0.40 (it was 0.55 through
+  // policy.watch_severity, so 0.42 raised nothing then and raises WATCH now).
+  severity_score: 0.35,
   confidence: 0.22,
   confidence_kind: 'model_softmax_top_class',
-  model_severity: 0.42,
-  physics_severity: 0.39,
+  model_severity: 0.35,
+  physics_severity: 0.32,
   prediction_date: '2026-09-16',
   target_date: '2026-09-23',
   model_version: '2.1.9+model.d7b1a5b48aa6',

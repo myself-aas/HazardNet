@@ -15,9 +15,11 @@ import {
 describe('alertPolicy constants', () => {
   it('exports the policy version and severity thresholds', () => {
     expect(ALERT_POLICY_VERSION).toBe('alert-policy/1.0.0');
+    // The manuscript's bands. Changing them means changing the manuscript, or the pipeline's
+    // stamped tiers stop matching the bands every client displays.
     expect(SEVERITY_THRESHOLDS.WATCH).toBe(0.4);
-    expect(SEVERITY_THRESHOLDS.WARNING).toBe(0.65);
-    expect(SEVERITY_THRESHOLDS.SEVERE).toBe(0.8);
+    expect(SEVERITY_THRESHOLDS.WARNING).toBe(0.7);
+    expect(SEVERITY_THRESHOLDS.SEVERE).toBe(0.85);
   });
 
   it('defines the three SLOs used by the status page', () => {

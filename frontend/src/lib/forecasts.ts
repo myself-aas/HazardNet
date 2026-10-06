@@ -72,6 +72,18 @@ export interface ForecastRow {
   adm2_pcode?: string;
   // Phase B extensions (TRD §2.2, §2.3)
   advisory_tier?: AdvisoryTier | string;
+  /**
+   * Where the tier came from: `published` when the upstream advisory CSV carried it,
+   * `derived_final_severity` / `derived_severity_score` when the snapshot builder cut it from
+   * a score. Stamped by `scripts/lib/advisory-tier.mjs` so no client has to invent one.
+   */
+  advisory_tier_source?: string;
+  /**
+   * True when the tier is above the auto-publish ceiling, i.e. this is a severity statement and
+   * NOT a published alert: WARNING and SEVERE require a named duty officer's sign-off before
+   * they are issued (`packages/core/src/alertPolicy.ts`). The card says so.
+   */
+  requires_review?: boolean;
   physics_override?: boolean;
   latitude?: number;
   longitude?: number;
@@ -341,6 +353,13 @@ export function parseForecastRow(raw: unknown): ForecastRow | null {
   if (typeof r.advisory_tier === 'string'
       && (ADVISORY_TIERS as readonly string[]).includes(r.advisory_tier.trim().toUpperCase())) {
     row.advisory_tier = r.advisory_tier.trim().toUpperCase() as AdvisoryTier;
+    // Provenance and the review flag travel with the tier, and only with it: a source or a
+    // "needs review" mark on a row whose tier was dropped would describe a decision the UI is
+    // not showing. `published` is the upstream CSV's own word; anything else is a derivation
+    // and is kept verbatim so a reader can see which score it was cut from.
+    const source = typeof r.advisory_tier_source === 'string' ? r.advisory_tier_source.trim() : '';
+    if (source) row.advisory_tier_source = source.slice(0, 40);
+    if (typeof r.requires_review === 'boolean') row.requires_review = r.requires_review;
   }
   if (typeof r.physics_override === 'boolean') row.physics_override = r.physics_override;
 
