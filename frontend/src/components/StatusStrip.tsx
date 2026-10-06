@@ -7,7 +7,7 @@
  */
 
 import React, { useMemo } from 'react';
-import type { ForecastRow, AdvisoryTier } from '../lib/forecasts';
+import { tierFromSeverity, type ForecastRow, type AdvisoryTier } from '../lib/forecasts';
 import { useI18n } from '../hooks/useI18n';
 import AlertLevelBadge from './alerts/AlertLevelBadge';
 
@@ -68,11 +68,12 @@ export function computeTierCounts(rows?: ForecastRow[], horizon?: string): TierC
     } else if (tier === 'NORMAL') {
       counts.NORMAL += 1;
     } else {
-      // Fallback derivation based on severity_score when tier is absent (backward compatibility)
-      const score = row.severity_score ?? 0;
-      if (score >= 0.75) counts.SEVERE += 1;
-      else if (score >= 0.50) counts.WARNING += 1;
-      else if (score >= 0.30) counts.WATCH += 1;
+      // Fallback when the row carries no published tier (backward compatibility). This used to
+      // use a fourth threshold set (0.30 / 0.50 / 0.75) and could count a district as SEVERE with
+      // no human review, while the canonical policy caps un-reviewed promotion at WATCH. It now
+      // shares `tierFromSeverity`, so the strip and the cards cannot disagree about a district.
+      const derived = tierFromSeverity(row.severity_score) ?? 'NORMAL';
+      if (derived === 'WATCH') counts.WATCH += 1;
       else counts.NORMAL += 1;
     }
   }

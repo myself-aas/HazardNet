@@ -12,6 +12,7 @@
  *    alias table covering post-2015 district renames and GAUL spellings.
  */
 
+import { SEVERITY_THRESHOLDS } from '@hazardnet/core';
 import type { DistrictData } from '../data/bangladeshDistricts';
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -108,8 +109,27 @@ export function advisoryTierOf(row: Pick<ForecastRow, 'advisory_tier' | 'severit
     ? row.advisory_tier.trim().toUpperCase()
     : '';
   if ((ADVISORY_TIERS as readonly string[]).includes(published)) return published as AdvisoryTier;
-  if (!Number.isFinite(row.severity_score)) return null;
-  return row.severity_score >= 0.67 ? 'SEVERE' : row.severity_score >= 0.34 ? 'WARNING' : 'NORMAL';
+  return tierFromSeverity(row.severity_score);
+}
+
+/**
+ * The tier for a severity the pipeline did not label.
+ *
+ * **Capped at WATCH, on purpose.** `packages/core/src/alertPolicy.ts` sets
+ * `AUTO_PUBLISH_CEILING = 'WATCH'` and says in as many words that a client must never
+ * promote a raw model score to WARNING or SEVERE — those two require a named duty officer,
+ * and the reviewer's identity is stored on the published alert. A UI that derives SEVERE
+ * from `severity_score` is showing a tier no human approved, which is a safety claim the
+ * product is not allowed to make on its own.
+ *
+ * This function used to do exactly that: `>= 0.67 ? SEVERE : >= 0.34 ? WARNING : NORMAL`
+ * against a *third* set of thresholds, so a district with no published tier could be shown
+ * SEVERE, and WATCH — the one tier the pipeline may publish without review — could never be
+ * shown at all. It now reads the canonical bands and stops at the ceiling.
+ */
+export function tierFromSeverity(score: number | null | undefined): AdvisoryTier | null {
+  if (!Number.isFinite(score)) return null;
+  return (score as number) >= SEVERITY_THRESHOLDS.WATCH ? 'WATCH' : 'NORMAL';
 }
 
 /**

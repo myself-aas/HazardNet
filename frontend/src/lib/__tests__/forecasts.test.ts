@@ -8,6 +8,7 @@
 import {
   advisorySignalOf,
   advisoryTierOf,
+  tierFromSeverity,
   applyForecastsToDistricts,
   buildForecastIndex,
   confidenceBin,
@@ -541,10 +542,30 @@ describe('advisoryTierOf', () => {
     expect(advisoryTierOf({ advisory_tier: 'SEVERE', severity_score: 0.1 })).toBe('SEVERE');
   });
 
-  it('falls back to the severity bin only when nothing was published', () => {
-    expect(advisoryTierOf({ severity_score: 0.9 })).toBe('SEVERE');
-    expect(advisoryTierOf({ severity_score: 0.5 })).toBe('WARNING');
+  it('falls back to the canonical band only when nothing was published', () => {
+    // Bands are `SEVERITY_THRESHOLDS` from packages/core/src/alertPolicy.ts, the same constants
+    // the alert engine uses. 0.9 is above the WARNING band and still answers WATCH: see below.
+    expect(advisoryTierOf({ severity_score: 0.9 })).toBe('WATCH');
+    expect(advisoryTierOf({ severity_score: 0.5 })).toBe('WATCH');
     expect(advisoryTierOf({ severity_score: 0.1 })).toBe('NORMAL');
+  });
+
+  it('never promotes an unlabelled score above the auto-publish ceiling', () => {
+    // The rule this guards is the one the old 0.34/0.67 fallback broke: `AUTO_PUBLISH_CEILING`
+    // is WATCH, and a client must not present a tier that requires a named duty officer as
+    // though the pipeline had decided it. Any score, however high, stops at WATCH.
+    for (const score of [0.4, 0.55, 0.65, 0.8, 0.95, 1]) {
+      expect(advisoryTierOf({ severity_score: score })).toBe('WATCH');
+    }
+  });
+
+  it('cannot answer a tier above the ceiling however it is called', () => {
+    const derived = new Set([
+      advisoryTierOf({ severity_score: 0.99 }),
+      advisoryTierOf({ severity_score: 0.7 }),
+      tierFromSeverity(0.99),
+    ]);
+    expect([...derived].sort()).toEqual(['WATCH']);
   });
 });
 

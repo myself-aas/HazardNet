@@ -51,6 +51,9 @@ jest.mock('../frontend/src/lib/forecasts', () => ({
       target_date: '2026-09-23',
     },
   ]),
+  // `StatusStrip.computeTierCounts` derives an unlabelled row's tier through this helper, so a
+  // partial mock of the module has to provide it. Real bands: packages/core/src/alertPolicy.ts.
+  tierFromSeverity: (score) => (Number.isFinite(score) && score >= 0.4 ? 'WATCH' : 'NORMAL'),
 }));
 
 // Mock recharts ResponsiveContainer to render children in test environment
