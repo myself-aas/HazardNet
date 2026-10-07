@@ -427,8 +427,11 @@ const EN = {
   'frontdoor.run.failed':
     'At least one artifact could not be read on this load. The panels above say so where it applies; a blank is never rendered as a zero.',
 
-  'frontdoor.products.h2': 'Products',
-  'frontdoor.products.aside': 'Eight hazard classes · 7 and 15 day horizons',
+  /* The reader's word for this section, not the vendor's: nothing on the page is for sale, and
+     `Hazards` is what the top bar already calls the same thing. The eyebrow below keeps the
+     count, which is why the caption no longer repeats "hazard classes" a fourth time. */
+  'frontdoor.products.h2': 'Hazards',
+  'frontdoor.products.aside': 'Eight classes · 7 and 15 day horizons',
   'frontdoor.products.hazardsEyebrow': 'Eight hazard classes',
   'frontdoor.products.hazardsNote':
     'Every run labels each district with one of eight classes. Each card links to the full methodology for that class.',
@@ -887,8 +890,8 @@ const BN: Record<string, string> = {
   'frontdoor.run.failed':
     'এইবার অন্তত একটি আর্টিফ্যাক্ট পড়া যায়নি। যেখানে প্রযোজ্য, ওপরের প্যানেলগুলো তা জানিয়েছে; খালি ঘর কখনো শূন্য হিসেবে দেখানো হয় না।',
 
-  'frontdoor.products.h2': 'পণ্যসমূহ',
-  'frontdoor.products.aside': '৮টি ঝুঁকি শ্রেণি · ৭ ও ১৫ দিনের পূর্বাভাস',
+  'frontdoor.products.h2': 'ঝুঁকিসমূহ',
+  'frontdoor.products.aside': '৮টি শ্রেণি · ৭ ও ১৫ দিনের পূর্বাভাস',
   'frontdoor.products.hazardsEyebrow': 'আটটি ঝুঁকি শ্রেণি',
   'frontdoor.products.hazardsNote':
     'প্রতিটি রানে প্রতিটি জেলাকে আটটি শ্রেণির একটি দিয়ে চিহ্নিত করা হয়। প্রতিটি কার্ড সেই শ্রেণির পূর্ণ পদ্ধতিগত বিবরণের সঙ্গে যুক্ত।',

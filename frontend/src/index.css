@@ -96,6 +96,32 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* ── The hero's authority boundary ────────────────────────────────────────────
+   The one paragraph in the hero that is a legal statement rather than an orientation: HazardNet is
+   decision support, official warnings come from BMD and FFWC, and in an emergency you call 999. It
+   wore the 12px `.text-ap-fine` token in the fine-print family until 2026-10-07, when it stepped
+   down one notch: 11px on a desktop, 10px on a phone, which is the `--ap-text-micro-legal` floor
+   the rest of the product's least-read text already sits at.
+
+   Size is not the constraint here, which is why this is a size change and nothing else. The
+   sentence lives in the foot of the exposure curve: at the 70% stop the grade's own math gives
+   `text-white/80` **8.77:1** over the audit's worst-case bright pixel (`#e0e0e0`), and 10.70:1 at
+   85%, 12.25:1 at the foot (sRGB relative luminance, computed by the same method as
+   `lib/heroGrade.ts` and the H-P1-4 projection). The type protection is unchanged — the sentence
+   keeps `text-shadow-hero-fine` — so the only thing that moved is how loudly an already-legal
+   sentence speaks.
+
+   Scoped to `.hero-frame` on purpose: this is the hero's fine print, not a new global size. */
+.hero-frame .hero-authority {
+  font-size: 0.6875rem; /* 11px - the fine-print token, one step down */
+}
+
+@media (max-width: 639px) {
+  .hero-frame .hero-authority {
+    font-size: var(--ap-text-micro-legal);
+  }
+}
+
 /* ── Component-scoped decisions that are genuinely app-specific ───────────── */
 :root {
   /* ── The hero's type protection ───────────────────────────────────────────

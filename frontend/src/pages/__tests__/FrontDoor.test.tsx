@@ -216,11 +216,19 @@ describe('the front door', () => {
 
     // Touch targets: the two fine-print controls are text disclosures in a 12px band, sized
     // clear of the 24px WCAG 2.5.8 AA floor. The icon-only pause control keeps its 44px.
+    // Touch targets are mobile-first (ui-ux-pro-max §2, "min 44x44px"; §5 "touch-density"): on a
+    // phone every one of these is a 44px row, and above `sm` the two fine-print controls drop back
+    // to the sizes that keep the band thin (36px and 32px), both clear of the 24px WCAG 2.5.8 AA
+    // floor. The icon-only pause control keeps its 44px at every width.
     const disclosure = within(hero).getByRole('button', { name: /read the full overview/i });
-    expect(disclosure.className).toContain('min-h-[36px]');
+    expect(disclosure.className).toContain('min-h-[44px]');
+    expect(disclosure.className).toContain('sm:min-h-[36px]');
     const links = Array.from(hero.querySelectorAll('a[href="/methodology"], a[href="/model-performance"], a[href="/last-run"]'));
     expect(links.length).toBeGreaterThanOrEqual(3);
-    for (const link of links) expect(link.className).toContain('min-h-[32px]');
+    for (const link of links) {
+      expect(link.className).toContain('min-h-[44px]');
+      expect(link.className).toContain('sm:min-h-[32px]');
+    }
     const pause = within(hero).getByRole('button', { name: /pause motion/i });
     expect(pause.className).toContain('min-h-[44px]');
 
@@ -355,17 +363,97 @@ describe('the front door', () => {
     expect(await axe(bengali.container)).toHaveNoViolations();
   });
 
-  it('shows the products section: eight hazard classes and both horizons', async () => {
+  it('shows the hazards section: eight hazard classes and both horizons', async () => {
     const { container, unmount } = renderPage();
     await waitFor(() => expect(screen.getByText('Monsoon outlook test post')).toBeInTheDocument());
-    const heading = screen.getByRole('heading', { name: 'Products' });
+    // Called "Hazards" since 2026-10-07 - the reader's word for the section, and the word the top
+    // bar uses for the same thing. "Products" was the vendor's word on a page that sells nothing.
+    const heading = screen.getByRole('heading', { name: 'Hazards' });
     expect(heading).toBeInTheDocument();
+    // The label points at the heading it names, and the caption is a caption, not a second
+    // paragraph: `<span>` here, next to the `<h2>` it describes.
+    const section = heading.closest('section')!;
+    expect(section).toHaveAttribute('aria-labelledby', 'hazards-heading');
+    expect(heading).toHaveAttribute('id', 'hazards-heading');
+    expect(within(section).getByText(/Eight classes · 7 and 15 day horizons/).tagName).toBe('SPAN');
+    // The eyebrow keeps the count, so the rename cost the reader no information.
+    expect(section.textContent).toContain('Eight hazard classes');
     // The eight classes come from the same methodology file the /hazards page reads.
     expect(container.textContent).toContain('Tropical Cyclone');
     expect(container.textContent).toContain('Cold Wave');
     expect(container.textContent).toContain('7-day outlook');
     expect(container.textContent).toContain('15-day outlook');
     expect(container.querySelectorAll('a[href^="/hazards/"]').length).toBeGreaterThanOrEqual(8);
+    unmount();
+  });
+
+  it('survives a 320px phone: no fixed widths, no unbreakable tokens, one size step down', async () => {
+    const { container, unmount } = renderPage();
+    await screen.findByTestId('front-door-status-strip');
+
+    /*
+     * The front door cannot be laid out in jsdom, so this asserts the four things that decide
+     * whether it CAN fit a small phone, each of them the mechanical form of a ui-ux-pro-max rule:
+     *
+     *   · §5 `horizontal-scroll` / "no fixed px container widths" — nothing in the subtree may
+     *     declare a fixed width wider than the content box of the smallest phone we support.
+     *     320px minus the page's own `px-4` (32px) leaves 288px; `max-w-*` is not counted, because
+     *     a maximum cannot overflow, and neither is `min-h-*`, which is a touch target (below).
+     *   · §6 `long-token-wrapping` — the citation carries a URL, the only unbreakable token
+     *     on the page; it must be allowed to break.
+     *   · §5 `touch-density` — the fine-print controls are 44px on a phone (asserted in the
+     *     hero test); the disclosure and the two in-section buttons keep 44px here.
+     *   · §6 `line-length-control` — every text container is capped by a `max-w-*`, never
+     *     allowed to run the full width of a desktop frame.
+     */
+    const PHONE_CONTENT_BOX = 320 - 2 * 16;
+
+    const fixed = new Map<string, string>();
+    for (const el of Array.from(container.querySelectorAll<HTMLElement>('*'))) {
+      const cls = el.getAttribute('class') ?? '';
+      for (const match of cls.matchAll(/(?:^|\s)(min-w|w|basis)-\[(\d+)px\]/g)) {
+        const width = Number(match[2]);
+        if (width > PHONE_CONTENT_BOX) fixed.set(`${match[1]}-[${match[2]}px]`, el.tagName);
+      }
+    }
+    expect([...fixed.entries()]).toEqual([]);
+
+    // The citation is the page's one long token (a 39-character repository URL). `break-words`
+    // lets it wrap instead of forcing the block wider than the phone.
+    // Matched on the bare URL, because the body paragraph above it also names the department.
+    const citation = [...container.querySelectorAll('p')].find((p) =>
+      p.textContent?.includes('github.com/myself-aas/HazardNet'),
+    )!;
+    expect(citation).toBeDefined();
+    expect(citation.className).toContain('break-words');
+    expect(citation.className).toContain('font-mono');
+
+    // The hero's legal sentence stepped down one notch and is now its own scoped class, not a
+    // second user of the fine-print token. 12px was the last size in the hero that could afford
+    // to come down without leaving the scale.
+    const authority = [...container.querySelectorAll('p')].find((p) =>
+      p.textContent?.includes('not an official warning service'),
+    )!;
+    expect(authority.className).toContain('hero-authority');
+    expect(authority.className).not.toContain('text-ap-fine');
+    // It keeps its type protection: the one sentence that must not be missed is still shadowed.
+    expect(authority.className).toContain('text-shadow-hero-fine');
+
+    // The rule that sizes it lives in index.css, in the design system's own scale, and steps down
+    // further on a phone rather than up.
+    const css = readFileSync(join(process.cwd(), 'frontend/src/index.css'), 'utf8');
+    expect(css).toMatch(/\.hero-frame \.hero-authority \{[^}]*font-size: 0\.6875rem/);
+    expect(css).toMatch(
+      /@media \(max-width: 639px\) \{[\s\S]{0,200}\.hero-frame \.hero-authority \{[^}]*font-size: var\(--ap-text-micro-legal\)/,
+    );
+
+    // Every in-section action is a 44px row, phone and desktop alike.
+    const sectionButtons = [...container.querySelectorAll('a')].filter((a) =>
+      /How each class is scored|How to read a forecast/i.test(a.textContent ?? ''),
+    );
+    expect(sectionButtons.length).toBe(2);
+    for (const button of sectionButtons) expect(button.className).toContain('min-h-[44px]');
+
     unmount();
   });
 

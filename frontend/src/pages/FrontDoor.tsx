@@ -519,7 +519,7 @@ export const FrontDoor: React.FC = () => {
                   onClick={() => setStandfirstOpen((v) => !v)}
                   aria-expanded={standfirstOpen}
                   aria-controls="front-door-standfirst"
-                  className="mt-0.5 inline-flex min-h-[36px] items-center text-ap-fine font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+                  className="mt-0.5 inline-flex min-h-[44px] items-center text-ap-fine font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 sm:min-h-[36px]"
                 >
                   {standfirstOpen ? t('frontdoor.hero.readLess') : t('frontdoor.hero.readMore')}
                 </button>
@@ -531,11 +531,11 @@ export const FrontDoor: React.FC = () => {
                 three destinations cost a line rather than a button each. The last entry is the
                 run's own coverage sentence, read from the same artifact the /last-run card reads,
                 with the links wording kept as the fallback when that artifact is unreadable. */}
-            <ul className="mt-1.5 flex flex-wrap gap-x-4 text-ap-fine text-white/90">
+            <ul className="mt-1.5 flex flex-wrap gap-x-4 text-ap-fine text-white/90 tabular-nums">
               <li>
                 <Link
                   to="/methodology"
-                  className="inline-flex min-h-[32px] items-center font-bold text-white underline decoration-white/40 underline-offset-4 text-shadow-hero-fine hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+                  className="inline-flex min-h-[44px] items-center font-bold text-white underline decoration-white/40 underline-offset-4 text-shadow-hero-fine hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 sm:min-h-[32px]"
                 >
                   {t('frontdoor.hero.ctaMethodology')}
                 </Link>
@@ -543,7 +543,7 @@ export const FrontDoor: React.FC = () => {
               <li>
                 <Link
                   to="/model-performance"
-                  className="inline-flex min-h-[32px] items-center font-bold text-white underline decoration-white/40 underline-offset-4 text-shadow-hero-fine hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+                  className="inline-flex min-h-[44px] items-center font-bold text-white underline decoration-white/40 underline-offset-4 text-shadow-hero-fine hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 sm:min-h-[32px]"
                 >
                   {t('frontdoor.hero.ctaScorecard')}
                 </Link>
@@ -551,7 +551,7 @@ export const FrontDoor: React.FC = () => {
               <li>
                 <Link
                   to="/last-run"
-                  className="inline-flex min-h-[32px] items-center font-bold text-white underline decoration-white/40 underline-offset-4 text-shadow-hero-fine hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+                  className="inline-flex min-h-[44px] items-center font-bold text-white underline decoration-white/40 underline-offset-4 text-shadow-hero-fine hover:decoration-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 sm:min-h-[32px]"
                 >
                   {coverageArtifact?.districts_covered != null && coverageArtifact?.districts_expected
                     ? t('frontdoor.hero.evidencePointer', {
@@ -567,10 +567,16 @@ export const FrontDoor: React.FC = () => {
               </li>
             </ul>
 
-            {/* The boundary sentence, last and smallest: 12px `text-white/75`, no rule above it
-                (a hairline over a photograph is decoration), and a drop shadow so the one
-                sentence that must not be missed is legible over the brightest frame. */}
-            <p className="mt-1 max-w-3xl text-ap-fine leading-snug text-white/80 text-shadow-hero-fine">
+            {/* The boundary sentence, last and smallest: no rule above it (a hairline over a
+                photograph is decoration), and a shadow so the one sentence that must not be missed
+                is legible over the brightest frame. It was the 12px fine-print token; since
+                2026-10-07 it wears `.hero-authority`, which is that token one step down (11px, and
+                10px - the product's `micro-legal` floor - on phones). Contrast is unchanged and was
+                checked before the step down: the sentence sits in the foot of the exposure curve,
+                where the grade gives `text-white/80` 8.77:1 at the 70% stop over the audit's
+                worst-case bright pixel, rising to 12.25:1 at the frame's foot. The numbers are in
+                `index.css`, beside the rule. */}
+            <p className="mt-1 max-w-3xl hero-authority leading-snug text-white/80 text-shadow-hero-fine">
               {t('frontdoor.hero.authority')}{' '}
               <Link to="/live" className="font-bold text-white underline underline-offset-2 hover:text-white/90">
                 {t('frontdoor.hero.authorityMap')}
@@ -760,13 +766,25 @@ export const FrontDoor: React.FC = () => {
         )}
       </section>
 
-      {/* ── Products: the eight hazard classes and the two forecast horizons ── */}
-      <section aria-labelledby="products-heading" className="space-y-4">
-        <div className="flex flex-wrap items-end justify-between gap-2">
-          <h2 id="products-heading" className="text-ap-tagline font-bold tracking-tight text-carbon-90 lg:text-2xl">
+      {/* ── Hazards: the eight hazard classes and the two forecast horizons ──
+          The section was called "Products" until 2026-10-07. That word is the vendor's, not the
+          reader's: nothing here is for sale, and HazardNet's own vocabulary for these is the
+          hazard classes and the outlooks. The heading is now the word the nav uses for the same
+          thing, so the section and `Hazards` in the top bar stop being two names for one idea.
+          The eyebrow beneath it keeps the count, so nothing lost the "eight" but the phrase that
+          repeated "hazard" three times in two lines.
+
+          Both headings in this row are set mobile-first: `text-lg` at the base, one step up at
+          `sm`, the tagline token at `lg`. The `aside` is a `<span>` now, not a second `<p>`: it is
+          a caption on the heading, and a paragraph that exists to be read after another paragraph
+          is not what the DOM should say. It also drops `tracking-wider`, which at 12px uppercase
+          mono was the widest text in the section. */}
+      <section aria-labelledby="hazards-heading" className="space-y-4">
+        <div className="flex flex-wrap items-end justify-between gap-x-3 gap-y-1">
+          <h2 id="hazards-heading" className="text-lg font-bold tracking-tight text-carbon-90 sm:text-xl lg:text-2xl">
             {t('frontdoor.products.h2')}
           </h2>
-          <p className="font-mono text-xs uppercase tracking-wider text-carbon-60">{t('frontdoor.products.aside')}</p>
+          <span className="min-w-0 font-mono text-xs uppercase tracking-wide text-carbon-60">{t('frontdoor.products.aside')}</span>
         </div>
 
         <div>
@@ -982,7 +1000,7 @@ export const FrontDoor: React.FC = () => {
         <p
           lang="en"
           translate="no"
-          className="mt-1 max-w-3xl border-l-2 border-carbon-20 bg-carbon-05 p-3 font-mono text-xs leading-[1.62] text-carbon-70"
+          className="mt-1 max-w-3xl break-words border-l-2 border-carbon-20 bg-carbon-05 p-3 font-mono text-xs leading-[1.62] text-carbon-70"
         >
           {attribution.work.citationText}
         </p>
