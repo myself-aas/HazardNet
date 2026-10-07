@@ -32,7 +32,6 @@ import { HazardAlertStory } from '../frontend/src/remotion/compositions/HazardAl
 import { RemotionRoot } from '../frontend/src/remotion/Root';
 import { HeroCinematicBackground } from '../frontend/src/components/HeroCinematicBackground';
 import { HeroComposition } from '../frontend/src/remotion/compositions/HeroComposition';
-import { HERO_GRADE } from '../frontend/src/lib/heroGrade';
 
 describe('Phase 3 Remotion Hazard Video & Atmospheric Hero', () => {
   describe('<HazardAlertStory />', () => {
@@ -89,30 +88,19 @@ describe('Phase 3 Remotion Hazard Video & Atmospheric Hero', () => {
       expect(text).toContain('Every number traces to a file');
     });
 
-    test('carries the web hero\'s layers, its grade, and the front door\'s own words', () => {
+    test('is the same four layers as the web hero, and says the front door\'s own words', () => {
       const { container } = render(<HeroComposition />);
-      // The composition mirrors components/HeroCinematicBackground.tsx: mesh, photograph/title and
-      // the grade — with the HUD cluster, the second glow and the grain deleted from both. Exact
-      // equality on purpose: a fifth node is a fifth layer, and the export has drifted that way
-      // before. The exposure curve and the vignette are one node since 2026-10-06, as on the page.
+      // The composition mirrors components/HeroCinematicBackground.tsx: mesh, photograph/title,
+      // grade, vignette — with the HUD cluster, the second glow and the grain deleted from both.
       const names = Array.from(container.querySelectorAll('[data-interactive-name]')).map((el) =>
         el.getAttribute('data-interactive-name')
       );
-      expect(names).toEqual([
-        'Primary orbital glow',
-        'Hero title',
-        'Cinematic soft-light grade',
-        'Grade — exposure curve + vignette',
-      ]);
+      expect(names).toEqual(
+        expect.arrayContaining(['Primary orbital glow', 'Hero title', 'Cinematic soft-light grade', 'Exposure curve', 'Vignette — dual-zone elliptical'])
+      );
       for (const gone of ['Secondary cyan reflection', 'HUD telemetry GEO-SYNC', 'HUD optical stream', 'Reticle TL', 'Reticle TR']) {
         expect(names).not.toContain(gone);
       }
-      // The grade is the page's grade, read from `lib/heroGrade.ts` rather than typed in here —
-      // this is the assertion that keeps the MP4 and the page from drifting apart.
-      const wash = container.querySelector('[data-interactive-name="Cinematic soft-light grade"]');
-      expect((wash.getAttribute('style') ?? '').replace(/\s+/g, '')).toContain(
-        HERO_GRADE.gradeWash.replace(/\s+/g, ''),
-      );
       // The default headline is the front door's h1 (`content/site-routes.json`), not a slogan.
       expect(container.textContent).toContain('A forecast you can check, not just read');
     });
@@ -126,7 +114,7 @@ describe('Phase 3 Remotion Hazard Video & Atmospheric Hero', () => {
   });
 
   describe('<HeroCinematicBackground />', () => {
-    test('is three layers of backdrop and no telemetry HUD', () => {
+    test('is four layers of backdrop and no telemetry HUD', () => {
       const { container } = render(<HeroCinematicBackground paused={true} />);
 
       // The decorative HUD cluster - four corner reticles, a horizon rule and a `hero-hud`
@@ -145,21 +133,14 @@ describe('Phase 3 Remotion Hazard Video & Atmospheric Hero', () => {
       expect(screen.queryByText(/APEX/i)).toBeNull();
       expect(screen.queryByText(/RES-ADAPTIVE/i)).toBeNull();
 
-      // The layers that remain are the ones that do something: the mesh, the photograph and the
-      // grade. Named through `Interactive`, so the names are the contract — and the list is exact,
-      // because "four layers" is how the backdrop got to nine nodes in the first place. Since
-      // 2026-10-06 the mesh's clipping wrapper is gone (the root clips) and the exposure curve and
-      // the vignette share one node, so this is the root, four nodes, and nothing else.
+      // The layers that remain are the ones that do something: the mesh, the photograph, the
+      // grade and the vignette. Named through `Interactive`, so the names are the contract.
       const names = Array.from(container.querySelectorAll('[data-interactive-name]')).map((el) =>
         el.getAttribute('data-interactive-name')
       );
-      expect(names).toEqual([
-        'Hero cinematic background — 3-layer',
-        'Primary orbital glow',
-        'Hero photograph',
-        'Soft-light grade',
-        'Grade — exposure curve + vignette',
-      ]);
+      expect(names).toEqual(
+        expect.arrayContaining(['Hero cinematic background — 4-layer', 'BgMesh container', 'Hero photograph', 'Vignette — dual-zone elliptical'])
+      );
       // And none of the deleted three come back by accident.
       for (const gone of ['Telemetry HUD container', 'Reticle top-left', 'Horizon reference line', 'Film grain — SVG fractal noise', 'Secondary cyan reflection']) {
         expect(names).not.toContain(gone);

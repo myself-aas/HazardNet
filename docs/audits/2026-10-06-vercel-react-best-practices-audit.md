@@ -11,6 +11,16 @@ for style. Every finding below was reproduced before it was changed and re-measu
 five changes that guard a behaviour carry a test that fails when the change is reverted, and that
 was checked by reverting it (four deliberate reversions, five failing tests).
 
+> **Findings 2 and 3 were reverted, 2026-10-07.** Finding 1 (the entry chunk: `remotion/no-react`
+> plus the local `Easing` port) and findings 4–7 stand — they are not the hero. Findings 2 and 3
+> were the hero's render boundary and the carousel's module constants, and the hero was restored to
+> `main` byte for byte on 2026-10-07 at the repository owner's request, along with the three test
+> suites those two findings added. So: the hero backdrop again re-renders with its own frame loop,
+> and the carousel again rebuilds its slide lists per render. The 56 kB gzip entry-chunk win is
+> unaffected — it is the motion bridge, not the hero — and the full-suite and mutation numbers
+> below counted the two suites that are now gone; the honest current figures are in the revert
+> commit's message.
+
 **Baseline at audit time:** commits up to `0b6ff88`; 182 Jest suites / 1889 tests green; `tsc`
 clean; 13/13 design and budget gates green; production build clean.
 

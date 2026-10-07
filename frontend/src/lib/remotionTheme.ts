@@ -37,8 +37,16 @@ export const remotionTheme = {
     breathe: 'cubic-bezier(0.4, 0, 0.2, 1)',   // Gentle sin-wave approximation
   },
 
-  /* The hero's color grade used to live here as `grade` and `vignette`. It moved to
-     `lib/heroGrade.ts` on 2026-10-06, because the *page* paints it too (`HeroCinematicBackground`)
-     and a grade that only the export knows about is a grade the page drifts away from. This file
-     keeps the graphics palette and the easing curves; there is one hero grade and it is not here. */
+  // Color grade presets (Rule 5: Five-layer stack)
+  grade: {
+    softLightOpacity: 0.20,
+    linearGradient:
+      'linear-gradient(180deg, rgba(0,0,0,0.32) 0%, rgba(5,7,14,0.18) 32%, rgba(5,7,14,0.68) 72%, rgba(5,7,14,0.92) 100%)',
+  },
+
+  // Vignette gradient
+  vignette: {
+    radial:
+      'radial-gradient(ellipse at center, transparent 38%, rgba(5,7,14,0.55) 75%, rgba(5,7,14,0.95) 100%)',
+  },
 } as const;

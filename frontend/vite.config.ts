@@ -13,11 +13,11 @@ import { VitePWA } from 'vite-plugin-pwa';
  *
  * Five clips, 113 MB (`public/hero-section/`), and a byte-for-byte duplicate tree in
  * `frontend/assets/hero-section/` — same five files, same sha256s, verified 2026-10-06; the
- * `assets/` directory holds nothing else. Nothing in `src/` names any of them: the carousel
- * replaced the video layer, and the five `EARTH_HERO_VIDEO_*` constants that were the last
- * reference were deleted on 2026-10-06. The files stay on disk on purpose (the audit trail
- * records the same decision), so the exclusion happens at build time, where it cannot be
- * forgotten by a deployment that adds `public/` wholesale.
+ * `assets/` directory holds nothing else. Nothing in `src/` fetches them: the hero is a
+ * CSS-background carousel, and the five `EARTH_HERO_VIDEO_*` constants in `lib/heroMedia.ts` are
+ * retained-but-unreferenced (they are back with `main`'s hero, which owns that file). The files
+ * stay on disk on purpose (the audit trail records the same decision), so the exclusion happens at
+ * build time, where it cannot be forgotten by a deployment that adds `public/` wholesale.
  *
  * The other half of the leak is the service worker's precache manifest, which walks `public/`
  * before this plugin runs — see `globIgnores` in the `VitePWA` options below.

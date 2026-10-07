@@ -1193,7 +1193,6 @@ source/test/workflow references now point at that section.)
 - `frontend/src/lib/geo.ts`
 - `frontend/src/lib/glide.ts`
 - `frontend/src/lib/heroCarouselImages.ts`
-- `frontend/src/lib/heroGrade.ts`
 - `frontend/src/lib/heroMedia.ts`
 - `frontend/src/lib/i18n.ts`
 - `frontend/src/lib/legal.ts`

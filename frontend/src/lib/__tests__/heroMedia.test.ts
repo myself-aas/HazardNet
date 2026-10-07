@@ -13,8 +13,6 @@
  * poster silently did not exist.
  */
 
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { EARTH_HERO_POSTER, EARTH_HERO_POSTER_CSS } from '../heroMedia';
 
 /** Assign the way the components do, and read back what the CSS parser kept. */
@@ -55,32 +53,6 @@ describe('hero poster encodings', () => {
     expect(payload).not.toContain('(');
     expect(payload).not.toContain(')');
     expect(payload.replace(/%[0-9A-Fa-f]{2}/g, '')).toMatch(/^[A-Za-z0-9\-_.~]*$/);
-  });
-
-  it('is one poster in two encodings, not two posters', () => {
-    // The two exports must be the same picture with different escaping rules — the attribute form
-    // differs from the CSS payload only in that `#` is the single character it escapes.
-    const cssPayload = decodeURIComponent(
-      EARTH_HERO_POSTER_CSS.slice('data:image/svg+xml,'.length),
-    );
-    expect(EARTH_HERO_POSTER).toBe(
-      `data:image/svg+xml;utf8,${cssPayload.replace(/#/g, '%23')}`,
-    );
-  });
-
-  it('is encoded once at module load, not by whoever paints it', () => {
-    // Same reasoning as the carousel's module constants: the encode is `encodeURIComponent` plus a
-    // regex pass over a 2.5 kB SVG, and the poster is painted by a component that re-renders
-    // (pause toggles, the mesh's frames before it became a leaf). Hoisted to module scope, both
-    // URIs are built at import and a re-render cannot pay for them again. Asserted on the source,
-    // because the difference is invisible from the exported values.
-    const source = readFileSync(join(process.cwd(), 'frontend/src/lib/heroMedia.ts'), 'utf8')
-      .replace(/\/\*[\s\S]*?\*\//g, '')
-      .replace(/^\s*\/\/.*$/gm, '');
-    // One call site, on a module-scope `export const` — never inside a function body.
-    expect([...source.matchAll(/encodeForCssDataUri\(/g)]).toHaveLength(1);
-    expect(source).toMatch(/^export const EARTH_HERO_POSTER_CSS = .*encodeForCssDataUri\(HERO_POSTER_SVG\)/m);
-    expect(source).toMatch(/^export const EARTH_HERO_POSTER = .*HERO_POSTER_SVG\.replace\(/m);
   });
 
   it('renders the same picture in both forms', () => {

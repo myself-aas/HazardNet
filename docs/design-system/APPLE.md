@@ -221,8 +221,9 @@ kind; "it was easier" is not one.
   Google "G" in the wrong blue is wrong, and the same goes for Slack, Discord and GitHub.
 - **Cinematic media** — `heroMedia.ts`, `remotionTheme.ts`, the Remotion compositions, the WebGL
   globe. These are *content*, the same category as a photograph. The system governs the chrome
-  around media, not the pixels inside it. (The hero background left this list on 2026-10-06: its
-  colour is `lib/heroGrade.ts`, a token it reads like any other component.)
+  around media, not the pixels inside it. The hero background is on this list again as of
+  2026-10-07, when the hero was restored to `main`: it carries its own grade colours inline, as it
+  does on `main`.
 - **Generated assets** — `infinity.generated.ts` is produced by a script, not authored.
 
 The test also asserts every exempt file *still* carries off-system colour, so a file cannot sit on

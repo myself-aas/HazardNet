@@ -185,61 +185,7 @@ describe('the front door', () => {
     }
   });
 
-  it('keeps the hero copy a thin, low band so the photograph reads', async () => {
-    renderPage();
-    await screen.findByTestId('front-door-status-strip');
-    const hero = document.querySelector('header.hero-frame') as HTMLElement;
-    expect(hero).not.toBeNull();
-
-    // The copy is bottom-anchored, so its top edge is the only one that can move: every line
-    // taken out of this block is a line of photograph the reader gets back. The claim is set
-    // from the viewport on phones (the rule is unlayered, because `.ap-hero` in apple.css is,
-    // so it cannot be a Tailwind utility), the tagline is one size step down, the small print
-    // is the 12px fine-print token rather than a size of its own, and the rhythm is tight.
-    const h1 = hero.querySelector('h1')!;
-    expect(h1.className).toContain('ap-hero');
-    const tagline = within(hero).getByText(/every number traces to a dated artifact/i);
-    expect(tagline.className).toContain('text-sm');
-    expect(tagline.className).toContain('sm:text-base');
-    expect(tagline.className).not.toContain('sm:text-lg');
-
-    const css = readFileSync(join(process.cwd(), 'frontend/src/index.css'), 'utf8');
-    expect(css).toMatch(/\.hero-frame \.ap-hero \{[^}]*font-size: clamp\(/);
-
-    // The standfirst is 70 words of method: one clamped line by default, the rest on request.
-    const standfirst = hero.querySelector('#front-door-standfirst') as HTMLElement;
-    expect(standfirst.className).toContain('line-clamp-1');
-    expect(standfirst.className).toContain('text-ap-fine');
-    expect(standfirst.className).toContain('leading-snug');
-    expect(standfirst.className).not.toContain('line-clamp-2');
-    expect(hero.querySelectorAll('[class*="leading-\\[1.6\\]"]').length).toBe(0);
-
-    // Touch targets: the two fine-print controls are text disclosures in a 12px band, sized
-    // clear of the 24px WCAG 2.5.8 AA floor. The icon-only pause control keeps its 44px.
-    // Touch targets are mobile-first (ui-ux-pro-max §2, "min 44x44px"; §5 "touch-density"): on a
-    // phone every one of these is a 44px row, and above `sm` the two fine-print controls drop back
-    // to the sizes that keep the band thin (36px and 32px), both clear of the 24px WCAG 2.5.8 AA
-    // floor. The icon-only pause control keeps its 44px at every width.
-    const disclosure = within(hero).getByRole('button', { name: /read the full overview/i });
-    expect(disclosure.className).toContain('min-h-[44px]');
-    expect(disclosure.className).toContain('sm:min-h-[36px]');
-    const links = Array.from(hero.querySelectorAll('a[href="/methodology"], a[href="/model-performance"], a[href="/last-run"]'));
-    expect(links.length).toBeGreaterThanOrEqual(3);
-    for (const link of links) {
-      expect(link.className).toContain('min-h-[44px]');
-      expect(link.className).toContain('sm:min-h-[32px]');
-    }
-    const pause = within(hero).getByRole('button', { name: /pause motion/i });
-    expect(pause.className).toContain('min-h-[44px]');
-
-    // And nothing was deleted to get there: the claim, the tagline, the action, the standfirst,
-    // the three destinations and the 999 boundary are all still in the hero.
-    expect(within(hero).getByRole('link', { name: /open the live map/i })).toHaveAttribute('href', '/live');
-    expect(within(hero).getByText(/not an official warning service/)).toBeInTheDocument();
-    expect(hero.querySelectorAll('.text-shadow-hero-fine').length).toBeGreaterThanOrEqual(5);
-  });
-
-  it('keeps the hero open: no surface over the photograph, one primary action, small print', async () => {
+  it('keeps the hero simple: one scrim, one primary action, no second frame', async () => {
     renderPage();
     await screen.findByTestId('front-door-status-strip');
     const hero = document.querySelector('header.ap-on-dark') as HTMLElement;
@@ -250,49 +196,24 @@ describe('the front door', () => {
     expect(hero.querySelector('[data-testid="last-run-visual"]')).toBeNull();
     expect(Array.from(hero.querySelectorAll('a[href="/last-run"]')).length).toBeGreaterThanOrEqual(1);
 
-    // 2026-10-06: the copy panel is gone. Every word in the hero now sits on the photograph, with
-    // nothing painted between them - no scrim, no blur, no frame, no inline filter - so the one
-    // surface behind the type is the exposure curve HeroCinematicBackground already draws, and the
-    // copy is anchored to the band that gradient darkens. The panel this replaces was
-    // `bg-carbon-black/65` plus `backdrop-filter: blur(var(--hero-glass-blur))`; both are asserted
-    // absent, so putting a box back over the hero fails here instead of quietly covering it again.
-    const copy = hero.querySelector('h1')!.closest('div') as HTMLElement;
-    expect(copy.className).toContain('max-w-3xl');
-    expect(copy.className).not.toMatch(/bg-|border|rounded-|backdrop-/);
-    expect(copy.getAttribute('style')).toBeNull();
-    expect(copy.querySelector('[class*="backdrop-blur"]')).toBeNull();
-    expect(copy.querySelectorAll('[style*="backdrop"]').length).toBe(0);
+    // One flat scrim over the photograph. It was a `from-black/70 to-black/60` gradient, which
+    // put the authority sentence at the weak end of its own surface (2.45:1 over a bright frame
+    // at the old `to-black/35`); a single `bg-carbon-black/65` clears that everywhere on the card.
+    const card = hero.querySelector('h1')!.closest('div') as HTMLElement;
+    expect(card.className).toContain('bg-carbon-black/65');
+    expect(card.className).not.toMatch(/from-black\//);
 
-    // One big heading: the same `ap-hero` style the front door has always used.
-    expect(hero.querySelector('h1')!.className).toContain('ap-hero');
-
-    // Type protection is two published tokens, not seven hand-copied arbitrary values: the h1
-    // wears the display tier, every piece of small print (tagline, standfirst, the three links, the
-    // 999 boundary sentence) wears the fine one. Both utilities come from `index.css`; the values
-    // are pinned there by `HeroCinematicBackground.test.tsx`.
-    expect(hero.querySelector('h1')!.className).toContain('text-shadow-hero-display');
-    const fine = Array.from(hero.querySelectorAll('.text-shadow-hero-fine'));
-    expect(fine.length).toBeGreaterThanOrEqual(5); // tagline, standfirst, 3 links, boundary
-    expect(hero.querySelectorAll('[class*="drop-shadow-["]').length).toBe(0);
-
-    // One primary action in the hero, and it is the navigation one. The other destinations are
-    // in the small-print link row (the 2026-10-03 audit's L-P1-1: three equal-weight buttons read
-    // as none). `ap-btn` is the Apple primitive's own marker; the hero renders exactly one.
+    // One primary action in the hero, and it is the navigation one. The other two destinations
+    // are text links (the 2026-10-03 audit's L-P1-1: three equal-weight buttons read as none).
+    // `ap-btn` is the Apple primitive's own marker; the hero renders exactly one of them.
     const buttons = Array.from(hero.querySelectorAll('a.ap-btn'));
     expect(buttons.map((link) => link.getAttribute('href'))).toEqual(['/live']);
-
-    // The tagline is the hero's one subheading, and the small print carries everything else: the
-    // authority boundary (still in the hero - 2026-10-03 audit H-P1-4) and the three destinations
-    // as one row of links rather than a column of buttons.
-    expect(within(hero).getByText(/every number traces to a dated artifact/i)).toBeInTheDocument();
-    expect(within(hero).getByText(/not an official warning service/)).toBeInTheDocument();
-    expect(within(hero).getByRole('link', { name: /how a forecast is produced/i })).toHaveAttribute('href', '/methodology');
-    expect(within(hero).getByRole('link', { name: /read the validation scorecard/i })).toHaveAttribute('href', '/model-performance');
 
     // The language switch carries its own chip; the glass frame that used to wrap it was a box
     // inside a box. Nothing else in the hero draws a translucent surface.
     expect(hero.querySelectorAll('.bg-carbon-90\\/40').length).toBe(0);
   });
+
 
   it('enters on the design system’s CSS entrance, not on a frame loop', async () => {
     const { container } = renderPage();
@@ -387,7 +308,7 @@ describe('the front door', () => {
     unmount();
   });
 
-  it('survives a 320px phone: no fixed widths, no unbreakable tokens, one size step down', async () => {
+  it('survives a 320px phone: no fixed widths, no unbreakable tokens', async () => {
     const { container, unmount } = renderPage();
     await screen.findByTestId('front-door-status-strip');
 
@@ -401,10 +322,11 @@ describe('the front door', () => {
      *     a maximum cannot overflow, and neither is `min-h-*`, which is a touch target (below).
      *   · §6 `long-token-wrapping` — the citation carries a URL, the only unbreakable token
      *     on the page; it must be allowed to break.
-     *   · §5 `touch-density` — the fine-print controls are 44px on a phone (asserted in the
-     *     hero test); the disclosure and the two in-section buttons keep 44px here.
-     *   · §6 `line-length-control` — every text container is capped by a `max-w-*`, never
-     *     allowed to run the full width of a desktop frame.
+     *   · §5 `touch-density` — the in-section actions are 44px rows, phone and desktop alike.
+     *
+     * The hero is deliberately not covered here: it is `main`'s hero, held by its own test below,
+     * and the rules that shape it (the copy panel, the type sizes, the phone clamp) belong to that
+     * contract rather than to this page-level scan.
      */
     const PHONE_CONTENT_BOX = 320 - 2 * 16;
 
@@ -427,25 +349,6 @@ describe('the front door', () => {
     expect(citation).toBeDefined();
     expect(citation.className).toContain('break-words');
     expect(citation.className).toContain('font-mono');
-
-    // The hero's legal sentence stepped down one notch and is now its own scoped class, not a
-    // second user of the fine-print token. 12px was the last size in the hero that could afford
-    // to come down without leaving the scale.
-    const authority = [...container.querySelectorAll('p')].find((p) =>
-      p.textContent?.includes('not an official warning service'),
-    )!;
-    expect(authority.className).toContain('hero-authority');
-    expect(authority.className).not.toContain('text-ap-fine');
-    // It keeps its type protection: the one sentence that must not be missed is still shadowed.
-    expect(authority.className).toContain('text-shadow-hero-fine');
-
-    // The rule that sizes it lives in index.css, in the design system's own scale, and steps down
-    // further on a phone rather than up.
-    const css = readFileSync(join(process.cwd(), 'frontend/src/index.css'), 'utf8');
-    expect(css).toMatch(/\.hero-frame \.hero-authority \{[^}]*font-size: 0\.6875rem/);
-    expect(css).toMatch(
-      /@media \(max-width: 639px\) \{[\s\S]{0,200}\.hero-frame \.hero-authority \{[^}]*font-size: var\(--ap-text-micro-legal\)/,
-    );
 
     // Every in-section action is a 44px row, phone and desktop alike.
     const sectionButtons = [...container.querySelectorAll('a')].filter((a) =>

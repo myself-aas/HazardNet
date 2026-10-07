@@ -1,5 +1,12 @@
 # The front door: the section's name, the legal sentence's size, and a phone pass
 
+> **Partially reverted, 2026-10-07 (later the same day).** Section 2 of this note — the authority
+> sentence's size step-down — and the hero rows of section 3 (the 44px touch targets, the hero's
+> disclosure) were undone by request: the hero section is back to `main`, byte for byte. What
+> stands is the rename in section 1 and the non-hero rows of section 3: the hazards `<h2>`'s
+> mobile-first sizes, the citation's `break-words`, the `tabular-nums` coverage pointer. The
+> revert is recorded in the commit log; this note is kept as the record of the pass.
+
 **Date:** 2026-10-07
 **Surface:** `/` — `frontend/src/pages/FrontDoor.tsx`, its hero and its hazards section, plus the one
 CSS rule the change needed (`frontend/src/index.css`).

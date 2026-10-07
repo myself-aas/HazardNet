@@ -23,34 +23,9 @@
  *
  * A missing file is caught by preloading each slide through an `Image` and dropping any
  * that errors, so a broken asset removes its slide instead of painting a blank.
- *
- * **Simplified 2026-10-06 (Vercel React guidance), no behaviour change:**
- *
- *   - **The slide lists are module constants.** `lowBandwidth ? HERO_CAROUSEL_IMAGES.slice(0, 1)
- *     : HERO_CAROUSEL_IMAGES` ran on every render, so `images` was a new array each time — which
- *     made the `useMemo` below recompute every render and, worse, made the preload `useEffect`
- *     re-run every render: four fresh `Image()` probes and four more requests per re-render, in
- *     the one mode (low bandwidth) where that is least affordable. A stable module-level list is
- *     the dependency an effect can actually key on.
- *   - **The probe results are cached, and its RegExp is hoisted.** `paintedUrl()` ran
- *     `getComputedStyle(document.documentElement).getPropertyValue(...)` — a forced style
- *     resolution — for every slide, every time it was asked; the answer cannot change between two
- *     calls in one page load (a viewport resize remounts the page, see the note on it below), so
- *     it is memoised in a module-level `Map`. The `url(...)` RegExp was a literal inside the
- *     function; it is now module scope.
- *   - **The slide's custom-property name and background string are precomputed once**, instead of
- *     rebuilding `--hero-slide-…` with `split`/`replace` for every slide on every render.
- *   - **The active slide is derived during render.** A third `useEffect` watched
- *     `failed`/`index` and called `setIndex` when the current slide had failed, which is a
- *     render → effect → render pass for a value that is a pure function of state already in
- *     scope. `firstUsable` computes it instead: same fall-forward, one fewer render, no state
- *     drift if two slides fail at once.
- *   - **`memo()`**, because the parent is not always cheap: `HeroCinematicBackground` re-renders
- *     whenever the hero's pause control toggles, and the animated glow beside it used to re-render
- *     this subtree on every animation frame.
  */
 
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { HERO_CAROUSEL_IMAGES } from '../lib/heroCarouselImages';
 
 interface HeroImageCarouselProps {
@@ -73,32 +48,12 @@ interface HeroImageCarouselProps {
 const SLIDE_FADE_MS = 1600;
 
 /**
- * One slide's immutable facts, computed once at module load.
- *
- * `cssVar` is the portrait-crop custom property for a slide, e.g.
- * `/hero-carousel/hero-flood-delta.jpg` -> `--hero-slide-hero-flood-delta`. It is defined only
- * inside the narrow-viewport media block in `styles/hero-media.css`, so the var is undefined on
- * desktop and the inline landscape URL wins. `backgroundImage` is the declaration the slide paints:
- * `var(<portrait var>, url(<landscape src>))`.
+ * The portrait-crop custom property for a slide, e.g. `/hero-carousel/hero-flood-delta.jpg` ->
+ * `--hero-slide-hero-flood-delta`. Defined only inside the narrow-viewport media block in
+ * `styles/hero-media.css`, so the var is undefined on desktop and the inline landscape URL wins.
  */
-interface Slide {
-  /** Same-origin path; also the `data-src` the tests and the preloader key on. */
-  src: string;
-  portraitVar: string;
-  backgroundImage: string;
-}
-
-const toSlide = ({ src }: { src: string }): Slide => {
-  const name = (src.split('/').pop() ?? '').replace(/\.[a-z0-9]+$/i, '');
-  const portraitVar = `--hero-slide-${name}`;
-  return { src, portraitVar, backgroundImage: `var(${portraitVar}, url(${src}))` };
-};
-
-const ALL_SLIDES: readonly Slide[] = HERO_CAROUSEL_IMAGES.map(toSlide);
-/** Low bandwidth keeps slide one only — and never fetches the other three. */
-const LOW_BANDWIDTH_SLIDES: readonly Slide[] = ALL_SLIDES.slice(0, 1);
-
-const URL_RE = /^url\(["']?(.*?)["']?\)$/;
+const portraitVar = (src: string): string =>
+  `--hero-slide-${(src.split('/').pop() ?? '').replace(/\.[a-z0-9]+$/i, '')}`;
 
 /**
  * The URL this viewport will actually paint for a slide: the media-scoped custom property when the
@@ -108,39 +63,14 @@ const URL_RE = /^url\(["']?(.*?)["']?\)$/;
  * probing `src` on a phone downloaded the 124-213 KB landscape frame *and* the portrait render of
  * every slide. `getComputedStyle` resolves media-dependent custom properties against the live
  * viewport, so this answers "which URL is in effect here" without duplicating the breakpoints.
- * Asked once per slide per page load and cached: the answer is a property of the viewport, and a
- * device that changes viewport shape remounts this page on the next navigation, so one probe is
- * correct rather than merely cheap.
+ * Re-evaluated per mount; a device that changes viewport shape remounts this page on the next
+ * navigation, and one extra probe on a resize is not worth a resize listener here.
  */
-const paintedUrlCache = new Map<string, string>();
 const paintedUrl = (src: string): string => {
-  const cached = paintedUrlCache.get(src);
-  if (cached !== undefined) return cached;
-  let resolved = src;
-  if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
-    const slide = ALL_SLIDES.find((s) => s.src === src);
-    const raw = window
-      .getComputedStyle(document.documentElement)
-      .getPropertyValue(slide?.portraitVar ?? '')
-      .trim();
-    const match = URL_RE.exec(raw);
-    if (match && match[1]) resolved = match[1];
-  }
-  paintedUrlCache.set(src, resolved);
-  return resolved;
-};
-
-/**
- * The first slide at or after `from` that is not known to be broken; -1 when every slide failed.
- * This is the fall-forward that used to live in an effect, as a pure function of the state the
- * component already holds.
- */
-const firstUsable = (slides: readonly Slide[], failed: ReadonlySet<string>, from: number): number => {
-  for (let step = 0; step < slides.length; step += 1) {
-    const i = (from + step) % slides.length;
-    if (!failed.has(slides[i].src)) return i;
-  }
-  return -1;
+  if (typeof window === 'undefined' || typeof window.getComputedStyle !== 'function') return src;
+  const raw = window.getComputedStyle(document.documentElement).getPropertyValue(portraitVar(src)).trim();
+  const match = /^url\(["']?(.*?)["']?\)$/.exec(raw);
+  return match && match[1] ? match[1] : src;
 };
 
 export const HeroImageCarousel: React.FC<HeroImageCarouselProps> = ({
@@ -150,18 +80,15 @@ export const HeroImageCarousel: React.FC<HeroImageCarouselProps> = ({
   lowBandwidth = false,
   style,
 }) => {
-  const images = lowBandwidth ? LOW_BANDWIDTH_SLIDES : ALL_SLIDES;
+  const images = lowBandwidth ? HERO_CAROUSEL_IMAGES.slice(0, 1) : HERO_CAROUSEL_IMAGES;
   const [index, setIndex] = useState(0);
   const [failed, setFailed] = useState<ReadonlySet<string>>(new Set());
 
   const usable = useMemo(() => images.filter(({ src }) => !failed.has(src)), [images, failed]);
-  /** Derived, not stored: the slide on screen, falling forward past any that failed. */
-  const activeIndex = firstUsable(images, failed, index);
 
   /*
    * Preload every slide through an Image so a missing or broken file is known here and
    * its slide removed, rather than surfacing as a blank layer behind the copy.
-   * `images` is a module constant, so this runs once per mode — not once per render.
    */
   useEffect(() => {
     for (const { src } of images) {
@@ -184,6 +111,11 @@ export const HeroImageCarousel: React.FC<HeroImageCarouselProps> = ({
     return () => window.clearInterval(id);
   }, [paused, reducedMotion, intervalMs, images.length, usable.length]);
 
+  /* If the active slide turns out to be a failed one, fall forward. */
+  useEffect(() => {
+    if (failed.has(images[index]?.src ?? '')) setIndex((i) => (i + 1) % images.length);
+  }, [failed, images, index]);
+
   return (
     <div
       data-testid="hero-image-carousel"
@@ -203,21 +135,21 @@ export const HeroImageCarousel: React.FC<HeroImageCarouselProps> = ({
         ...style,
       }}
     >
-      {images.map((slide, i) => {
-        if (failed.has(slide.src)) return null;
-        const active = i === activeIndex;
+      {images.map(({ src }, i) => {
+        if (failed.has(src)) return null;
+        const active = i === index;
         return (
           <div
-            key={slide.src}
+            key={src}
             data-testid="hero-slide"
-            data-src={slide.src}
+            data-src={src}
             style={{
               position: 'absolute',
               inset: 0,
               // Portrait art for phones, landscape as the desktop fallback: see
               // `styles/hero-media.css` for how the two are selected without an `image-set()`
               // density guess and without ever fetching both.
-              backgroundImage: slide.backgroundImage,
+              backgroundImage: `var(${portraitVar(src)}, url(${src}))`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               opacity: active ? 1 : 0,
@@ -237,5 +169,4 @@ export const HeroImageCarousel: React.FC<HeroImageCarouselProps> = ({
   );
 };
 
-/** Memoised: the animated layers beside this one re-render far more often than it does. */
-export default memo(HeroImageCarousel);
+export default HeroImageCarousel;
