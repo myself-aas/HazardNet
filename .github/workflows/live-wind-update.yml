@@ -38,11 +38,40 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install wgrib2
+      # `wgrib2` does not exist in Ubuntu 24.04 — noble has no such package, jammy did — and
+      # `ubuntu-latest` is 24.04 (it migrates to Ubuntu 26 on 2026-10-19). So the apt step this
+      # replaces failed with "Unable to locate package wgrib2" (apt exit 100, eight seconds in)
+      # and the job had never been green since it landed: every run died here and the decode,
+      # tests, commit and deploy steps were skipped.
+      #
+      # This installs conda-forge's linux-64 build instead. It is the maintained upstream build
+      # (3.8.0) and is compiled with g2clib/jasper + nceplibs-ip + libaec + libpng — exactly what
+      # the fetch script needs: `-match`/`-small_grib` to cut the hazard window, `-spread` to emit
+      # the `lon lat value` rows. The static micromamba binary makes the step independent of
+      # which Ubuntu the runner label resolves to, so the 26.04 migration cannot break it again.
+      #
+      # The smoke check asserts the binary runs and identifies itself rather than trusting the
+      # installer: a wgrib2 built without the compression libraries installs cleanly and only
+      # fails later, inside the decode of a real GFS message (which is what `-spread` reads).
+      - name: Install wgrib2 (conda-forge; Ubuntu 24.04 has no package)
+        shell: bash
+        env:
+          WGRIB2_VERSION: '3.8.0'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y wgrib2
-          wgrib2 -help | head -2
+          set -euo pipefail
+          export MAMBA_ROOT_PREFIX="$RUNNER_TEMP/micromamba-root"
+          curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
+          ./bin/micromamba create -y -p "$RUNNER_TEMP/wgrib2" -c conda-forge "wgrib2=$WGRIB2_VERSION"
+          echo "$RUNNER_TEMP/wgrib2/bin" >> "$GITHUB_PATH"
+          HELP=$("$RUNNER_TEMP/wgrib2/bin/wgrib2" -help 2>&1 || true)
+          printf '%s\n' "$HELP" | head -2
+          case "$HELP" in
+            *wgrib2*) ;;
+            *)
+              echo "::error::wgrib2 installed but does not run — the smoke check got no wgrib2 banner."
+              exit 1
+              ;;
+          esac
 
       - name: Build wind artifact (GFS, falling back to ECMWF)
         run: node scripts/fetch_live_wind.mjs --out frontend/public/data/live/wind.json
