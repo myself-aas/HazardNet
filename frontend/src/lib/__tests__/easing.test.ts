@@ -74,15 +74,20 @@ describe('the web module graph', () => {
     // Asserted on source text because that is where the import graph is decided; the bundle
     // measurement in `check:bundle` is the other half of this guard.
     const fs = require('node:fs') as typeof import('node:fs');
-    const path = require('node:path') as typeof import('node:path');
+    // Resolved RELATIVE TO THIS FILE, never from `process.cwd()`: CI runs this suite with
+    // `working-directory: frontend` (see .github/workflows/ci.yml), so the previous cwd-relative
+    // 'frontend/src/...' doubled to '<repo>/frontend/frontend/src/...' and the suite failed with
+    // ENOENT on every PR while passing locally from the repository root. `require.resolve` also
+    // survives the file being moved, because a broken relative specifier is a load-time error
+    // rather than a silently wrong path.
     const webFiles = [
-      'frontend/src/lib/motion-interpolate.ts',
-      'frontend/src/lib/easing.ts',
-      'frontend/src/components/HeroCinematicBackground.tsx',
-      'frontend/src/pages/FrontDoor.tsx',
-    ];
+      '../motion-interpolate.ts',
+      '../easing.ts',
+      '../../components/HeroCinematicBackground.tsx',
+      '../../pages/FrontDoor.tsx',
+    ].map((specifier) => require.resolve(specifier) as string);
     for (const file of webFiles) {
-      const source = fs.readFileSync(path.join(process.cwd(), file), 'utf8');
+      const source = fs.readFileSync(file, 'utf8');
       // Comments are allowed to *name* the package (they explain this decision) — imports are not.
       const imports = [...source.matchAll(/^\s*import[^\n]*from\s+'([^']+)'/gm)].map((m) => m[1]);
       expect(imports.filter((spec) => spec === 'remotion')).toEqual([]);

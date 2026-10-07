@@ -11,7 +11,6 @@
  */
 
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import {
   ATTRIBUTION_TEXT,
   DEFAULT_ATTRIBUTION_TEXT,
@@ -74,10 +73,9 @@ describe('basemap attribution', () => {
   it('is not decoded in the map’s render path', () => {
     // The guard for the hoist: `LiveMapView` renders thousands of markers and must not allocate
     // RegExp literals or decode entities while doing it. Comments may name the old code.
-    const source = readFileSync(
-      join(process.cwd(), 'frontend/src/components/LiveMapView.tsx'),
-      'utf8',
-    )
+    // Resolved relative to THIS FILE for the same reason as `lib/__tests__/easing.test.ts`: the CI
+    // frontend job runs jest from `frontend/`, so a cwd-relative repository path doubled.
+    const source = readFileSync(require.resolve('../../components/LiveMapView.tsx'), 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, '')
       .replace(/^\s*\/\/.*$/gm, '');
     expect(source).toContain('attributionFor(activeLayer)');
