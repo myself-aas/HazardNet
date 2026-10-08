@@ -26,6 +26,9 @@ permissions:
 env:
   SITE_URL: https://hazardnet.live
   MAX_DATA_AGE_DAYS: '10'
+  # Use a browser-like signature for probe requests so edge bot defenses do not
+  # challenge the health checks themselves.
+  PROBE_USER_AGENT: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
   # Optional override (repository variable) for the forecast API host. Default:
   # same host as the site. Only set this if the API is served somewhere else —
   # the production pipeline pushes to HAZARDNET_API_URL, which need not be the
@@ -74,7 +77,7 @@ jobs:
         continue-on-error: true
         shell: bash
         run: |
-          RESPONSE=$(curl -sSL --max-redirs 5 -o /tmp/home.html -w "%{http_code} %{url_effective}" --max-time 30 "$SITE_URL/")
+          RESPONSE=$(curl -sSL --max-redirs 5 -A "$PROBE_USER_AGENT" -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.9' -o /tmp/home.html -w "%{http_code} %{url_effective}" --max-time 30 "$SITE_URL/")
           HTTP_CODE=${RESPONSE%% *}
           FINAL_URL=${RESPONSE#* }
           echo "homepage HTTP $HTTP_CODE (final URL: ${FINAL_URL:-unknown})"
@@ -113,7 +116,7 @@ jobs:
           check_route () {
             local path="$1" expect="$2" label="$3"
             local response code html
-            response=$(curl -sSL --max-redirs 5 -w '\n%{http_code}' --max-time 30 "$SITE_URL$path" 2>/dev/null || true)
+            response=$(curl -sSL --max-redirs 5 -A "$PROBE_USER_AGENT" -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.9' -w '\n%{http_code}' --max-time 30 "$SITE_URL$path" 2>/dev/null || true)
             code="${response##*$'\n'}"
             html="${response%$'\n'*}"
             if [ "$code" != "200" ]; then
@@ -165,15 +168,15 @@ jobs:
           # could run, so every scheduled probe reported a site outage while the
           # homepage and deep-link probes were green. A redirect that leaves the
           # production domain is still caught by the homepage probe above.
-          FINAL_URL=$(curl -sSL -o /dev/null -w '%{url_effective}' --max-redirs 5 --max-time 30 "$SITE_URL/" 2>/dev/null || true)
+          FINAL_URL=$(curl -sSL -A "$PROBE_USER_AGENT" -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.9' -o /dev/null -w '%{url_effective}' --max-redirs 5 --max-time 30 "$SITE_URL/" 2>/dev/null || true)
           if [ -z "$FINAL_URL" ]; then
             FINAL_URL="${SITE_URL%/}/"
           fi
           echo "[headers] probing $FINAL_URL (redirect target of $SITE_URL/)"
           # Use curl with -D - (dump headers) over standard GET to ensure edge CDN headers are returned
-          HEADERS=$(curl -sSL -D - -o /dev/null --max-redirs 5 --max-time 30 "$FINAL_URL" 2>/dev/null | tr -d '\r' || true)
+          HEADERS=$(curl -sSL -A "$PROBE_USER_AGENT" -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.9' -D - -o /dev/null --max-redirs 5 --max-time 30 "$FINAL_URL" 2>/dev/null | tr -d '\r' || true)
           if [ -z "$HEADERS" ]; then
-            HEADERS=$(curl -sSI -L --max-redirs 5 --max-time 30 "$FINAL_URL" 2>/dev/null | tr -d '\r' || true)
+            HEADERS=$(curl -sSI -L -A "$PROBE_USER_AGENT" -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.9' --max-redirs 5 --max-time 30 "$FINAL_URL" 2>/dev/null | tr -d '\r' || true)
           fi
           if [ -z "$HEADERS" ]; then
             echo "::error::no HTTP response headers from $FINAL_URL — the site did not answer the header probe"
@@ -210,7 +213,7 @@ jobs:
         shell: bash
         run: |
           set -uo pipefail
-          curl -sSL --max-redirs 5 --max-time 30 "$SITE_URL/sitemap.xml" -o /tmp/sitemap.xml
+          curl -sSL --max-redirs 5 -A "$PROBE_USER_AGENT" -H 'Accept: application/xml,text/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.9' --max-time 30 "$SITE_URL/sitemap.xml" -o /tmp/sitemap.xml
           if ! grep -q '<urlset' /tmp/sitemap.xml; then
             echo "::error::/sitemap.xml is not a sitemap"
             head -c 300 /tmp/sitemap.xml
@@ -231,7 +234,7 @@ jobs:
           # www.hazardnet.live is NXDOMAIN, docs/ops/owner-actions.md Action 16).
           check_one() {
             local code
-            code=$(curl -sSL --max-redirs 5 -o /dev/null -w '%{http_code}' --max-time 15 "$1" 2>/dev/null) || code=000
+            code=$(curl -sSL --max-redirs 5 -A "$PROBE_USER_AGENT" -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.9' -o /dev/null -w '%{http_code}' --max-time 15 "$1" 2>/dev/null) || code=000
             if [ "$code" = "000" ]; then
               echo "$1 → unreachable: no response (DNS/TLS/connection failure) — listed in sitemap.xml"
             elif [ "$code" != "200" ]; then
@@ -283,7 +286,7 @@ jobs:
             fi
           }
 
-          HTTP_CODE=$(curl -sSL --max-redirs 5 -o /tmp/metadata.json -w "%{http_code}" --max-time 30 "$API_URL")
+          HTTP_CODE=$(curl -sSL --max-redirs 5 -A "$PROBE_USER_AGENT" -H 'Accept: application/json,text/plain;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.9' -o /tmp/metadata.json -w "%{http_code}" --max-time 30 "$API_URL")
           echo "metadata HTTP $HTTP_CODE ($API_URL)"
           if [ "$HTTP_CODE" = "200" ] && jq -e . /tmp/metadata.json >/dev/null 2>&1; then
             PREDICTION_DATE=$(jq -r '.prediction_date // empty' /tmp/metadata.json | head -c 10)
@@ -301,7 +304,7 @@ jobs:
           fi
 
           echo "::warning::$API_URL returned HTTP $HTTP_CODE — this deployment serves no /api/v1/forecasts/* route (Vercel Root Directory, docs/ops/owner-actions.md §2a-bis). Probing the committed snapshot instead: it is the active delivery path while PUSH_TO_API=false. Set the API_METADATA_URL repository variable if the API runs on another host."
-          SNAP_CODE=$(curl -sSL --max-redirs 5 -o /tmp/metadata.json -w "%{http_code}" --max-time 30 "$SNAPSHOT_URL")
+          SNAP_CODE=$(curl -sSL --max-redirs 5 -A "$PROBE_USER_AGENT" -H 'Accept: application/json,text/plain;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.9' -o /tmp/metadata.json -w "%{http_code}" --max-time 30 "$SNAPSHOT_URL")
           echo "snapshot HTTP $SNAP_CODE ($SNAPSHOT_URL)"
           if [ "$SNAP_CODE" != "200" ] || ! jq -e . /tmp/metadata.json >/dev/null 2>&1; then
             echo "::error::Neither the forecast API (HTTP $HTTP_CODE) nor the committed snapshot (HTTP $SNAP_CODE) is being served — the site has no forecast data path at all."
@@ -324,7 +327,7 @@ jobs:
           set -uo pipefail
           FAILED=0
 
-          CODE=$(curl -sSL --max-redirs 5 -o /tmp/status.html -w '%{http_code}' --max-time 30 "$SITE_URL/status" 2>/dev/null) || CODE=000
+          CODE=$(curl -sSL --max-redirs 5 -A "$PROBE_USER_AGENT" -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.9' -o /tmp/status.html -w '%{http_code}' --max-time 30 "$SITE_URL/status" 2>/dev/null) || CODE=000
           echo "/status HTTP $CODE"
           if [ "$CODE" != "200" ]; then
             echo "::error::/status returned HTTP $CODE — the public status page is not being served."
@@ -334,7 +337,7 @@ jobs:
             FAILED=1
           fi
 
-          ACODE=$(curl -sSL --max-redirs 5 -o /tmp/freshness.json -w '%{http_code}' --max-time 30 "$SITE_URL/data/freshness.json" 2>/dev/null) || ACODE=000
+          ACODE=$(curl -sSL --max-redirs 5 -A "$PROBE_USER_AGENT" -H 'Accept: application/json,text/plain;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.9' -o /tmp/freshness.json -w '%{http_code}' --max-time 30 "$SITE_URL/data/freshness.json" 2>/dev/null) || ACODE=000
           echo "/data/freshness.json HTTP $ACODE"
           if [ "$ACODE" != "200" ] || ! jq -e . /tmp/freshness.json >/dev/null 2>&1; then
             echo "::error::/data/freshness.json is not served (HTTP $ACODE) — the status page has no data to render."
@@ -372,7 +375,7 @@ jobs:
           set -uo pipefail
           FAILED=0
 
-          CODE=$(curl -sSL --max-redirs 5 -o /tmp/content-index.json -w '%{http_code}' --max-time 30 "$SITE_URL/data/content-index.json" 2>/dev/null) || CODE=000
+          CODE=$(curl -sSL --max-redirs 5 -A "$PROBE_USER_AGENT" -H 'Accept: application/json,text/plain;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.9' -o /tmp/content-index.json -w '%{http_code}' --max-time 30 "$SITE_URL/data/content-index.json" 2>/dev/null) || CODE=000
           echo "/data/content-index.json HTTP $CODE"
           if [ "$CODE" != "200" ] || ! jq -e . /tmp/content-index.json >/dev/null 2>&1; then
             echo "::error::/data/content-index.json is not served (HTTP $CODE) — the probe cannot verify the content pages."
@@ -405,7 +408,7 @@ jobs:
           echo "checking $(wc -l < /tmp/content-sample-unique.txt) generated paths"
           while read -r path; do
             [ -z "$path" ] && continue
-            code=$(curl -sSL --max-redirs 5 -o /tmp/page-body -w '%{http_code}' --max-time 30 "$SITE_URL$path" 2>/dev/null) || code=000
+            code=$(curl -sSL --max-redirs 5 -A "$PROBE_USER_AGENT" -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.9' -o /tmp/page-body -w '%{http_code}' --max-time 30 "$SITE_URL$path" 2>/dev/null) || code=000
             if [ "$code" != "200" ]; then
               echo "::error::$path → HTTP $code (generated content path not served)"
               FAILED=1
