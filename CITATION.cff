@@ -1,15 +1,13 @@
 cff-version: 1.2.0
 message: "If you use HazardNet, its forecasts or its published outputs in academic work or an operational product, please cite this repository as below."
-title: "HazardNet: multi-hazard early warning for Bangladesh agriculture"
+title: "HazardNet: An Edge-native, Physics-augmented Spatio-temporal Learning for Multi-Hazard Early Warning from Multi-modal Satellite Observations"
 abstract: >-
   HazardNet publishes 7- and 15-day multi-hazard outlooks for the 64 districts of
   Bangladesh across eight hazard classes, with dual-track severity values and published
   provenance for every number. Model code, dataset collection procedures, training and
-  benchmarking are research-private; only results and outputs are public. Master's thesis,
-  Department of Agrometeorology, Bangladesh Agricultural University. Supervised by
-  Dr. Ahmed Khairul Hasan; co-supervised by the Department of Computer Science and
-  Mathematics, BAU.
-type: thesis
+  benchmarking are research-private; only results and outputs are public. Department of Agrometeorology, Bangladesh Agricultural University. Supervised by
+  Dr. Ahmed Khairul Hasan; co-supervised by Dr. Md. Rakib Hassan.
+type: research article
 authors:
   - family-names: Shuvo
     given-names: Ashif Ahmed
