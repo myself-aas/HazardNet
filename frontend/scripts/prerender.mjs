@@ -406,15 +406,15 @@ const STATIC_STYLES = `<style>
      below is copied from the design system, and a test fails if one of them stops being a
      colour the system publishes.
 
-     The type is the platform UI face, never a webfont: SF Pro is named first and resolves on
-     Apple platforms, system-ui everywhere else, so the shell's first paint uses the same
-     metrics as the hydrated app and nothing reflows.
+     The type is the platform UI face, never a webfont: Inter is named first where it is
+     installed, system-ui everywhere else, so the shell's first paint uses the same metrics
+     as the hydrated app and nothing reflows.
 
      The dark arm is a prefers-color-scheme media query rather than a class, because there is
      no JavaScript yet to read the stored preference — this is what stops a system-dark
      visitor getting a white flash before the app boots. */
-  .hn-static{max-width:60rem;margin:0 auto;padding:5.5rem 1.25rem 3rem;background:#ffffff;font-family:"SF Pro Text",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans Bengali",sans-serif;font-size:1rem;color:#1d1d1f;line-height:1.62}
-  .hn-static h1,.hn-static h2,.hn-static h3,.hn-static summary,.hn-static th{font-family:"SF Pro Display",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans Bengali",sans-serif}
+  .hn-static{max-width:60rem;margin:0 auto;padding:5.5rem 1.25rem 3rem;background:#ffffff;font-family:"Inter",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans Bengali",sans-serif;font-size:1rem;color:#1d1d1f;line-height:1.62}
+  .hn-static h1,.hn-static h2,.hn-static h3,.hn-static summary,.hn-static th{font-family:"Inter",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans Bengali",sans-serif}
   .hn-static h1{font-size:1.9rem;line-height:1.15;letter-spacing:-.02em;margin:0 0 .75rem;font-weight:700}
   .hn-static h2{font-size:1.15rem;line-height:1.35;letter-spacing:-.02em;margin:2rem 0 .5rem;font-weight:700}
   .hn-static p{margin:.6rem 0;color:#333333;overflow-wrap:anywhere}
@@ -452,13 +452,13 @@ const STATIC_STYLES = `<style>
      pairing stays legible to a reader (and to a static contrast checker) that does not
      cascade media queries. Ratios on the stated backgrounds are all >= 4.5:1. */
   @media (prefers-color-scheme:dark){
-    body{background:#252527}
-    .hn-static{background:#252527;color:#ffffff}
+    body{background:#000000}
+    .hn-static{background:#1c1c1e;color:#ffffff}
     .hn-static p,.hn-static ul,.hn-static li{color:#cccccc}
     .hn-static .hn-lead{color:#e0e0e0}
     .hn-static a{color:#2997ff}
     .hn-static .hn-callout{background:#272729;border-left-color:#b3400f;color:#fdeee7}
-    .hn-static .hn-meta{background:#252527;border-top-color:#333333;color:#a1a1a6}
+    .hn-static .hn-meta{background:#242426;border-top-color:#333333;color:#a1a1a6}
     .hn-static .hn-meta-line,.hn-static caption,.hn-static .hn-reason,.hn-static .hn-loading{color:#a1a1a6}
     /* Nothing to revert for the loader on this scheme: the infinity mark's blue gradient holds at >= 3:1 on both a
        white and a near-black ground, so one animated file serves both. (The previous mark was near-black and

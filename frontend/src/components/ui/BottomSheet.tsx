@@ -60,7 +60,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             exit={{ opacity: 0 }}
             style={{ opacity: backdropOpacity }}
             onClick={onClose}
-            className="absolute inset-0 bg-carbon-black/60 backdrop-blur-xs pointer-events-auto cursor-pointer"
+            className="absolute inset-0 bg-ap-scrim pointer-events-auto cursor-pointer"
           />
 
           {/* Interactive Drag Sheet */}
@@ -88,7 +88,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
                 setStage('peek');
               }
             }}
-            className={`pointer-events-auto relative w-full max-w-2xl mx-auto rounded-t-xl bg-white/92 backdrop-blur-xl border-t border-carbon-20/40 shadow-2xl overflow-hidden flex flex-col ${
+            className={`pointer-events-auto relative w-full max-w-2xl mx-auto ap-sheet overflow-hidden flex flex-col ${
               stage === 'peek' ? 'max-h-[32vh]' : stage === 'half' ? 'max-h-[60vh]' : 'max-h-[85vh]'
             } ${className}`}
           >
@@ -100,7 +100,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
                 aria-label={`Cycle sheet height (current: ${stage})`}
                 className="min-h-[44px] min-w-[44px] px-4 flex items-center justify-center cursor-grab active:cursor-grabbing transition-colors tap-target"
               >
-                <span className="w-12 h-1.5 bg-carbon-30 hover:bg-carbon-40 rounded-full" aria-hidden="true" />
+                <span className="ap-sheet-grabber" aria-hidden="true" />
               </button>
 
               {(title || subtitle) && (

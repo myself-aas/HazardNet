@@ -25,6 +25,7 @@ import { fileURLToPath } from 'node:url';
 import {
   APPLE,
   APPLE_COLORS,
+  APPLE_DARK,
   APPLE_ELEVATION,
   APPLE_MOTION,
   APPLE_NEUTRAL,
@@ -94,19 +95,40 @@ const deltaE = (a, b) => {
 describe('the token module matches the published design document', () => {
   test('DESIGN.md is present — it is the source this system was generated from', () => {
     expect(spec).not.toBe('');
-    expect(spec).toContain('Apple');
+    expect(spec).toContain('Cupertino Precision');
   });
 
-  test('every colour in apple.ts that DESIGN.md names has the documented value', () => {
-    // Only the tokens DESIGN.md actually publishes are checked here; the derived ramp and the
-    // severity layer are extensions and are pinned separately below.
-    const mismatches = [];
-    for (const [key, value] of Object.entries(APPLE_COLORS)) {
-      const documented = specValue(key);
-      if (documented && documented.toLowerCase() !== String(value).toLowerCase()) {
-        mismatches.push(`${key}: apple.ts=${value} DESIGN.md=${documented}`);
-      }
-    }
+  test('every colour the token module names has the value DESIGN.md documents for it', () => {
+    // The front matter is the spec. Each Apple token is paired with the front-matter key that
+    // documents it. Light tints and the helper colour are prose-only, so they are not paired here.
+    const frontMatter = Object.fromEntries(
+      [...spec.matchAll(/^ {2}([a-z0-9-]+): '?(#[0-9a-fA-F]{6})'?$/gm)].map((m) => [m[1], m[2].toLowerCase()]),
+    );
+    const pairs = [
+      [APPLE_COLORS.canvas, 'light-bg-primary'],
+      [APPLE_COLORS.canvasParchment, 'light-bg-secondary'],
+      [APPLE_COLORS.inset, 'light-bg-tertiary'],
+      [APPLE_COLORS.ink, 'light-label-primary'],
+      [APPLE_COLORS.primaryFocus, 'light-tint-blue'],
+      [APPLE_COLORS.primaryOnDark, 'dark-tint-blue'],
+      [APPLE_COLORS.surfaceBlack, 'dark-bg-primary'],
+      [APPLE_COLORS.surfaceTile1, 'dark-bg-secondary'],
+      [APPLE_COLORS.surfaceTile2, 'dark-bg-elevated'],
+      [APPLE_COLORS.surfaceTile3, 'dark-bg-tertiary'],
+      [APPLE_DARK.label, 'dark-label-primary'],
+      [APPLE_DARK.labelSecondary, 'dark-label-secondary'],
+      [APPLE_DARK.labelTertiary, 'dark-label-tertiary'],
+      [APPLE_DARK.labelQuaternary, 'dark-label-quaternary'],
+      [APPLE_DARK.separatorOpaque, 'dark-separator'],
+      [APPLE_DARK.tint.blue, 'dark-tint-blue'],
+      [APPLE_DARK.tint.green, 'dark-tint-green'],
+      [APPLE_DARK.tint.orange, 'dark-tint-orange'],
+      [APPLE_DARK.tint.red, 'dark-tint-red'],
+      [APPLE_DARK.tint.purple, 'dark-tint-purple'],
+    ];
+    const mismatches = pairs
+      .filter(([value, key]) => frontMatter[key] !== String(value).toLowerCase())
+      .map(([value, key]) => `${value} vs DESIGN.md ${key}=${frontMatter[key]}`);
     expect(mismatches).toEqual([]);
   });
 
@@ -117,13 +139,13 @@ describe('the token module matches the published design document', () => {
     expect(APPLE_COLORS.ink).toBe('#1d1d1f');
     expect(APPLE_COLORS.canvasParchment).toBe('#f5f5f7');
     // Body copy is 17px in this system. Shipping 16 would be a different design.
-    expect(APPLE_TYPE.body.size).toBe(17);
+    expect(APPLE_TYPE.bodyMd.size).toBe(17);
     // The Display/Text face boundary.
     expect(APPLE.faceBoundary).toBe(20);
   });
 
-  test('the weight ladder omits 500, exactly as documented', () => {
-    expect(APPLE_WEIGHTS).toEqual([300, 400, 600, 700]);
+  test('the weight ladder is 400 / 500 / 600 / 700, exactly as documented', () => {
+    expect(APPLE_WEIGHTS).toEqual([400, 500, 600, 700]);
     for (const [name, style] of Object.entries(APPLE_TYPE)) {
       expect({ name, weight: style.weight, ok: APPLE_WEIGHTS.includes(style.weight) }).toEqual({
         name,
@@ -134,10 +156,11 @@ describe('the token module matches the published design document', () => {
   });
 
   test('the radius and spacing scales are the documented sets', () => {
-    expect(Object.values(APPLE_RADII)).toEqual([0, 5, 8, 11, 18, 9999, 9999]);
-    expect(Object.values(APPLE_SPACE)).toEqual([4, 8, 12, 17, 24, 32, 48, 80]);
+    expect(Object.values(APPLE_RADII)).toEqual([0, 4, 8, 12, 16, 24, 20, 12, 9999, 9999]);
+    expect(Object.values(APPLE_SPACE)).toEqual([4, 4, 8, 16, 24, 40, 64, 96]);
     expect(APPLE_TOUCH.min).toBe(44);
   });
+
 });
 
 describe('the stylesheet matches the token module', () => {
@@ -164,22 +187,21 @@ describe('the stylesheet matches the token module', () => {
   });
 
   test('the type scale is identical in both files', () => {
-    const CSS_NAME = {
-      heroDisplay: 'hero', displayLg: 'display-lg', displayMd: 'display-md', lead: 'lead',
-      leadAiry: 'lead-airy', tagline: 'tagline', body: 'body', bodyStrong: 'body-strong',
-      denseLink: 'dense-link', caption: 'caption', captionStrong: 'caption-strong',
-      buttonLarge: 'button-large', buttonUtility: 'button-utility', finePrint: 'fine-print',
-      microLegal: 'micro-legal', navLink: 'nav-link',
-    };
+    // Each role is four custom properties in apple.css, named after the TS key in kebab case.
+    const role = (name) => name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
     const drift = [];
     for (const [name, style] of Object.entries(APPLE_TYPE)) {
-      const slug = CSS_NAME[name];
-      expect(slug).toBeDefined();
-      // Hero is re-declared inside media queries, so take the :root declaration only.
-      const size = cssToken(`--ap-text-${slug}`);
-      const line = cssToken(`--ap-leading-${slug}`);
-      if (size !== `${style.size}px`) drift.push(`${slug} size: css=${size} ts=${style.size}px`);
-      if (line !== String(style.line)) drift.push(`${slug} line: css=${line} ts=${style.line}`);
+      const v = `--ap-type-${role(name)}`;
+      const size = cssToken(`${v}-size`);
+      const line = cssToken(`${v}-line`);
+      const track = cssToken(`${v}-track`);
+      const weight = cssToken(`${v}-weight`);
+      if (size !== `${style.size}px`) drift.push(`${name} size: css=${size} ts=${style.size}px`);
+      if (line !== `${style.line}px`) drift.push(`${name} line: css=${line} ts=${style.line}px`);
+      if (!track?.endsWith('em') || parseFloat(track) !== style.track) {
+        drift.push(`${name} track: css=${track} ts=${style.track}em`);
+      }
+      if (Number(weight) !== style.weight) drift.push(`${name} weight: css=${weight} ts=${style.weight}`);
     }
     expect(drift).toEqual([]);
   });
@@ -224,42 +246,38 @@ describe("the rules that make this Apple and not just 'a blue design system'", (
     }
   });
 
-  test('there is exactly ONE shadow, and it is not for UI', () => {
+  test('shadows are product imagery, the level-2 popover, and the segmented thumb; never a card or a button', () => {
     expect(APPLE_ELEVATION.flat).toBe('none');
     expect(norm(APPLE_ELEVATION.product)).toBe(norm('rgba(0, 0, 0, 0.22) 3px 5px 30px 0'));
     expect(norm(cssToken('--ap-elev-product'))).toBe(norm(APPLE_ELEVATION.product));
-    // Cards, buttons and inputs must be flat. Depth is a hairline and a change of ground.
+    // Cards and inputs stay flat: depth is a hairline and a change of ground. The spec gives a
+    // shadow to exactly three things: product photography, level-2 chrome (popovers, sheets) and
+    // the segmented control's active thumb.
     const cardRule = /\.ap-card\s*\{([\s\S]*?)\}/.exec(CSS)?.[1] ?? '';
     expect(cardRule).toContain('box-shadow: var(--ap-elev-flat)');
 
-    // Nothing in the component layer may paint a real shadow. The only permitted
-    // box-shadow values are the flat token, the 1px hairline ring, an inset ring, and
-    // `.ap-product-shadow` — which exists precisely so product photography is the one
-    // place the system's single shadow can appear.
     const componentLayer = CSS.slice(CSS.indexOf('9 · COMPONENTS'));
     const shadows = [...componentLayer.matchAll(/box-shadow:\s*([^;]+);/g)].map((m) => m[1].trim());
     const illegal = shadows.filter(
       (value) =>
-        !/^var\(--ap-elev-(flat|hairline|product)\)$/.test(value) &&
+        !/^var\(--ap-elev-(flat|hairline|product|popover|segment)\)$/.test(value) &&
         !/^inset 0 0 0 1px var\(--ap-[a-z-]+\)$/.test(value) &&
-        !/^0 0 0 3px var\(--ap-[a-z-]+\)$/.test(value),
+        !/^0 0 0 3px var\(--ap-[a-z-]+\)$/.test(value) &&
+        !/^inset 0 1px 0 var\(--ap-sheet-highlight\), var\(--ap-elev-popover\)$/.test(value),
     );
     expect(illegal).toEqual([]);
   });
 
   test('no hover state is documented as the only affordance', () => {
-    // DESIGN.md: "Never document hover." Press is the interaction. The one hover rule the
-    // system allows is a link underline, which is additive — it is not carrying meaning
-    // on its own, and the link is already blue without it.
+    // DESIGN.md documents hover in three places: the ghost link, its trailing chevron, and the
+    // secondary dark button (#2D2D2F on hover). The primary button adds a same-accent hover
+    // shade; press stays its interaction, so hover is never the only affordance.
     //
-    // There is a second shape that is not an affordance either, and the difference is worth
-    // being precise about. A selector like `.dark .hover\:bg-white\/60:hover` does not
-    // *introduce* a hover state: the call site already wrote `hover:bg-white/60`, so the
-    // interaction exists in light mode with or without this rule. All the dark-scoped rule
-    // does is pick the colour that hover lands on, because `bg-white` is a surface here and
-    // has to follow the theme. Removing it would not remove an affordance — it would leave a
-    // white flash on a dark page. So the exemption is deliberately narrow: an *escaped
-    // Tailwind utility* (`.hover\:…`), and only under a dark scope.
+    // A selector like `.dark .hover\\:bg-white\\/60:hover` does not *introduce* a hover state:
+    // the call site already wrote `hover:bg-white/60`. The dark-scoped rule only picks the
+    // colour that hover lands on, because `bg-white` is a surface here and has to follow the
+    // theme. So that exemption is deliberately narrow: an escaped Tailwind utility, dark scope only.
+    const DOCUMENTED = ['.ap-link', '.ap-link-chevron:hover', '.ap-btn-dark:hover', '.ap-btn:hover'];
     const isThemeCorrection = (selector) =>
       /\\:hover\\?:hover|\.hover\\:/.test(selector) &&
       /\[data-theme='dark'\]|\.dark\s|:root:not\(\[data-theme='light'\]\)/.test(selector);
@@ -267,7 +285,7 @@ describe("the rules that make this Apple and not just 'a blue design system'", (
     const hoverRules = [...CSS.matchAll(/^([^\n{]*:hover[^\n{]*)\{([\s\S]*?)\}/gm)];
     const offenders = hoverRules
       .map(([, selector]) => selector.trim())
-      .filter((selector) => !selector.includes('.ap-link'))
+      .filter((selector) => !DOCUMENTED.some((d) => selector.includes(d)))
       .filter((selector) => !isThemeCorrection(selector));
     expect(offenders).toEqual([]);
   });
@@ -293,8 +311,8 @@ describe("the rules that make this Apple and not just 'a blue design system'", (
     expect(unused).toEqual([]);
   });
 
-  test('press is scale(0.95), system-wide', () => {
-    expect(APPLE_MOTION.pressScale).toBe(0.95);
+  test('press is scale(0.97), system-wide', () => {
+    expect(APPLE_MOTION.pressScale).toBe(0.97);
     expect(CSS).toContain('.ap-btn:active { transform: scale(var(--ap-press-scale)); }');
   });
 
@@ -304,15 +322,15 @@ describe("the rules that make this Apple and not just 'a blue design system'", (
     expect(tileRule).toContain('padding-block: var(--ap-section-block)');
   });
 
-  test('no font file is shipped for the Apple faces', () => {
-    // DESIGN.md §"Note on Font Substitutes" sanctions NAMING SF Pro and falling through to
-    // system-ui. A @font-face or a remote URL for it would be both a licence problem and a
-    // payload regression.
-    expect(CSS).toContain("'SF Pro Display'");
-    expect(CSS).toContain("'SF Pro Text'");
-    expect(CSS).not.toMatch(/@font-face[\s\S]{0,400}SF Pro/);
+  test('no font file is shipped, and Inter is named first in every text stack', () => {
+    // DESIGN.md names Inter. The 50 KiB local font budget (frontend/public/fonts/README.md) is
+    // spent on the Bengali face, so Inter is named and not shipped: no @font-face, no remote URL.
+    expect(CSS).toMatch(/--ap-font-text:\s*Inter,/);
+    expect(CSS).toMatch(/--ap-font-display:\s*Inter,/);
+    expect(CSS).not.toMatch(/@font-face/);
     expect(CSS).not.toMatch(/url\(['"]?https?:/);
   });
+
 });
 
 describe('contrast, measured rather than asserted', () => {
@@ -484,11 +502,12 @@ describe('the theme boots before first paint', () => {
 
   it('tints the status bar per scheme, from the Apple canvases', () => {
     const light = /--ap-canvas:\s*(#[0-9a-f]{3,8})/i.exec(CSS)[1];
-    const dark = /--ap-tile-3:\s*(#[0-9a-f]{3,8})/i.exec(CSS)[1];
+    const dark = APPLE_DARK.canvas;
     expect(shell).toContain(`media="(prefers-color-scheme: light)" content="${light}"`);
     expect(shell).toContain(`media="(prefers-color-scheme: dark)" content="${dark}"`);
     expect(shell).not.toMatch(/content="#17171b"/);
   });
+
 });
 
 describe('the deleted systems stay deleted', () => {

@@ -140,12 +140,12 @@ describe('appleNative is a translation of apple, not a second system', () => {
   });
 
   describe('geometry', () => {
-    it('uses Apple\u2019s radii, renamed by role but never re-valued', () => {
+    it('maps each native role onto the spec radius scale', () => {
       expect(APPLE_NATIVE_RADIUS.xs).toBe(APPLE_RADII.xs);
-      expect(APPLE_NATIVE_RADIUS.control).toBe(APPLE_RADII.sm);
+      expect(APPLE_NATIVE_RADIUS.control).toBe(APPLE_RADII.input);
       expect(APPLE_NATIVE_RADIUS.chip).toBe(APPLE_RADII.md);
-      expect(APPLE_NATIVE_RADIUS.card).toBe(APPLE_RADII.lg);
-      expect(APPLE_NATIVE_RADIUS.sheet).toBe(APPLE_RADII.lg);
+      expect(APPLE_NATIVE_RADIUS.card).toBe(APPLE_RADII.card);
+      expect(APPLE_NATIVE_RADIUS.sheet).toBe(APPLE_RADII.xl);
       expect(APPLE_NATIVE_RADIUS.feature).toBe(APPLE_RADII.lg);
     });
 
@@ -174,40 +174,38 @@ describe('appleNative is a translation of apple, not a second system', () => {
 
     it('carries every named web style across at the same size, weight and tracking', () => {
       const names = Object.keys(APPLE_TYPE) as (keyof typeof APPLE_TYPE)[];
-      expect(names.length).toBeGreaterThanOrEqual(16);
+      // The spec's 13 named roles: display, headline, body, label and caption tiers.
+      expect(names.length).toBeGreaterThanOrEqual(13);
       for (const name of names) {
         const web = APPLE_TYPE[name];
         const native = APPLE_NATIVE_TYPE.scale[name];
         expect(native).toBeDefined();
         expect(native.fontSize).toBe(web.size);
-        expect(native.letterSpacing).toBe(web.tracking);
+        // Web tracking is em; native letter-spacing is px at the same size.
+        expect(Math.abs(native.letterSpacing - web.track * web.size)).toBeLessThan(0.01);
         expect(native.fontWeight).toBe(String(web.weight));
       }
     });
 
-    it('resolves ratio line heights into absolute ones without rounding drift', () => {
+    it('carries the spec pixel line heights through unchanged', () => {
       for (const name of Object.keys(APPLE_TYPE) as (keyof typeof APPLE_TYPE)[]) {
         const web = APPLE_TYPE[name];
         const native = APPLE_NATIVE_TYPE.scale[name];
-        expect(native.lineHeight).toBe(Math.round(web.size * web.line));
-        // And the resolved value must still be within half a pixel of the ratio.
-        expect(Math.abs(native.lineHeight / native.fontSize - web.line)).toBeLessThan(0.02);
+        expect(native.lineHeight).toBe(web.line);
+        expect(native.lineHeight).toBeGreaterThanOrEqual(native.fontSize);
       }
     });
 
-    it('keeps the four-weight set, with no 500', () => {
+    it('keeps the spec weight ladder, 400 to 700', () => {
       const weights = new Set(
         Object.values(APPLE_NATIVE_TYPE.scale).map((s) => s.fontWeight),
       );
-      expect([...weights].sort()).toEqual(
-        [...new Set(Object.values(APPLE_TYPE).map((s) => String(s.weight)))].sort(),
-      );
-      expect(weights.has('500' as never)).toBe(false);
+      expect([...weights].sort()).toEqual(['400', '500', '600', '700']);
     });
 
     it('still reads body at 17', () => {
-      expect(APPLE_NATIVE_TYPE.scale.body.fontSize).toBe(17);
-      expect(APPLE_NATIVE_TYPE.scale.body.fontSize).toBe(APPLE_TYPE.body.size);
+      expect(APPLE_NATIVE_TYPE.scale.bodyMd.fontSize).toBe(17);
+      expect(APPLE_NATIVE_TYPE.scale.bodyMd.fontSize).toBe(APPLE_TYPE.bodyMd.size);
     });
   });
 
@@ -223,13 +221,13 @@ describe('appleNative is a translation of apple, not a second system', () => {
 
     it('presses with the web system\u2019s scale, not a bespoke one', () => {
       expect(APPLE_NATIVE_MOTION.pressScale).toBe(APPLE_MOTION.pressScale);
-      expect(APPLE_NATIVE_MOTION.pressScale).toBe(0.95);
+      expect(APPLE_NATIVE_MOTION.pressScale).toBe(0.97); // the spec's tap scale
     });
 
     it('uses the same durations and the same curve, as RN control points', () => {
       expect(APPLE_NATIVE_MOTION.fastMs).toBe(APPLE_MOTION.duration.press);
       expect(APPLE_NATIVE_MOTION.normalMs).toBe(APPLE_MOTION.duration.base);
-      expect(APPLE_NATIVE_MOTION.easing).toEqual([0.25, 0.1, 0.25, 1]);
+      expect(APPLE_NATIVE_MOTION.easing).toEqual([0.25, 1, 0.5, 1]); // the spec's curve, no overshoot
     });
 
     it('settles rather than bounces', () => {
@@ -310,7 +308,7 @@ describe('appleNative is a translation of apple, not a second system', () => {
 describe('the app layer actually consumes those tokens', () => {
   it('renders body text at the Apple body size', () => {
     render(<ThemeProvider><ThemeAndTextProbe /></ThemeProvider>);
-    expect(flatStyle('native-body').fontSize).toBe(APPLE_NATIVE_TYPE.scale.body.fontSize);
+    expect(flatStyle('native-body').fontSize).toBe(APPLE_NATIVE_TYPE.scale.bodyMd.fontSize);
   });
 
   it('resolves every native type role to the Apple style it is mapped to', () => {

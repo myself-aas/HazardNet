@@ -63,7 +63,7 @@ describe('Phase 2 — mobile primitives, on the Apple design system', () => {
     expect(controlBar.props.pillRadius).toBe(9999);
   });
 
-  it('ExpressiveBottomSheet uses the Apple 18pt sheet radius and a 48dp handle area', () => {
+  it('ExpressiveBottomSheet uses the spec 24pt sheet radius and a 48dp handle area', () => {
     const sheet = ExpressiveBottomSheet({
       isOpen: true,
       onClose: () => {},
@@ -73,7 +73,7 @@ describe('Phase 2 — mobile primitives, on the Apple design system', () => {
     expect(sheet.type).toBe('BottomSheet');
     // 18, not Material 3's 28: the sheet corner is Apple's `rounded.lg`, the same
     // radius a card uses on the web. One system, one corner.
-    expect(sheet.props.topRadius).toBe(18);
+    expect(sheet.props.topRadius).toBe(24);
     expect(sheet.props.handleTouchArea).toBe(48);
   });
 });

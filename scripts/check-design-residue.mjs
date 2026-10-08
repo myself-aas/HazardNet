@@ -93,7 +93,8 @@ for (const manifest of ['package.json', 'frontend/package.json', 'apps/mobile/pa
    vocabulary wearing a CSS variable. */
 const cssFiles = listFiles("find frontend/src -name '*.css'");
 const APP_LOCAL = /^--(navbar|hero|control|ring|tw)-/; // app chrome with no Apple counterpart
-const TAILWIND_KEY = /^--(color|font|text|spacing|radius|breakpoint|container|shadow|animate|ease|leading|tracking|blur|z|inset|perspective|aspect|default)-/;
+// `--radius` on its own is Tailwind v4's DEFAULT radius key (what bare `rounded` reads), so it is a theme key too.
+const TAILWIND_KEY = /^--(color|font|text|spacing|radius|breakpoint|container|shadow|animate|ease|leading|tracking|blur|z|inset|perspective|aspect|default)-|^--radius$/;
 const DEAD_NAMESPACES = /^--(mrd|hds|hn|m3|md3|nasa|meridian|severity|surface|panel|glass|sidebar|chart|primary|secondary|success|warning|info|destructive|muted|popover|card|accent|input|foreground|background|border|subtle|spacesuit)(-|$)/;
 
 for (const file of cssFiles) {

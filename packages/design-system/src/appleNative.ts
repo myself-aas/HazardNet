@@ -118,15 +118,15 @@ export const APPLE_NATIVE_RADIUS = {
   none: 0,
   /** 5 — image thumbs, small media. */
   xs: APPLE_RADII.xs,
-  /** 8 — utility buttons, inputs. */
-  control: APPLE_RADII.sm,
-  /** 11 — pearl capsules, chips. */
+  /** 12 — inputs and utility controls. */
+  control: APPLE_RADII.input,
+  /** 12 — chips and pearl capsules. */
   chip: APPLE_RADII.md,
-  /** 18 — cards, sheets, feature tiles. */
-  card: APPLE_RADII.lg,
+  /** 20 — cards. Sheets take the 24px `xl` radius below. */
+  card: APPLE_RADII.card,
   media: APPLE_RADII.sm,
   feature: APPLE_RADII.lg,
-  sheet: APPLE_RADII.lg,
+  sheet: APPLE_RADII.xl,
   pill: 9999,
   full: 9999,
 } as const;
@@ -162,14 +162,15 @@ export const APPLE_NATIVE_TYPE = {
       {
         fontSize: style.size,
         // RN wants an absolute line height, not a ratio.
-        lineHeight: Math.round(style.size * style.line),
-        letterSpacing: style.tracking,
-        fontWeight: String(style.weight) as '300' | '400' | '600' | '700',
+        lineHeight: style.line,
+        // The web scale stores tracking in em; RN takes px.
+        letterSpacing: Math.round(style.track * style.size * 100) / 100,
+        fontWeight: String(style.weight) as '400' | '500' | '600' | '700',
       },
     ]),
   ) as Record<
     keyof typeof APPLE_TYPE,
-    { fontSize: number; lineHeight: number; letterSpacing: number; fontWeight: '300' | '400' | '600' | '700' }
+    { fontSize: number; lineHeight: number; letterSpacing: number; fontWeight: '400' | '500' | '600' | '700' }
   >,
 } as const;
 
@@ -195,7 +196,7 @@ export const APPLE_NATIVE_MOTION = {
   normalMs: APPLE_MOTION.duration.base,
   slowMs: 350,
   /** The cubic-bezier from `apple.ts`, as the control points RN Easing wants. */
-  easing: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
+  easing: [0.25, 1, 0.5, 1] as [number, number, number, number],
   /** Critically damped — Apple's sheets settle, they do not bounce. */
   spring: APPLE_MOTION.springStandard,
 } as const;
@@ -250,7 +251,7 @@ export const APPLE_NATIVE_THEMES = {
     focusRing: APPLE_COLORS.primaryFocus,
   },
   dark: {
-    backgroundBase: APPLE_COLORS.surfaceTile3,
+    backgroundBase: APPLE_COLORS.surfaceBlack,
     backgroundGrouped: APPLE_COLORS.surfaceTile1,
     backgroundElevated: APPLE_COLORS.surfaceTile2,
     label: APPLE_COLORS.bodyOnDark,

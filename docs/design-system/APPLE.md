@@ -1,8 +1,9 @@
 # The HazardNet design system
 
-> **Status:** shipped. One system, everywhere.
-> **Specification:** [`DESIGN.md`](../../DESIGN.md) at the repository root — installed with
-> `npx getdesign@latest add apple`, byte-identical to `apple/DESIGN.md`, and **not edited by us**.
+> **Status:** superseded on 2026-10-08 by the Cupertino Precision specification. The colour,
+> typography, and elevation sections below describe the previous Apple build and no longer match the code.
+> **Specification:** [`DESIGN.md`](../../DESIGN.md) at the repository root: the Cupertino Precision spec plus a
+> "HazardNet implementation notes" section. `apple/DESIGN.md` is an identical copy.
 > **Tokens:** `packages/design-system/src/apple.ts` · **CSS:** `frontend/src/styles/apple.css`
 > **Native:** `packages/design-system/src/appleNative.ts`
 

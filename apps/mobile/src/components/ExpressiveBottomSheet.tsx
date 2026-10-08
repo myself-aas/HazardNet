@@ -22,7 +22,7 @@ export const ExpressiveBottomSheet: React.FC<ExpressiveBottomSheetProps> = ({
   subtitle,
   children,
 }) => {
-  const topRadius = APPLE_NATIVE.radii.card; // 28dp
+  const topRadius = APPLE_NATIVE.radii.sheet; // spec xl: 24pt, the same as the web sheet
   const handleTouchArea = APPLE_NATIVE.touch.min; // 48dp minimum hit target
   const springConfig = APPLE_NATIVE.motion.spring;
 

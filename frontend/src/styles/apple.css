@@ -1,13 +1,1439 @@
-/* Cupertino Precision Design System */
+/* ═══════════════════════════════════════════════════════════════════════════════
+   HazardNet — Cupertino Precision · CSS layer
+   ═══════════════════════════════════════════════════════════════════════════════
+   THE single design system for this product. Generated from DESIGN.md
+   (Cupertino Precision). Mirror of packages/design-system/src/apple.ts;
+   __tests__/appleParity.test.js fails if the two drift.
+
+   Replaces, in full: styles/meridian.css, styles/dark.css, styles/nasa-hds.css,
+   styles/brand.css (see git history).
+
+   Inter is named first in every text stack and is NOT shipped. The local web-font
+   budget (50 KiB, frontend/public/fonts/README.md) is already spent on the Bengali
+   face, so Inter resolves only where it is installed; elsewhere the stack falls
+   through to the platform UI face. No third-party font request is made.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ───────────────────────────────────────────────────────────────────────────────
+   1 · PRIMITIVES — spec §Colors, light appearance. Components never read these.
+   ─────────────────────────────────────────────────────────────────────────────── */
 :root {
-  --ap-bg-canvas: #131314;
-  --ap-label: #e5e2e3;
-  --ap-primary: #abc7ff;
-  --ap-action: #0071e3;
-  --ap-separator: #414753;
-  --ap-radius-lg: 1rem;
-  --ap-font-text: 'Inter', sans-serif;
-  /* Add more tokens based on the Cupertino Precision spec */
+  /* Accent. The spec's blue tint is #0071E3, but it measures 4.3:1 on parchment, so
+     text and links use the nearer #0066CC (5.1:1). Filled actions and focus keep #0071E3. */
+  --ap-primary: #0066cc;
+  --ap-primary-focus: #0071e3;
+  --ap-primary-on-dark: #2997ff;
+  --ap-primary-hover: #0055b3;
+  --ap-primary-on-dark-hover: #52adff;
+
+  --ap-ink: #1d1d1f;
+  --ap-on-dark: #ffffff;
+  --ap-body-muted: #cccccc;
+  --ap-ink-muted-80: #333333;
+  --ap-ink-muted-48: #7a7a7a;
+
+  --ap-divider-soft: #f0f0f0;
+  --ap-hairline: #e0e0e0;
+
+  --ap-canvas: #ffffff;
+  --ap-parchment: #f5f5f7;
+  --ap-inset: #eeedf3;
+  --ap-pearl: #fafafc;
+  /* The dark tile names carry the spec's dark tiers; the dark appearance re-points the roles below. */
+  --ap-tile-1: #161617;
+  --ap-tile-2: #1c1c1e;
+  --ap-tile-3: #242426;
+  --ap-black: #000000;
+  --ap-chip-translucent: rgba(210, 210, 215, 0.64);
+  --ap-on-primary: #ffffff;
+
+  /* Secondary dark button — spec §Buttons. */
+  --ap-btn-dark: #1d1d1f;
+  --ap-btn-dark-hover: #2d2d2f;
+  --ap-btn-dark-ring: rgba(255, 255, 255, 0.1);
+  /* Spec helper text. 1.7:1 on white, so it is for non-text decoration only. */
+  --ap-helper: #c1c6d6;
+
+  /* Tints, light — spec §Semantic Interactive Tints. Fills, dots and icons; text uses §6 severity. */
+  --ap-tint-blue: #0071e3;
+  --ap-tint-green: #34c759;
+  --ap-tint-orange: #ff9500;
+  --ap-tint-red: #ff3b30;
+  --ap-tint-purple: #af52de;
+
+  /* Neutral ramp — unchanged from the previous system. Every step used for text clears AA on white and parchment. */
+  --ap-n-05: #fafafc;
+  --ap-n-10: #f5f5f7;
+  --ap-n-20: #e0e0e0;
+  --ap-n-30: #d2d2d7;
+  --ap-n-40: #a1a1a6;
+  --ap-n-50: #6e6e73;
+  --ap-n-60: #5a5a5d;
+  --ap-n-70: #333333;
+  --ap-n-80: #272729;
+  --ap-n-90: #1d1d1f;
+  --ap-n-black: #000000;
+
+  /* Stitch role names from the spec's front matter (dark appearance). Defined so the vocabulary
+     exists in one place; the components above use the Apple roles, not these. */
+  --ap-role-surface: #131314;
+  --ap-role-surface-dim: #131314;
+  --ap-role-surface-bright: #39393a;
+  --ap-role-surface-container-lowest: #0e0e0f;
+  --ap-role-surface-container-low: #1b1b1c;
+  --ap-role-surface-container: #201f20;
+  --ap-role-surface-container-high: #2a2a2b;
+  --ap-role-surface-container-highest: #353436;
+  --ap-role-on-surface: #e5e2e3;
+  --ap-role-on-surface-variant: #c1c6d6;
+  --ap-role-inverse-surface: #e5e2e3;
+  --ap-role-inverse-on-surface: #303031;
+  --ap-role-outline: #8b919f;
+  --ap-role-outline-variant: #414753;
+  --ap-role-surface-tint: #abc7ff;
+  --ap-role-primary: #abc7ff;
+  --ap-role-on-primary: #002f66;
+  --ap-role-primary-container: #0071e3;
+  --ap-role-on-primary-container: #fcfbff;
+  --ap-role-inverse-primary: #005cbb;
+  --ap-role-secondary: #c8c6c8;
+  --ap-role-on-secondary: #303032;
+  --ap-role-secondary-container: #474649;
+  --ap-role-on-secondary-container: #b6b4b7;
+  --ap-role-tertiary: #a3c9ff;
+  --ap-role-on-tertiary: #00315c;
+  --ap-role-tertiary-container: #0076d0;
+  --ap-role-on-tertiary-container: #fcfbff;
+  --ap-role-error: #ffb4ab;
+  --ap-role-on-error: #690005;
+  --ap-role-error-container: #93000a;
+  --ap-role-on-error-container: #ffdad6;
+  --ap-role-primary-fixed: #d7e2ff;
+  --ap-role-primary-fixed-dim: #abc7ff;
+  --ap-role-on-primary-fixed: #001b3f;
+  --ap-role-on-primary-fixed-variant: #00458f;
+  --ap-role-secondary-fixed: #e4e2e4;
+  --ap-role-secondary-fixed-dim: #c8c6c8;
+  --ap-role-on-secondary-fixed: #1b1b1d;
+  --ap-role-on-secondary-fixed-variant: #474649;
+  --ap-role-tertiary-fixed: #d3e3ff;
+  --ap-role-tertiary-fixed-dim: #a3c9ff;
+  --ap-role-on-tertiary-fixed: #001c39;
+  --ap-role-on-tertiary-fixed-variant: #004882;
+  --ap-role-background: #131314;
+  --ap-role-on-background: #e5e2e3;
+  --ap-role-surface-variant: #353436;
+
+  /* ───────────────────────────────────────────────────────────────────────────────
+     2 · TYPOGRAPHY — spec §Typography. Every role is a class in §9.
+     Inter is first in every stack; see the note at the top of this file.
+     ─────────────────────────────────────────────────────────────────────────────── */
+  --ap-font-display: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --ap-font-text: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --ap-font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, monospace;
+  --ap-font-bengali: 'Noto Sans Bengali', 'Hind Siliguri', sans-serif;
+
+  --ap-weight-regular: 400;
+  --ap-weight-medium: 500;
+  --ap-weight-semibold: 600;
+  --ap-weight-bold: 700;
+
+  /* Bengali metrics. Matras need more leading and no negative tracking. */
+  --ap-bn-leading: 1.65;
+  --ap-bn-tracking: normal;
+
+  /* Size / line-height / tracking / weight per role, from the spec's typography block. Mobile
+     values for the two display roles are applied in §10. */
+  --ap-type-display-hero-size: 56px;
+  --ap-type-display-hero-line: 60px;
+  --ap-type-display-hero-track: -0.015em;
+  --ap-type-display-hero-weight: 700;
+  --ap-type-display-hero-mobile-size: 40px;
+  --ap-type-display-hero-mobile-line: 44px;
+  --ap-type-display-hero-mobile-track: -0.012em;
+  --ap-type-display-hero-mobile-weight: 700;
+  --ap-type-headline-xl-size: 44px;
+  --ap-type-headline-xl-line: 48px;
+  --ap-type-headline-xl-track: -0.012em;
+  --ap-type-headline-xl-weight: 600;
+  --ap-type-headline-xl-mobile-size: 32px;
+  --ap-type-headline-xl-mobile-line: 36px;
+  --ap-type-headline-xl-mobile-track: -0.010em;
+  --ap-type-headline-xl-mobile-weight: 600;
+  --ap-type-headline-lg-size: 28px;
+  --ap-type-headline-lg-line: 32px;
+  --ap-type-headline-lg-track: -0.008em;
+  --ap-type-headline-lg-weight: 600;
+  --ap-type-headline-md-size: 21px;
+  --ap-type-headline-md-line: 26px;
+  --ap-type-headline-md-track: -0.006em;
+  --ap-type-headline-md-weight: 600;
+  --ap-type-headline-sm-size: 17px;
+  --ap-type-headline-sm-line: 22px;
+  --ap-type-headline-sm-track: -0.004em;
+  --ap-type-headline-sm-weight: 600;
+  --ap-type-body-lg-size: 19px;
+  --ap-type-body-lg-line: 26px;
+  --ap-type-body-lg-track: -0.005em;
+  --ap-type-body-lg-weight: 400;
+  --ap-type-body-md-size: 17px;
+  --ap-type-body-md-line: 24px;
+  --ap-type-body-md-track: -0.004em;
+  --ap-type-body-md-weight: 400;
+  --ap-type-body-sm-size: 14px;
+  --ap-type-body-sm-line: 18px;
+  --ap-type-body-sm-track: 0em;
+  --ap-type-body-sm-weight: 400;
+  --ap-type-label-md-size: 14px;
+  --ap-type-label-md-line: 18px;
+  --ap-type-label-md-track: -0.002em;
+  --ap-type-label-md-weight: 500;
+  --ap-type-label-sm-size: 12px;
+  --ap-type-label-sm-line: 16px;
+  --ap-type-label-sm-track: 0.010em;
+  --ap-type-label-sm-weight: 500;
+  --ap-type-caption-size: 11px;
+  --ap-type-caption-line: 14px;
+  --ap-type-caption-track: 0.012em;
+  --ap-type-caption-weight: 400;
+
+  /* ───────────────────────────────────────────────────────────────────────────────
+     3 · GEOMETRY · SPACE · ELEVATION · MOTION — spec §Layout, §Shapes, §Elevation.
+     ─────────────────────────────────────────────────────────────────────────────── */
+  --ap-radius-none: 0px;
+  --ap-radius-xs: 4px;
+  --ap-radius-sm: 8px;
+  --ap-radius-md: 12px;
+  --ap-radius-lg: 16px;
+  --ap-radius-xl: 24px;
+  /* Spec: primary cards 18–22px, inputs 10–12px. */
+  --ap-radius-card: 20px;
+  --ap-radius-input: 12px;
+  --ap-radius-pill: 9999px;
+  --ap-radius-full: 9999px;
+
+  --ap-space-xxs: 4px;
+  --ap-space-xs: 4px;
+  --ap-space-sm: 8px;
+  --ap-space-md: 16px;
+  --ap-space-lg: 24px;
+  --ap-space-xl: 40px;
+  --ap-space-xxl: 64px;
+  --ap-space-section: 96px;
+  --ap-gutter: 24px;
+  --ap-gutter-mobile: 16px;
+  --ap-margin: 40px;
+  --ap-margin-mobile: 20px;
+
+  /* Light elevation. The spec gives dark values; these are the light analogues. */
+  --ap-elev-flat: none;
+  --ap-elev-hairline: 0 0 0 1px rgba(0, 0, 0, 0.08);
+  /* Product imagery only — the one shadow the spec's cards and buttons never take. */
+  --ap-elev-product: rgba(0, 0, 0, 0.22) 3px 5px 30px 0;
+  --ap-elev-popover: 0 24px 48px -12px rgba(0, 0, 0, 0.18);
+  --ap-elev-segment: 0 2px 6px rgba(0, 0, 0, 0.12);
+
+  /* Optical glass — spec §Optical Glassmorphism (light). */
+  --ap-frosted-bg: rgba(255, 255, 255, 0.8);
+  --ap-frosted-blur: 20px;
+  --ap-frosted-saturate: 180%;
+  --ap-glass-hairline: rgba(0, 0, 0, 0.08);
+
+  /* Motion. The press is the spec's 0.97 tap. The segmented thumb uses the standard curve rather than
+     the spec's damping-26 spring: that spring overshoots about 3%, and the design gate rejects
+     overshooting easing. Sheets never bounce either. */
+  --ap-press-scale: 0.97;
+  --ap-press-scale-soft: 0.98;
+  --ap-duration-press: 120ms;
+  --ap-duration-base: 240ms;
+  --ap-ease: cubic-bezier(0.25, 1, 0.5, 1);
+  --ap-duration-segment: 360ms;
+
+  --ap-touch-min: 44px;
+  --ap-nav-h: 44px;
+  --ap-subnav-h: 52px;
+  --ap-sticky-h: 64px;
+
+  /* Spec §Layout: a 1280px content shell on desktop. */
+  --ap-container-text: 980px;
+  --ap-container-wide: 1280px;
+
+  /* Single z-scale. One system, one set of numbers. */
+  --ap-z-base: 0;
+  --ap-z-content: 1;
+  --ap-z-map: 400;
+  --ap-z-sticky: 1020;
+  --ap-z-nav: 1030;
+  --ap-z-dropdown: 1040;
+  --ap-z-overlay: 1050;
+  --ap-z-modal: 1060;
+  --ap-z-popover: 1070;
+  --ap-z-tooltip: 1080;
+  --ap-z-toast: 1090;
+  --ap-z-a11y: 1100;
+
+  /* ───────────────────────────────────────────────────────────────────────────────
+     4 · SEMANTIC ROLES — light. Components read these, never the primitives.
+     ─────────────────────────────────────────────────────────────────────────────── */
+  --ap-bg-canvas: var(--ap-canvas);
+  --ap-bg-grouped: var(--ap-parchment);
+  --ap-bg-inset: var(--ap-inset);
+  --ap-bg-raised: var(--ap-pearl);
+  --ap-bg-elevated: var(--ap-canvas);
+  --ap-bg-card: var(--ap-canvas);
+  --ap-bg-inverse: var(--ap-tile-1);
+
+  /* Spec tiers. The secondary tier is #5A5A5D, not the spec's #86868B: that measures 3.6:1 on
+     white. The tertiary tier is #6E6E73 (5.1:1 on white, 4.7:1 on parchment). */
+  --ap-label: var(--ap-ink);
+  --ap-label-secondary: var(--ap-n-60);
+  --ap-label-tertiary: var(--ap-n-50);
+  --ap-label-quaternary: var(--ap-n-40);
+  --ap-on-inverse: var(--ap-on-dark);
+
+  --ap-separator: var(--ap-divider-soft);
+  --ap-separator-opaque: var(--ap-hairline);
+  --ap-card-border: var(--ap-hairline);
+  --ap-fill-thin: rgba(0, 0, 0, 0.04);
+  --ap-fill-regular: rgba(0, 0, 0, 0.08);
+  --ap-fill-strong: rgba(0, 0, 0, 0.12);
+
+  --ap-action: var(--ap-primary-focus);
+  --ap-action-fg: var(--ap-on-primary);
+  --ap-action-focus: var(--ap-primary-focus);
+  --ap-action-hover: var(--ap-primary-hover);
+  --ap-link: var(--ap-primary);
+  --ap-focus-ring: var(--ap-primary-focus);
+  --ap-focus-halo: rgba(0, 113, 227, 0.25);
+  --ap-on-sev: var(--ap-on-primary);
+  --ap-on-scrim: var(--ap-on-dark);
+  --ap-on-scrim-muted: var(--ap-body-muted);
+  --ap-on-scrim-sev: #ff8a5b;
+  --ap-focus-width: 2px;
+  --ap-focus-offset: 2px;
+  --ap-scrim: rgba(0, 0, 0, 0.4);
+  --ap-grabber: rgba(0, 0, 0, 0.2);
+  --ap-sheet-highlight: rgba(255, 255, 255, 0.9);
+  /* Input boundary: 3:1 on white (WCAG 1.4.11), so the spec's translucent stroke is not used. */
+  --ap-input-fill: var(--ap-canvas);
+  --ap-input-stroke: #86868b;
+  --ap-segment-track: var(--ap-inset);
+  --ap-segment-thumb: var(--ap-canvas);
+  --ap-segment-inactive: var(--ap-n-60);
+
+  /* ───────────────────────────────────────────────────────────────────────────────
+     6 · SEVERITY — the declared data layer. Unchanged: hazard data, not chrome.
+     ─────────────────────────────────────────────────────────────────────────────── */
+  --ap-sev-low: #1d7a3e;
+  --ap-sev-low-surface: #e8f5ed;
+  --ap-sev-moderate: #8a5a00;
+  --ap-sev-moderate-surface: #fdf3e0;
+  --ap-sev-high: #b3400f;
+  --ap-sev-high-surface: #fdeee7;
+  --ap-sev-very-high: #c01f1f;
+  --ap-sev-very-high-surface: #fdebeb;
+  --ap-sev-extreme: #8b0f3a;
+  --ap-sev-extreme-surface: #fbe9ef;
+
+  /* Hazard identity — "what kind", orthogonal to severity's "how bad".
+     Solved against four constraints (AA on both grounds, >=22 dE apart,
+     >=24 dE from the accent); see APPLE_HAZARD in apple.ts. */
+  --ap-haz-flood: #496dab;
+  --ap-haz-flash-flood: #357882;
+  --ap-haz-cyclone: #a03dd1;
+  --ap-haz-drought: #846b39;
+  --ap-haz-heat-wave: #a75b2f;
+  --ap-haz-cold-wave: #184962;
+  --ap-haz-storm: #b1488e;
+  --ap-haz-fire: #ca3a2f;
+
+  --ap-success: #1d7a3e;
+  --ap-warning: #8a5a00;
+  --ap-danger: #c01f1f;
+  --ap-info: var(--ap-primary);
 }
 
-/* Include original functional CSS structure here... */
+/* ───────────────────────────────────────────────────────────────────────────────
+   5 · DARK THEME — spec §Colors (dark), §Elevation (tonal stacking).
+   Applied two ways on purpose:
+     · [data-theme='dark'] / .dark  — the explicit user choice
+     · prefers-color-scheme          — a system-dark visitor is painted dark BEFORE hydration
+   Both paths take the same token list (DARK_TOKENS), so they cannot drift apart.
+   ─────────────────────────────────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    /* Surfaces — spec §Backgrounds (dark): OLED canvas, #161617 cards, #242426 inner, #1C1C1E elevated. */
+    --ap-bg-canvas: var(--ap-black);
+    --ap-bg-grouped: var(--ap-tile-1);
+    --ap-bg-inset: var(--ap-tile-3);
+    --ap-bg-raised: var(--ap-tile-2);
+    --ap-bg-elevated: var(--ap-tile-2);
+    --ap-bg-card: var(--ap-tile-1);
+    --ap-bg-inverse: var(--ap-parchment);
+
+    /* Labels — spec §Label & Text Tiers (dark). */
+    --ap-label: #f5f5f7;
+    --ap-label-secondary: #a1a1a6;
+    --ap-label-tertiary: #86868b;
+    --ap-label-quaternary: #424245;
+    --ap-on-inverse: var(--ap-ink);
+
+    /* Separators and fills — spec §Fills & Separators (dark): alpha planes, not opaque borders. */
+    --ap-separator: rgba(255, 255, 255, 0.12);
+    --ap-separator-opaque: #424245;
+    --ap-card-border: rgba(255, 255, 255, 0.08);
+    --ap-fill-thin: rgba(255, 255, 255, 0.06);
+    --ap-fill-regular: rgba(255, 255, 255, 0.12);
+    --ap-fill-strong: rgba(255, 255, 255, 0.2);
+
+    /* Action and focus — the spec's dark blue tint, with black label (white is 3.0:1 on it). */
+    --ap-action: var(--ap-primary-on-dark);
+    --ap-action-fg: var(--ap-black);
+    --ap-action-focus: var(--ap-primary-on-dark);
+    --ap-action-hover: var(--ap-primary-on-dark-hover);
+    --ap-link: var(--ap-primary-on-dark);
+    --ap-on-sev: var(--ap-black);
+    --ap-focus-ring: var(--ap-primary-on-dark);
+    --ap-focus-halo: rgba(41, 151, 255, 0.25);
+
+    /* Glass, elevation, controls — spec §Elevation, §Input Fields, §Segmented Controls, §Modals. */
+    --ap-frosted-bg: rgba(0, 0, 0, 0.8);
+    --ap-glass-hairline: rgba(255, 255, 255, 0.1);
+    --ap-elev-hairline: 0 0 0 1px rgba(255, 255, 255, 0.08);
+    --ap-elev-popover: 0 24px 48px -12px rgba(0, 0, 0, 0.65);
+    --ap-elev-segment: 0 2px 6px rgba(0, 0, 0, 0.3);
+    --ap-sheet-highlight: rgba(255, 255, 255, 0.15);
+    --ap-scrim: rgba(0, 0, 0, 0.7);
+    --ap-grabber: rgba(255, 255, 255, 0.2);
+    --ap-input-fill: var(--ap-tile-2);
+    --ap-input-stroke: #6e6e73;
+    --ap-segment-track: rgba(255, 255, 255, 0.06);
+    --ap-segment-thumb: #2c2c2e;
+    --ap-segment-inactive: #86868b;
+
+    /* Tints — spec §Semantic Interactive Tints (dark). */
+    --ap-tint-blue: var(--ap-primary-on-dark);
+    --ap-tint-green: #30d158;
+    --ap-tint-orange: #ff9f0a;
+    --ap-tint-red: #ff453a;
+    --ap-tint-purple: #bf5af2;
+
+    /* Neutral ramp, inverted: carbon-* utilities keep their meaning in both appearances. */
+    --ap-n-05: #1c1c1e;
+    --ap-n-10: #242426;
+    --ap-n-20: #424245;
+    --ap-n-30: #48484a;
+    --ap-n-40: #6e6e73;
+    --ap-n-50: #9a9a9f;
+    --ap-n-60: #a1a1a6;
+    --ap-n-70: #e4e4e6;
+    --ap-n-80: #f2f2f4;
+    --ap-n-90: #f5f5f7;
+
+  --ap-sev-low: #4ad66d;
+  --ap-sev-low-surface: #10301c;
+  --ap-sev-moderate: #f5b73d;
+  --ap-sev-moderate-surface: #33260a;
+  --ap-sev-high: #ff8a5b;
+  --ap-sev-high-surface: #3a1d10;
+  --ap-sev-very-high: #ff6b60;
+  --ap-sev-very-high-surface: #3a1512;
+  --ap-sev-extreme: #ff7eb6;
+  --ap-sev-extreme-surface: #351022;
+  --ap-haz-flood: #7b97c6;
+  --ap-haz-flash-flood: #30b9cf;
+  --ap-haz-cyclone: #b582ce;
+  --ap-haz-drought: #cf9a30;
+  --ap-haz-heat-wave: #d68251;
+  --ap-haz-cold-wave: #9bc1d4;
+  --ap-haz-storm: #d199be;
+  --ap-haz-fire: #c68580;
+
+  --ap-success: #4ad66d;
+  --ap-warning: #f5b73d;
+  --ap-danger: #ff6b60;
+  --ap-info: var(--ap-primary-on-dark);
+  }
+}
+
+[data-theme='dark'] .bg-white,
+[data-theme='dark'] .hover\:bg-white:hover,
+[data-theme='dark'] .focus\:bg-white:focus {
+  background-color: var(--ap-bg-canvas);
+}
+
+[data-theme='dark'] .bg-white\/40 {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 40%, transparent);
+}
+
+[data-theme='dark'] .bg-white\/60,
+[data-theme='dark'] .hover\:bg-white\/60:hover {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 60%, transparent);
+}
+
+[data-theme='dark'] .bg-white\/70,
+[data-theme='dark'] .hover\:bg-white\/70:hover {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 70%, transparent);
+}
+
+[data-theme='dark'] .bg-white\/80 {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 80%, transparent);
+}
+
+[data-theme='dark'] .bg-white\/90 {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 90%, transparent);
+}
+
+[data-theme='dark'] .bg-white\/92 {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 92%, transparent);
+}
+
+[data-theme='dark'] .bg-white\/95 {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 95%, transparent);
+}
+
+.dark .bg-white,
+.dark .hover\:bg-white:hover,
+.dark .focus\:bg-white:focus {
+  background-color: var(--ap-bg-canvas);
+}
+
+.dark .bg-white\/40 {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 40%, transparent);
+}
+
+.dark .bg-white\/60,
+.dark .hover\:bg-white\/60:hover {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 60%, transparent);
+}
+
+.dark .bg-white\/70,
+.dark .hover\:bg-white\/70:hover {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 70%, transparent);
+}
+
+.dark .bg-white\/80 {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 80%, transparent);
+}
+
+.dark .bg-white\/90 {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 90%, transparent);
+}
+
+.dark .bg-white\/92 {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 92%, transparent);
+}
+
+.dark .bg-white\/95 {
+  background-color: color-mix(in srgb, var(--ap-bg-canvas) 95%, transparent);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .bg-white,
+  :root:not([data-theme='light']) .hover\:bg-white:hover,
+  :root:not([data-theme='light']) .focus\:bg-white:focus {
+    background-color: var(--ap-bg-canvas);
+  }
+
+  :root:not([data-theme='light']) .bg-white\/40 {
+    background-color: color-mix(in srgb, var(--ap-bg-canvas) 40%, transparent);
+  }
+
+  :root:not([data-theme='light']) .bg-white\/60,
+  :root:not([data-theme='light']) .hover\:bg-white\/60:hover {
+    background-color: color-mix(in srgb, var(--ap-bg-canvas) 60%, transparent);
+  }
+
+  :root:not([data-theme='light']) .bg-white\/70,
+  :root:not([data-theme='light']) .hover\:bg-white\/70:hover {
+    background-color: color-mix(in srgb, var(--ap-bg-canvas) 70%, transparent);
+  }
+
+  :root:not([data-theme='light']) .bg-white\/80 {
+    background-color: color-mix(in srgb, var(--ap-bg-canvas) 80%, transparent);
+  }
+
+  :root:not([data-theme='light']) .bg-white\/90 {
+    background-color: color-mix(in srgb, var(--ap-bg-canvas) 90%, transparent);
+  }
+
+  :root:not([data-theme='light']) .bg-white\/92 {
+    background-color: color-mix(in srgb, var(--ap-bg-canvas) 92%, transparent);
+  }
+
+  :root:not([data-theme='light']) .bg-white\/95 {
+    background-color: color-mix(in srgb, var(--ap-bg-canvas) 95%, transparent);
+  }
+}
+
+[data-theme='dark'],
+.dark {
+    color-scheme: dark;
+
+    /* Surfaces — spec §Backgrounds (dark): OLED canvas, #161617 cards, #242426 inner, #1C1C1E elevated. */
+    --ap-bg-canvas: var(--ap-black);
+    --ap-bg-grouped: var(--ap-tile-1);
+    --ap-bg-inset: var(--ap-tile-3);
+    --ap-bg-raised: var(--ap-tile-2);
+    --ap-bg-elevated: var(--ap-tile-2);
+    --ap-bg-card: var(--ap-tile-1);
+    --ap-bg-inverse: var(--ap-parchment);
+
+    /* Labels — spec §Label & Text Tiers (dark). */
+    --ap-label: #f5f5f7;
+    --ap-label-secondary: #a1a1a6;
+    --ap-label-tertiary: #86868b;
+    --ap-label-quaternary: #424245;
+    --ap-on-inverse: var(--ap-ink);
+
+    /* Separators and fills — spec §Fills & Separators (dark): alpha planes, not opaque borders. */
+    --ap-separator: rgba(255, 255, 255, 0.12);
+    --ap-separator-opaque: #424245;
+    --ap-card-border: rgba(255, 255, 255, 0.08);
+    --ap-fill-thin: rgba(255, 255, 255, 0.06);
+    --ap-fill-regular: rgba(255, 255, 255, 0.12);
+    --ap-fill-strong: rgba(255, 255, 255, 0.2);
+
+    /* Action and focus — the spec's dark blue tint, with black label (white is 3.0:1 on it). */
+    --ap-action: var(--ap-primary-on-dark);
+    --ap-action-fg: var(--ap-black);
+    --ap-action-focus: var(--ap-primary-on-dark);
+    --ap-action-hover: var(--ap-primary-on-dark-hover);
+    --ap-link: var(--ap-primary-on-dark);
+    --ap-on-sev: var(--ap-black);
+    --ap-focus-ring: var(--ap-primary-on-dark);
+    --ap-focus-halo: rgba(41, 151, 255, 0.25);
+
+    /* Glass, elevation, controls — spec §Elevation, §Input Fields, §Segmented Controls, §Modals. */
+    --ap-frosted-bg: rgba(0, 0, 0, 0.8);
+    --ap-glass-hairline: rgba(255, 255, 255, 0.1);
+    --ap-elev-hairline: 0 0 0 1px rgba(255, 255, 255, 0.08);
+    --ap-elev-popover: 0 24px 48px -12px rgba(0, 0, 0, 0.65);
+    --ap-elev-segment: 0 2px 6px rgba(0, 0, 0, 0.3);
+    --ap-sheet-highlight: rgba(255, 255, 255, 0.15);
+    --ap-scrim: rgba(0, 0, 0, 0.7);
+    --ap-grabber: rgba(255, 255, 255, 0.2);
+    --ap-input-fill: var(--ap-tile-2);
+    --ap-input-stroke: #6e6e73;
+    --ap-segment-track: rgba(255, 255, 255, 0.06);
+    --ap-segment-thumb: #2c2c2e;
+    --ap-segment-inactive: #86868b;
+
+    /* Tints — spec §Semantic Interactive Tints (dark). */
+    --ap-tint-blue: var(--ap-primary-on-dark);
+    --ap-tint-green: #30d158;
+    --ap-tint-orange: #ff9f0a;
+    --ap-tint-red: #ff453a;
+    --ap-tint-purple: #bf5af2;
+
+    /* Neutral ramp, inverted: carbon-* utilities keep their meaning in both appearances. */
+    --ap-n-05: #1c1c1e;
+    --ap-n-10: #242426;
+    --ap-n-20: #424245;
+    --ap-n-30: #48484a;
+    --ap-n-40: #6e6e73;
+    --ap-n-50: #9a9a9f;
+    --ap-n-60: #a1a1a6;
+    --ap-n-70: #e4e4e6;
+    --ap-n-80: #f2f2f4;
+    --ap-n-90: #f5f5f7;
+
+  --ap-sev-low: #4ad66d;
+  --ap-sev-low-surface: #10301c;
+  --ap-sev-moderate: #f5b73d;
+  --ap-sev-moderate-surface: #33260a;
+  --ap-sev-high: #ff8a5b;
+  --ap-sev-high-surface: #3a1d10;
+  --ap-sev-very-high: #ff6b60;
+  --ap-sev-very-high-surface: #3a1512;
+  --ap-sev-extreme: #ff7eb6;
+  --ap-sev-extreme-surface: #351022;
+  --ap-haz-flood: #7b97c6;
+  --ap-haz-flash-flood: #30b9cf;
+  --ap-haz-cyclone: #b582ce;
+  --ap-haz-drought: #cf9a30;
+  --ap-haz-heat-wave: #d68251;
+  --ap-haz-cold-wave: #9bc1d4;
+  --ap-haz-storm: #d199be;
+  --ap-haz-fire: #c68580;
+
+  --ap-success: #4ad66d;
+  --ap-warning: #f5b73d;
+  --ap-danger: #ff6b60;
+  --ap-info: var(--ap-primary-on-dark);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   7 · SEMANTIC LAYER
+   Tier two of the token hierarchy: primitive (§1, --ap-n-50) → semantic
+   (§5-6, --ap-label, --ap-bg-canvas) → component (§9, .ap-card). A component
+   never reaches past this layer for a raw value.
+
+   There is no alias block here any more, and that is the point. Two
+   generations of them lived at this spot: first the --hds-* / --hn-* names
+   from the four superseded systems, then a smaller set (--severity-*,
+   --surface-*, --glass-*, --panel-*, --chart-*, --sidebar-*, --primary and
+   friends) kept for "shadcn compatibility". Every one pointed at an --ap-*
+   token, so the pixels were already Apple — but a second set of names for the
+   same values is a second vocabulary, and new code kept reaching for it. Of
+   the last 80, 52 had already gone dead without anyone noticing.
+
+   All remaining call sites now name the --ap-* token directly. Tailwind still
+   needs theme keys (--font-sans, --radius-lg, --color-*) to generate its
+   utilities; those live in ONE place, the `@theme inline` block in index.css,
+   and every value there is a var(--ap-*). That is the whole bridge.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   8 · DENSITY TRACKS
+   DESIGN.md §Overview: "one design language expressed at different volumes."
+   Same tokens, same accent, same type — only the spacing step changes.
+   ───────────────────────────────────────────────────────────────────────────── */
+[data-track='editorial'],
+.ap-track-editorial {
+  --ap-section-block: var(--ap-space-section);
+  --ap-section-gap: var(--ap-space-xxl);
+  --ap-card-padding: var(--ap-space-lg);
+  --ap-track-max: var(--ap-container-text);
+}
+
+[data-track='console'],
+.ap-track-console {
+  --ap-section-block: var(--ap-space-xl);
+  --ap-section-gap: var(--ap-space-md);
+  --ap-card-padding: var(--ap-space-sm);
+  --ap-track-max: var(--ap-container-wide);
+}
+
+:root {
+  --ap-section-block: var(--ap-space-section);
+  --ap-section-gap: var(--ap-space-xxl);
+  --ap-card-padding: var(--ap-space-lg);
+  --ap-track-max: var(--ap-container-text);
+}
+
+/* ───────────────────────────────────────────────────────────────────────────────
+   9 · COMPONENTS — spec §Components. One class per component.
+   ─────────────────────────────────────────────────────────────────────────────── */
+
+/* ── Type roles (spec §Typography). ─────────────────────────────────────────── */
+.ap-type-display-hero { font-family: var(--ap-font-display); font-size: var(--ap-type-display-hero-size); line-height: var(--ap-type-display-hero-line); letter-spacing: var(--ap-type-display-hero-track); font-weight: var(--ap-type-display-hero-weight); color: var(--ap-label); }
+.ap-type-headline-xl { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-xl-size); line-height: var(--ap-type-headline-xl-line); letter-spacing: var(--ap-type-headline-xl-track); font-weight: var(--ap-type-headline-xl-weight); color: var(--ap-label); }
+.ap-type-headline-lg { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-lg-size); line-height: var(--ap-type-headline-lg-line); letter-spacing: var(--ap-type-headline-lg-track); font-weight: var(--ap-type-headline-lg-weight); color: var(--ap-label); }
+.ap-type-headline-md { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-md-size); line-height: var(--ap-type-headline-md-line); letter-spacing: var(--ap-type-headline-md-track); font-weight: var(--ap-type-headline-md-weight); color: var(--ap-label); }
+.ap-type-headline-sm { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-sm-size); line-height: var(--ap-type-headline-sm-line); letter-spacing: var(--ap-type-headline-sm-track); font-weight: var(--ap-type-headline-sm-weight); color: var(--ap-label); }
+.ap-type-body-lg { font-family: var(--ap-font-text); font-size: var(--ap-type-body-lg-size); line-height: var(--ap-type-body-lg-line); letter-spacing: var(--ap-type-body-lg-track); font-weight: var(--ap-type-body-lg-weight); color: var(--ap-label); }
+.ap-type-body-md { font-family: var(--ap-font-text); font-size: var(--ap-type-body-md-size); line-height: var(--ap-type-body-md-line); letter-spacing: var(--ap-type-body-md-track); font-weight: var(--ap-type-body-md-weight); color: var(--ap-label); }
+.ap-type-body-sm { font-family: var(--ap-font-text); font-size: var(--ap-type-body-sm-size); line-height: var(--ap-type-body-sm-line); letter-spacing: var(--ap-type-body-sm-track); font-weight: var(--ap-type-body-sm-weight); color: var(--ap-label-secondary); }
+.ap-type-label-md { font-family: var(--ap-font-text); font-size: var(--ap-type-label-md-size); line-height: var(--ap-type-label-md-line); letter-spacing: var(--ap-type-label-md-track); font-weight: var(--ap-type-label-md-weight); color: var(--ap-label); }
+.ap-type-label-sm { font-family: var(--ap-font-text); font-size: var(--ap-type-label-sm-size); line-height: var(--ap-type-label-sm-line); letter-spacing: var(--ap-type-label-sm-track); font-weight: var(--ap-type-label-sm-weight); color: var(--ap-label-secondary); }
+.ap-type-caption { font-family: var(--ap-font-text); font-size: var(--ap-type-caption-size); line-height: var(--ap-type-caption-line); letter-spacing: var(--ap-type-caption-track); font-weight: var(--ap-type-caption-weight); color: var(--ap-label-secondary); }
+
+/* Legacy names. Each maps to the nearest Cupertino role; new code uses the names above. */
+.ap-hero { font-family: var(--ap-font-display); font-size: var(--ap-type-display-hero-size); line-height: var(--ap-type-display-hero-line); letter-spacing: var(--ap-type-display-hero-track); font-weight: var(--ap-type-display-hero-weight); color: var(--ap-label); }
+.ap-display { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-xl-size); line-height: var(--ap-type-headline-xl-line); letter-spacing: var(--ap-type-headline-xl-track); font-weight: var(--ap-type-headline-xl-weight); color: var(--ap-label); }
+.ap-display-md { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-lg-size); line-height: var(--ap-type-headline-lg-line); letter-spacing: var(--ap-type-headline-lg-track); font-weight: var(--ap-type-headline-lg-weight); color: var(--ap-label); }
+.ap-lead { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-lg-size); line-height: var(--ap-type-headline-lg-line); letter-spacing: var(--ap-type-headline-lg-track); font-weight: var(--ap-weight-regular); color: var(--ap-label-secondary); }
+.ap-lead-airy { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-md-size); line-height: var(--ap-type-headline-md-line); letter-spacing: var(--ap-type-headline-md-track); font-weight: var(--ap-weight-regular); color: var(--ap-label-secondary); }
+.ap-tagline { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-md-size); line-height: var(--ap-type-headline-md-line); letter-spacing: var(--ap-type-headline-md-track); font-weight: var(--ap-type-headline-md-weight); color: var(--ap-label); }
+.ap-body { font-family: var(--ap-font-text); font-size: var(--ap-type-body-md-size); line-height: var(--ap-type-body-md-line); letter-spacing: var(--ap-type-body-md-track); font-weight: var(--ap-type-body-md-weight); color: var(--ap-label); }
+.ap-body-strong { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-sm-size); line-height: var(--ap-type-headline-sm-line); letter-spacing: var(--ap-type-headline-sm-track); font-weight: var(--ap-type-headline-sm-weight); color: var(--ap-label); }
+.ap-dense-link { font-family: var(--ap-font-text); font-size: var(--ap-type-body-md-size); line-height: var(--ap-type-body-md-line); letter-spacing: var(--ap-type-body-md-track); font-weight: var(--ap-type-body-md-weight); color: inherit; }
+.ap-caption { font-family: var(--ap-font-text); font-size: var(--ap-type-body-sm-size); line-height: var(--ap-type-body-sm-line); letter-spacing: var(--ap-type-body-sm-track); font-weight: var(--ap-type-body-sm-weight); color: var(--ap-label-secondary); }
+.ap-caption-strong { font-family: var(--ap-font-text); font-size: var(--ap-type-label-md-size); line-height: var(--ap-type-label-md-line); letter-spacing: var(--ap-type-label-md-track); font-weight: var(--ap-type-label-md-weight); color: var(--ap-label); }
+.ap-fine-print { font-family: var(--ap-font-text); font-size: var(--ap-type-label-sm-size); line-height: var(--ap-type-label-sm-line); letter-spacing: var(--ap-type-label-sm-track); font-weight: var(--ap-type-label-sm-weight); color: var(--ap-label-secondary); }
+.ap-micro-legal { font-family: var(--ap-font-text); font-size: var(--ap-type-caption-size); line-height: var(--ap-type-caption-line); letter-spacing: var(--ap-type-caption-track); font-weight: var(--ap-type-caption-weight); color: var(--ap-label-tertiary); }
+.ap-mono { font-family: var(--ap-font-mono); font-variant-numeric: tabular-nums; }
+
+/* ── Buttons. Spec: pill CTA, 36px inline / 44px touch, press to 0.97. ───────── */
+.ap-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--ap-space-sm);
+  font-family: var(--ap-font-text); font-size: var(--ap-type-body-md-size);
+  line-height: 22px; letter-spacing: var(--ap-type-body-md-track);
+  font-weight: var(--ap-weight-medium);
+  min-height: 36px; padding: 7px 18px;
+  border: 0; cursor: pointer; text-decoration: none;
+  border-radius: var(--ap-radius-pill);
+  background: var(--ap-action); color: var(--ap-action-fg);
+  transition: transform var(--ap-duration-press) var(--ap-ease),
+              background-color var(--ap-duration-base) var(--ap-ease);
+}
+@media (pointer: coarse) {
+  .ap-btn { min-height: var(--ap-touch-min); padding: 11px 22px; }
+}
+.ap-btn:hover { background: var(--ap-action-hover); }
+.ap-btn:active { transform: scale(var(--ap-press-scale)); }
+.ap-btn:focus-visible { outline: var(--ap-focus-width) solid var(--ap-action-focus); outline-offset: var(--ap-focus-offset); }
+.ap-btn[disabled], .ap-btn[aria-disabled='true'] { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* Ghost pill — the second CTA when two pills appear together. */
+.ap-btn-secondary { background: transparent; color: var(--ap-action); box-shadow: inset 0 0 0 1px var(--ap-action); }
+
+/* Secondary dark button — spec: #1D1D1F fill, #2D2D2F on hover, #F5F5F7 text, hairline ring. */
+.ap-btn-dark {
+  background: var(--ap-btn-dark); color: var(--ap-label);
+  box-shadow: inset 0 0 0 1px var(--ap-btn-dark-ring);
+}
+.ap-btn-dark:hover { background: var(--ap-btn-dark-hover); }
+
+/* Compact utility rect — nav actions. */
+.ap-btn-utility {
+  background: var(--ap-ink); color: var(--ap-on-dark);
+  border-radius: var(--ap-radius-sm);
+  font-size: var(--ap-type-label-md-size); line-height: var(--ap-type-label-md-line);
+  letter-spacing: var(--ap-type-label-md-track);
+  padding: 8px 15px; min-height: 32px;
+}
+
+/* Pearl capsule — product-card secondary. */
+.ap-btn-pearl {
+  background: var(--ap-bg-raised); color: var(--ap-ink-muted-80);
+  border-radius: var(--ap-radius-md);
+  font-size: var(--ap-type-body-sm-size); line-height: var(--ap-type-body-sm-line);
+  letter-spacing: var(--ap-type-body-sm-track);
+  padding: 8px 14px; min-height: 36px;
+  box-shadow: 0 0 0 3px var(--ap-divider-soft);
+}
+
+/* Hero CTA — the largest size, body-lg. */
+.ap-btn-hero {
+  font-size: var(--ap-type-body-lg-size); line-height: var(--ap-type-body-lg-line);
+  font-weight: var(--ap-weight-medium); padding: 14px 28px;
+}
+
+/* Circular control over photography — exactly 44 × 44. */
+.ap-btn-icon {
+  width: var(--ap-touch-min); height: var(--ap-touch-min); padding: 0;
+  border-radius: var(--ap-radius-full);
+  background: var(--ap-chip-translucent); color: var(--ap-ink);
+}
+
+/* Ghost / link — spec: blue text, trailing chevron that moves 2px on hover. */
+.ap-link { color: var(--ap-link); text-decoration: none; }
+.ap-link:hover { text-decoration: underline; }
+.ap-link:focus-visible { outline: var(--ap-focus-width) solid var(--ap-focus-ring); outline-offset: var(--ap-focus-offset); border-radius: var(--ap-radius-xs); }
+.ap-link-chevron::after {
+  content: '›'; display: inline-block; margin-left: 4px;
+  transition: transform var(--ap-duration-base) var(--ap-ease);
+}
+.ap-link-chevron:hover::after { transform: translateX(2px); }
+
+/* ── Tiles. Full-bleed, zero radius, colour change IS the divider. ─────────── */
+.ap-tile { padding-block: var(--ap-section-block); padding-inline: var(--ap-gutter); border-radius: var(--ap-radius-none); }
+.ap-tile-light { background: var(--ap-canvas); color: var(--ap-ink); }
+.ap-tile-parchment { background: var(--ap-parchment); color: var(--ap-ink); }
+.ap-tile-dark { background: var(--ap-tile-1); color: var(--ap-on-dark); }
+.ap-tile-dark-2 { background: var(--ap-tile-2); color: var(--ap-on-dark); }
+.ap-tile-dark-3 { background: var(--ap-tile-3); color: var(--ap-on-dark); }
+.ap-tile-dark .ap-link, .ap-tile-dark-2 .ap-link, .ap-tile-dark-3 .ap-link { color: var(--ap-primary-on-dark); }
+.ap-tile-inner { max-width: var(--ap-track-max); margin-inline: auto; }
+
+/* Scopes the dark-surface role set to one region — a hero over photography, a
+   dark tile inside a light page. Everything nested inherits the inverted
+   semantics, so a button or link in here does not need its own dark variant. */
+.ap-on-dark {
+  --ap-label: #ffffff;
+  --ap-label-secondary: var(--ap-body-muted);
+  --ap-label-tertiary: #a1a1a6;
+  --ap-separator: rgba(255, 255, 255, 0.16);
+  --ap-separator-opaque: rgba(255, 255, 255, 0.24);
+  --ap-action: #ffffff;
+  --ap-action-fg: var(--ap-ink);
+  --ap-action-focus: #ffffff;
+  --ap-action-hover: #e3e3e8;
+  --ap-link: var(--ap-primary-on-dark);
+  /* --ap-on-sev deliberately NOT set: this context does not override --ap-sev-*, so the
+     severity fills keep the ambient theme's lightness and their foreground comes from the ambient theme too. */
+  --ap-focus-ring: #ffffff;
+  --ap-bg-canvas: var(--ap-tile-1);
+  --ap-bg-grouped: var(--ap-tile-3);
+  --ap-bg-raised: var(--ap-tile-2);
+  color: var(--ap-label);
+}
+
+/* ── Cards. Spec: 1px hairline, 18–22px radius, no shadow. ────────────────── */
+.ap-card {
+  background: var(--ap-bg-card); color: var(--ap-label);
+  border: 1px solid var(--ap-card-border);
+  border-radius: var(--ap-radius-card);
+  padding: var(--ap-card-padding);
+  box-shadow: var(--ap-elev-flat);
+}
+.ap-card-media { border-radius: var(--ap-radius-sm); overflow: hidden; }
+
+/* The ONE shadow in the system — product imagery only. */
+.ap-product-shadow { box-shadow: var(--ap-elev-product); }
+
+/* ── Chips — pill grammar. ───────────────────────────────────────────────────── */
+.ap-chip {
+  display: inline-flex; align-items: center; gap: var(--ap-space-sm);
+  background: var(--ap-bg-canvas); color: var(--ap-label);
+  font-size: var(--ap-type-body-sm-size); line-height: var(--ap-type-body-sm-line);
+  letter-spacing: var(--ap-type-body-sm-track);
+  border: 1px solid var(--ap-separator-opaque);
+  border-radius: var(--ap-radius-pill);
+  padding: 12px 16px; min-height: var(--ap-touch-min);
+}
+/* Press feedback belongs to every pill control. It stays press-only: a tab row is used tens
+   of times a day, the frequency tier where motion must be near-imperceptible or absent. */
+.ap-chip { transition: transform var(--ap-duration-press) var(--ap-ease), border-color var(--ap-duration-press) var(--ap-ease); }
+.ap-chip:active { transform: scale(var(--ap-press-scale)); }
+/* Selection is a 2px ring on a box that is ALWAYS 2px, so the label cannot shift 1px on press. */
+.ap-chip[aria-selected='true'], .ap-chip[data-selected='true'] {
+  border-color: var(--ap-action-focus);
+  box-shadow: inset 0 0 0 1px var(--ap-action-focus);
+}
+
+/* ── Inputs. Spec: 10–12px radius, filled, focus = accent border + 3px halo. ── */
+.ap-input {
+  background: var(--ap-input-fill); color: var(--ap-label);
+  font-family: var(--ap-font-text); font-size: var(--ap-type-body-md-size);
+  letter-spacing: var(--ap-type-body-md-track);
+  border: 1px solid var(--ap-input-stroke);
+  border-radius: var(--ap-radius-input);
+  padding: 12px 16px; min-height: var(--ap-touch-min); width: 100%;
+  transition: border-color var(--ap-duration-base) var(--ap-ease), box-shadow var(--ap-duration-base) var(--ap-ease);
+}
+.ap-input::placeholder { color: var(--ap-label-tertiary); }
+.ap-input:focus { border-color: var(--ap-focus-ring); box-shadow: 0 0 0 3px var(--ap-focus-halo); }
+.ap-input:focus-visible { outline: var(--ap-focus-width) solid var(--ap-focus-ring); outline-offset: var(--ap-focus-offset); }
+
+/* ── Segmented control. Spec: pill track, elevated sliding pill. ───────────── */
+.ap-segmented {
+  position: relative; display: inline-grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+  padding: 2px; border-radius: var(--ap-radius-pill);
+  background: var(--ap-segment-track);
+}
+/* The thumb is one segment wide; translateX moves it by whole segments. */
+.ap-segment-thumb {
+  position: absolute; top: 2px; bottom: 2px; left: 2px;
+  width: calc((100% - 4px) / var(--ap-segments, 2));
+  border-radius: var(--ap-radius-pill);
+  background: var(--ap-segment-thumb); box-shadow: var(--ap-elev-segment);
+  transform: translateX(calc(var(--ap-segment-index, 0) * 100%));
+  transition: transform var(--ap-duration-segment) var(--ap-ease);
+}
+.ap-segment {
+  position: relative; z-index: 1;
+  min-height: 32px; padding: 6px 14px; border: 0; background: transparent; cursor: pointer;
+  font-size: var(--ap-type-label-md-size); line-height: var(--ap-type-label-md-line);
+  letter-spacing: var(--ap-type-label-md-track); font-weight: var(--ap-weight-medium);
+  color: var(--ap-segment-inactive);
+  transition: color var(--ap-duration-base) var(--ap-ease);
+}
+.ap-segment[aria-selected='true'] { color: var(--ap-label); }
+.ap-segment:focus-visible { outline: var(--ap-focus-width) solid var(--ap-focus-ring); outline-offset: var(--ap-focus-offset); }
+
+/* ── Press feedback / state change — the two motion roles components may use. ─ */
+
+/* A pressable cell that is NOT a pill: a selectable option, a suggestion container. */
+.ap-pressable { transition: transform var(--ap-duration-press) var(--ap-ease); }
+.ap-pressable:active { transform: scale(var(--ap-press-scale-soft)); }
+
+/* A full-width row. Scaling one would pull its edges inside the panel, so a row
+   acknowledges the press with a background step instead. */
+.ap-press-row { transition: background-color var(--ap-duration-press) var(--ap-ease); }
+.ap-press-row:active { background-color: var(--ap-bg-grouped); }
+
+/* A state change that would otherwise land in a single frame. Colours only. */
+.ap-state-transition { transition: background-color var(--ap-duration-base) var(--ap-ease), border-color var(--ap-duration-base) var(--ap-ease), color var(--ap-duration-base) var(--ap-ease); }
+
+/* Progress / completeness meter. Authored at full width and revealed with `scaleX`. */
+.ap-meter { position: relative; overflow: hidden; }
+.ap-meter-fill {
+  width: 100%; height: 100%;
+  transform: scaleX(var(--ap-meter-value, 0)); transform-origin: left center;
+  transition: transform var(--ap-duration-base) var(--ap-ease);
+}
+
+/* ── Navigation. Spec: glass bar, 44px mobile / 48px desktop, hairline below. ─ */
+.ap-nav {
+  background: var(--ap-frosted-bg); color: var(--ap-label);
+  -webkit-backdrop-filter: saturate(var(--ap-frosted-saturate)) blur(var(--ap-frosted-blur));
+  backdrop-filter: saturate(var(--ap-frosted-saturate)) blur(var(--ap-frosted-blur));
+  border-bottom: 1px solid var(--ap-glass-hairline);
+  min-height: var(--ap-nav-h);
+  font-size: var(--ap-type-label-sm-size); line-height: var(--ap-type-label-sm-line);
+  letter-spacing: var(--ap-type-label-sm-track);
+  z-index: var(--ap-z-nav);
+}
+.ap-subnav {
+  background: var(--ap-frosted-bg); color: var(--ap-label);
+  -webkit-backdrop-filter: saturate(var(--ap-frosted-saturate)) blur(var(--ap-frosted-blur));
+  backdrop-filter: saturate(var(--ap-frosted-saturate)) blur(var(--ap-frosted-blur));
+  min-height: var(--ap-subnav-h);
+  border-bottom: 1px solid var(--ap-glass-hairline);
+  z-index: var(--ap-z-sticky);
+}
+.ap-sticky-bar {
+  background: var(--ap-frosted-bg); color: var(--ap-label);
+  -webkit-backdrop-filter: saturate(var(--ap-frosted-saturate)) blur(var(--ap-frosted-blur));
+  backdrop-filter: saturate(var(--ap-frosted-saturate)) blur(var(--ap-frosted-blur));
+  min-height: var(--ap-sticky-h); padding: 12px 32px;
+  z-index: var(--ap-z-sticky);
+}
+.ap-footer { background: var(--ap-bg-grouped); color: var(--ap-ink-muted-80); padding-block: 64px; }
+
+/* ── Sheets, popovers, modals. Spec: #1C1C1E, 24px top radius, grabber, scrim. ─ */
+.ap-scrim { position: fixed; inset: 0; background: var(--ap-scrim); }
+.ap-sheet {
+  background: var(--ap-bg-elevated); color: var(--ap-label);
+  border-radius: var(--ap-radius-xl) var(--ap-radius-xl) 0 0;
+  box-shadow: inset 0 1px 0 var(--ap-sheet-highlight), var(--ap-elev-popover);
+}
+.ap-sheet-grabber {
+  width: 36px; height: 5px; margin: 8px auto 0;
+  border-radius: var(--ap-radius-pill); background: var(--ap-grabber);
+}
+
+/* ── Severity — colour + icon + word, never colour alone. ──────────────────── */
+.ap-sev { display: inline-flex; align-items: center; gap: var(--ap-space-xxs); border-radius: var(--ap-radius-pill); padding: 4px 10px; font-size: var(--ap-type-caption-size); line-height: var(--ap-type-caption-line); font-weight: var(--ap-weight-semibold); letter-spacing: var(--ap-type-caption-track); }
+.ap-sev-low { background: var(--ap-sev-low-surface); color: var(--ap-sev-low); }
+.ap-sev-moderate { background: var(--ap-sev-moderate-surface); color: var(--ap-sev-moderate); }
+.ap-sev-high { background: var(--ap-sev-high-surface); color: var(--ap-sev-high); }
+.ap-sev-very-high { background: var(--ap-sev-very-high-surface); color: var(--ap-sev-very-high); }
+.ap-sev-extreme { background: var(--ap-sev-extreme-surface); color: var(--ap-sev-extreme); }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   ICONS. One stroke weight, set once in CSS. Icons inherit `currentColor`.
+   ───────────────────────────────────────────────────────────────────────────── */
+svg.lucide {
+  stroke-width: 1.75;
+  stroke: currentColor;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 44 × 44 is the touch floor; the glyph inside it stays optical. */
+.ap-icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: var(--ap-touch-min); height: var(--ap-touch-min);
+  border-radius: var(--ap-radius-full);
+  color: var(--ap-label); background: transparent; border: 0; cursor: pointer;
+  transition: transform var(--ap-duration-press) var(--ap-ease);
+}
+.ap-icon-btn:active { transform: scale(var(--ap-press-scale)); }
+.ap-icon-btn:focus-visible { outline: var(--ap-focus-width) solid var(--ap-focus-ring); outline-offset: var(--ap-focus-offset); }
+
+/* Per-card hazard accent. The bento sets these on each card; the declarations are the fallbacks. */
+:root {
+  --ap-hazard-accent: var(--ap-label);
+  --ap-hazard-accent-dark: var(--ap-label);
+}
+
+/* ── Focus. One ring, everywhere. ──────────────────────────────────────────── */
+.ap-focusable:focus-visible { outline: var(--ap-focus-width) solid var(--ap-focus-ring); outline-offset: var(--ap-focus-offset); }
+
+/* ── Container. Spec: 1280px shell, margin 40px desktop / 20px mobile. ─────── */
+.ap-container { max-width: var(--ap-track-max); margin-inline: auto; padding-inline: var(--ap-margin); }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   10 · RESPONSIVE — spec §Layout & Spacing. Mobile is a 4-column flow below 768px.
+   The two display roles step down to their mobile values; margins and gutters step too.
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (min-width: 768px) {
+  :root { --ap-nav-h: 48px; }
+}
+@media (max-width: 767px) {
+  :root {
+    --ap-type-display-hero-size: 40px;
+    --ap-type-display-hero-line: 44px;
+    --ap-type-display-hero-track: -0.012em;
+    --ap-type-headline-xl-size: 32px;
+    --ap-type-headline-xl-line: 36px;
+    --ap-type-headline-xl-track: -0.010em;
+    --ap-margin: 20px;
+    --ap-gutter: 16px;
+    --ap-space-section: 48px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   11 · MOTION — the single documented interaction, and the reduced-motion floor.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Entrance motion. DESIGN.md documents press and nothing else, so there is no
+   Apple-sanctioned "animate in" — but six surfaces (the nav, two modals, two
+   popovers, a disclosure) do appear rather than being present on load, and
+   something has to carry that. Previously it was `tw-animate-css`, which is the
+   shadcn/Radix motion vocabulary: a second easing curve, a second duration
+   scale, and a `@import` of a whole library for six call sites.
+   
+   These two classes are the Apple answer: the same `--ap-ease` and
+   `--ap-duration-base` the press interaction already uses, so entrance and
+   interaction share one curve. `-drop` is for things hanging off a trigger
+   (menus, popovers) — 4px, which is the shortest distance that still reads as
+   direction rather than as a glitch. Nothing else is offered on purpose; a
+   third entrance would be a third motion language. */
+@keyframes ap-enter      { from { opacity: 0; }                         to { opacity: 1; transform: none; } }
+@keyframes ap-enter-drop { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+.ap-enter      { animation: ap-enter      var(--ap-duration-base) var(--ap-ease) both; }
+.ap-enter-drop { animation: ap-enter-drop var(--ap-duration-base) var(--ap-ease) both; }
+
+/* A group arriving as ONE beat. Each child renders `.ap-enter` and carries its
+   index (`--i`, 0-based) and the group size (`--n`); the delay is
+   `min(60ms, 480ms / n) × i`, so a two-card grid and a nine-card grid both settle
+   inside half a second and a longer list cannot turn its own arrival into a
+   queue. The classes are static — only the two custom properties vary per card,
+   which means no animation is created or destroyed by a re-render. */
+.ap-stagger { animation-delay: calc(min(60ms, calc(480ms / max(var(--n, 1), 1))) * var(--i, 0)); }
+
+/* ── The theme flip, eased. ──────────────────────────────────────────────────
+   Switching theme is a whole-canvas brightness change, and a whole-canvas change
+   in one frame reads as a flash rather than as a state change. This is NOT a
+   document-wide crossfade — the live console must not look like a slideshow while
+   the reader is acting on it — it is the canvas plus the large STATIC shells, on
+   the same 240ms `--ap-ease` as everything else. Anything whose colour is a
+   *state* (the connected connector card, the selected chip, a severity badge) is
+   deliberately absent: a state change must never lag its own press, and those
+   carry `.ap-state-transition` / press timings of their own. */
+html, body, .ap-nav, .ap-subnav, .ap-sticky-bar, .ap-footer, .ap-card, .ap-input {
+  transition: background-color var(--ap-duration-base) var(--ap-ease),
+              color var(--ap-duration-base) var(--ap-ease),
+              border-color var(--ap-duration-base) var(--ap-ease);
+}
+
+/* ── Two more preferences the system has to answer. ──────────────────────────
+   Translucency and contrast are separate accessibility signals from motion, and
+   "reduce transparency" is not a request for a smaller blur — it is a request to
+   stop showing the content behind the chrome. Both arms work at the TOKEN level
+   first, so every consumer of `--ap-frosted-blur` / `--ap-frosted-bg` follows
+   (including the `.glass-*` utilities), and the blanket pass afterwards only has
+   to catch the Tailwind `backdrop-blur-*` utilities, which are not tokenised.
+
+   `--ap-frosted-bg: var(--ap-bg-canvas)` resolves against the element that
+   declares it (the root), where the dark scope has already re-pointed
+   `--ap-bg-canvas` — so the solid surface stays theme-correct in both themes. The
+   selector list mirrors the dark scopes' own specificity so this arm wins
+   wherever the theme was applied. */
+@media (prefers-reduced-transparency: reduce) {
+  :root,
+  :root:not([data-theme='light']) {
+    --ap-frosted-blur: 0px;
+    --ap-frosted-bg: var(--ap-bg-canvas);
+  }
+  * { -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+
+/* A defined, contrasting border at the edges the eye actually uses. The hairlines
+   are re-pointed rather than each component being re-declared, so a surface that
+   gets its border from `--ap-separator-opaque` (a card, a chip, an input) picks
+   this up for free — and `--ap-elev-hairline`, which is the rgba shadow several
+   panels use *as* their border, becomes a real one. */
+@media (prefers-contrast: more) {
+  :root,
+  :root:not([data-theme='light']) {
+    --ap-separator: var(--ap-label-secondary);
+    --ap-separator-opaque: var(--ap-label-secondary);
+    --ap-elev-hairline: 0 0 0 1px var(--ap-label-secondary);
+    --ap-frosted-blur: 0px;
+    --ap-frosted-bg: var(--ap-bg-canvas);
+  }
+  .ap-chip[aria-selected='true'], .ap-chip[data-selected='true'] {
+    border-color: var(--ap-label);
+    box-shadow: inset 0 0 0 1px var(--ap-label);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ap-btn, .ap-btn:active { transition-duration: var(--ap-duration-press); transform: none; }
+  /* The floor's blanket rule below zeroes durations but NOT a delay, so a
+     staggered group would still arrive one card at a time — the single beat is
+     the thing reduced motion is asking to be spared. */
+  .ap-stagger { animation-delay: 0ms; }
+  .ap-chip, .ap-chip:active,
+  .ap-icon-btn, .ap-icon-btn:active,
+  .ap-pressable, .ap-pressable:active,
+  .ap-press-row, .ap-press-row:active { transition-duration: 0.01ms; transform: none; }
+  /* The meter is the ONE place `transform` carries a value rather than a transit
+     (`scaleX(--ap-meter-value)`), so it must not be flattened to `none` here —
+     that would paint every reduced-motion reader a full bar. Only the duration
+     is floored. */
+  .ap-meter-fill { transition-duration: 0.01ms; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important; /* reduced-motion floor must beat later animation declarations */
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   12 · BENGALI — extension. Matras clip at Latin leading; no negative tracking.
+   ───────────────────────────────────────────────────────────────────────────── */
+.lang-bn, .farmer-advisory, .tts-fallback-text, [lang='bn'], :lang(bn) {
+  font-family: var(--ap-font-bengali);
+  line-height: var(--ap-bn-leading);
+  letter-spacing: var(--ap-bn-tracking);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Brand motion — the menu icon and the infinity loader.
+
+   These rules used to live in `styles/brand.css`. That file was deleted with the
+   other superseded stylesheets, but the two components that depend on it were
+   not: `MenuToggleIcon.tsx` and `InfinityLoader.tsx` still render the class
+   names, and nothing styled them. An SVG `<rect>` with no `fill` falls back to
+   the initial value, which is BLACK — so the header's menu icon painted black
+   over the dark hero art and black on the dark-mode bar, and `currentColor`
+   never got a chance to apply. On the white scrolled header black is very
+   nearly right, which is why it read as "fine" on the page most people see
+   first.
+
+   Restored here, on Apple tokens, with the hardcoded brand blues
+   (#1a7bf5 / #3d93fa / #fff) replaced by --ap-action and --ap-bg-canvas so the
+   marks follow the theme instead of pinning a second accent.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── Menu icon (components/brand/MenuToggleIcon.tsx) ──────────────────────── */
+.hn-menu-icon {
+  display: block;
+  overflow: visible;
+}
+
+.hn-menu-icon__bar {
+  fill: currentColor;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform var(--ap-duration-base) var(--ap-ease);
+}
+
+.hn-menu-icon__node {
+  fill: var(--ap-action);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    transform var(--ap-duration-base) var(--ap-ease),
+    opacity var(--ap-duration-press) var(--ap-ease);
+}
+
+/* Over the hero the backdrop is photography, and it changes every slide. The
+   bars are safe because they inherit the header's own white, which is checked
+   against the art; a fixed accent hue is not — on the brightest slide
+   (`hero-flooded-fields`) Action Blue lands at 1.07:1. The bead joins the bars
+   there and the shape, not the colour, keeps it distinct. */
+[data-over-hero='true'] .hn-menu-icon__node {
+  fill: currentColor;
+}
+
+/* open: the bars cross into a ✕ about (12, 12); the node slips off along the short bar's line */
+.hn-menu-icon[data-open='true'] .hn-menu-icon__bar--a {
+  transform: translateY(4px) rotate(45deg);
+}
+
+.hn-menu-icon[data-open='true'] .hn-menu-icon__bar--b {
+  transform: translate(-2.75px, -4px) rotate(-45deg) scaleX(1.48);
+}
+
+.hn-menu-icon[data-open='true'] .hn-menu-icon__node {
+  opacity: 0;
+  transform: translateX(7px) scale(0.6);
+}
+
+/* ── Infinity loader (components/brand/InfinityLoader.tsx) ────────────────── */
+.hn-loop {
+  display: inline-block;
+  /* No `line-height: 0` here: the descender gap it used to close only exists for
+     an inline-level child, and .hn-loop__svg is display:block. An applied
+     sub-1.3 leading in this file is a defect the type tests look for. */
+  perspective: 460px;
+}
+
+.hn-loop__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  transform-style: preserve-3d;
+  transition: transform 320ms var(--ap-ease);
+}
+
+.hn-loop[data-interactive='true'] {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.hn-loop__track {
+  fill: none;
+  stroke-width: 10;
+  stroke-linejoin: round;
+  opacity: 0.16;
+}
+
+.hn-loop__glow {
+  filter: drop-shadow(0 0 2.5px color-mix(in srgb, var(--ap-action) 75%, transparent));
+  transition: filter 300ms var(--ap-ease);
+}
+
+.hn-loop[data-hot='true'] .hn-loop__glow {
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--ap-action) 95%, transparent));
+}
+
+.hn-loop__comet {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: hn-loop-run 2.6s linear infinite;
+}
+
+@keyframes hn-loop-run {
+  to {
+    stroke-dashoffset: -100;
+  }
+}
+
+/* The bead is a ring, not a dot: it is filled with the page so the loop reads
+   through it on either theme. */
+.hn-loop__node {
+  fill: var(--ap-bg-canvas);
+  stroke: var(--ap-action);
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hn-loop-node 1.3s ease-out infinite;
+}
+
+@keyframes hn-loop-node {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  12% {
+    transform: scale(1.5);
+    opacity: 1;
+  }
+  45% {
+    transform: scale(1);
+    opacity: 0.75;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+}
+
+/* a tap sends one ring out from each apex node */
+.hn-loop__ring {
+  fill: none;
+  stroke: var(--ap-action);
+  stroke-width: 1.6;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.hn-loop.is-burst .hn-loop__ring {
+  animation: hn-loop-ring 720ms var(--ap-ease) both;
+}
+
+@keyframes hn-loop-ring {
+  from {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(5);
+  }
+}
+
+/* Still, lit composition — heads lined up exactly as the animation's frame at
+   t = 0 — for reduced motion and for Low-bandwidth mode. */
+@media (prefers-reduced-motion: reduce) {
+  .hn-menu-icon__bar,
+  .hn-menu-icon__node {
+    transition-duration: 0.01ms;
+  }
+
+  .hn-loop__comet,
+  .hn-loop__node,
+  .hn-loop.is-burst .hn-loop__ring {
+    animation: none;
+  }
+
+  .hn-loop__comet {
+    stroke-dashoffset: var(--hn-loop-still, 0);
+  }
+
+  .hn-loop__node {
+    opacity: 0.9;
+  }
+
+  .hn-loop__svg {
+    transform: none !important; /* beats the inline 3D tilt the component writes */
+  }
+}
+
+html[data-low-bandwidth='true'] .hn-loop__comet {
+  stroke-dashoffset: var(--hn-loop-still, 0);
+}
+
+html[data-low-bandwidth='true'] .hn-loop__glow {
+  filter: none;
+}
+
+/* ── Paper stays paper ─────────────────────────────────────────────────────
+   The print preview and the PDF export are documents: they are printed on
+   white paper and must render identically from either theme. `.hn-paper` is
+   the marker the modal puts on the sheet.
+
+   These rules existed in `dark.css`, keyed on `[data-mrd-theme='dark']` — an
+   attribute this app has never set (the theme is `data-theme` / `.dark`), so
+   they were dead long before that file was deleted. In dark mode the sheet's
+   own `bg-white` is re-pointed to the dark canvas and `text-carbon-90` inverts
+   to white, so the preview went dark while the printed page stayed white.
+
+   Literal values on purpose: this surface models ink on paper, not the UI
+   theme, so it must not follow the token flip. */
+[data-theme='dark'] .hn-paper,
+[data-theme='dark'] .hn-paper .bg-white,
+.dark .hn-paper,
+.dark .hn-paper .bg-white {
+  background-color: #ffffff;
+  color: var(--ap-ink);
+}
+
+[data-theme='dark'] .hn-paper .text-carbon-90,
+.dark .hn-paper .text-carbon-90 {
+  color: var(--ap-ink);
+}
+
+[data-theme='dark'] .hn-paper .text-carbon-60,
+[data-theme='dark'] .hn-paper .text-carbon-70,
+.dark .hn-paper .text-carbon-60,
+.dark .hn-paper .text-carbon-70 {
+  color: #444447;
+}
+
+[data-theme='dark'] .hn-paper .border-carbon-20,
+[data-theme='dark'] .hn-paper .border-carbon-30,
+.dark .hn-paper .border-carbon-20,
+.dark .hn-paper .border-carbon-30 {
+  border-color: #d1d1d1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .hn-paper,
+  :root:not([data-theme='light']) .hn-paper .bg-white {
+    background-color: #ffffff;
+    color: var(--ap-ink);
+  }
+
+  :root:not([data-theme='light']) .hn-paper .text-carbon-90 {
+    color: var(--ap-ink);
+  }
+
+  :root:not([data-theme='light']) .hn-paper .text-carbon-60,
+  :root:not([data-theme='light']) .hn-paper .text-carbon-70 {
+    color: #444447;
+  }
+
+  :root:not([data-theme='light']) .hn-paper .border-carbon-20,
+  :root:not([data-theme='light']) .hn-paper .border-carbon-30 {
+    border-color: #d1d1d1;
+  }
+}

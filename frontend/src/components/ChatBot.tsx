@@ -203,7 +203,7 @@ export default function ChatBot() {
             animate={{ opacity: 1, y: 0 }}
             exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
             transition={{ duration: reduceMotion ? 0 : 0.18, ease: 'easeOut' }}
-            className="fixed inset-x-0 bottom-0 top-0 z-[var(--ap-z-overlay)] flex h-dvh w-full max-w-full flex-col overflow-hidden border border-carbon-20 bg-white pb-[env(safe-area-inset-bottom)] shadow-xl sm:inset-auto sm:bottom-6 sm:right-6 sm:h-[640px] sm:max-h-[calc(100dvh-3rem)] sm:w-[min(480px,calc(100vw-3rem))] sm:rounded-2xl sm:pb-0"
+            className="fixed inset-x-0 bottom-0 top-0 z-[var(--ap-z-overlay)] flex h-dvh w-full max-w-full flex-col overflow-hidden border border-carbon-20 bg-ap-elevated pb-[env(safe-area-inset-bottom)] shadow-xl sm:inset-auto sm:bottom-6 sm:right-6 sm:h-[640px] sm:max-h-[calc(100dvh-3rem)] sm:w-[min(480px,calc(100vw-3rem))] sm:rounded-2xl sm:pb-0"
             role="dialog"
             aria-modal="true"
             aria-label="HazardNet AI Advisor chat"

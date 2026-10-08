@@ -284,13 +284,13 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="pdf-config-modal-title"
-      className="fixed inset-0 z-[10000] flex items-center justify-center p-3 sm:p-4 bg-carbon-black/80 backdrop-blur-sm ap-enter"
+      className="fixed inset-0 z-[10000] flex items-center justify-center p-3 sm:p-4 bg-ap-scrim backdrop-blur-sm ap-enter"
     >
       {/* Modal Container */}
       <div
         ref={panelRef}
         tabIndex={-1}
-        className="relative w-full max-w-xl bg-white border border-carbon-20 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
+        className="relative w-full max-w-xl bg-ap-elevated border border-carbon-20 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
       >
         {/* Modal Header */}
         <div className="flex items-center justify-between px-5 py-4 bg-carbon-90 text-carbon-05 border-b border-carbon-80 shrink-0">

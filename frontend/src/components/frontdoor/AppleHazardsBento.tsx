@@ -1,5 +1,6 @@
 import React, { useRef, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { hazardPalette } from '@hazardnet/design-system';
 import MaterialIcon from '../MaterialIcon';
 import { useI18n } from '../../hooks/useI18n';
 import { hazardIcon } from '../../hooks/useHazardLabel';
@@ -31,8 +32,6 @@ interface HazardCardConfig {
   taglineBn: string;
   leadTime: string;
   isDark: boolean;
-  accentColor: string;
-  glowColor: string;
   renderVisual: () => React.ReactNode;
 }
 
@@ -44,40 +43,38 @@ const HAZARD_CONFIGS: Record<string, HazardCardConfig> = {
     taglineBn: 'ঘূর্ণিঝড়জনিত সামুদ্রিক জলোচ্ছ্বাস ও ঘণ্টায় ৫০ কিমির বেশি গতিবেগের তীব্র ঝড়ো বাতাস।',
     leadTime: '7 & 15-day multi-horizon · Skill + Physics model',
     isDark: true,
-    accentColor: '#38bdf8',
-    glowColor: 'rgba(56, 189, 248, 0.25)',
     renderVisual: () => (
       <svg className="w-full h-36" viewBox="0 0 240 140" fill="none" aria-hidden="true">
         <defs>
           <radialGradient id="cycloneGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.5" />
-            <stop offset="60%" stopColor="#0284c7" stopOpacity="0.2" />
-            <stop offset="100%" stopColor="#0284c7" stopOpacity="0" />
+            <stop offset="0%" stopColor="currentColor" stopOpacity="0.5" />
+            <stop offset="60%" stopColor="currentColor" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
           </radialGradient>
         </defs>
         <circle cx="120" cy="70" r="58" fill="url(#cycloneGlow)" />
         {/* Concentric atmospheric pressure isobars */}
-        <circle cx="120" cy="70" r="54" stroke="#38bdf8" strokeWidth="1" strokeDasharray="3 4" strokeOpacity="0.4" />
-        <circle cx="120" cy="70" r="42" stroke="#38bdf8" strokeWidth="1.2" strokeOpacity="0.6" />
-        <circle cx="120" cy="70" r="28" stroke="#7dd3fc" strokeWidth="1.5" strokeDasharray="4 2" strokeOpacity="0.8" />
+        <circle cx="120" cy="70" r="54" stroke="currentColor" strokeWidth="1" strokeDasharray="3 4" strokeOpacity="0.4" />
+        <circle cx="120" cy="70" r="42" stroke="currentColor" strokeWidth="1.2" strokeOpacity="0.6" />
+        <circle cx="120" cy="70" r="28" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 2" strokeOpacity="0.8" />
         {/* Spiral arms */}
         <path
           d="M 120 70 C 130 50, 155 45, 175 60 C 190 72, 185 95, 165 105 C 145 115, 115 110, 95 95 C 75 80, 75 55, 95 40 C 115 25, 150 30, 170 50"
-          stroke="#38bdf8"
+          stroke="currentColor"
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeOpacity="0.9"
         />
         <path
           d="M 120 70 C 110 90, 85 95, 65 80 C 50 68, 55 45, 75 35 C 95 25, 125 30, 145 45 C 165 60, 165 85, 145 100"
-          stroke="#7dd3fc"
+          stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
           strokeOpacity="0.75"
         />
         {/* Eye of the storm */}
-        <circle cx="120" cy="70" r="6" fill="#f0f9ff" />
-        <circle cx="120" cy="70" r="10" stroke="#f0f9ff" strokeWidth="1" strokeOpacity="0.6" />
+        <circle cx="120" cy="70" r="6" fill="currentColor" />
+        <circle cx="120" cy="70" r="10" stroke="currentColor" strokeWidth="1" strokeOpacity="0.6" />
       </svg>
     ),
   },
@@ -88,14 +85,12 @@ const HAZARD_CONFIGS: Record<string, HazardCardConfig> = {
     taglineBn: 'ব্রহ্মপুত্র, যমুনা ও পদ্মা অববাহিকায় মৌসুমি বৃষ্টিপাত ও ব্যাপক প্লাবন।',
     leadTime: 'June–Sept peak · Daily ERA5 & GFS precipitation telemetry',
     isDark: false,
-    accentColor: '#0284c7',
-    glowColor: 'rgba(2, 132, 199, 0.15)',
     renderVisual: () => (
       <svg className="w-full h-36" viewBox="0 0 240 140" fill="none" aria-hidden="true">
         <defs>
           <linearGradient id="floodGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#0284c7" stopOpacity="0.25" />
-            <stop offset="100%" stopColor="#0284c7" stopOpacity="0.05" />
+            <stop offset="0%" stopColor="currentColor" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="currentColor" stopOpacity="0.05" />
           </linearGradient>
         </defs>
         {/* Layered river delta elevation waves */}
@@ -105,28 +100,28 @@ const HAZARD_CONFIGS: Record<string, HazardCardConfig> = {
         />
         <path
           d="M 10 95 C 45 80, 75 110, 115 95 C 155 80, 185 105, 230 90"
-          stroke="#0284c7"
+          stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
         />
         <path
           d="M 10 75 C 50 60, 80 88, 120 72 C 160 58, 190 82, 230 68"
-          stroke="#38bdf8"
+          stroke="currentColor"
           strokeWidth="2.5"
           strokeLinecap="round"
         />
         <path
           d="M 20 55 C 60 42, 90 65, 130 52 C 170 38, 200 60, 230 48"
-          stroke="#0369a1"
+          stroke="currentColor"
           strokeWidth="1.5"
           strokeDasharray="4 3"
           strokeOpacity="0.5"
         />
         {/* Rain vectors */}
-        <line x1="60" y1="20" x2="52" y2="35" stroke="#0284c7" strokeWidth="1.5" strokeLinecap="round" strokeOpacity="0.5" />
-        <line x1="110" y1="16" x2="102" y2="32" stroke="#0284c7" strokeWidth="1.5" strokeLinecap="round" strokeOpacity="0.7" />
-        <line x1="160" y1="22" x2="152" y2="38" stroke="#0284c7" strokeWidth="1.5" strokeLinecap="round" strokeOpacity="0.5" />
-        <line x1="195" y1="18" x2="187" y2="34" stroke="#0284c7" strokeWidth="1.5" strokeLinecap="round" strokeOpacity="0.6" />
+        <line x1="60" y1="20" x2="52" y2="35" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeOpacity="0.5" />
+        <line x1="110" y1="16" x2="102" y2="32" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeOpacity="0.7" />
+        <line x1="160" y1="22" x2="152" y2="38" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeOpacity="0.5" />
+        <line x1="195" y1="18" x2="187" y2="34" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeOpacity="0.6" />
       </svg>
     ),
   },
@@ -137,14 +132,12 @@ const HAZARD_CONFIGS: Record<string, HazardCardConfig> = {
     taglineBn: 'মেঘালয় ও আসামের পাহাড়ি ঢলে সিলেট-সুনামগঞ্জের হাওরে আকস্মিক পানির প্লাবন।',
     leadTime: 'March–May window · High-intensity burst scoring',
     isDark: true,
-    accentColor: '#10b981',
-    glowColor: 'rgba(16, 185, 129, 0.2)',
     renderVisual: () => (
       <svg className="w-full h-36" viewBox="0 0 240 140" fill="none" aria-hidden="true">
         {/* Mountain elevation profile with torrential descent */}
         <path
           d="M 15 110 L 65 35 L 105 75 L 145 25 L 195 90 L 225 115"
-          stroke="#34d399"
+          stroke="currentColor"
           strokeWidth="1.5"
           strokeOpacity="0.4"
           strokeLinecap="round"
@@ -152,21 +145,21 @@ const HAZARD_CONFIGS: Record<string, HazardCardConfig> = {
         {/* Rapid water torrent curve */}
         <path
           d="M 145 25 Q 165 70, 120 85 T 70 120 L 230 120"
-          stroke="#10b981"
+          stroke="currentColor"
           strokeWidth="3"
           strokeLinecap="round"
         />
         <path
           d="M 155 35 Q 170 75, 130 90 T 80 125"
-          stroke="#6ee7b7"
+          stroke="currentColor"
           strokeWidth="1.5"
           strokeDasharray="3 3"
           strokeLinecap="round"
         />
         {/* Surge velocity pulses */}
-        <circle cx="145" cy="25" r="4" fill="#34d399" />
-        <circle cx="120" cy="85" r="5" fill="#10b981" />
-        <circle cx="70" cy="120" r="6" fill="#059669" />
+        <circle cx="145" cy="25" r="4" fill="currentColor" />
+        <circle cx="120" cy="85" r="5" fill="currentColor" />
+        <circle cx="70" cy="120" r="6" fill="currentColor" />
       </svg>
     ),
   },
@@ -177,29 +170,27 @@ const HAZARD_CONFIGS: Record<string, HazardCardConfig> = {
     taglineBn: 'চৈত্র-বৈশাখ মাসের তীব্র কালবৈশাখী, শিলাবৃষ্টি ও বজ্রপাত।',
     leadTime: 'Pre-monsoon afternoon hours · Convective CAPE index',
     isDark: true,
-    accentColor: '#a855f7',
-    glowColor: 'rgba(168, 85, 247, 0.25)',
     renderVisual: () => (
       <svg className="w-full h-36" viewBox="0 0 240 140" fill="none" aria-hidden="true">
         {/* Convective anvil storm cloud */}
         <path
           d="M 50 70 C 50 50, 70 42, 85 45 C 92 30, 118 25, 138 32 C 150 20, 180 20, 192 38 C 205 40, 215 52, 212 68 C 215 82, 195 90, 180 88 L 60 88 C 45 88, 42 75, 50 70 Z"
-          fill="#1e1b4b"
-          stroke="#a855f7"
+          fill="currentColor"
+          stroke="currentColor"
           strokeWidth="1.5"
           strokeOpacity="0.8"
         />
         {/* Electric lightning bolt */}
         <path
           d="M 125 72 L 115 95 L 132 95 L 118 128"
-          stroke="#facc15"
+          stroke="currentColor"
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         <path
           d="M 160 80 L 152 98 L 165 98 L 155 120"
-          stroke="#c084fc"
+          stroke="currentColor"
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -214,24 +205,22 @@ const HAZARD_CONFIGS: Record<string, HazardCardConfig> = {
     taglineBn: 'টানা কয়েকদিন ৩৬-৪০ ডিগ্রি সেলসিয়াস তাপমাত্রায় খরতাপ ও স্বাস্থ্যঝুঁকি।',
     leadTime: 'March–June pre-monsoon · Exceedance duration scoring',
     isDark: false,
-    accentColor: '#ea580c',
-    glowColor: 'rgba(234, 88, 12, 0.18)',
     renderVisual: () => (
       <svg className="w-full h-36" viewBox="0 0 240 140" fill="none" aria-hidden="true">
         <defs>
           <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#ea580c" stopOpacity="0.4" />
-            <stop offset="60%" stopColor="#f97316" stopOpacity="0.15" />
-            <stop offset="100%" stopColor="#f97316" stopOpacity="0" />
+            <stop offset="0%" stopColor="currentColor" stopOpacity="0.4" />
+            <stop offset="60%" stopColor="currentColor" stopOpacity="0.15" />
+            <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
           </radialGradient>
         </defs>
         <circle cx="120" cy="70" r="50" fill="url(#sunGlow)" />
         {/* Thermal anomaly ring rays */}
-        <circle cx="120" cy="70" r="32" stroke="#ea580c" strokeWidth="2" strokeDasharray="6 3" />
-        <circle cx="120" cy="70" r="20" fill="#f97316" fillOpacity="0.3" stroke="#ea580c" strokeWidth="2.5" />
+        <circle cx="120" cy="70" r="32" stroke="currentColor" strokeWidth="2" strokeDasharray="6 3" />
+        <circle cx="120" cy="70" r="20" fill="currentColor" fillOpacity="0.3" stroke="currentColor" strokeWidth="2.5" />
         {/* Heat haze waves */}
-        <path d="M 50 115 Q 65 105, 80 115 T 110 115 T 140 115 T 170 115 T 200 115" stroke="#f97316" strokeWidth="1.5" strokeOpacity="0.7" />
-        <path d="M 60 125 Q 75 118, 90 125 T 120 125 T 150 125 T 180 125" stroke="#ea580c" strokeWidth="1.2" strokeOpacity="0.5" />
+        <path d="M 50 115 Q 65 105, 80 115 T 110 115 T 140 115 T 170 115 T 200 115" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.7" />
+        <path d="M 60 125 Q 75 118, 90 125 T 120 125 T 150 125 T 180 125" stroke="currentColor" strokeWidth="1.2" strokeOpacity="0.5" />
       </svg>
     ),
   },
@@ -242,36 +231,34 @@ const HAZARD_CONFIGS: Record<string, HazardCardConfig> = {
     taglineBn: 'বৃষ্টির দীর্ঘস্থায়ী ঘাটতি ও শুষ্ক মাটিতে ফসলের মারাত্মক পানিশূন্যতা।',
     leadTime: 'November–April dry season · Inverted precipitation index',
     isDark: true,
-    accentColor: '#eab308',
-    glowColor: 'rgba(234, 179, 8, 0.2)',
     renderVisual: () => (
       <svg className="w-full h-36" viewBox="0 0 240 140" fill="none" aria-hidden="true">
         {/* Hexagonal dry soil fissure network */}
         <path
           d="M 60 45 L 85 30 L 115 45 L 115 75 L 85 90 L 60 75 Z"
-          stroke="#ca8a04"
+          stroke="currentColor"
           strokeWidth="1.5"
-          fill="#422006"
+          fill="currentColor"
           fillOpacity="0.3"
         />
         <path
           d="M 115 45 L 140 30 L 170 45 L 170 75 L 140 90 L 115 75 Z"
-          stroke="#ca8a04"
+          stroke="currentColor"
           strokeWidth="1.5"
-          fill="#422006"
+          fill="currentColor"
           fillOpacity="0.2"
         />
         <path
           d="M 85 90 L 110 75 L 140 90 L 140 120 L 110 135 L 85 120 Z"
-          stroke="#eab308"
+          stroke="currentColor"
           strokeWidth="1.8"
-          fill="#422006"
+          fill="currentColor"
           fillOpacity="0.4"
         />
         {/* Crack lines radiating out */}
-        <line x1="85" y1="30" x2="90" y2="15" stroke="#eab308" strokeWidth="1.2" />
-        <line x1="170" y1="75" x2="195" y2="85" stroke="#ca8a04" strokeWidth="1.2" />
-        <line x1="60" y1="75" x2="40" y2="82" stroke="#ca8a04" strokeWidth="1.2" />
+        <line x1="85" y1="30" x2="90" y2="15" stroke="currentColor" strokeWidth="1.2" />
+        <line x1="170" y1="75" x2="195" y2="85" stroke="currentColor" strokeWidth="1.2" />
+        <line x1="60" y1="75" x2="40" y2="82" stroke="currentColor" strokeWidth="1.2" />
       </svg>
     ),
   },
@@ -282,21 +269,19 @@ const HAZARD_CONFIGS: Record<string, HazardCardConfig> = {
     taglineBn: 'উত্তরাঞ্চলের ঘন কুয়াশা ও তীব্র শীতের শৈত্যপ্রবাহে বোরো বীজতলা ও জনজীবন বিপর্যস্ত।',
     leadTime: 'December–February · Sub-16°C anomaly scoring',
     isDark: true,
-    accentColor: '#38bdf8',
-    glowColor: 'rgba(56, 189, 248, 0.2)',
     renderVisual: () => (
       <svg className="w-full h-36" viewBox="0 0 240 140" fill="none" aria-hidden="true">
         {/* Crystalline frost geometric snowflake */}
-        <line x1="120" y1="20" x2="120" y2="120" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" />
-        <line x1="70" y1="70" x2="170" y2="70" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" />
-        <line x1="85" y1="35" x2="155" y2="105" stroke="#7dd3fc" strokeWidth="1.5" strokeLinecap="round" />
-        <line x1="85" y1="105" x2="155" y2="35" stroke="#7dd3fc" strokeWidth="1.5" strokeLinecap="round" />
+        <line x1="120" y1="20" x2="120" y2="120" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <line x1="70" y1="70" x2="170" y2="70" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <line x1="85" y1="35" x2="155" y2="105" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <line x1="85" y1="105" x2="155" y2="35" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         {/* Branching crystal needles */}
-        <path d="M 112 40 L 120 48 L 128 40" stroke="#bae6fd" strokeWidth="1.5" fill="none" />
-        <path d="M 112 100 L 120 92 L 128 100" stroke="#bae6fd" strokeWidth="1.5" fill="none" />
-        <path d="M 90 62 L 98 70 L 90 78" stroke="#bae6fd" strokeWidth="1.5" fill="none" />
-        <path d="M 150 62 L 142 70 L 150 78" stroke="#bae6fd" strokeWidth="1.5" fill="none" />
-        <circle cx="120" cy="70" r="5" fill="#f0f9ff" />
+        <path d="M 112 40 L 120 48 L 128 40" stroke="currentColor" strokeWidth="1.5" fill="none" />
+        <path d="M 112 100 L 120 92 L 128 100" stroke="currentColor" strokeWidth="1.5" fill="none" />
+        <path d="M 90 62 L 98 70 L 90 78" stroke="currentColor" strokeWidth="1.5" fill="none" />
+        <path d="M 150 62 L 142 70 L 150 78" stroke="currentColor" strokeWidth="1.5" fill="none" />
+        <circle cx="120" cy="70" r="5" fill="currentColor" />
       </svg>
     ),
   },
@@ -307,29 +292,27 @@ const HAZARD_CONFIGS: Record<string, HazardCardConfig> = {
     taglineBn: 'শুষ্ক মৌসুমে ফসলের অবশিষ্টাংশ ও খড়ের গাদায় হঠাৎ অগ্নিকাণ্ডের ঝুঁকি।',
     leadTime: 'February–May dry season · Low relative humidity index',
     isDark: true,
-    accentColor: '#f43f5e',
-    glowColor: 'rgba(244, 63, 94, 0.25)',
     renderVisual: () => (
       <svg className="w-full h-36" viewBox="0 0 240 140" fill="none" aria-hidden="true">
         <defs>
           <radialGradient id="fireGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.4" />
-            <stop offset="60%" stopColor="#fb7185" stopOpacity="0.1" />
-            <stop offset="100%" stopColor="#fb7185" stopOpacity="0" />
+            <stop offset="0%" stopColor="currentColor" stopOpacity="0.4" />
+            <stop offset="60%" stopColor="currentColor" stopOpacity="0.1" />
+            <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
           </radialGradient>
         </defs>
         <circle cx="120" cy="75" r="45" fill="url(#fireGlow)" />
         {/* Dynamic flame contour */}
         <path
           d="M 120 25 C 135 50, 160 65, 155 95 C 150 120, 130 125, 120 125 C 110 125, 90 120, 85 95 C 80 70, 105 50, 120 25 Z"
-          fill="#f43f5e"
+          fill="currentColor"
           fillOpacity="0.75"
         />
         <path
           d="M 120 50 C 130 68, 145 80, 140 102 C 136 118, 126 122, 120 122 C 114 122, 104 118, 100 102 C 96 82, 110 68, 120 50 Z"
-          fill="#fbbf24"
+          fill="currentColor"
         />
-        <circle cx="120" cy="100" r="12" fill="#fff" fillOpacity="0.9" />
+        <circle cx="120" cy="100" r="12" fill="currentColor" fillOpacity="0.9" />
       </svg>
     ),
   },
@@ -366,7 +349,7 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <p className="ap-caption-strong text-ap-link">{t('frontdoor.products.hazardsEyebrow')}</p>
-          <span className="text-carbon-40 hidden sm:inline" aria-hidden="true">·</span>
+          <span className="text-ap-label-tertiary hidden sm:inline" aria-hidden="true">·</span>
           <span className="text-xs text-carbon-60 hidden sm:inline">
             {language === 'bn' ? 'অত্যাধুনিক মাল্টি-হ্যাজার্ড ইন্টেলিজেন্স' : 'Next-generation geospatial intelligence'}
           </span>
@@ -435,97 +418,93 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
       >
         <Link
           to="/alerts"
-          className="group flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-black/[0.08] dark:border-white/[0.1] shadow-2xs hover:shadow-md hover:border-black/20 dark:hover:border-white/25 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 min-h-[56px]"
+          className="group flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-ap-canvas border border-black/[0.08] dark:border-white/[0.1] shadow-2xs hover:shadow-md hover:border-black/20 dark:hover:border-white/25 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 min-h-[56px]"
         >
           <div className="flex items-center gap-3 min-w-0">
-            <div className="relative w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-amber-500/10 text-amber-600 dark:text-amber-400 group-hover:scale-105 transition-transform">
-              <span className="absolute top-1 right-1 flex h-2 w-2" aria-hidden="true">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
-              </span>
+            <div className="relative w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-ap-link/10 text-ap-label group-hover:scale-105 transition-transform">
               <MaterialIcon name="notifications_active" className="text-xl" />
             </div>
             <div className="min-w-0">
-              <span className="block text-sm font-semibold tracking-tight text-carbon-90 dark:text-zinc-100 group-hover:text-ap-primary transition-colors truncate">
+              <span className="block text-sm font-semibold tracking-tight text-ap-label group-hover:text-ap-link transition-colors truncate">
                 {language === 'bn' ? 'সক্রিয় সতর্কতা দেখুন' : 'View Active Alerts'}
               </span>
-              <span className="block text-[11px] text-carbon-60 dark:text-zinc-400 truncate">
+              <span className="block text-xs text-ap-label-secondary truncate">
                 {language === 'bn' ? 'রিয়েল-টাইম আর্লি ওয়ার্নিং' : 'Live emergency advisories'}
               </span>
             </div>
           </div>
           <MaterialIcon
             name="arrow_forward"
-            className="text-carbon-40 group-hover:text-carbon-90 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all text-base shrink-0 ml-2"
+            className="text-ap-label-tertiary group-hover:text-ap-label group-hover:translate-x-0.5 transition-all text-base shrink-0 ml-2"
           />
         </Link>
 
         <Link
           to="/contact"
-          className="group flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-black/[0.08] dark:border-white/[0.1] shadow-2xs hover:shadow-md hover:border-black/20 dark:hover:border-white/25 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 min-h-[56px]"
+          className="group flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-ap-canvas border border-black/[0.08] dark:border-white/[0.1] shadow-2xs hover:shadow-md hover:border-black/20 dark:hover:border-white/25 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 min-h-[56px]"
         >
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-red-500/10 text-red-600 dark:text-red-400 group-hover:scale-105 transition-transform">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-ap-link/10 text-ap-label group-hover:scale-105 transition-transform">
               <MaterialIcon name="campaign" className="text-xl" />
             </div>
             <div className="min-w-0">
-              <span className="block text-sm font-semibold tracking-tight text-carbon-90 dark:text-zinc-100 group-hover:text-ap-primary transition-colors truncate">
+              <span className="block text-sm font-semibold tracking-tight text-ap-label group-hover:text-ap-link transition-colors truncate">
                 {language === 'bn' ? 'দুর্যোগ রিপোর্ট করুন' : 'Report Hazard'}
               </span>
-              <span className="block text-[11px] text-carbon-60 dark:text-zinc-400 truncate">
+              <span className="block text-xs text-ap-label-secondary truncate">
                 {language === 'bn' ? 'মাঠ পর্যায়ের তথ্য জমা দিন' : 'Ground-truth field intake'}
               </span>
             </div>
           </div>
           <MaterialIcon
             name="arrow_forward"
-            className="text-carbon-40 group-hover:text-carbon-90 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all text-base shrink-0 ml-2"
+            className="text-ap-label-tertiary group-hover:text-ap-label group-hover:translate-x-0.5 transition-all text-base shrink-0 ml-2"
           />
         </Link>
 
         <Link
           to="/divisions"
-          className="group flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-black/[0.08] dark:border-white/[0.1] shadow-2xs hover:shadow-md hover:border-black/20 dark:hover:border-white/25 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 min-h-[56px]"
+          className="group flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-ap-canvas border border-black/[0.08] dark:border-white/[0.1] shadow-2xs hover:shadow-md hover:border-black/20 dark:hover:border-white/25 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 min-h-[56px]"
         >
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-sky-500/10 text-sky-600 dark:text-sky-400 group-hover:scale-105 transition-transform">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-ap-link/10 text-ap-label group-hover:scale-105 transition-transform">
               <MaterialIcon name="dashboard_customize" className="text-xl" />
             </div>
             <div className="min-w-0">
-              <span className="block text-sm font-semibold tracking-tight text-carbon-90 dark:text-zinc-100 group-hover:text-ap-primary transition-colors truncate">
+              <span className="block text-sm font-semibold tracking-tight text-ap-label group-hover:text-ap-link transition-colors truncate">
                 {language === 'bn' ? 'আঞ্চলিক ড্যাশবোর্ড' : 'Regional Dashboard'}
               </span>
-              <span className="block text-[11px] text-carbon-60 dark:text-zinc-400 truncate">
+              <span className="block text-xs text-ap-label-secondary truncate">
                 {language === 'bn' ? '৮ বিভাগ · ৬৪ জেলার ঝুঁকি' : '8 divisions · 64 districts'}
               </span>
             </div>
           </div>
           <MaterialIcon
             name="arrow_forward"
-            className="text-carbon-40 group-hover:text-carbon-90 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all text-base shrink-0 ml-2"
+            className="text-ap-label-tertiary group-hover:text-ap-label group-hover:translate-x-0.5 transition-all text-base shrink-0 ml-2"
           />
         </Link>
 
         <Link
           to="/live"
-          className="group flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-black/[0.08] dark:border-white/[0.1] shadow-2xs hover:shadow-md hover:border-black/20 dark:hover:border-white/25 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 min-h-[56px]"
+          className="group flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-ap-canvas border border-black/[0.08] dark:border-white/[0.1] shadow-2xs hover:shadow-md hover:border-black/20 dark:hover:border-white/25 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 min-h-[56px]"
         >
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:scale-105 transition-transform">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-ap-link/10 text-ap-label group-hover:scale-105 transition-transform">
               <MaterialIcon name="satellite_alt" className="text-xl" />
             </div>
             <div className="min-w-0">
-              <span className="block text-sm font-semibold tracking-tight text-carbon-90 dark:text-zinc-100 group-hover:text-ap-primary transition-colors truncate">
+              <span className="block text-sm font-semibold tracking-tight text-ap-label group-hover:text-ap-link transition-colors truncate">
                 {language === 'bn' ? 'লাইভ জিআইএস কনসোল' : 'Live GIS Console'}
               </span>
-              <span className="block text-[11px] text-carbon-60 dark:text-zinc-400 truncate">
+              <span className="block text-xs text-ap-label-secondary truncate">
                 {language === 'bn' ? 'ইন্টারেক্টিভ স্যাটেলাইট রাডার' : 'Interactive satellite radar'}
               </span>
             </div>
           </div>
           <MaterialIcon
             name="arrow_forward"
-            className="text-carbon-40 group-hover:text-carbon-90 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all text-base shrink-0 ml-2"
+            className="text-ap-label-tertiary group-hover:text-ap-label group-hover:translate-x-0.5 transition-all text-base shrink-0 ml-2"
           />
         </Link>
       </div>
@@ -539,6 +518,12 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
         >
           {hazards.map((hazard) => {
             const config = HAZARD_CONFIGS[hazard.slug] || HAZARD_CONFIGS['tropical-cyclone'];
+            const pal = hazardPalette(hazard.class);
+            // Accent per theme: light cards read `text` in light mode and `onDark` in dark mode.
+            const hazardVars = {
+              '--ap-hazard-accent': config.isDark ? pal.onDark : pal.text,
+              '--ap-hazard-accent-dark': pal.onDark,
+            } as React.CSSProperties;
             const kicker = language === 'bn' ? config.kickerBn : config.kickerEn;
             const tagline = language === 'bn' ? config.taglineBn : (hazard.summary || config.taglineEn);
 
@@ -548,24 +533,23 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
                 to={`/hazards/${hazard.slug}`}
                 className={`group flex-shrink-0 w-72 sm:w-80 md:w-96 snap-start flex flex-col justify-between rounded-[28px] p-6 sm:p-7 relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 ${
                   config.isDark
-                    ? 'bg-zinc-950 text-white border border-zinc-800/80 shadow-md'
-                    : 'bg-[#f5f5f7] dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-zinc-200/90 dark:border-zinc-800 shadow-sm'
+                    ? 'bg-carbon-black text-white border border-white/10 shadow-md'
+                    : 'bg-ap-grouped text-ap-label border border-ap-hairline shadow-sm'
                 }`}
                 style={{
                   minHeight: '440px',
+                  ...hazardVars,
                 }}
               >
                 {/* Background ambient radial glow */}
                 <div
-                  className="absolute -top-12 -right-12 w-48 h-48 rounded-full blur-3xl pointer-events-none opacity-40 transition-opacity group-hover:opacity-60"
-                  style={{ backgroundColor: config.accentColor }}
+                  className="absolute -top-12 -right-12 w-48 h-48 rounded-full blur-3xl pointer-events-none opacity-40 transition-opacity group-hover:opacity-60 bg-[color:var(--ap-hazard-accent)] dark:bg-[color:var(--ap-hazard-accent-dark)]"
                 />
 
                 {/* Top Section: Kicker, Title, Description */}
                 <div className="relative z-10">
                   <span
-                    className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider block mb-1.5"
-                    style={{ color: '#f56300' }}
+                    className="text-xs font-semibold uppercase tracking-wider block mb-1.5 text-[color:var(--ap-hazard-accent)] dark:text-[color:var(--ap-hazard-accent-dark)]"
                   >
                     {kicker}
                   </span>
@@ -574,10 +558,9 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
                       {hazard.class}
                     </h3>
                     <span
-                      className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                      className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-[color:var(--ap-hazard-accent)] dark:text-[color:var(--ap-hazard-accent-dark)]"
                       style={{
                         backgroundColor: config.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
-                        color: config.accentColor,
                       }}
                     >
                       <MaterialIcon name={hazardIcon(hazard.class)} className="text-lg" />
@@ -585,30 +568,30 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
                   </div>
                   <p
                     className={`mt-2 text-xs sm:text-sm leading-relaxed line-clamp-3 ${
-                      config.isDark ? 'text-zinc-300' : 'text-zinc-600 dark:text-zinc-300'
+                      config.isDark ? 'text-ap-on-scrim-muted' : 'text-ap-label-secondary'
                     }`}
                   >
                     {tagline}
                   </p>
-                  <div className="mt-2 text-[11px] font-mono tracking-tight text-zinc-400 dark:text-zinc-500">
+                  <div className={`mt-2 text-xs font-mono tracking-tight ${config.isDark ? 'text-ap-on-scrim-muted' : 'text-ap-label-tertiary'}`}>
                     {config.leadTime}
                   </div>
                 </div>
 
                 {/* Middle: Signature Hero Visual Motif */}
-                <div className="my-auto py-2 flex items-center justify-center relative z-10">
+                <div className="my-auto py-2 flex items-center justify-center relative z-10 text-[color:var(--ap-hazard-accent)] dark:text-[color:var(--ap-hazard-accent-dark)]">
                   {config.renderVisual()}
                 </div>
 
                 {/* Bottom Row: Season context + Apple style round action button */}
                 <div className="relative z-10 pt-3 border-t border-black/5 dark:border-white/10 flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <span className="block text-[11px] uppercase tracking-wider font-semibold text-zinc-400 dark:text-zinc-500">
+                    <span className={`block text-xs uppercase tracking-wider font-semibold ${config.isDark ? 'text-ap-on-scrim-muted' : 'text-ap-label-tertiary'}`}>
                       {language === 'bn' ? 'সক্রিয় মৌসুম' : 'Active window'}
                     </span>
                     <span
                       className={`block text-xs font-medium truncate ${
-                        config.isDark ? 'text-zinc-200' : 'text-zinc-800 dark:text-zinc-200'
+                        config.isDark ? 'text-ap-on-scrim' : 'text-ap-label'
                       }`}
                     >
                       {hazard.season}
@@ -619,7 +602,7 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
                     className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110 shadow-xs ${
                       config.isDark
                         ? 'bg-white/15 text-white group-hover:bg-white group-hover:text-black'
-                        : 'bg-black/10 dark:bg-white/15 text-zinc-900 dark:text-white group-hover:bg-zinc-900 group-hover:text-white'
+                        : 'bg-black/10 dark:bg-white/15 text-ap-label group-hover:bg-ap-label group-hover:text-ap-canvas'
                     }`}
                     aria-hidden="true"
                   >
@@ -635,6 +618,12 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {hazards.map((hazard, index) => {
             const config = HAZARD_CONFIGS[hazard.slug] || HAZARD_CONFIGS['tropical-cyclone'];
+            const pal = hazardPalette(hazard.class);
+            // Accent per theme: light cards read `text` in light mode and `onDark` in dark mode.
+            const hazardVars = {
+              '--ap-hazard-accent': config.isDark ? pal.onDark : pal.text,
+              '--ap-hazard-accent-dark': pal.onDark,
+            } as React.CSSProperties;
             const kicker = language === 'bn' ? config.kickerBn : config.kickerEn;
             const tagline = language === 'bn' ? config.taglineBn : (hazard.summary || config.taglineEn);
             const isWide = index === 0 || index === 1 || index === 6 || index === 7;
@@ -647,24 +636,23 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
                   isWide ? 'sm:col-span-2 lg:col-span-2' : 'sm:col-span-1 lg:col-span-1'
                 } ${
                   config.isDark
-                    ? 'bg-zinc-950 text-white border border-zinc-800/80 shadow-md'
-                    : 'bg-[#f5f5f7] dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-zinc-200/90 dark:border-zinc-800 shadow-sm'
+                    ? 'bg-carbon-black text-white border border-white/10 shadow-md'
+                    : 'bg-ap-grouped text-ap-label border border-ap-hairline shadow-sm'
                 }`}
                 style={{
                   minHeight: isWide ? '420px' : '390px',
+                  ...hazardVars,
                 }}
               >
                 {/* Background ambient radial glow */}
                 <div
-                  className="absolute -top-12 -right-12 w-48 h-48 rounded-full blur-3xl pointer-events-none opacity-40 transition-opacity group-hover:opacity-60"
-                  style={{ backgroundColor: config.accentColor }}
+                  className="absolute -top-12 -right-12 w-48 h-48 rounded-full blur-3xl pointer-events-none opacity-40 transition-opacity group-hover:opacity-60 bg-[color:var(--ap-hazard-accent)] dark:bg-[color:var(--ap-hazard-accent-dark)]"
                 />
 
                 {/* Top Section */}
                 <div className="relative z-10">
                   <span
-                    className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider block mb-1.5"
-                    style={{ color: '#f56300' }}
+                    className="text-xs font-semibold uppercase tracking-wider block mb-1.5 text-[color:var(--ap-hazard-accent)] dark:text-[color:var(--ap-hazard-accent-dark)]"
                   >
                     {kicker}
                   </span>
@@ -673,10 +661,9 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
                       {hazard.class}
                     </h3>
                     <span
-                      className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                      className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-[color:var(--ap-hazard-accent)] dark:text-[color:var(--ap-hazard-accent-dark)]"
                       style={{
                         backgroundColor: config.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
-                        color: config.accentColor,
                       }}
                     >
                       <MaterialIcon name={hazardIcon(hazard.class)} className="text-lg" />
@@ -684,30 +671,30 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
                   </div>
                   <p
                     className={`mt-2 text-xs sm:text-sm leading-relaxed line-clamp-3 ${
-                      config.isDark ? 'text-zinc-300' : 'text-zinc-600 dark:text-zinc-300'
+                      config.isDark ? 'text-ap-on-scrim-muted' : 'text-ap-label-secondary'
                     }`}
                   >
                     {tagline}
                   </p>
-                  <div className="mt-2 text-[11px] font-mono tracking-tight text-zinc-400 dark:text-zinc-500">
+                  <div className={`mt-2 text-xs font-mono tracking-tight ${config.isDark ? 'text-ap-on-scrim-muted' : 'text-ap-label-tertiary'}`}>
                     {config.leadTime}
                   </div>
                 </div>
 
                 {/* Middle: Signature Hero Visual Motif */}
-                <div className="my-auto py-2 flex items-center justify-center relative z-10">
+                <div className="my-auto py-2 flex items-center justify-center relative z-10 text-[color:var(--ap-hazard-accent)] dark:text-[color:var(--ap-hazard-accent-dark)]">
                   {config.renderVisual()}
                 </div>
 
                 {/* Bottom Row */}
                 <div className="relative z-10 pt-3 border-t border-black/5 dark:border-white/10 flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <span className="block text-[11px] uppercase tracking-wider font-semibold text-zinc-400 dark:text-zinc-500">
+                    <span className={`block text-xs uppercase tracking-wider font-semibold ${config.isDark ? 'text-ap-on-scrim-muted' : 'text-ap-label-tertiary'}`}>
                       {language === 'bn' ? 'সক্রিয় মৌসুম' : 'Active window'}
                     </span>
                     <span
                       className={`block text-xs font-medium truncate ${
-                        config.isDark ? 'text-zinc-200' : 'text-zinc-800 dark:text-zinc-200'
+                        config.isDark ? 'text-ap-on-scrim' : 'text-ap-label'
                       }`}
                     >
                       {hazard.season}
@@ -718,7 +705,7 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
                     className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110 shadow-xs ${
                       config.isDark
                         ? 'bg-white/15 text-white group-hover:bg-white group-hover:text-black'
-                        : 'bg-black/10 dark:bg-white/15 text-zinc-900 dark:text-white group-hover:bg-zinc-900 group-hover:text-white'
+                        : 'bg-black/10 dark:bg-white/15 text-ap-label group-hover:bg-ap-label group-hover:text-ap-canvas'
                     }`}
                     aria-hidden="true"
                   >
