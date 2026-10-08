@@ -1,9 +1,13 @@
 {
   "resource": "https://www.hazardnet.live",
   "authorization_servers": [
-    "https://www.hazardnet.live"
+    "https://www.hazardnet.live",
+    "https://securetoken.google.com/hazardnet-aas48424"
   ],
   "scopes_supported": [
+    "openid",
+    "email",
+    "profile",
     "read:forecasts",
     "read:alerts",
     "read:weather",

@@ -117,6 +117,15 @@ app.use((req, res, next) => {
       '<https://www.hazardnet.live/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"'
     );
   }
+  // RFC 9728: advertise the OAuth Protected Resource Metadata on every response.
+  // On 401 responses this is REQUIRED by the spec; on all responses it enables
+  // proactive discovery so agents know how to authenticate before being rejected.
+  if (!res.getHeader('WWW-Authenticate')) {
+    res.setHeader(
+      'WWW-Authenticate',
+      'Bearer resource_metadata="https://www.hazardnet.live/.well-known/oauth-protected-resource"'
+    );
+  }
   next();
 });
 
@@ -141,16 +150,24 @@ app.get(['/.well-known/security.txt', '/security.txt'], (req, res) => {
 // relations: service-desc (OpenAPI spec), service-doc (human docs),
 // and status (health endpoint).
 const SITE_ORIGIN = 'https://www.hazardnet.live';
+const FIREBASE_PROJECT_ID = 'hazardnet-aas48424';
+const FIREBASE_API_KEY = 'AIzaSyBwyxWm0MIQlTmjJ-NKPKjl72AYLS7oDqQ';
 
 // RFC 9727: OAuth Protected Resource Metadata.
 // Advertises the resource server and its authorization servers.
+// RFC 9728: includes resource, authorization_servers, scopes_supported,
+// bearer_methods_supported, and optional resource_documentation/policy/tos.
 app.get('/.well-known/oauth-protected-resource', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Cache-Control', 'public, max-age=86400');
   res.status(200).json({
     resource: SITE_ORIGIN,
-    authorization_servers: [SITE_ORIGIN],
+    authorization_servers: [
+      SITE_ORIGIN,
+      `https://securetoken.google.com/${FIREBASE_PROJECT_ID}`,
+    ],
     scopes_supported: [
+      'openid', 'email', 'profile',
       'read:forecasts', 'read:alerts', 'read:weather', 'read:historical',
       'read:predictions', 'write:forecasts', 'write:push', 'chat', 'grounding',
     ],
@@ -208,8 +225,6 @@ app.get('/.well-known/oauth-authorization-server', (req, res) => {
 // Points to Firebase Auth as the actual OIDC provider — the issuer matches
 // the `iss` claim in Firebase ID tokens, and the jwks_uri points to Google's
 // public keys for verifying those tokens.
-const FIREBASE_PROJECT_ID = 'hazardnet-aas48424';
-const FIREBASE_API_KEY = 'AIzaSyBwyxWm0MIQlTmjJ-NKPKjl72AYLS7oDqQ';
 
 app.get('/.well-known/openid-configuration', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
