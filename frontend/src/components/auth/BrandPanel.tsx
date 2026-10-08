@@ -99,10 +99,14 @@ const useCountUp = (target: number, durationMs = 1200, enabled = true): number =
   return value;
 };
 
-const Stat: React.FC<{ stat: StatItem; animate: boolean; durationMs?: number }> = ({ stat, animate, durationMs = 1200 }) => {
+const Stat: React.FC<{ stat: StatItem; animate: boolean; durationMs?: number }> = ({
+  stat,
+  animate,
+  durationMs = 1200,
+}) => {
   const value = useCountUp(stat.value, durationMs, animate);
   return (
-    <div className="border border-carbon-80 bg-carbon-90 px-3.5 py-3">
+    <div className="rounded-xl border border-carbon-80 bg-carbon-90 px-3.5 py-3">
       <p className="font-mono text-lg xl:text-xl font-black text-ap-on-inverse tabular-nums">
         {stat.prefix}
         {value}
@@ -151,7 +155,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ mode, intervalMs = 5200 
         <HazardNetBrand size="md" variant="dark" />
         <Link
           to="/"
-          className="inline-flex min-h-[44px] items-center border border-carbon-70 px-3.5 py-2 text-sm font-semibold text-ap-on-scrim-muted transition-colors hover:border-carbon-50 hover:text-white"
+          className="inline-flex min-h-[44px] items-center rounded-full border border-carbon-70 px-3.5 py-2 text-sm font-semibold text-ap-on-scrim-muted transition-colors hover:border-carbon-50 hover:text-white"
         >
           <ArrowLeft className="mr-1 h-4 w-4" aria-hidden="true" /> Back to site
         </Link>

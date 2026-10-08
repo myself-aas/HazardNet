@@ -1,4 +1,4 @@
-import MaterialIcon from "./MaterialIcon";
+import MaterialIcon from './MaterialIcon';
 import { useState } from 'react';
 import { LiveMapView } from './LiveMapView';
 import { BangladeshSvgMap } from './BangladeshSvgMap';
@@ -42,9 +42,9 @@ const Map: React.FC<MapProps> = ({
   const [mapMode, setMapMode] = useState<'leaflet' | 'svg'>('leaflet');
 
   return (
-    <div className={isFullScreen ? "w-full h-full flex flex-col space-y-0" : "space-y-3 h-full"}>
+    <div className={isFullScreen ? 'w-full h-full flex flex-col space-y-0' : 'space-y-3 h-full'}>
       {!isFullScreen && (
-        <div className="bg-white border border-carbon-20 p-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 text-sm text-carbon-70">
+        <div className="rounded-xl bg-white border border-carbon-20 p-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 text-sm text-carbon-70">
           <div className="flex items-center gap-2 px-2 min-h-[44px] font-semibold text-carbon-90">
             <span>Map view</span>
           </div>

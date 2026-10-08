@@ -75,7 +75,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
        complementary landmark nested in another landmark is an accessibility violation
        (`landmark-complementary-is-top-level`), not just a style choice. The caption gives the
        figure its accessible name, so the eyebrow is read rather than skipped. */
-    <figure id="last-run-visual" aria-labelledby="last-run-visual-caption" className="border border-carbon-20 bg-white p-5 sm:p-6 shadow-sm" data-testid="last-run-visual">
+    <figure id="last-run-visual" aria-labelledby="last-run-visual-caption" className="border border-carbon-20 rounded-2xl bg-white p-5 sm:p-6 shadow-sm" data-testid="last-run-visual">
       <figcaption id="last-run-visual-caption" className="flex flex-wrap items-center justify-between gap-3 border-b border-carbon-20 pb-3.5">
         <div className="flex items-center gap-2.5 min-w-0">
           <Interactive.Div
@@ -185,7 +185,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
       )}
 
       {!loading && !freshness && (
-        <div className="mt-4 rounded-sm border border-carbon-20 bg-carbon-05 p-4">
+        <div className="mt-4 rounded-lg border border-carbon-20 bg-carbon-05 p-4">
           <p className="text-sm leading-[1.62] text-carbon-70">
             {t('frontdoor.runVisual.unreadable')}{' '}
             <Link
@@ -309,7 +309,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
               )}
             </div>
             <div
-              className={`mt-2 rounded-sm p-3 border ${
+              className={`mt-2 rounded-lg p-3 border ${
                 published == null
                   ? 'bg-carbon-05 border-carbon-20 text-carbon-70'
                   : published > 0
@@ -352,7 +352,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
               {freshness.sources.map((source) => (
                 <li
                   key={source.id}
-                  className="flex min-w-0 items-center justify-between gap-2.5 rounded-sm border border-carbon-20 bg-carbon-05/70 px-3 py-2 text-xs transition-colors hover:bg-carbon-05"
+                  className="flex min-w-0 items-center justify-between gap-2.5 rounded-lg border border-carbon-20 bg-carbon-05/70 px-3 py-2 text-xs transition-colors hover:bg-carbon-05"
                 >
                   <div className="flex min-w-0 items-center gap-2.5">
                     <span
@@ -392,7 +392,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                   SELF-REPORTED AUDIT
                 </span>
               </div>
-              <div className="mt-2.5 rounded-sm border border-carbon-20 bg-carbon-05/80 p-3">
+              <div className="mt-2.5 rounded-lg border border-carbon-20 bg-carbon-05/80 p-3">
                 <ul className="space-y-2">
                   {(honestyExpanded ? honesty : honesty.slice(0, 3)).map((note) => (
                     <li key={note} className="flex min-w-0 items-start gap-2.5 text-xs leading-[1.62] text-carbon-70">

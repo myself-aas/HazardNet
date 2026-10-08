@@ -11,21 +11,19 @@ export const NotFoundPage: React.FC = () => {
 
   return (
     <div className="min-h-[70vh] flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white border border-carbon-20 p-6 lg:p-8 text-center space-y-5">
+      <div className="max-w-md w-full bg-white border border-carbon-20 rounded-2xl p-6 lg:p-8 text-center space-y-5">
         <div className="flex justify-center">
           <HazardNetBrand size="md" />
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-ap-lead font-bold leading-[1.2] tracking-tight text-carbon-90">
-            Page not found
-          </h1>
+          <h1 className="text-ap-lead font-bold leading-[1.2] tracking-tight text-carbon-90">Page not found</h1>
           <p className="text-base leading-[1.62] text-carbon-70">
             The page or route you are attempting to access does not exist or has been moved.
           </p>
         </div>
 
-        <div className="p-3 bg-carbon-05 border border-carbon-20 text-xs text-carbon-60 font-mono text-left">
+        <div className="p-3 bg-carbon-05 border border-carbon-20 rounded-lg text-xs text-carbon-60 font-mono text-left">
           Status: 404 HTTP / Client Router Unmatched
         </div>
 
@@ -38,7 +36,7 @@ export const NotFoundPage: React.FC = () => {
           </Link>
           <Link
             to="/live"
-            className="inline-flex min-h-[44px] flex-1 items-center justify-center border-2 border-ap-primary px-6 py-3 text-base font-semibold text-ap-link hover:bg-ap-primary/5 touch-manipulation"
+            className="rounded-full inline-flex min-h-[44px] flex-1 items-center justify-center border-2 border-ap-primary px-6 py-3 text-base font-semibold text-ap-link hover:bg-ap-primary/5 touch-manipulation"
           >
             Live map
           </Link>

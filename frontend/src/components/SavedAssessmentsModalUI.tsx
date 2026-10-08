@@ -1,4 +1,4 @@
-import MaterialIcon from "./MaterialIcon";
+import MaterialIcon from './MaterialIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRef } from 'react';
 import { UserAssessment } from '../context/AuthContext';
@@ -53,12 +53,14 @@ export const SavedAssessmentsModalUI: React.FC<SavedAssessmentsModalUIProps> = (
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 15 }}
             transition={AP_SPRING}
-            className="bg-white border border-carbon-20 max-w-2xl w-full p-6 space-y-5 max-h-[90vh] flex flex-col text-carbon-90"
+            className="bg-white border border-carbon-20 rounded-2xl max-w-2xl w-full p-6 space-y-5 max-h-[90vh] flex flex-col text-carbon-90"
           >
             {/* Header */}
             <div className="flex items-center justify-between pb-4 border-b border-carbon-20">
               <div>
-                <h2 id="saved-assessments-modal-title" className="text-lg font-extrabold text-carbon-90">Saved Cloud Assessments</h2>
+                <h2 id="saved-assessments-modal-title" className="text-lg font-extrabold text-carbon-90">
+                  Saved Cloud Assessments
+                </h2>
                 <p className="text-xs text-carbon-60 font-medium">
                   Persistent predictions stored in Firebase Firestore
                 </p>
@@ -103,24 +105,30 @@ export const SavedAssessmentsModalUI: React.FC<SavedAssessmentsModalUIProps> = (
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="font-extrabold text-sm text-carbon-90">{item.districtName}</span>
-                          <span className="px-2 py-0.5 bg-white text-carbon-70 text-xs font-mono font-bold border border-carbon-20">
+                          <span className="rounded-full px-2 py-0.5 bg-white text-carbon-70 text-xs font-mono font-bold border border-carbon-20">
                             {item.primaryHazard}
                           </span>
-                          <span className={`px-2 py-0.5 text-xs font-mono font-bold ${
-                            item.severityBin === 'High' ? 'bg-rose-100 text-rose-800 border border-rose-200' :
-                            item.severityBin === 'Moderate' ? 'bg-amber-100 text-amber-800 border border-amber-200' :
-                            'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                          }`}>
+                          <span
+                            className={`px-2 py-0.5 text-xs font-mono font-bold ${
+                              item.severityBin === 'High'
+                                ? 'bg-rose-100 text-rose-800 border border-rose-200'
+                                : item.severityBin === 'Moderate'
+                                  ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                                  : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                            }`}
+                          >
                             {item.severityBin || 'Moderate'} ({item.severityScore.toFixed(2)})
                           </span>
                         </div>
                         <div className="text-xs text-carbon-60 mt-1 flex items-center gap-3 font-mono">
-                          <span>Confidence: <strong>{(item.confidence * 100).toFixed(1)}%</strong></span>
+                          <span>
+                            Confidence: <strong>{(item.confidence * 100).toFixed(1)}%</strong>
+                          </span>
                           <span>Saved: {new Date(item.createdAt).toLocaleDateString()}</span>
                         </div>
                         {item.notes && (
                           <p className="text-xs text-carbon-70 italic mt-1.5 bg-white p-2 rounded-xl border border-carbon-20">
-"{item.notes}"
+                            "{item.notes}"
                           </p>
                         )}
                       </div>
@@ -156,7 +164,9 @@ export const SavedAssessmentsModalUI: React.FC<SavedAssessmentsModalUIProps> = (
 
             {/* Footer */}
             <div className="pt-3 border-t border-carbon-20 flex items-center justify-between text-xs text-carbon-60">
-              <span>Total Saved: <strong className="text-carbon-90">{assessments.length}</strong></span>
+              <span>
+                Total Saved: <strong className="text-carbon-90">{assessments.length}</strong>
+              </span>
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}

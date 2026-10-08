@@ -223,7 +223,7 @@ export const AdvisoriesPage: React.FC = () => {
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={handleCopyUrl}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-carbon-05 border border-carbon-20 text-carbon-70 text-xs font-bold hover:bg-carbon-10 hover:text-carbon-90 transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-carbon-05 border border-carbon-20 text-carbon-70 text-xs font-bold hover:bg-carbon-10 hover:text-carbon-90 transition-all cursor-pointer"
               title="Copy link to this sector"
             >
               <Share2 className="w-3.5 h-3.5" />
@@ -335,7 +335,7 @@ export const AdvisoriesPage: React.FC = () => {
             <div className="space-y-2 pt-1 screen-only">
               <button
                 onClick={() => setIsEmailModalOpen(true)}
-                className="w-full py-2.5 px-4 rounded-xl bg-amber-400 text-carbon-black font-black text-xs hover:bg-amber-300 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                className="w-full py-2.5 px-4 rounded-full bg-amber-400 text-carbon-black font-black text-xs hover:bg-amber-300 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
               >
                 <Send className="w-3.5 h-3.5" />
                 <span>Draft Emergency Requisition</span>

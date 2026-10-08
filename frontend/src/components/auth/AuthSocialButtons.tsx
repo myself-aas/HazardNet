@@ -1,13 +1,13 @@
-import { useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
-import { useAuth } from '../../context/AuthContext'
-import ProviderGlyph from '../ProviderGlyph'
+import { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useAuth } from '../../context/AuthContext';
+import ProviderGlyph from '../ProviderGlyph';
 import {
   SUPPORTED_PROVIDER_IDS,
   describeOAuthError,
   getProvider,
   type OAuthProviderId,
-} from '../../lib/oauthProviders'
+} from '../../lib/oauthProviders';
 
 /**
  * Social sign-in block for the auth pages.
@@ -18,14 +18,14 @@ import {
  */
 
 const ProviderButton: React.FC<{
-  provider: OAuthProviderId
-  label: string
-  active: OAuthProviderId | null
-  onPick: (provider: OAuthProviderId) => void
+  provider: OAuthProviderId;
+  label: string;
+  active: OAuthProviderId | null;
+  onPick: (provider: OAuthProviderId) => void;
 }> = ({ provider, label, active, onPick }) => {
-  const config = getProvider(provider)
-  const busy = active === provider
-  const disabled = active !== null
+  const config = getProvider(provider);
+  const busy = active === provider;
+  const disabled = active !== null;
   return (
     <button
       type="button"
@@ -33,7 +33,7 @@ const ProviderButton: React.FC<{
       onClick={() => onPick(provider)}
       data-testid={`connect-${provider}-btn`}
       aria-label={label}
-      className="group flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-3 border border-carbon-20 bg-white px-4 py-3 text-base font-semibold text-carbon-80 hover:border-carbon-40 disabled:cursor-wait disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary/60 focus-visible:ring-offset-2"
+      className="group flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-3 rounded-full border border-carbon-20 bg-white px-4 py-3 text-base font-semibold text-carbon-80 hover:border-carbon-40 disabled:cursor-wait disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary/60 focus-visible:ring-offset-2"
     >
       {busy ? (
         <span className="h-5 w-5 animate-spin rounded-full border-2 border-carbon-30 border-t-carbon-70" />
@@ -44,32 +44,32 @@ const ProviderButton: React.FC<{
       )}
       {busy ? `Connecting to ${config.label}…` : label}
     </button>
-  )
-}
+  );
+};
 
 export function AuthSocialButtons({
   googleLabel = 'Continue with Google',
   githubLabel = 'Continue with GitHub',
   onSuccess,
 }: {
-  googleLabel?: string
-  githubLabel?: string
-  onSuccess?: () => void
+  googleLabel?: string;
+  githubLabel?: string;
+  onSuccess?: () => void;
 }) {
-  const { signInWithOAuth } = useAuth()
-  const [active, setActive] = useState<OAuthProviderId | null>(null)
-  const [failure, setFailure] = useState<{ provider: string; title: string; hint: string } | null>(null)
+  const { signInWithOAuth } = useAuth();
+  const [active, setActive] = useState<OAuthProviderId | null>(null);
+  const [failure, setFailure] = useState<{ provider: string; title: string; hint: string } | null>(null);
 
   const handleProvider = async (provider: OAuthProviderId) => {
-    setActive(provider)
-    setFailure(null)
+    setActive(provider);
+    setFailure(null);
     try {
       // Respect ?next= param if present
-      let nextTo: string | undefined
+      let nextTo: string | undefined;
       try {
-        const params = new URLSearchParams(window.location.search)
-        const raw = params.get('next')
-        if (raw && raw.startsWith('/')) nextTo = raw
+        const params = new URLSearchParams(window.location.search);
+        const raw = params.get('next');
+        if (raw && raw.startsWith('/')) nextTo = raw;
       } catch {
         // Search params may be unavailable in tests; default to no next path.
       }
@@ -78,22 +78,22 @@ export function AuthSocialButtons({
       // (`toHaveBeenCalledWith('google')`) and left Frontend Tests red on
       // PR #41 (run 35502660580) after the optional-next wiring landed.
       if (nextTo) {
-        await signInWithOAuth(provider, { nextTo })
+        await signInWithOAuth(provider, { nextTo });
       } else {
-        await signInWithOAuth(provider)
+        await signInWithOAuth(provider);
       }
-      onSuccess?.()
+      onSuccess?.();
     } catch (reason) {
-      const explanation = describeOAuthError(reason)
-      setFailure({ provider: getProvider(provider).label, ...explanation })
-      setActive(null)
+      const explanation = describeOAuthError(reason);
+      setFailure({ provider: getProvider(provider).label, ...explanation });
+      setActive(null);
     }
-  }
+  };
 
   const labels: Record<OAuthProviderId, string> = {
     google: googleLabel,
     github: githubLabel,
-  }
+  };
 
   return (
     <div className="space-y-3" data-testid="auth-social-buttons">
@@ -118,7 +118,7 @@ export function AuthSocialButtons({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             role="alert"
-            className="border-l-2 border-ap-primary bg-white p-4 text-sm text-ap-link"
+            className="rounded-r-xl border-l-4 border-ap-primary bg-white p-4 text-sm text-ap-link"
           >
             <p className="font-extrabold">
               {failure.provider}: {failure.title}
@@ -128,5 +128,5 @@ export function AuthSocialButtons({
         )}
       </AnimatePresence>
     </div>
-  )
+  );
 }

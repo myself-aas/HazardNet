@@ -104,9 +104,9 @@ export const ArticlePage: React.FC<{ path: string; introSlot?: React.ReactNode }
     >
       <Breadcrumbs />
 
-      <header className="space-y-4 border border-carbon-20 bg-white p-6 md:p-8">
+      <header className="space-y-4 border border-carbon-20 rounded-2xl bg-white p-6 md:p-8">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-sm border border-carbon-20 bg-carbon-05 px-2.5 py-0.5 font-mono text-xs font-bold uppercase tracking-wider text-amber-900">
+          <span className="rounded-full border border-carbon-20 bg-carbon-05 px-2.5 py-0.5 font-mono text-xs font-bold uppercase tracking-wider text-amber-900">
             {content.label ?? 'Reference'}
           </span>
           {content.updated && (
@@ -122,7 +122,7 @@ export const ArticlePage: React.FC<{ path: string; introSlot?: React.ReactNode }
       {introSlot}
 
       {sections.map((section, index) => (
-        <section key={index} className="space-y-3 border border-carbon-20 bg-white p-6 md:p-7">
+        <section key={index} className="space-y-3 border border-carbon-20 rounded-2xl bg-white p-6 md:p-7">
           {section.h2 && <h2 className="text-lg font-bold text-carbon-90">{section.h2}</h2>}
           {(section.paragraphs ?? []).map((paragraph, i) => (
             <p key={i} className="break-words text-base leading-[1.62] text-carbon-60">
@@ -163,7 +163,7 @@ export const ArticlePage: React.FC<{ path: string; introSlot?: React.ReactNode }
       ))}
 
       {faqs.length > 0 && (
-        <section aria-label="Frequently asked questions" className="space-y-2 border border-carbon-20 bg-white p-6 md:p-7">
+        <section aria-label="Frequently asked questions" className="space-y-2 border border-carbon-20 rounded-2xl bg-white p-6 md:p-7">
           <h2 className="mb-2 text-lg font-bold text-carbon-90">Questions and answers</h2>
           {faqs.map((faq) => (
             <details key={faq.question} className="group border-b border-carbon-20 py-2 last:border-b-0">
@@ -179,7 +179,7 @@ export const ArticlePage: React.FC<{ path: string; introSlot?: React.ReactNode }
         </section>
       )}
 
-      <footer className="border border-carbon-20 bg-carbon-05 p-5 text-base leading-[1.62] text-carbon-60">
+      <footer className="border border-carbon-20 rounded-2xl bg-carbon-05 p-5 text-base leading-[1.62] text-carbon-60">
         HazardNet is an independent decision-support platform. It does not replace official warnings from the Bangladesh
         Meteorological Department (BMD), the Flood Forecasting and Warning Centre (FFWC), the Department of Disaster
         Management (DDM) or your local administration. National emergency hotline: 999.{' '}

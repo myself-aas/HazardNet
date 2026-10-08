@@ -136,7 +136,7 @@ export const UseCases: React.FC = () => {
       <Breadcrumbs />
 
       {/* Header Banner */}
-      <div className="bg-white border border-carbon-20/90 p-6 md:p-8 relative overflow-hidden group space-y-3">
+      <div className="rounded-xl bg-white border border-carbon-20/90 p-6 md:p-8 relative overflow-hidden group space-y-3">
         <div className="absolute top-0 left-0 w-full h-1 bg-primary"></div>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 rounded-full text-xs font-mono font-extrabold bg-amber-50 text-amber-900 border border-amber-300 uppercase tracking-wider">
@@ -198,7 +198,7 @@ export const UseCases: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -12 }}
           transition={{ duration: 0.25 }}
-          className="bg-white border border-carbon-20/90 p-6 md:p-8 space-y-6 relative overflow-hidden"
+          className="rounded-xl bg-white border border-carbon-20/90 p-6 md:p-8 space-y-6 relative overflow-hidden"
         >
           
           {/* Case Banner */}
@@ -224,7 +224,7 @@ export const UseCases: React.FC = () => {
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {activeCase.stats.map((st, i) => (
-              <motion.div whileHover={{ y: -3 }} key={i} className="p-4 sm:p-5 bg-carbon-05/90 border border-carbon-20/80 hover:border-amber-300/80 hover:transition-all duration-300 space-y-1.5">
+              <motion.div whileHover={{ y: -3 }} key={i} className="rounded-2xl p-4 sm:p-5 bg-carbon-05/90 border border-carbon-20/80 hover:border-amber-300/80 hover:transition-all duration-300 space-y-1.5">
                 <span className="text-xs font-mono font-bold text-carbon-60 uppercase tracking-wider block">{st.label}</span>
                 <span className="text-xl sm:text-2xl font-black text-carbon-90">{st.value}</span>
               </motion.div>
@@ -233,9 +233,9 @@ export const UseCases: React.FC = () => {
 
           {/* Core Summary & Satellite Method */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-3 p-5 bg-carbon-05/80 border border-carbon-20/80 hover:border-carbon-30 transition-all">
+            <div className="rounded-2xl space-y-3 p-5 bg-carbon-05/80 border border-carbon-20/80 hover:border-carbon-30 transition-all">
               <h3 className="font-bold text-xs uppercase font-mono text-carbon-90 flex items-center gap-2">
-                <span className="p-1 rounded-sm bg-amber-100 text-amber-900"><MaterialIcon name="content_copy" className="w-4 h-4" /></span> Problem Statement & Threat
+                <span className="p-1 rounded-md bg-amber-100 text-amber-900"><MaterialIcon name="content_copy" className="w-4 h-4" /></span> Problem Statement & Threat
               </h3>
               <p className="text-xs sm:text-sm text-carbon-60 leading-relaxed font-normal">
                 {activeCase.summary}
@@ -253,7 +253,7 @@ export const UseCases: React.FC = () => {
               </h3>
               <ul className="space-y-2 text-xs">
                 {activeCase.affectedCrops.map((crop, i) => (
-                  <motion.li whileHover={{ x: 3 }} key={i} className="p-3 bg-carbon-05/90 border border-carbon-20/80 text-carbon-70 flex items-center gap-2.5 font-semibold hover:border-emerald-300/80 transition-all">
+                  <motion.li whileHover={{ x: 3 }} key={i} className="rounded-lg p-3 bg-carbon-05/90 border border-carbon-20/80 text-carbon-70 flex items-center gap-2.5 font-semibold hover:border-emerald-300/80 transition-all">
                     <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100/80 text-emerald-700">
                       <Check className="h-3.5 w-3.5" aria-hidden="true" />
                     </span>
@@ -269,8 +269,8 @@ export const UseCases: React.FC = () => {
               </h3>
               <ul className="space-y-2 text-xs">
                 {activeCase.mitigationSteps.map((step, i) => (
-                  <motion.li whileHover={{ x: 3 }} key={i} className="p-3 bg-carbon-05/90 border border-carbon-20/80 text-carbon-70 flex items-start gap-2.5 hover:border-amber-300/80 transition-all">
-                    <span className="font-black text-amber-900 bg-amber-100/80 px-2 py-0.5 rounded-sm text-xs shrink-0">{i + 1}</span>
+                  <motion.li whileHover={{ x: 3 }} key={i} className="rounded-lg p-3 bg-carbon-05/90 border border-carbon-20/80 text-carbon-70 flex items-start gap-2.5 hover:border-amber-300/80 transition-all">
+                    <span className="font-black text-amber-900 bg-amber-100/80 px-2 py-0.5 rounded-full text-xs shrink-0">{i + 1}</span>
                     <span className="font-medium pt-0.5">{step}</span>
                   </motion.li>
                 ))}
@@ -283,7 +283,7 @@ export const UseCases: React.FC = () => {
       </AnimatePresence>
 
       {/* Cross-Link Quick Actions */}
-      <div className="bg-amber-50/80 border border-amber-200 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 text-carbon-90">
+      <div className="rounded-2xl bg-amber-50/80 border border-amber-200 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 text-carbon-90">
         <div className="space-y-1 text-center md:text-left">
           <h3 className="text-lg font-black text-carbon-90 tracking-tight">Ready to explore these scenarios with live data?</h3>
           <p className="text-xs text-carbon-60 font-medium">
@@ -303,7 +303,7 @@ export const UseCases: React.FC = () => {
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
               to="/docs"
-              className="px-5 py-2.5 bg-white text-carbon-90 font-bold text-xs hover:bg-carbon-10 transition-all border border-carbon-30 inline-block cursor-pointer"
+              className="rounded-full px-5 py-2.5 bg-white text-carbon-90 font-bold text-xs hover:bg-carbon-10 transition-all border border-carbon-30 inline-block cursor-pointer"
             >
               <MaterialIcon name="menu_book" className="w-4 h-4" /> Read Research Docs
             </Link>

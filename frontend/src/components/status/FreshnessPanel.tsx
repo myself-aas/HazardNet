@@ -92,7 +92,7 @@ export const FreshnessPanel: React.FC = () => {
     return (
       <section
         aria-labelledby="freshness-heading"
-        className="border border-carbon-20 bg-white p-6 md:p-7"
+        className="border border-carbon-20 rounded-2xl bg-white p-6 md:p-7"
       >
         <h2 id="freshness-heading" className="text-lg font-bold text-carbon-90">
           Right now
@@ -108,7 +108,7 @@ export const FreshnessPanel: React.FC = () => {
     return (
       <section
         aria-labelledby="freshness-heading"
-        className="border border-amber-300 bg-amber-50 p-6 md:p-7"
+        className="rounded-2xl border border-amber-300 bg-amber-50 p-6 md:p-7"
       >
         <h2 id="freshness-heading" className="text-lg font-bold text-amber-950">
           Right now
@@ -122,7 +122,7 @@ export const FreshnessPanel: React.FC = () => {
         <button
           type="button"
           onClick={reload}
-          className="mt-3 inline-flex min-h-[44px] items-center gap-1 rounded-sm border border-amber-400 bg-white px-3 py-1.5 text-base font-semibold text-amber-900 hover:bg-amber-100 touch-manipulation"
+          className="mt-3 inline-flex min-h-[44px] items-center gap-1 rounded-full border border-amber-400 bg-white px-3 py-1.5 text-base font-semibold text-amber-900 hover:bg-amber-100 touch-manipulation"
         >
           <MaterialIcon name="refresh" className="text-sm" /> Retry
         </button>
@@ -142,7 +142,7 @@ export const FreshnessPanel: React.FC = () => {
   return (
     <section
       aria-labelledby="freshness-heading"
-      className="space-y-5 border border-carbon-20 bg-white p-6 md:p-7"
+      className="space-y-5 border border-carbon-20 rounded-2xl bg-white p-6 md:p-7"
     >
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">
@@ -357,7 +357,7 @@ export const FreshnessPanel: React.FC = () => {
       </div>
 
       {artifact.honesty.length > 0 && (
-        <div role="note" className="border border-carbon-30 bg-carbon-05 p-4">
+        <div role="note" className="rounded-2xl border border-carbon-30 bg-carbon-05 p-4">
           <h3 className="text-sm font-bold text-carbon-90">What this page is not saying</h3>
           <ul className="mt-2 space-y-1.5">
             {artifact.honesty.map((note, index) => (

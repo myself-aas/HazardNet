@@ -33,7 +33,7 @@ const finePointer =
     : false;
 
 const inputClass =
-  'h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 placeholder-carbon-40 font-medium focus:border-ap-primary focus:outline-none focus:ring-2 focus:ring-ap-primary/40';
+  'h-12 w-full rounded-full border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 placeholder-carbon-40 font-medium focus:border-ap-primary focus:outline-none focus:ring-2 focus:ring-ap-primary/40';
 
 const LoginPage: React.FC = () => {
   const { signInWithEmail, user } = useAuth();
@@ -84,7 +84,7 @@ const LoginPage: React.FC = () => {
               exit={{ opacity: 0, y: -5 }}
               role="alert"
               aria-live="polite"
-              className="flex items-start gap-2 border-l-2 border-ap-primary bg-white p-4 text-sm font-medium text-ap-link"
+              className="flex items-start gap-2 rounded-r-xl border-l-4 border-ap-primary bg-white p-4 text-sm font-medium text-ap-link"
             >
               <span className="shrink-0 mt-0.5">
                 <MaterialIcon name="warning" className="w-4 h-4" />

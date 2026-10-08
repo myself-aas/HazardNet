@@ -25,9 +25,7 @@ import { LanguageToggle } from '../components/alerts/LanguageToggle';
 import { AlertLevelBadge } from '../components/alerts/AlertLevelBadge';
 import { useBandwidthMode } from '../hooks/useBandwidthMode';
 import { useI18n } from '../hooks/useI18n';
-import {
-  type AlertRecord, type AlertsResult, freshnessOf, loadAlerts,
-} from '../lib/alerts';
+import { type AlertRecord, type AlertsResult, freshnessOf, loadAlerts } from '../lib/alerts';
 
 export const AlertDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -52,7 +50,9 @@ export const AlertDetailPage: React.FC = () => {
       }
     };
     void run();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [reloadNonce]);
 
   const alert: AlertRecord | null = useMemo(() => {
@@ -93,7 +93,7 @@ export const AlertDetailPage: React.FC = () => {
         <p className="mt-1 font-mono text-xs text-carbon-60">{id}</p>
         <Link
           to="/alerts"
-          className="mt-4 inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 px-3 py-2 text-sm font-semibold text-carbon-80 hover:bg-carbon-05 touch-manipulation"
+          className="mt-4 inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 rounded-full px-3 py-2 text-sm font-semibold text-carbon-80 hover:bg-carbon-05 touch-manipulation"
         >
           <MaterialIcon name="arrow_back" className="text-base" aria-hidden="true" />
           {t('alerts.page.listTitle')}
@@ -117,7 +117,9 @@ export const AlertDetailPage: React.FC = () => {
 
       <div className="no-print mb-3 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-ap-lead font-bold leading-[1.2] tracking-tight text-carbon-90 sm:text-ap-display-md">{t('alerts.detail.title')}</h1>
+          <h1 className="text-ap-lead font-bold leading-[1.2] tracking-tight text-carbon-90 sm:text-ap-display-md">
+            {t('alerts.detail.title')}
+          </h1>
           <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-carbon-60">
             <AlertLevelBadge
               level={alert.level}
@@ -133,7 +135,7 @@ export const AlertDetailPage: React.FC = () => {
           <button
             type="button"
             onClick={() => window.print()}
-            className="no-print inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 bg-primary px-3 py-2 text-sm font-semibold text-ap-action-fg touch-manipulation"
+            className="no-print inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 rounded-full bg-primary px-3 py-2 text-sm font-semibold text-ap-action-fg touch-manipulation"
           >
             <MaterialIcon name="print" className="text-base" aria-hidden="true" />
             {t('common.print')}
@@ -169,10 +171,10 @@ export const AlertDetailPage: React.FC = () => {
             {alert.reasons.map((reason, index) => (
               <li
                 key={`${reason.rule || 'reason'}-${index}`}
-                className="border border-carbon-20 bg-white px-3 py-2"
+                className="border border-carbon-20 rounded-full bg-white px-3 py-2"
               >
                 <span className="font-mono font-semibold text-carbon-90">{reason.rule || 'rule'}</span>
-                    {reason.track && (
+                {reason.track && (
                   <span className="ml-2 rounded-control border border-carbon-20 px-1.5 py-0.5 text-xs font-bold uppercase text-carbon-60">
                     {reason.track}
                   </span>
@@ -186,9 +188,7 @@ export const AlertDetailPage: React.FC = () => {
 
       <Disclaimer className="mt-4 no-print" variant="banner" text={alert.disclaimer} />
 
-      {lowBandwidth && (
-        <p className="mt-3 text-xs text-carbon-60">{t('bandwidth.on')}</p>
-      )}
+      {lowBandwidth && <p className="mt-3 text-xs text-carbon-60">{t('bandwidth.on')}</p>}
     </div>
   );
 };

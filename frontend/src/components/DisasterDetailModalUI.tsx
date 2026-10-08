@@ -393,7 +393,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           <h3 className="font-black text-xs text-carbon-90 uppercase tracking-wider font-mono border-b border-carbon-30 pb-1">
             1. Impacted Upazila Assessment ({data.impactedUpazilas.length} Upazilas)
           </h3>
-          <table className="w-full text-left text-xs border border-carbon-30">
+          <table className="overflow-hidden rounded-2xl w-full text-left text-xs border border-carbon-30">
             <thead>
               <tr className="bg-carbon-10 text-[8pt] font-mono">
                 <th className="p-2 border border-carbon-30">Upazila Name</th>

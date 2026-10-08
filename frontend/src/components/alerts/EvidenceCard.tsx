@@ -58,13 +58,13 @@ export const EvidenceCard: React.FC<EvidenceCardProps> = ({ alert, disclaimer, c
   const model = alert.evidence?.model || {};
   const physics = alert.evidence?.physics || {};
   const evidenceLine = Array.isArray(alert.evidence?.line) ? alert.evidence!.line! : [];
-  const calibrated = model.confidence_published === 'calibrated_probability'
-    || alert.confidence_kind === 'calibrated_probability';
+  const calibrated =
+    model.confidence_published === 'calibrated_probability' || alert.confidence_kind === 'calibrated_probability';
 
   return (
     <section
       id={EVIDENCE_CARD_ID}
-      className={`border border-carbon-20 bg-white p-4 sm:p-6 ${className}`}
+      className={`border border-carbon-20 rounded-2xl bg-white p-4 sm:p-6 ${className}`}
       aria-labelledby="evidence-card-title"
     >
       <header className="border-b border-carbon-20 pb-3">
@@ -95,19 +95,25 @@ export const EvidenceCard: React.FC<EvidenceCardProps> = ({ alert, disclaimer, c
 
       <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3">
         <Field label={t('common.targetDate')} value={formatDate(alert.target_date)} />
-        <Field label={t('common.leadTime')} value={
-          typeof alert.lead_time_days === 'number'
-            ? `${formatNumber(alert.lead_time_days, { maximumFractionDigits: 0 })} ${t('common.days')}`
-            : '—'
-        } />
+        <Field
+          label={t('common.leadTime')}
+          value={
+            typeof alert.lead_time_days === 'number'
+              ? `${formatNumber(alert.lead_time_days, { maximumFractionDigits: 0 })} ${t('common.days')}`
+              : '—'
+          }
+        />
         <Field label={t('common.predictionDate')} value={formatDate(alert.prediction_date)} />
-        <Field label={t('common.dataCutoff')} value={formatDate(alert.freshness?.data_cutoff || alert.published?.data_cutoff)} />
+        <Field
+          label={t('common.dataCutoff')}
+          value={formatDate(alert.freshness?.data_cutoff || alert.published?.data_cutoff)}
+        />
         <Field label={t('evidence.alertId')} value={alert.id} mono />
         <Field label={t('evidence.alertKey')} value={dash(alert.id.replace(/__p\d{4}-\d{2}-\d{2}$/, ''))} mono />
       </dl>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        <div className="border border-carbon-20 bg-carbon-05 p-4">
+        <div className="border border-carbon-20 rounded-2xl bg-carbon-05 p-4">
           <h3 className="text-xs font-bold uppercase tracking-wide text-carbon-60">
             {t('alerts.evidence.modelSeverity')}
           </h3>
@@ -116,12 +122,13 @@ export const EvidenceCard: React.FC<EvidenceCardProps> = ({ alert, disclaimer, c
           </p>
           <ul className="mt-2 space-y-1 text-xs text-carbon-70">
             <li>
-              <span className="font-semibold">{t('evidence.confidence')}:</span>{' '}
-              {formatNumber(alert.confidence)}
+              <span className="font-semibold">{t('evidence.confidence')}:</span> {formatNumber(alert.confidence)}
             </li>
             <li>
               <span className="font-semibold">{t('evidence.modelVersion')}:</span>{' '}
-              <span className="font-mono">{dash(alert.provenance?.model_version || alert.published?.model_version)}</span>
+              <span className="font-mono">
+                {dash(alert.provenance?.model_version || alert.published?.model_version)}
+              </span>
             </li>
             <li>
               <span className="font-semibold">{t('evidence.dataCutoff')}:</span>{' '}
@@ -130,7 +137,7 @@ export const EvidenceCard: React.FC<EvidenceCardProps> = ({ alert, disclaimer, c
           </ul>
         </div>
 
-        <div className="border border-carbon-20 bg-carbon-05 p-4">
+        <div className="border border-carbon-20 rounded-2xl bg-carbon-05 p-4">
           <h3 className="text-xs font-bold uppercase tracking-wide text-carbon-60">
             {t('alerts.evidence.physicsSeverity')}
           </h3>
@@ -142,13 +149,10 @@ export const EvidenceCard: React.FC<EvidenceCardProps> = ({ alert, disclaimer, c
           <ul className="mt-2 space-y-1 text-xs text-carbon-70">
             <li>
               <span className="font-semibold">{t('alerts.evidence.divergence')}:</span>{' '}
-              {physics.divergence === null || physics.divergence === undefined
-                ? '—'
-                : formatNumber(physics.divergence)}
+              {physics.divergence === null || physics.divergence === undefined ? '—' : formatNumber(physics.divergence)}
             </li>
             <li>
-              <span className="font-semibold">{t('evidence.agreement')}:</span>{' '}
-              {dash(physics.physics_agreement)}
+              <span className="font-semibold">{t('evidence.agreement')}:</span> {dash(physics.physics_agreement)}
             </li>
             <li>
               <span className="font-semibold">{t('evidence.engine')}:</span>{' '}
@@ -163,18 +167,18 @@ export const EvidenceCard: React.FC<EvidenceCardProps> = ({ alert, disclaimer, c
 
       {evidenceLine.length > 0 && (
         <div className="mt-4">
-          <h3 className="text-xs font-bold uppercase tracking-wide text-carbon-60">
-            {t('evidence.drivers')}
-          </h3>
+          <h3 className="text-xs font-bold uppercase tracking-wide text-carbon-60">{t('evidence.drivers')}</h3>
           <ul className="mt-1.5 space-y-0.5 text-xs text-carbon-80">
             {evidenceLine.map((item) => (
-              <li key={item} className="font-mono">{item}</li>
+              <li key={item} className="font-mono">
+                {item}
+              </li>
             ))}
           </ul>
         </div>
       )}
 
-      <details className="mt-4 border border-carbon-20 p-0" open>
+      <details className="mt-4 overflow-hidden rounded-xl border border-carbon-20 p-0" open>
         <summary className="min-h-[44px] cursor-pointer list-none px-4 py-3 text-xs font-bold uppercase tracking-wide text-carbon-60 touch-manipulation">
           {t('evidence.publicationTrail')}
         </summary>
@@ -184,16 +188,14 @@ export const EvidenceCard: React.FC<EvidenceCardProps> = ({ alert, disclaimer, c
             {formatDate(alert.published?.at, { withTime: true })}
           </li>
           <li>
-            <span className="font-semibold">{t('alerts.card.reviewedBy')}:</span>{' '}
-            {dash(alert.published?.reviewer)}
+            <span className="font-semibold">{t('alerts.card.reviewedBy')}:</span> {dash(alert.published?.reviewer)}
           </li>
           <li>
             <span className="font-semibold">{t('evidence.policyVersion')}:</span>{' '}
             <span className="font-mono">{dash(alert.policy_version)}</span>
           </li>
           <li>
-            <span className="font-semibold">{t('evidence.publishMode')}:</span>{' '}
-            {dash(alert.published?.mode)}
+            <span className="font-semibold">{t('evidence.publishMode')}:</span> {dash(alert.published?.mode)}
           </li>
         </ul>
       </details>
@@ -263,7 +265,7 @@ export const EvidenceCardExportButton: React.FC<EvidenceCardExportButtonProps> =
         onClick={onExport}
         disabled={state === 'working'}
         aria-busy={state === 'working'}
-        className="no-print inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 bg-primary px-3 py-2 text-sm font-semibold text-ap-action-fg hover:bg-primary-strong disabled:opacity-60 touch-manipulation"
+        className="no-print inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 rounded-full bg-primary px-3 py-2 text-sm font-semibold text-ap-action-fg hover:bg-primary-strong disabled:opacity-60 touch-manipulation"
       >
         <MaterialIcon name="download" className="text-base" aria-hidden="true" />
         {state === 'working' ? t('evidence.exporting') : t('evidence.exportPdf')}

@@ -167,7 +167,7 @@ export const Contact: React.FC = () => {
   };
 
   const inputClass =
-    'w-full p-2.5 border border-carbon-30 bg-carbon-05 text-carbon-90 font-medium outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-200';
+    'w-full rounded-md p-2.5 border border-carbon-30 bg-carbon-05 text-carbon-90 font-medium outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-200';
 
   return (
     <motion.div
@@ -178,7 +178,7 @@ export const Contact: React.FC = () => {
     >
       <Breadcrumbs />
 
-      <header className="bg-white border border-carbon-20 p-6 md:p-8 space-y-3">
+      <header className="bg-white border border-carbon-20 rounded-2xl p-6 md:p-8 space-y-3">
         <div className="flex items-center gap-2">
           <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-50 text-amber-900 border border-amber-200 uppercase tracking-wider">
             Support &amp; communications
@@ -193,7 +193,7 @@ export const Contact: React.FC = () => {
         </p>
         <p
           role="note"
-          className="border border-ap-primary bg-white p-3 text-xs font-semibold leading-relaxed text-ap-link"
+          className="rounded-lg border border-ap-primary bg-white p-3 text-xs font-semibold leading-relaxed text-ap-link"
         >
           This is not an emergency channel and it is not monitored around the clock. In an emergency call{' '}
           <strong>999</strong>, and follow BMD, FFWC, DDM and local administration instructions.
@@ -201,7 +201,7 @@ export const Contact: React.FC = () => {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white border border-carbon-20 p-6 md:p-8 space-y-6">
+        <div className="lg:col-span-2 bg-white border border-carbon-20 rounded-2xl p-6 md:p-8 space-y-6">
           <div className="flex items-center gap-2 border-b border-carbon-20 pb-3 text-xs font-bold overflow-x-auto scrollbar-none">
             {(
               [
@@ -231,7 +231,7 @@ export const Contact: React.FC = () => {
           </div>
 
           {errors.length > 0 && (
-            <div role="alert" className="border border-ap-primary bg-white p-4 text-xs text-ap-link">
+            <div role="alert" className="rounded-2xl border border-ap-primary bg-white p-4 text-xs text-ap-link">
               <p className="font-bold">Please fix the following before continuing:</p>
               <ul className="mt-1 list-disc pl-5">
                 {errors.map((problem) => (
@@ -242,7 +242,10 @@ export const Contact: React.FC = () => {
           )}
 
           {prepared && (
-            <div role="status" className="border border-carbon-20 bg-carbon-05 p-4 text-xs text-carbon-80 space-y-2">
+            <div
+              role="status"
+              className="border border-carbon-20 rounded-2xl bg-carbon-05 p-4 text-xs text-carbon-80 space-y-2"
+            >
               <p className="font-bold">Your report is prepared. Choose how to send it:</p>
               <p className="leading-relaxed">
                 Nothing has been submitted yet. HazardNet has no server-side inbox for these forms, so pick a channel
@@ -260,7 +263,7 @@ export const Contact: React.FC = () => {
                 </a>
                 <a
                   href={mailtoUrl}
-                  className="min-h-[44px] border border-carbon-30 bg-white px-4 py-2 font-bold text-carbon-80 hover:bg-carbon-05 touch-manipulation tap-target inline-flex items-center justify-center"
+                  className="rounded-full min-h-[44px] border border-carbon-30 bg-white px-4 py-2 font-bold text-carbon-80 hover:bg-carbon-05 touch-manipulation tap-target inline-flex items-center justify-center"
                 >
                   Send by email instead
                 </a>
@@ -282,13 +285,20 @@ export const Contact: React.FC = () => {
                       onChange={(e) => set('district', e.target.value)}
                       className={inputClass}
                     >
-                      {['sylhet', 'sunamganj', 'kurigram', 'satkhira', 'rajshahi', 'panchagarh', 'coxsbazar', 'other'].map(
-                        (d) => (
-                          <option key={d} value={d}>
-                            {d === 'other' ? 'Other / not listed' : d.charAt(0).toUpperCase() + d.slice(1)}
-                          </option>
-                        )
-                      )}
+                      {[
+                        'sylhet',
+                        'sunamganj',
+                        'kurigram',
+                        'satkhira',
+                        'rajshahi',
+                        'panchagarh',
+                        'coxsbazar',
+                        'other',
+                      ].map((d) => (
+                        <option key={d} value={d}>
+                          {d === 'other' ? 'Other / not listed' : d.charAt(0).toUpperCase() + d.slice(1)}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div>
@@ -503,34 +513,37 @@ export const Contact: React.FC = () => {
         </div>
 
         <aside className="space-y-6">
-          <div className="bg-white text-carbon-90 p-6 space-y-4 border border-carbon-20">
+          <div className="rounded-2xl bg-white text-carbon-90 p-6 space-y-4 border border-carbon-20">
             <h2 className="font-extrabold text-sm uppercase tracking-wider font-mono text-carbon-90">
               Official hotlines
             </h2>
 
             <div className="space-y-3 text-xs">
-              <div className="p-3 bg-white border border-ap-primary space-y-1">
+              <div className="rounded-2xl p-3 bg-white border border-ap-primary space-y-1">
                 <span className="font-bold text-ap-link block">National emergency service</span>
                 <p className="font-mono text-sm font-bold text-ap-link">
-                  <PhoneCall className="mr-1 inline h-4 w-4" aria-hidden="true" />999
+                  <PhoneCall className="mr-1 inline h-4 w-4" aria-hidden="true" />
+                  999
                 </p>
               </div>
-              <div className="p-3 bg-amber-50 border border-amber-200 space-y-1">
+              <div className="rounded-2xl p-3 bg-amber-50 border border-amber-200 space-y-1">
                 <span className="font-bold text-amber-900 block">Department of Agricultural Extension (DAE)</span>
                 <p className="font-mono text-sm font-bold text-amber-800">
-                  <PhoneCall className="mr-1 inline h-4 w-4" aria-hidden="true" />16123
+                  <PhoneCall className="mr-1 inline h-4 w-4" aria-hidden="true" />
+                  16123
                 </p>
               </div>
-              <div className="p-3 bg-amber-50 border border-amber-200 space-y-1">
+              <div className="rounded-2xl p-3 bg-amber-50 border border-amber-200 space-y-1">
                 <span className="font-bold text-amber-900 block">Disaster management helpline</span>
                 <p className="font-mono text-sm font-bold text-amber-800">
-                  <PhoneCall className="mr-1 inline h-4 w-4" aria-hidden="true" />1090
+                  <PhoneCall className="mr-1 inline h-4 w-4" aria-hidden="true" />
+                  1090
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white border border-carbon-20 p-6 space-y-3 text-xs text-carbon-60">
+          <div className="bg-white border border-carbon-20 rounded-2xl p-6 space-y-3 text-xs text-carbon-60">
             <h2 className="font-bold text-carbon-90 text-sm flex items-center gap-2">
               <MaterialIcon name="hub" className="text-amber-800" /> Where reports go
             </h2>
@@ -551,12 +564,18 @@ export const Contact: React.FC = () => {
                 </a>
               </li>
               <li>
-                <a className="font-bold text-amber-700 hover:text-amber-900 underline underline-offset-4" href={mailtoUrl}>
+                <a
+                  className="font-bold text-amber-700 hover:text-amber-900 underline underline-offset-4"
+                  href={mailtoUrl}
+                >
                   {CONTACT_EMAIL}
                 </a>
               </li>
               <li>
-                <a className="font-bold text-amber-700 hover:text-amber-900 underline underline-offset-4" href="/.well-known/security.txt">
+                <a
+                  className="font-bold text-amber-700 hover:text-amber-900 underline underline-offset-4"
+                  href="/.well-known/security.txt"
+                >
                   Security disclosure policy
                 </a>
               </li>

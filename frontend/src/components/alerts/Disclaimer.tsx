@@ -32,12 +32,7 @@ export interface DisclaimerProps {
   showNumbers?: boolean;
 }
 
-export const Disclaimer: React.FC<DisclaimerProps> = ({
-  variant = 'inline',
-  text,
-  className = '',
-  showNumbers,
-}) => {
+export const Disclaimer: React.FC<DisclaimerProps> = ({ variant = 'inline', text, className = '', showNumbers }) => {
   const { language, t } = useI18n();
   const body = text && text.trim().length > 0 ? text : ALERT_DISCLAIMER;
   const withNumbers = showNumbers ?? variant !== 'print';
@@ -53,9 +48,10 @@ export const Disclaimer: React.FC<DisclaimerProps> = ({
     );
   }
 
-  const shell = variant === 'banner'
-    ? 'border border-carbon-20 border-l-[2px] border-l-amber-500 bg-white p-4'
-    : 'border border-carbon-20 bg-carbon-05 p-4';
+  const shell =
+    variant === 'banner'
+      ? 'border border-carbon-20 border-l-4 border-l-amber-500 rounded-r-xl bg-white p-4'
+      : 'rounded-xl border border-carbon-20 bg-carbon-05 p-4';
 
   // `role="note"` rather than `<aside>`: a complementary landmark must be top-level, and
   // the evidence card (a region) legitimately contains this. axe-core flags the nested
@@ -67,7 +63,9 @@ export const Disclaimer: React.FC<DisclaimerProps> = ({
         <MaterialIcon name="info" className="text-amber-700 text-base mt-0.5" aria-hidden="true" />
         <div className="space-y-1">
           <p className="text-xs font-bold uppercase tracking-wide text-carbon-70">{heading}</p>
-          <p className="text-base leading-[1.62] text-carbon-70" lang={bodyLang}>{body}</p>
+          <p className="text-base leading-[1.62] text-carbon-70" lang={bodyLang}>
+            {body}
+          </p>
           {withNumbers && (
             <ul className="flex flex-wrap gap-x-3 gap-y-1 pt-0.5 text-sm font-semibold text-carbon-80">
               {EMERGENCY_NUMBERS.map((entry) => (

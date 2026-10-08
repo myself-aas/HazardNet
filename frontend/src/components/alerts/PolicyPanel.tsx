@@ -26,8 +26,7 @@ export interface PolicyPanelProps {
   className?: string;
 }
 
-const percent = (value: unknown): string =>
-  typeof value === 'number' ? `${Math.round(value * 100)}%` : '—';
+const percent = (value: unknown): string => (typeof value === 'number' ? `${Math.round(value * 100)}%` : '—');
 
 export const PolicyPanel: React.FC<PolicyPanelProps> = ({ policy, className = '' }) => {
   const { t } = useI18n();
@@ -36,7 +35,7 @@ export const PolicyPanel: React.FC<PolicyPanelProps> = ({ policy, className = ''
 
   return (
     <section
-      className={`border border-carbon-20 bg-white p-4 ${className}`}
+      className={`border border-carbon-20 rounded-2xl bg-white p-4 ${className}`}
       aria-labelledby="alert-policy-heading"
     >
       <h2 id="alert-policy-heading" className="flex items-center gap-1.5 text-base font-bold text-carbon-90">
@@ -47,13 +46,9 @@ export const PolicyPanel: React.FC<PolicyPanelProps> = ({ policy, className = ''
         {policy?.version ? `${policy.version}${policy.source ? ` · ${policy.source}` : ''}` : t('common.none')}
       </p>
 
-      <p className="mt-2 text-base leading-[1.62] text-carbon-70">
-        {t('alerts.policy.ceiling', { ceiling })}
-      </p>
+      <p className="mt-2 text-base leading-[1.62] text-carbon-70">{t('alerts.policy.ceiling', { ceiling })}</p>
 
-      <h3 className="mt-3 text-xs font-bold uppercase tracking-wide text-carbon-60">
-        {t('alerts.policy.thresholds')}
-      </h3>
+      <h3 className="mt-3 text-xs font-bold uppercase tracking-wide text-carbon-60">{t('alerts.policy.thresholds')}</h3>
       <dl className="mt-1 grid grid-cols-2 gap-x-3 gap-y-1 text-sm text-carbon-70">
         <div>
           <dt className="font-semibold">{t('alerts.level.WATCH')}</dt>
@@ -73,7 +68,7 @@ export const PolicyPanel: React.FC<PolicyPanelProps> = ({ policy, className = ''
         </div>
       </dl>
 
-      <p className="mt-3 border border-carbon-20 border-l-[2px] border-l-amber-500 bg-white p-4 text-base leading-[1.62] text-carbon-70">
+      <p className="mt-3 border border-carbon-20 rounded-xl border-l-4 border-l-amber-500 bg-white p-4 text-base leading-[1.62] text-carbon-70">
         {t('alerts.policy.calibration')}
       </p>
 
@@ -82,7 +77,9 @@ export const PolicyPanel: React.FC<PolicyPanelProps> = ({ policy, className = ''
           <summary className="min-h-[44px] cursor-pointer font-semibold">overrides</summary>
           <ul className="mt-1 list-disc pl-4 font-mono">
             {policy.overridden.map((entry) => (
-              <li key={entry.key}>{entry.env} = {String(entry.value)}</li>
+              <li key={entry.key}>
+                {entry.env} = {String(entry.value)}
+              </li>
             ))}
           </ul>
         </details>
@@ -90,7 +87,9 @@ export const PolicyPanel: React.FC<PolicyPanelProps> = ({ policy, className = ''
 
       {Array.isArray(policy?.warnings) && policy.warnings.length > 0 && (
         <ul className="mt-2 list-disc pl-4 text-sm text-carbon-70">
-          {policy.warnings.map((warning) => <li key={warning}>{warning}</li>)}
+          {policy.warnings.map((warning) => (
+            <li key={warning}>{warning}</li>
+          ))}
         </ul>
       )}
 
@@ -118,7 +117,7 @@ export const AlertLevelLadder: React.FC<{ maxAutoLevel?: string | null; classNam
 
   return (
     <section
-      className={`border border-carbon-20 bg-white p-4 ${className}`}
+      className={`border border-carbon-20 rounded-2xl bg-white p-4 ${className}`}
       aria-labelledby="alert-ladder-heading"
     >
       <h2 id="alert-ladder-heading" className="text-base font-bold text-carbon-90">

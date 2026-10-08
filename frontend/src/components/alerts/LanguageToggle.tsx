@@ -33,8 +33,8 @@ const TONES = {
     idle: 'text-carbon-70 hover:bg-carbon-10',
   },
   hds: {
-    wrapper: 'rounded-none border border-carbon-20 bg-white p-0.5',
-    button: 'rounded-none',
+    wrapper: 'rounded-full border border-carbon-20 bg-white p-0.5',
+    button: 'rounded-full',
     active: 'bg-carbon-90 text-ap-on-inverse',
     idle: 'text-carbon-70 hover:bg-carbon-05',
   },

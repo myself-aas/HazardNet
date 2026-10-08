@@ -20,7 +20,7 @@ import { parseAuthError } from '../lib/authErrors';
  */
 
 const inputClass =
-  'h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 placeholder-carbon-40 font-medium focus:border-ap-primary focus:outline-none focus:ring-2 focus:ring-ap-primary/40';
+  'h-12 w-full rounded-full border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 placeholder-carbon-40 font-medium focus:border-ap-primary focus:outline-none focus:ring-2 focus:ring-ap-primary/40';
 
 const describeError = (err: unknown): string => {
   const parsed = parseAuthError(err);
@@ -98,7 +98,7 @@ const SignUpPage: React.FC = () => {
               exit={{ opacity: 0, y: -5 }}
               role="alert"
               aria-live="polite"
-              className="flex items-start gap-2 border-l-2 border-ap-primary bg-white p-4 text-sm font-medium text-ap-link"
+              className="flex items-start gap-2 rounded-r-xl border-l-4 border-ap-primary bg-white p-4 text-sm font-medium text-ap-link"
             >
               <span className="shrink-0 mt-0.5">
                 <MaterialIcon name="warning" className="w-4 h-4" />
@@ -134,16 +134,8 @@ const SignUpPage: React.FC = () => {
           {fieldErrors.name && <p className="mt-1 text-sm font-semibold text-ap-link">{fieldErrors.name}</p>}
         </div>
 
-        <UsernameField
-          id="signup-username"
-          value={username}
-          onChange={setUsername}
-          fullName={name}
-          email={email}
-        />
-        {fieldErrors.username && (
-          <p className="-mt-2 text-sm font-semibold text-ap-link">{fieldErrors.username}</p>
-        )}
+        <UsernameField id="signup-username" value={username} onChange={setUsername} fullName={name} email={email} />
+        {fieldErrors.username && <p className="-mt-2 text-sm font-semibold text-ap-link">{fieldErrors.username}</p>}
 
         <div>
           <label className="mb-1.5 block text-sm font-medium text-carbon-80" htmlFor="signup-email">
@@ -192,9 +184,7 @@ const SignUpPage: React.FC = () => {
               <EyeToggleIcon isState={showPassword} size={20} duration={0} />
             </button>
           </div>
-          {fieldErrors.password && (
-            <p className="mt-1 text-sm font-semibold text-ap-link">{fieldErrors.password}</p>
-          )}
+          {fieldErrors.password && <p className="mt-1 text-sm font-semibold text-ap-link">{fieldErrors.password}</p>}
         </div>
 
         <label htmlFor="signup-terms" className="flex items-start gap-2.5 cursor-pointer select-none">
@@ -244,10 +234,7 @@ const SignUpPage: React.FC = () => {
         </div>
 
         {/* ── Social options: Google and GitHub only (Firebase providers) ── */}
-        <AuthSocialButtons
-          googleLabel="Sign up with Google"
-          onSuccess={() => navigate(next, { replace: true })}
-        />
+        <AuthSocialButtons googleLabel="Sign up with Google" onSuccess={() => navigate(next, { replace: true })} />
       </form>
 
       <p className="text-center text-sm text-carbon-60">

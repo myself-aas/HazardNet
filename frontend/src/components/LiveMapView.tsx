@@ -1,4 +1,4 @@
-import MaterialIcon from "./MaterialIcon";
+import MaterialIcon from './MaterialIcon';
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import MapToolbar, { type MapViewMode } from './map/MapToolbar';
 import MapDistrictTable from './map/MapDistrictTable';
@@ -9,11 +9,11 @@ import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LocationMap } from './ui/expand-map';
 import { ALL_64_DISTRICTS, ALL_8_DIVISIONS } from '../data/bangladeshDistricts';
-import { 
-  isValidLatLng, 
-  isValidCoordinate, 
-  getDistrictBoundaryCoordinates, 
-  getSeverityColor
+import {
+  isValidLatLng,
+  isValidCoordinate,
+  getDistrictBoundaryCoordinates,
+  getSeverityColor,
 } from '../services/geolocationService';
 import { useAuth } from '../context/AuthContext';
 import DataProcessingSkeleton from './DataProcessingSkeleton';
@@ -51,13 +51,7 @@ import {
 } from '../lib/gibs';
 import { GibsTileLayer } from './map/gibsTileLayer';
 import { mapFreshnessLabel } from '../lib/mapFreshness';
-import {
-  WIND_ARTIFACT_URL,
-  parseWindArtifact,
-  windChipLabel,
-  windFeedState,
-  type WindArtifact,
-} from '../lib/wind';
+import { WIND_ARTIFACT_URL, parseWindArtifact, windChipLabel, windFeedState, type WindArtifact } from '../lib/wind';
 
 /** Structural handle: the overlay module is lazy-loaded, so the component only
  *  depends on the two calls it makes. */
@@ -73,17 +67,17 @@ export {
   MAP_LAYERS,
 };
 
-import { BANGLADESH_RIVERS, HAZARD_LAYERS, createCustomIcon, hazardMarkerLabel, getAdvisoryColor } from './map/mapPrimitives';
+import {
+  BANGLADESH_RIVERS,
+  HAZARD_LAYERS,
+  createCustomIcon,
+  hazardMarkerLabel,
+  getAdvisoryColor,
+} from './map/mapPrimitives';
 import StatusStrip, { computeTierCounts } from './StatusStrip';
 import DistrictForecastCard from './map/DistrictForecastCard';
 import type { HazardLayerDef } from './map/mapPrimitives';
-import {
-  MAP_CHROME,
-  MAP_INTERACTIVE,
-  MAP_HEAT_RAMP,
-  MAP_RAIN_RAMP,
-  MAP_RISK_RAMP,
-} from '@hazardnet/design-system';
+import { MAP_CHROME, MAP_INTERACTIVE, MAP_HEAT_RAMP, MAP_RAIN_RAMP, MAP_RISK_RAMP } from '@hazardnet/design-system';
 
 /* ── Hoisted module scope (2026-10-06, Vercel React guidance) ─────────────────────────────────
    `PIN_GLYPH_SVG` — the 260-character crosshair glyph inside the two location pins (the user's
@@ -104,7 +98,15 @@ const PIN_GLYPH_SVG =
   '<line x1="18" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/></svg>';
 
 interface LiveMapViewProps {
-  onSelectDistrict?: (district: { id: string; name: string; division: string; lat: number; lng: number; risk: 'Low' | 'Moderate' | 'High'; mainCrop: string }) => void;
+  onSelectDistrict?: (district: {
+    id: string;
+    name: string;
+    division: string;
+    lat: number;
+    lng: number;
+    risk: 'Low' | 'Moderate' | 'High';
+    mainCrop: string;
+  }) => void;
   selectedDistrictId?: string;
   selectedDivision?: string;
   onSelectDivision?: (divisionName: string) => void;
@@ -259,8 +261,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       }
     },
     autoLocateEnabled:
-      userProfile?.autoDetectLocationEnabled ??
-      (localStorage.getItem('hazardnet_auto_detect_location') !== 'false'),
+      userProfile?.autoDetectLocationEnabled ?? localStorage.getItem('hazardnet_auto_detect_location') !== 'false',
     lowBandwidth,
     onBasemapDegraded: (layerKey) => {
       if (layerKey !== 'esriSatellite') return;
@@ -282,12 +283,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   // whole tile story now — see hooks/useLeafletMap.ts.
 
   // Extracted Hook 3: useMapMeasurements (Manages ruler points, polyline rendering, and path risk corridor analysis)
-  const {
-    pathAnalysis,
-    totalMeasuredKm,
-    clearMeasurements,
-    removeLastPoint,
-  } = useMapMeasurements({
+  const { pathAnalysis, totalMeasuredKm, clearMeasurements, removeLastPoint } = useMapMeasurements({
     measureGroupRef,
     measurePoints,
     setMeasurePoints,
@@ -298,10 +294,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   const selectedInfo = currentSelected
     ? `${currentSelected.name} District (${(currentSelected.severity * 100).toFixed(0)}% Risk)`
     : 'Bangladesh National Overview';
-  const activeOverlayNames = HAZARD_LAYERS
-    .filter((h) => selectedHazards.includes(h.id))
-    .map((h) => h.name)
-    .join(', ') || 'Baseline Vector Boundaries';
+  const activeOverlayNames =
+    HAZARD_LAYERS.filter((h) => selectedHazards.includes(h.id))
+      .map((h) => h.name)
+      .join(', ') || 'Baseline Vector Boundaries';
 
   // Attribution derivation lives below the overlay state (it reads it).
 
@@ -365,8 +361,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   // GIBS credit only while a GIBS overlay is actually rendering; the wind
   // credit follows whichever model the artifact carries (credits follow the
   // ladder).
-  const attributionCreditIds: string[] =
-    activeLayer === 'esriSatellite' ? ['esri'] : ['osm', 'opentopomap'];
+  const attributionCreditIds: string[] = activeLayer === 'esriSatellite' ? ['esri'] : ['osm', 'opentopomap'];
   if (isRiverLayerActive || isHeatmapActive || isClusteringActive) {
     attributionCreditIds.push('forecasts');
   }
@@ -659,21 +654,20 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
     };
   }, [isWindActive, windStatus, windArtifact, lowBandwidth]);
 
-  const {
-    generateMapSnapshot,
-    isExportingMap,
-    exportSuccessMsg,
-    setExportSuccessMsg,
-  } = useMapSnapshot(mapContainerRef, mapInstanceRef, {
-    exportScale,
-    exportFormat,
-    includeWatermarkHeader,
-    includeOverlayLegend,
-    customReportTitle,
-    baseMapName,
-    selectedInfo,
-    activeOverlayNames,
-  });
+  const { generateMapSnapshot, isExportingMap, exportSuccessMsg, setExportSuccessMsg } = useMapSnapshot(
+    mapContainerRef,
+    mapInstanceRef,
+    {
+      exportScale,
+      exportFormat,
+      includeWatermarkHeader,
+      includeOverlayLegend,
+      customReportTitle,
+      baseMapName,
+      selectedInfo,
+      activeOverlayNames,
+    },
+  );
 
   const handleExportMapImage = async () => {
     try {
@@ -692,9 +686,6 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       // useMapSnapshot already surfaced an error toast.
     }
   };
-
-
-
 
   // Handler to locate user geographic position and map to corresponding district
   const handleCenterOnUserLocation = () => {
@@ -717,40 +708,43 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   }, []);
 
   // Callback to emit selection & center map on targeted district
-  const handleSelectDistrict = useCallback((dist: DistrictGeo) => {
-    if (dist && isValidLatLng(dist.lat, dist.lng)) {
-      lastTargetedDistrictRef.current = dist;
-      if (mapInstanceRef.current) {
-        const boundaryCoords = getDistrictBoundaryCoordinates(dist);
-        if (boundaryCoords.length >= 3) {
-          try {
-            const bounds = L.latLngBounds(boundaryCoords);
-            if (bounds.isValid()) {
-              mapInstanceRef.current.fitBounds(bounds.pad(0.35), { animate: true, duration: 1.2, maxZoom: 10.5 });
-            } else {
+  const handleSelectDistrict = useCallback(
+    (dist: DistrictGeo) => {
+      if (dist && isValidLatLng(dist.lat, dist.lng)) {
+        lastTargetedDistrictRef.current = dist;
+        if (mapInstanceRef.current) {
+          const boundaryCoords = getDistrictBoundaryCoordinates(dist);
+          if (boundaryCoords.length >= 3) {
+            try {
+              const bounds = L.latLngBounds(boundaryCoords);
+              if (bounds.isValid()) {
+                mapInstanceRef.current.fitBounds(bounds.pad(0.35), { animate: true, duration: 1.2, maxZoom: 10.5 });
+              } else {
+                mapInstanceRef.current.flyTo([dist.lat, dist.lng], 9.5, { duration: 1.2 });
+              }
+            } catch (e) {
+              console.warn('Failed to fit district bounds:', e);
               mapInstanceRef.current.flyTo([dist.lat, dist.lng], 9.5, { duration: 1.2 });
             }
-          } catch (e) {
-            console.warn('Failed to fit district bounds:', e);
+          } else {
             mapInstanceRef.current.flyTo([dist.lat, dist.lng], 9.5, { duration: 1.2 });
           }
-        } else {
-          mapInstanceRef.current.flyTo([dist.lat, dist.lng], 9.5, { duration: 1.2 });
         }
       }
-    }
-    if (onSelectDistrict && dist && isValidLatLng(dist.lat, dist.lng)) {
-      onSelectDistrict({
-        id: dist.id,
-        name: dist.name,
-        division: dist.division,
-        lat: dist.lat,
-        lng: dist.lng,
-        risk: dist.risk,
-        mainCrop: dist.mainCrop,
-      });
-    }
-  }, [onSelectDistrict]);
+      if (onSelectDistrict && dist && isValidLatLng(dist.lat, dist.lng)) {
+        onSelectDistrict({
+          id: dist.id,
+          name: dist.name,
+          division: dist.division,
+          lat: dist.lat,
+          lng: dist.lng,
+          risk: dist.risk,
+          mainCrop: dist.mainCrop,
+        });
+      }
+    },
+    [onSelectDistrict],
+  );
 
   // Active district corresponding to the user's current GPS location, stored pinpoint, or home profile
   const activeUserDistrict = useMemo(() => {
@@ -773,9 +767,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   }, [userGpsPos, pinpointLat, pinpointLng, userProfile?.homeDistrictId, liveDistricts]);
 
   const toggleHazard = (hazardId: string) => {
-    setSelectedHazards((prev) =>
-      prev.includes(hazardId) ? prev.filter((h) => h !== hazardId) : [...prev, hazardId]
-    );
+    setSelectedHazards((prev) => (prev.includes(hazardId) ? prev.filter((h) => h !== hazardId) : [...prev, hazardId]));
   };
 
   const selectAllHazards = () => {
@@ -789,10 +781,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   // Compute top 3 hazards for the selected division
   const divisionTopHazards = useMemo(() => {
     if (selectedDivision === 'All') return [];
-    const divDistricts = liveDistricts.filter(d => d.division.toLowerCase() === selectedDivision.toLowerCase());
-    
+    const divDistricts = liveDistricts.filter((d) => d.division.toLowerCase() === selectedDivision.toLowerCase());
+
     const hazards: Record<string, { hazardName: string; severitySum: number; count: number; maxSeverity: number }> = {};
-    divDistricts.forEach(d => {
+    divDistricts.forEach((d) => {
       if (!hazards[d.hazardType]) {
         hazards[d.hazardType] = { hazardName: d.hazardType, severitySum: 0, count: 0, maxSeverity: 0 };
       }
@@ -804,9 +796,9 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
     });
 
     return Object.values(hazards)
-      .map(h => ({
+      .map((h) => ({
         ...h,
-        avgSeverity: h.severitySum / h.count
+        avgSeverity: h.severitySum / h.count,
       }))
       .sort((a, b) => b.avgSeverity - a.avgSeverity)
       .slice(0, 3);
@@ -850,7 +842,9 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       }
       mapInstanceRef.current.flyTo([currentSelected.lat, currentSelected.lng], 9.5, { duration: 1.2 });
     } else if (selectedDivision !== 'All') {
-      const divisionDistricts = liveDistricts.filter((d) => d.division.toLowerCase() === selectedDivision.toLowerCase());
+      const divisionDistricts = liveDistricts.filter(
+        (d) => d.division.toLowerCase() === selectedDivision.toLowerCase(),
+      );
       const bounds = L.latLngBounds([]);
       divisionDistricts.forEach((d) => {
         if (isValidLatLng(d.lat, d.lng)) {
@@ -897,8 +891,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       else if (tier === 'NORMAL') counts.NORMAL += 1;
       else {
         if (d.severity >= 0.75) counts.SEVERE += 1;
-        else if (d.severity >= 0.50) counts.WARNING += 1;
-        else if (d.severity >= 0.30) counts.WATCH += 1;
+        else if (d.severity >= 0.5) counts.WARNING += 1;
+        else if (d.severity >= 0.3) counts.WATCH += 1;
         else counts.NORMAL += 1;
       }
     }
@@ -932,9 +926,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       if (isSel || isUserDist || isDivSel) {
         const userLocLat = userGpsPos?.lat ?? pinpointLat;
         const userLocLng = userGpsPos?.lng ?? pinpointLng;
-        const boundaryCoords = (isUserDist || isSel) && isValidLatLng(userLocLat, userLocLng)
-          ? getDistrictBoundaryCoordinates(dist, userLocLat, userLocLng)
-          : getDistrictBoundaryCoordinates(dist);
+        const boundaryCoords =
+          (isUserDist || isSel) && isValidLatLng(userLocLat, userLocLng)
+            ? getDistrictBoundaryCoordinates(dist, userLocLat, userLocLng)
+            : getDistrictBoundaryCoordinates(dist);
         if (boundaryCoords.length >= 3) {
           try {
             // Dynamic Severity Outlined Boundary Polygon (reflecting advisory tier)
@@ -952,7 +947,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               const outerGlow = L.polygon(boundaryCoords, {
                 color: severityColor,
                 weight: 10,
-                opacity: 0.50,
+                opacity: 0.5,
                 fill: false,
                 interactive: false,
                 className: isUserDist ? 'user-district-pulse-glow' : undefined,
@@ -1010,7 +1005,13 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         circle.on('click', triggerClick);
 
         // Single source of truth for the marker's accessible name (see mapPrimitives).
-        const districtAriaLabel = hazardMarkerLabel(dist.severity, dist.hazardType, dist.name, dist.risk, dist.advisoryTier);
+        const districtAriaLabel = hazardMarkerLabel(
+          dist.severity,
+          dist.hazardType,
+          dist.name,
+          dist.risk,
+          dist.advisoryTier,
+        );
 
         const attachMarkerA11y = () => {
           const el = marker.getElement();
@@ -1066,9 +1067,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           zIndexOffset: 3000,
         });
 
-        const pinNearest = isValidCoordinate(pinpointLat) && isValidCoordinate(pinpointLng)
-          ? findNearestDistrict(pinpointLat, pinpointLng)
-          : null;
+        const pinNearest =
+          isValidCoordinate(pinpointLat) && isValidCoordinate(pinpointLng)
+            ? findNearestDistrict(pinpointLat, pinpointLng)
+            : null;
         const pinDist = pinNearest?.district || currentSelected;
 
         const attachPinA11y = () => {
@@ -1076,7 +1078,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           if (el) {
             el.setAttribute('tabindex', '0');
             el.setAttribute('role', 'button');
-            el.setAttribute('aria-label', `User Stored Pinpoint GPS Location: ${pinpointLat.toFixed(4)}°N, ${pinpointLng.toFixed(4)}°E`);
+            el.setAttribute(
+              'aria-label',
+              `User Stored Pinpoint GPS Location: ${pinpointLat.toFixed(4)}°N, ${pinpointLng.toFixed(4)}°E`,
+            );
           }
         };
         userPinMarker.on('add', attachPinA11y);
@@ -1086,11 +1091,15 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           <div style="font-family: var(--ap-font-display); color: ${MAP_CHROME.panelInk}; padding: 4px 2px; min-width: 190px; max-width: 240px;">
             <div style="font-size: 14px; font-weight: 800; color: ${MAP_CHROME.inkStrong}; margin-bottom: 6px;">Your location</div>
             <div style="font-size: 13px; font-family: var(--ap-font-mono), monospace; color: ${MAP_CHROME.inkSoft};">${pinpointLat.toFixed(4)}°N, ${pinpointLng.toFixed(4)}°E</div>
-            ${pinDist ? `
+            ${
+              pinDist
+                ? `
               <div style="margin-top: 8px; font-size: 13px; line-height: 1.45; color: ${MAP_CHROME.ink};">
                 <strong style="font-weight: 800;">${pinDist.name}</strong> · ${pinDist.division}
               </div>
-            ` : ''}
+            `
+                : ''
+            }
           </div>
         `);
 
@@ -1137,7 +1146,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           if (el) {
             el.setAttribute('tabindex', '0');
             el.setAttribute('role', 'button');
-            el.setAttribute('aria-label', `Active Real-time GPS Position: ${userGpsPos.lat.toFixed(4)}°N, ${userGpsPos.lng.toFixed(4)}°E`);
+            el.setAttribute(
+              'aria-label',
+              `Active Real-time GPS Position: ${userGpsPos.lat.toFixed(4)}°N, ${userGpsPos.lng.toFixed(4)}°E`,
+            );
           }
         };
         gpsMarker.on('add', attachGpsA11y);
@@ -1152,12 +1164,16 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             <div style="font-size: 14px; font-weight: 800; color: ${MAP_CHROME.inkStrong}; margin-bottom: 6px;">Your location</div>
             <div style="font-size: 13px; font-family: var(--ap-font-mono), monospace; color: ${MAP_CHROME.inkSoft};">${userGpsPos.lat.toFixed(4)}°N, ${userGpsPos.lng.toFixed(4)}°E</div>
             <div style="margin-top: 4px; font-size: 12px; color: ${MAP_CHROME.muted};">Accuracy ±${userGpsPos.accuracy || 10} m</div>
-            ${dist ? `
+            ${
+              dist
+                ? `
               <div style="margin-top: 8px; font-size: 13px; line-height: 1.45; color: ${MAP_CHROME.ink};">
                 <strong style="font-weight: 800;">${dist.name}</strong> · ${dist.division}
                 <div style="margin-top: 2px; font-size: 12px; color: ${MAP_CHROME.muted};">${distanceKm} km from district centre</div>
               </div>
-            ` : ''}
+            `
+                : ''
+            }
           </div>
         `);
 
@@ -1189,7 +1205,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           const outerGlow = L.polygon(boundaryCoords, {
             color: severityColor,
             weight: 10,
-            opacity: 0.50,
+            opacity: 0.5,
             fill: false,
             interactive: false,
             className: 'user-district-pulse-glow',
@@ -1197,7 +1213,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           markersGroupRef.current?.addLayer(outerGlow);
           boundaryPolygon.bindTooltip(
             `<div style="font-family: var(--ap-font-display); font-size: 12px; font-weight: 900; color: ${MAP_CHROME.surface}; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 6px;"><MaterialIcon name="location_on" className="w-4 h-4 inline-block align-middle" /><span>${activeUserDistrict.name} District Boundary (Your Location)</span><span style="background: ${severityColor}; color: ${MAP_CHROME.surface}; padding: 2px 6px; border-radius: 9999px; font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.4);">${severityPercent}% Severity</span></div>`,
-            { permanent: true, direction: 'top' }
+            { permanent: true, direction: 'top' },
           );
           markersGroupRef.current?.addLayer(boundaryPolygon);
         } catch (e) {
@@ -1205,7 +1221,20 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         }
       }
     }
-  }, [filteredDistricts, selectedDistrictId, isolateSelected, currentSelected, handleSelectDistrict, navigate, pinpointLat, pinpointLng, userGpsPos, activeUserDistrict, isClusteringActive, selectedDivision]);
+  }, [
+    filteredDistricts,
+    selectedDistrictId,
+    isolateSelected,
+    currentSelected,
+    handleSelectDistrict,
+    navigate,
+    pinpointLat,
+    pinpointLng,
+    userGpsPos,
+    activeUserDistrict,
+    isClusteringActive,
+    selectedDivision,
+  ]);
 
   // 4. Render Interactive Click Inspection Marker
   useEffect(() => {
@@ -1227,13 +1256,19 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         iconAnchor: [18, 18],
       });
 
-      const inspectMarker = L.marker([inspectedPoint.lat, inspectedPoint.lng], { icon: inspectIcon, zIndexOffset: 4000 });
+      const inspectMarker = L.marker([inspectedPoint.lat, inspectedPoint.lng], {
+        icon: inspectIcon,
+        zIndexOffset: 4000,
+      });
       const attachInspectA11y = () => {
         const el = inspectMarker.getElement();
         if (el) {
           el.setAttribute('tabindex', '0');
           el.setAttribute('role', 'button');
-          el.setAttribute('aria-label', `Inspected Geographic Point: ${inspectedPoint.lat.toFixed(4)}°N, ${inspectedPoint.lng.toFixed(4)}°E`);
+          el.setAttribute(
+            'aria-label',
+            `Inspected Geographic Point: ${inspectedPoint.lat.toFixed(4)}°N, ${inspectedPoint.lng.toFixed(4)}°E`,
+          );
         }
       };
       inspectMarker.on('add', attachInspectA11y);
@@ -1270,7 +1305,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               <MaterialIcon name="water" className="w-4 h-4 inline-block align-middle" /> ${river.name}<br/>
               <span style="font-size: 12px; color: ${MAP_CHROME.muted}; font-weight: normal;">${river.status}</span>
             </div>`,
-            { permanent: false, direction: 'top' }
+            { permanent: false, direction: 'top' },
           );
 
           riverGroupRef.current?.addLayer(outerGlow);
@@ -1281,7 +1316,6 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       });
     }
   }, [isRiverLayerActive]);
-
 
   // 8. Update Heatmap Layer
   useEffect(() => {
@@ -1322,7 +1356,6 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   // Nearest district details for current inspection point
   const nearestDistrictData = inspectedPoint ? findNearestDistrict(inspectedPoint.lat, inspectedPoint.lng) : null;
 
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -1334,8 +1367,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         isFullScreen
           ? 'w-full h-full min-h-[360px] lg:min-h-[560px] h-dvh bg-carbon-05 overflow-hidden text-carbon-90 relative flex flex-col'
           : className
-          ? className
-          : `w-full ${customHeight || 'h-full min-h-[360px] lg:min-h-[560px]'} bg-carbon-10 overflow-hidden text-carbon-90 relative flex flex-col border border-carbon-20 rounded-2xl shadow-md`
+            ? className
+            : `w-full ${customHeight || 'h-full min-h-[360px] lg:min-h-[560px]'} bg-carbon-10 overflow-hidden text-carbon-90 relative flex flex-col border border-carbon-20 rounded-2xl shadow-md`
       }
     >
       {!isFullScreen && (
@@ -1377,22 +1410,22 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       >
         {/* Data Processing Skeleton Overlay */}
         <AnimatePresence>
-        {isProcessingData && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="absolute inset-0 z-[var(--ap-z-sticky)] p-6 bg-white flex flex-col justify-center"
-          >
-            <DataProcessingSkeleton
-              title="PROCESSING SATELLITE TILES & HIGH-CONTRAST RASTER"
-              subtitle="Streaming high resolution terrain raster over Bangladesh..."
-              mode="map"
-              onDismiss={() => setIsProcessingData(false)}
-            />
-          </motion.div>
-        )}
+          {isProcessingData && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="absolute inset-0 z-[var(--ap-z-sticky)] p-6 bg-white flex flex-col justify-center"
+            >
+              <DataProcessingSkeleton
+                title="PROCESSING SATELLITE TILES & HIGH-CONTRAST RASTER"
+                subtitle="Streaming high resolution terrain raster over Bangladesh..."
+                mode="map"
+                onDismiss={() => setIsProcessingData(false)}
+              />
+            </motion.div>
+          )}
         </AnimatePresence>
 
         <div
@@ -1457,234 +1490,238 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
           {/* Point Telemetry Click Inspection HUD */}
           <AnimatePresence>
-          {inspectedPoint && nearestDistrictData && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              className="absolute bottom-16 lg:bottom-auto lg:top-4 left-0 right-0 lg:left-auto lg:right-4 z-[var(--ap-z-sticky)] pointer-events-auto lg:w-[clamp(280px,28vw,340px)] lg:max-w-[calc(100%-2rem)] max-w-full w-full"
-            >
-              <div className="bg-white border border-carbon-20 p-4 text-carbon-80 flex flex-col gap-2">
-                <div className="flex items-start justify-between gap-2 border-b border-carbon-20 pb-2">
-                  <div className="min-w-0">
-                    <div className="text-xs font-bold text-carbon-60 uppercase tracking-wide">
-                      Point inspection
+            {inspectedPoint && nearestDistrictData && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+                className="absolute bottom-16 lg:bottom-auto lg:top-4 left-0 right-0 lg:left-auto lg:right-4 z-[var(--ap-z-sticky)] pointer-events-auto lg:w-[clamp(280px,28vw,340px)] lg:max-w-[calc(100%-2rem)] max-w-full w-full"
+              >
+                <div className="bg-white border border-carbon-20 rounded-2xl p-4 text-carbon-80 flex flex-col gap-2">
+                  <div className="flex items-start justify-between gap-2 border-b border-carbon-20 pb-2">
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold text-carbon-60 uppercase tracking-wide">Point inspection</div>
+                      <h4 className="text-base font-bold text-carbon-90 tracking-tight mt-1 font-mono tabular-nums">
+                        {inspectedPoint.lat}° N, {inspectedPoint.lng}° E
+                      </h4>
                     </div>
-                    <h4 className="text-base font-bold text-carbon-90 tracking-tight mt-1 font-mono tabular-nums">
-                      {inspectedPoint.lat}° N, {inspectedPoint.lng}° E
-                    </h4>
+                    <button
+                      type="button"
+                      onClick={() => setInspectedPoint(null)}
+                      className="tap-target w-11 h-11 rounded-control bg-carbon-05 hover:bg-carbon-10 text-carbon-70 flex items-center justify-center touch-manipulation"
+                      aria-label="Close point inspection"
+                    >
+                      <MaterialIcon name="close" className="w-5 h-5" />
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setInspectedPoint(null)}
-                    className="tap-target w-11 h-11 rounded-control bg-carbon-05 hover:bg-carbon-10 text-carbon-70 flex items-center justify-center touch-manipulation"
-                    aria-label="Close point inspection"
-                  >
-                    <MaterialIcon name="close" className="w-5 h-5" />
-                  </button>
-                </div>
 
-                <div className="bg-carbon-05 border border-carbon-20 p-3 text-sm space-y-1">
-                  <div className="flex justify-between font-semibold text-carbon-80 gap-2">
-                    <span>Nearest district</span>
-                    <span>{nearestDistrictData.district.name}</span>
+                  <div className="rounded-xl bg-carbon-05 border border-carbon-20 p-3 text-sm space-y-1">
+                    <div className="flex justify-between font-semibold text-carbon-80 gap-2">
+                      <span>Nearest district</span>
+                      <span>{nearestDistrictData.district.name}</span>
+                    </div>
+                    <div className="flex justify-between text-carbon-70 font-mono text-xs tabular-nums">
+                      <span>Distance to centre</span>
+                      <span>{nearestDistrictData.distanceKm.toFixed(1)} km</span>
+                    </div>
+                    <div className="flex justify-between text-carbon-70 text-xs">
+                      <span>Recorded hazard</span>
+                      <span className="font-semibold text-carbon-90">{nearestDistrictData.district.hazardType}</span>
+                    </div>
+                    <div className="flex justify-between text-carbon-70 font-mono text-xs tabular-nums">
+                      <span>Recorded severity</span>
+                      <span className="font-semibold text-carbon-90">
+                        {Math.round(nearestDistrictData.district.severity * 100)}%
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex justify-between text-carbon-70 font-mono text-xs tabular-nums">
-                    <span>Distance to centre</span>
-                    <span>{nearestDistrictData.distanceKm.toFixed(1)} km</span>
-                  </div>
-                  <div className="flex justify-between text-carbon-70 text-xs">
-                    <span>Recorded hazard</span>
-                    <span className="font-semibold text-carbon-90">{nearestDistrictData.district.hazardType}</span>
-                  </div>
-                  <div className="flex justify-between text-carbon-70 font-mono text-xs tabular-nums">
-                    <span>Recorded severity</span>
-                    <span className="font-semibold text-carbon-90">{Math.round(nearestDistrictData.district.severity * 100)}%</span>
-                  </div>
-                </div>
 
-                <div className="my-0.5">
-                  <LocationMap 
-                    location={`${nearestDistrictData.district.name}, ${nearestDistrictData.district.division}`}
-                    coordinates={`${inspectedPoint.lat.toFixed(4)}° N, ${inspectedPoint.lng.toFixed(4)}° E`}
-                    lat={inspectedPoint.lat}
-                    lng={inspectedPoint.lng}
-                    hazardType={nearestDistrictData.district.hazardType}
-                    severity={nearestDistrictData.district.severity}
-                    risk={nearestDistrictData.district.risk}
-                    division={nearestDistrictData.district.division}
-                    elevation={nearestDistrictData.district.elevationMeters}
-                  />
-                </div>
+                  <div className="my-0.5">
+                    <LocationMap
+                      location={`${nearestDistrictData.district.name}, ${nearestDistrictData.district.division}`}
+                      coordinates={`${inspectedPoint.lat.toFixed(4)}° N, ${inspectedPoint.lng.toFixed(4)}° E`}
+                      lat={inspectedPoint.lat}
+                      lng={inspectedPoint.lng}
+                      hazardType={nearestDistrictData.district.hazardType}
+                      severity={nearestDistrictData.district.severity}
+                      risk={nearestDistrictData.district.risk}
+                      division={nearestDistrictData.district.division}
+                      elevation={nearestDistrictData.district.elevationMeters}
+                    />
+                  </div>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleSelectDistrict(nearestDistrictData.district);
-                      setInspectedPoint(null);
-                    }}
-                    className="flex-1 min-h-[44px] py-2 bg-primary text-ap-action-fg font-semibold text-sm text-center touch-manipulation"
-                  >
-                    Focus {nearestDistrictData.district.name}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setInspectedPoint(null)}
-                    className="min-h-[44px] px-4 py-2 bg-carbon-05 border border-carbon-20 text-carbon-70 font-semibold text-sm touch-manipulation"
-                  >
-                    Close
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleSelectDistrict(nearestDistrictData.district);
+                        setInspectedPoint(null);
+                      }}
+                      className="flex-1 min-h-[44px] py-2 bg-primary text-ap-action-fg font-semibold text-sm text-center touch-manipulation"
+                    >
+                      Focus {nearestDistrictData.district.name}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setInspectedPoint(null)}
+                      className="min-h-[44px] px-4 py-2 bg-carbon-05 border border-carbon-20 rounded-full text-carbon-70 font-semibold text-sm touch-manipulation"
+                    >
+                      Close
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
           </AnimatePresence>
 
           {/* Distance Ruler & Hazard Measurement Floating HUD */}
           <AnimatePresence>
-          {isMeasuring && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-              className="absolute top-4 left-4 right-4 lg:right-auto z-[var(--ap-z-sticky)] pointer-events-auto lg:max-w-[320px] w-auto"
-            >
-              <div className="bg-white text-carbon-90 border border-carbon-20 p-4 flex flex-col gap-2">
-                <div className="flex items-center justify-between border-b border-carbon-20 pb-2 text-xs font-bold">
-                  <span className="flex items-center gap-2 text-carbon-90 uppercase tracking-wide">
-                    Distance measure
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsMeasuring(false);
-                      setMeasurePoints([]);
-                    }}
-                    className="tap-target w-11 h-11 rounded-control bg-carbon-05 text-carbon-70 flex items-center justify-center touch-manipulation"
-                    aria-label="Close measurement"
-                  >
-                    <MaterialIcon name="close" className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {measurePoints.length === 0 && (
-                  <div className="bg-carbon-80/80 p-2.5 border border-carbon-70 text-xs text-carbon-30 flex items-center gap-2">
-                    <MaterialIcon name="touch_app" className="w-4 h-4 shrink-0 text-amber-300" />
-                    <span>Click any location on the map to set <strong>Point 1 (Origin)</strong>.</span>
+            {isMeasuring && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2 }}
+                className="absolute top-4 left-4 right-4 lg:right-auto z-[var(--ap-z-sticky)] pointer-events-auto lg:max-w-[320px] w-auto"
+              >
+                <div className="bg-white text-carbon-90 border border-carbon-20 rounded-2xl p-4 flex flex-col gap-2">
+                  <div className="flex items-center justify-between border-b border-carbon-20 pb-2 text-xs font-bold">
+                    <span className="flex items-center gap-2 text-carbon-90 uppercase tracking-wide">
+                      Distance measure
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMeasuring(false);
+                        setMeasurePoints([]);
+                      }}
+                      className="tap-target w-11 h-11 rounded-control bg-carbon-05 text-carbon-70 flex items-center justify-center touch-manipulation"
+                      aria-label="Close measurement"
+                    >
+                      <MaterialIcon name="close" className="w-5 h-5" />
+                    </button>
                   </div>
-                )}
 
-                {measurePoints.length === 1 && (
-                  <div className="bg-carbon-80/80 p-2.5 border border-carbon-70 text-xs text-carbon-30 space-y-1">
-                    <div className="flex items-center gap-1.5 text-sky-400 font-bold">
-                      <MaterialIcon name="location_on" className="w-4 h-4 inline-block align-middle" /><span>Point 1 (Origin):</span>
-                      <span>{findNearestDistrict(measurePoints[0][0], measurePoints[0][1]).district.name}</span>
-                    </div>
-                    <div className="text-xs text-amber-300 font-medium flex items-center gap-1">
-                      <span className="animate-pulse"><MaterialIcon name="my_location" className="w-4 h-4 inline-block align-middle" /></span> Click a second location to set <strong>Point 2 (Destination)</strong> & calculate path hazards.
-                    </div>
-                  </div>
-                )}
-
-                {measurePoints.length >= 2 && pathAnalysis && (
-                  <div className="text-xs space-y-2">
-                    <div className="bg-carbon-80/90 p-2.5 border border-carbon-70 space-y-1.5">
-                      <div className="flex items-center justify-between font-mono font-extrabold text-amber-300 text-sm">
-                        <span>Distance:</span>
-                        <span>
-                          {pathAnalysis.totalDistanceKm.toFixed(2)} km{' '}
-                          <span className="text-carbon-30 text-xs font-normal">
-                            ({(pathAnalysis.totalDistanceKm * 0.621371).toFixed(2)} mi)
-                          </span>
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-carbon-30">Path Span:</span>
-                        <span className="font-bold text-carbon-20">
-                          {pathAnalysis.startDistrict?.name}{' '}
-                          <MaterialIcon name="arrow_forward" className="w-3 h-3 inline-block align-middle" />{' '}
-                          {pathAnalysis.endDistrict?.name}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between text-xs border-t border-carbon-70/60 pt-1.5">
-                        <span className="text-carbon-30">Max Hazard Severity:</span>
-                        <span
-                          className={`font-black px-1.5 py-0.5 rounded text-xs ${
- pathAnalysis.riskRating === 'High'
- ? 'bg-severity-high-surface text-severity-high border border-severity-high/40'
- : pathAnalysis.riskRating === 'Moderate'
- ? 'bg-severity-moderate-surface text-severity-moderate border border-severity-moderate/40'
- : 'bg-severity-low-surface text-severity-low border border-severity-low/40'
- }`}
-                        >
-                          {(pathAnalysis.maxSeverity * 100).toFixed(0)}% • {pathAnalysis.riskRating} Risk
-                        </span>
-                      </div>
-                    </div>
-
-                    {pathAnalysis.hazardsDetected.length > 0 && (
-                      <div className="space-y-1">
-                        <div className="text-xs text-carbon-60 uppercase font-bold tracking-wider">
-                          Intersects Hazard Zones:
-                        </div>
-                        <div className="flex flex-wrap gap-1">
-                          {pathAnalysis.hazardsDetected.map((h, idx) => (
-                            <span
-                              key={idx}
-                              className="text-xs font-bold px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200"
-                            >
-                              <MaterialIcon name="warning" className="w-4 h-4 inline-block align-middle" /> {h}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="text-xs text-carbon-60 font-mono">
-                      Transiting {pathAnalysis.districtsAlongPath.length} district(s):{' '}
-                      <span className="text-carbon-60 font-sans font-medium">
-                        {pathAnalysis.districtsAlongPath.map((d) => d.district.name).join(', ')}
+                  {measurePoints.length === 0 && (
+                    <div className="rounded-lg bg-carbon-80/80 p-2.5 border border-carbon-70 text-xs text-carbon-30 flex items-center gap-2">
+                      <MaterialIcon name="touch_app" className="w-4 h-4 shrink-0 text-amber-300" />
+                      <span>
+                        Click any location on the map to set <strong>Point 1 (Origin)</strong>.
                       </span>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                <div className="flex items-center gap-2 pt-1 border-t border-carbon-70/80">
-                  <button
-                    onClick={() => setMeasurePoints([])}
-                    className="flex-1 min-h-[44px] py-1.5 bg-carbon-80 hover:bg-carbon-70 text-carbon-20 font-bold text-xs transition-colors border border-carbon-70"
-                  >
-                    Reset Points
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsMeasuring(false);
-                      setMeasurePoints([]);
-                    }}
-                    className="min-h-[44px] px-3 py-1.5 bg-primary hover:bg-primary-strong text-ap-action-fg font-semibold text-xs"
-                  >
-                    Exit Ruler
-                  </button>
+                  {measurePoints.length === 1 && (
+                    <div className="rounded-lg bg-carbon-80/80 p-2.5 border border-carbon-70 text-xs text-carbon-30 space-y-1">
+                      <div className="flex items-center gap-1.5 text-sky-400 font-bold">
+                        <MaterialIcon name="location_on" className="w-4 h-4 inline-block align-middle" />
+                        <span>Point 1 (Origin):</span>
+                        <span>{findNearestDistrict(measurePoints[0][0], measurePoints[0][1]).district.name}</span>
+                      </div>
+                      <div className="text-xs text-amber-300 font-medium flex items-center gap-1">
+                        <span className="animate-pulse">
+                          <MaterialIcon name="my_location" className="w-4 h-4 inline-block align-middle" />
+                        </span>{' '}
+                        Click a second location to set <strong>Point 2 (Destination)</strong> & calculate path hazards.
+                      </div>
+                    </div>
+                  )}
+
+                  {measurePoints.length >= 2 && pathAnalysis && (
+                    <div className="text-xs space-y-2">
+                      <div className="rounded-xl bg-carbon-80/90 p-2.5 border border-carbon-70 space-y-1.5">
+                        <div className="flex items-center justify-between font-mono font-extrabold text-amber-300 text-sm">
+                          <span>Distance:</span>
+                          <span>
+                            {pathAnalysis.totalDistanceKm.toFixed(2)} km{' '}
+                            <span className="text-carbon-30 text-xs font-normal">
+                              ({(pathAnalysis.totalDistanceKm * 0.621371).toFixed(2)} mi)
+                            </span>
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-carbon-30">Path Span:</span>
+                          <span className="font-bold text-carbon-20">
+                            {pathAnalysis.startDistrict?.name}{' '}
+                            <MaterialIcon name="arrow_forward" className="w-3 h-3 inline-block align-middle" />{' '}
+                            {pathAnalysis.endDistrict?.name}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs border-t border-carbon-70/60 pt-1.5">
+                          <span className="text-carbon-30">Max Hazard Severity:</span>
+                          <span
+                            className={`font-black px-1.5 py-0.5 rounded text-xs ${
+                              pathAnalysis.riskRating === 'High'
+                                ? 'bg-severity-high-surface text-severity-high border border-severity-high/40'
+                                : pathAnalysis.riskRating === 'Moderate'
+                                  ? 'bg-severity-moderate-surface text-severity-moderate border border-severity-moderate/40'
+                                  : 'bg-severity-low-surface text-severity-low border border-severity-low/40'
+                            }`}
+                          >
+                            {(pathAnalysis.maxSeverity * 100).toFixed(0)}% • {pathAnalysis.riskRating} Risk
+                          </span>
+                        </div>
+                      </div>
+
+                      {pathAnalysis.hazardsDetected.length > 0 && (
+                        <div className="space-y-1">
+                          <div className="text-xs text-carbon-60 uppercase font-bold tracking-wider">
+                            Intersects Hazard Zones:
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {pathAnalysis.hazardsDetected.map((h, idx) => (
+                              <span
+                                key={idx}
+                                className="rounded-full text-xs font-bold px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200"
+                              >
+                                <MaterialIcon name="warning" className="w-4 h-4 inline-block align-middle" /> {h}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="text-xs text-carbon-60 font-mono">
+                        Transiting {pathAnalysis.districtsAlongPath.length} district(s):{' '}
+                        <span className="text-carbon-60 font-sans font-medium">
+                          {pathAnalysis.districtsAlongPath.map((d) => d.district.name).join(', ')}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2 pt-1 border-t border-carbon-70/80">
+                    <button
+                      onClick={() => setMeasurePoints([])}
+                      className="rounded-2xl flex-1 min-h-[44px] py-1.5 bg-carbon-80 hover:bg-carbon-70 text-carbon-20 font-bold text-xs transition-colors border border-carbon-70"
+                    >
+                      Reset Points
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsMeasuring(false);
+                        setMeasurePoints([]);
+                      }}
+                      className="min-h-[44px] px-3 py-1.5 bg-primary hover:bg-primary-strong text-ap-action-fg font-semibold text-xs"
+                    >
+                      Exit Ruler
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
           </AnimatePresence>
 
           {(exportSuccessMsg || userLocationError) && (
             <div
               role="status"
-              className="absolute bottom-16 left-4 right-4 lg:right-auto lg:max-w-[320px] z-[var(--ap-z-sticky)] pointer-events-auto bg-white border border-carbon-20 p-4 text-base text-carbon-90"
+              className="absolute bottom-16 left-4 right-4 lg:right-auto lg:max-w-[320px] z-[var(--ap-z-sticky)] pointer-events-auto bg-white border border-carbon-20 rounded-2xl p-4 text-base text-carbon-90"
             >
               <div className="flex items-start gap-2">
-                <p className="flex-1 min-w-0">
-                  {userLocationError || exportSuccessMsg}
-                </p>
+                <p className="flex-1 min-w-0">{userLocationError || exportSuccessMsg}</p>
                 <button
                   type="button"
                   onClick={() => {
@@ -1707,140 +1744,157 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               hazard pills with coloured dots, and a sticky CTA row.
               44px targets throughout, both themes. */}
           <AnimatePresence>
-          {isFilterModalOpen && (
-            <div
-              className="fixed inset-0 z-[var(--ap-z-modal)] bg-carbon-black/30 flex items-end sm:items-center justify-center sm:p-4 pointer-events-auto"
-              onClick={(e) => { if (e.target === e.currentTarget) setIsFilterModalOpen(false); }}
-            >
-              <motion.div
-                key="district-filter-sheet"
-                role="dialog"
-                aria-modal="true"
-                aria-label="Division and hazard filters"
-                initial={{ opacity: 0, y: 24, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 24, scale: 0.98 }}
-                transition={{ duration: 0.22, ease: 'easeOut' }}
-                className="w-full sm:max-w-md flex flex-col max-h-[88vh] sm:max-h-[80vh] overflow-hidden bg-white sm:rounded-xl rounded-t-xl shadow-map"
+            {isFilterModalOpen && (
+              <div
+                className="fixed inset-0 z-[var(--ap-z-modal)] bg-carbon-black/30 flex items-end sm:items-center justify-center sm:p-4 pointer-events-auto"
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) setIsFilterModalOpen(false);
+                }}
               >
-                {/* grab + header */}
-                <div className="shrink-0 px-5 pt-3 pb-3 border-b border-carbon-20">
-                  <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-carbon-20 sm:hidden" aria-hidden="true" />
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <h3 className="text-base font-bold tracking-tight text-carbon-90 dark:text-white">Districts & hazards</h3>
-                      <p className="text-xs text-carbon-60">Narrow the national situational map</p>
+                <motion.div
+                  key="district-filter-sheet"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="Division and hazard filters"
+                  initial={{ opacity: 0, y: 24, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 24, scale: 0.98 }}
+                  transition={{ duration: 0.22, ease: 'easeOut' }}
+                  className="w-full sm:max-w-md flex flex-col max-h-[88vh] sm:max-h-[80vh] overflow-hidden bg-white sm:rounded-xl rounded-t-xl shadow-map"
+                >
+                  {/* grab + header */}
+                  <div className="shrink-0 px-5 pt-3 pb-3 border-b border-carbon-20">
+                    <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-carbon-20 sm:hidden" aria-hidden="true" />
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="text-base font-bold tracking-tight text-carbon-90 dark:text-white">
+                          Districts & hazards
+                        </h3>
+                        <p className="text-xs text-carbon-60">Narrow the national situational map</p>
+                      </div>
+                      <button
+                        type="button"
+                        aria-label="Close filters"
+                        onClick={() => setIsFilterModalOpen(false)}
+                        className="tap-target shrink-0 w-11 h-11 grid place-items-center rounded-full bg-carbon-05 text-carbon-50 hover:text-carbon-90 dark:hover:text-white hover:bg-carbon-10 dark:hover:bg-carbon-70 transition-colors"
+                      >
+                        <MaterialIcon name="close" className="w-5 h-5" />
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      aria-label="Close filters"
-                      onClick={() => setIsFilterModalOpen(false)}
-                      className="tap-target shrink-0 w-11 h-11 grid place-items-center rounded-full bg-carbon-05 text-carbon-50 hover:text-carbon-90 dark:hover:text-white hover:bg-carbon-10 dark:hover:bg-carbon-70 transition-colors"
-                    >
-                      <MaterialIcon name="close" className="w-5 h-5" />
-                    </button>
                   </div>
-                </div>
 
-                <div className="flex-1 overflow-y-auto overscroll-contain min-h-0 px-5">
-                  {/* Divisions */}
-                  <div className="py-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-carbon-60">Division</span>
-                      {selectedDivision !== 'All' && (
-                        <button
-                          type="button"
-                          onClick={() => setSelectedDivision('All')}
-                          className="text-xs font-semibold text-ap-link hover:underline"
-                        >
-                          Clear
-                        </button>
-                      )}
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {[{ id: 'all', name: 'All' }, ...ALL_8_DIVISIONS].map((div) => {
-                        const divName = div.id === 'all' ? 'All' : div.name.replace(' Division', '');
-                        const selected = div.id === 'all'
-                          ? selectedDivision === 'All'
-                          : selectedDivision.toLowerCase() === divName.toLowerCase();
-                        return (
+                  <div className="flex-1 overflow-y-auto overscroll-contain min-h-0 px-5">
+                    {/* Divisions */}
+                    <div className="py-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs font-bold uppercase tracking-[0.12em] text-carbon-60">Division</span>
+                        {selectedDivision !== 'All' && (
                           <button
-                            key={div.id}
                             type="button"
-                            aria-pressed={selected}
-                            onClick={() => setSelectedDivision(divName)}
-                            className={`tap-target inline-flex min-h-[36px] items-center rounded-full px-3.5 text-xs font-bold transition-colors ${
-                              selected
-                                ? 'bg-carbon-90 text-ap-on-inverse '
-                                : 'bg-carbon-05 text-carbon-60 hover:bg-carbon-10 dark:hover:bg-carbon-70 hover:text-carbon-90 dark:hover:text-white'
-                            }`}
+                            onClick={() => setSelectedDivision('All')}
+                            className="text-xs font-semibold text-ap-link hover:underline"
                           >
-                            {divName}
+                            Clear
                           </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Hazards */}
-                  <div className="py-4 border-t border-carbon-20">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-carbon-60">
-                        Hazards ({selectedHazards.length}/{HAZARD_LAYERS.length})
-                      </span>
-                      <div className="flex items-center gap-3 text-xs font-semibold">
-                        <button type="button" onClick={selectAllHazards} className="text-ap-link hover:underline">All</button>
-                        <button type="button" onClick={clearAllHazards} className="text-ap-link hover:underline">None</button>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {[{ id: 'all', name: 'All' }, ...ALL_8_DIVISIONS].map((div) => {
+                          const divName = div.id === 'all' ? 'All' : div.name.replace(' Division', '');
+                          const selected =
+                            div.id === 'all'
+                              ? selectedDivision === 'All'
+                              : selectedDivision.toLowerCase() === divName.toLowerCase();
+                          return (
+                            <button
+                              key={div.id}
+                              type="button"
+                              aria-pressed={selected}
+                              onClick={() => setSelectedDivision(divName)}
+                              className={`tap-target inline-flex min-h-[36px] items-center rounded-full px-3.5 text-xs font-bold transition-colors ${
+                                selected
+                                  ? 'bg-carbon-90 text-ap-on-inverse '
+                                  : 'bg-carbon-05 text-carbon-60 hover:bg-carbon-10 dark:hover:bg-carbon-70 hover:text-carbon-90 dark:hover:text-white'
+                              }`}
+                            >
+                              {divName}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      {HAZARD_LAYERS.map((hazard) => {
-                        const selected = selectedHazards.includes(hazard.id);
-                        return (
-                          <button
-                            key={hazard.id}
-                            type="button"
-                            aria-pressed={selected}
-                            onClick={() => toggleHazard(hazard.id)}
-                            className={`tap-target inline-flex min-h-[36px] items-center gap-1.5 rounded-full border px-3.5 text-xs font-bold transition-colors ${
-                              selected
-                                ? 'border-transparent bg-carbon-90 text-ap-on-inverse '
-                                : 'border-carbon-20 text-carbon-60 hover:border-carbon-30 dark:hover:border-carbon-60 hover:text-carbon-90 dark:hover:text-white'
-                            }`}
-                          >
-                            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: hazard.color }} aria-hidden="true" />
-                            {hazard.name}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    <p className="mt-3 text-xs text-carbon-60">
-                      Showing {filteredDistricts.length} of {liveDistricts.length} districts
-                    </p>
-                  </div>
-                </div>
 
-                {/* sticky CTA row */}
-                <div className="shrink-0 flex items-center gap-2 px-5 py-4 border-t border-carbon-20 bg-white">
-                  <button
-                    type="button"
-                    aria-label="Reset division and hazard filters"
-                    onClick={() => { setSelectedDivision('All'); selectAllHazards(); setSearchQuery(''); }}
-                    className="tap-target min-h-[44px] rounded-full px-5 bg-carbon-05 hover:bg-carbon-10 dark:hover:bg-carbon-70 text-carbon-70 font-bold text-xs transition-colors"
-                  >
-                    Reset
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsFilterModalOpen(false)}
-                    className="flex-1 min-h-[44px] rounded-full bg-carbon-90 hover:bg-carbon-80 dark:hover:bg-carbon-10 text-carbon-05 font-black text-xs transition-all"
-                  >
-                    Show {filteredDistricts.length} districts
-                  </button>
-                </div>
-              </motion.div>
-            </div>
-          )}
+                    {/* Hazards */}
+                    <div className="py-4 border-t border-carbon-20">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs font-bold uppercase tracking-[0.12em] text-carbon-60">
+                          Hazards ({selectedHazards.length}/{HAZARD_LAYERS.length})
+                        </span>
+                        <div className="flex items-center gap-3 text-xs font-semibold">
+                          <button type="button" onClick={selectAllHazards} className="text-ap-link hover:underline">
+                            All
+                          </button>
+                          <button type="button" onClick={clearAllHazards} className="text-ap-link hover:underline">
+                            None
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {HAZARD_LAYERS.map((hazard) => {
+                          const selected = selectedHazards.includes(hazard.id);
+                          return (
+                            <button
+                              key={hazard.id}
+                              type="button"
+                              aria-pressed={selected}
+                              onClick={() => toggleHazard(hazard.id)}
+                              className={`tap-target inline-flex min-h-[36px] items-center gap-1.5 rounded-full border px-3.5 text-xs font-bold transition-colors ${
+                                selected
+                                  ? 'border-transparent bg-carbon-90 text-ap-on-inverse '
+                                  : 'border-carbon-20 text-carbon-60 hover:border-carbon-30 dark:hover:border-carbon-60 hover:text-carbon-90 dark:hover:text-white'
+                              }`}
+                            >
+                              <span
+                                className="h-2 w-2 rounded-full"
+                                style={{ backgroundColor: hazard.color }}
+                                aria-hidden="true"
+                              />
+                              {hazard.name}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <p className="mt-3 text-xs text-carbon-60">
+                        Showing {filteredDistricts.length} of {liveDistricts.length} districts
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* sticky CTA row */}
+                  <div className="shrink-0 flex items-center gap-2 px-5 py-4 border-t border-carbon-20 bg-white">
+                    <button
+                      type="button"
+                      aria-label="Reset division and hazard filters"
+                      onClick={() => {
+                        setSelectedDivision('All');
+                        selectAllHazards();
+                        setSearchQuery('');
+                      }}
+                      className="tap-target min-h-[44px] rounded-full px-5 bg-carbon-05 hover:bg-carbon-10 dark:hover:bg-carbon-70 text-carbon-70 font-bold text-xs transition-colors"
+                    >
+                      Reset
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsFilterModalOpen(false)}
+                      className="flex-1 min-h-[44px] rounded-full bg-carbon-90 hover:bg-carbon-80 dark:hover:bg-carbon-10 text-carbon-05 font-black text-xs transition-all"
+                    >
+                      Show {filteredDistricts.length} districts
+                    </button>
+                  </div>
+                </motion.div>
+              </div>
+            )}
           </AnimatePresence>
 
           {/* Layer panel — one floating card, three flat sections: ground,
@@ -1855,649 +1909,684 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               abuse named at osm.wiki/blocked) and a "Doppler radar" toggle that
               drew hard-coded storm cells — data with no artifact behind it. */}
           <AnimatePresence>
-          {isLayerModalOpen && (
-            <div className="fixed inset-0 z-[var(--ap-z-modal)] bg-carbon-black/40 flex items-center justify-center p-4 pointer-events-auto">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.97 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.97 }}
-                transition={{ duration: 0.18 }}
-                className="w-full max-w-sm rounded-xl bg-white border border-carbon-20 p-5 sm:p-6 flex flex-col gap-5 max-h-[85vh] overflow-y-auto"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="map-layers-title"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <h3 id="map-layers-title" className="text-lg font-bold tracking-tight text-carbon-90 dark:text-white">Map layers</h3>
-                  <button
-                    type="button"
-                    onClick={() => setIsLayerModalOpen(false)}
-                    className="tap-target w-11 h-11 rounded-full bg-carbon-10 hover:bg-carbon-20 dark:hover:bg-carbon-70 text-carbon-60 flex items-center justify-center transition-colors"
-                    aria-label="Close map layers"
-                  >
-                    <MaterialIcon name="close" className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {/* Ground: two basemaps, one at a time. */}
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-carbon-60 mb-2.5">
-                    {LIVE_SECTIONS[0].label}
-                  </p>
-                  <div className="flex gap-1 rounded-full bg-carbon-10 p-1" role="radiogroup" aria-label="Basemap">
-                    {LIVE_LAYERS.filter((l) => l.kind === 'basemap').map((def) => {
-                      const isSelected = activeLayer === def.mapLayerKey;
-                      const isDisabled = def.mapLayerKey === 'esriSatellite' && isEsriUnavailable;
-                      return (
-                        <button
-                          key={def.id}
-                          type="button"
-                          role="radio"
-                          aria-checked={isSelected}
-                          disabled={isDisabled}
-                          onClick={() => def.mapLayerKey && setActiveLayer(def.mapLayerKey)}
-                          className={`flex-1 min-h-[44px] rounded-full px-3 text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
-                            isSelected
-                              ? 'bg-carbon-90 text-ap-on-inverse shadow-sm'
-                              : 'text-carbon-60 hover:text-carbon-90 dark:hover:text-white'
-                          }`}
-                          title={isDisabled ? 'Satellite tiles are not answering right now' : def.name}
-                        >
-                          <MaterialIcon name={def.icon} className="w-4 h-4" />
-                          {def.name}
-                        </button>
-                      );
-                    })}
+            {isLayerModalOpen && (
+              <div className="fixed inset-0 z-[var(--ap-z-modal)] bg-carbon-black/40 flex items-center justify-center p-4 pointer-events-auto">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.97 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.97 }}
+                  transition={{ duration: 0.18 }}
+                  className="w-full max-w-sm rounded-xl bg-white border border-carbon-20 p-5 sm:p-6 flex flex-col gap-5 max-h-[85vh] overflow-y-auto"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="map-layers-title"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <h3
+                      id="map-layers-title"
+                      className="text-lg font-bold tracking-tight text-carbon-90 dark:text-white"
+                    >
+                      Map layers
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setIsLayerModalOpen(false)}
+                      className="tap-target w-11 h-11 rounded-full bg-carbon-10 hover:bg-carbon-20 dark:hover:bg-carbon-70 text-carbon-60 flex items-center justify-center transition-colors"
+                      aria-label="Close map layers"
+                    >
+                      <MaterialIcon name="close" className="w-5 h-5" />
+                    </button>
                   </div>
-                </div>
 
-                {/* Overlays: flat rows, icon + name + one On/Off pill each. */}
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-carbon-60 mb-1.5">
-                    {LIVE_SECTIONS[1].label}
-                  </p>
-                  <ul className="flex flex-col" role="group" aria-labelledby="map-layers-title">
-                    {LIVE_LAYERS.filter((l) => l.section === 'overlays').map((def) => {
-                      if (def.id === 'overlay-wind') {
-                        // Wind row (Phase E): model chip with the cycle time,
-                        // issue/valid times in the expansion, honest states only.
-                        const isActive = isWindActive;
-                        const isUnavailable = windStatus === 'unavailable';
-                        const isLoading = windStatus === 'loading';
-                        const chipLabel = !isActive
-                          ? 'Off'
-                          : isLoading
-                            ? 'Loading'
-                            : isUnavailable
-                              ? 'UNAVAILABLE'
-                              : windChipLabel(windFeed);
-                        const chipActive = isActive && !isUnavailable && !isLoading && windFeed.kind === 'live';
+                  {/* Ground: two basemaps, one at a time. */}
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-carbon-60 mb-2.5">
+                      {LIVE_SECTIONS[0].label}
+                    </p>
+                    <div className="flex gap-1 rounded-full bg-carbon-10 p-1" role="radiogroup" aria-label="Basemap">
+                      {LIVE_LAYERS.filter((l) => l.kind === 'basemap').map((def) => {
+                        const isSelected = activeLayer === def.mapLayerKey;
+                        const isDisabled = def.mapLayerKey === 'esriSatellite' && isEsriUnavailable;
                         return (
-                          <li key={def.id} className="py-2.5">
-                            <div className="flex items-center justify-between gap-3 min-h-[52px]">
-                              <span className="flex items-center gap-3">
-                                <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-60 shrink-0" />
-                                <span className="flex flex-col">
-                                  <span className="text-ap-caption font-semibold text-carbon-90">{def.name}</span>
-                                  {def.caption ? (
-                                    <span className="text-xs text-carbon-60">{def.caption}</span>
-                                  ) : null}
-                                </span>
-                              </span>
-                              <span className="flex items-center gap-1.5">
-                                {isActive || isUnavailable ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => setIsWindExpanded(!isWindExpanded)}
-                                    aria-expanded={isWindExpanded}
-                                    aria-label={isWindExpanded ? 'Hide wind details' : 'Show wind details'}
-                                    className="tap-target w-11 h-11 rounded-full text-carbon-60 hover:bg-carbon-10 dark:hover:bg-carbon-80 flex items-center justify-center transition-colors"
-                                  >
-                                    <MaterialIcon name={isWindExpanded ? 'expand_less' : 'expand_more'} className="w-5 h-5" />
-                                  </button>
-                                ) : null}
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setIsWindActive(!isActive);
-                                    if (isActive) setIsWindExpanded(false);
-                                  }}
-                                  aria-pressed={isActive}
-                                  title={
-                                    isUnavailable
-                                      ? 'The wind pipeline has no artifact to show right now.'
-                                      : isActive
-                                        ? 'Turn the wind field off'
-                                        : 'Animate the latest modelled wind field'
-                                  }
-                                  className={`min-h-[40px] px-4 rounded-full text-xs font-bold uppercase tracking-wide transition-colors ${
-                                    chipActive
-                                      ? 'bg-carbon-90 text-ap-on-inverse '
-                                      : 'bg-carbon-10 text-carbon-50 '
-                                  }`}
-                                >
-                                  {chipLabel}
-                                </button>
-                              </span>
-                            </div>
-
-                            {isUnavailable ? (
-                              <p className="text-xs leading-[1.62] text-carbon-60 pl-8 pt-1">
-                                No wind field is available right now. The pipeline publishes a new one every six hours
-                                from GFS, falling back to ECMWF open data; if this message stays, the latest run could
-                                not reach either model.
-                              </p>
-                            ) : null}
-
-                            {isActive && isWindExpanded && windStatus === 'ready' && windArtifact ? (
-                              <div className="mt-2 pl-8 flex flex-col gap-2">
-                                <p className="text-sm font-semibold text-carbon-90 dark:text-white">
-                                  {windArtifact.model_name}
-                                </p>
-                                <p className="text-xs leading-[1.62] text-carbon-60">
-                                  {windArtifact.kind === 'forecast'
-                                    ? `${windArtifact.step_hours}-hour forecast.`
-                                    : 'Analysis (zero-hour) field.'}{' '}
-                                  Issued {windArtifact.issue_time.slice(11, 16)} UTC · valid{' '}
-                                  {windArtifact.valid_time.slice(11, 16)} UTC
-                                  {windFeed.kind === 'stale' ? ' · older than the six-hourly schedule; last good field kept' : ''}.
-                                </p>
-                                <p className="text-xs leading-[1.62] text-carbon-60">
-                                  What this is: air flowing through one model field over Bangladesh and the Bay of Bengal,
-                                  resampled to 1 degree. What it is not: an observation, or a movie of the forecast
-                                  advancing. The animation does not advance forecast time.
-                                </p>
-                              </div>
-                            ) : null}
-
-                            {isActive && isWindExpanded && isLoading ? (
-                              <p className="text-xs leading-[1.62] text-carbon-60 pl-8 pt-2">
-                                Fetching the latest wind artifact.
-                              </p>
-                            ) : null}
-                          </li>
+                          <button
+                            key={def.id}
+                            type="button"
+                            role="radio"
+                            aria-checked={isSelected}
+                            disabled={isDisabled}
+                            onClick={() => def.mapLayerKey && setActiveLayer(def.mapLayerKey)}
+                            className={`flex-1 min-h-[44px] rounded-full px-3 text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                              isSelected
+                                ? 'bg-carbon-90 text-ap-on-inverse shadow-sm'
+                                : 'text-carbon-60 hover:text-carbon-90 dark:hover:text-white'
+                            }`}
+                            title={isDisabled ? 'Satellite tiles are not answering right now' : def.name}
+                          >
+                            <MaterialIcon name={def.icon} className="w-4 h-4" />
+                            {def.name}
+                          </button>
                         );
-                      }
+                      })}
+                    </div>
+                  </div>
 
-                      if (def.id === 'overlay-rain') {
-                        // GPM IMERG rain-rate row (Phase D): amber NRT chip,
-                        // six-frame replay, mm/h legend, honest unavailable state.
-                        const isActive = isRainActive;
-                        const isUnavailable = rainStatus === 'unavailable';
-                        const chipLabel = !isActive
-                          ? 'Off'
-                          : isUnavailable
-                            ? mapFreshnessLabel({ kind: 'unavailable' })
-                            : mapFreshnessLabel({ kind: 'nrt', lag: def.freshness?.cadence ?? '30 min' });
-                        const chipAmber = isActive && !isUnavailable;
-                        const latestRainIso = rainFrames[rainFrameIndex] ?? null;
-                        const nowUtcLabel = `${new Date().toISOString().slice(11, 16)} UTC`;
-                        return (
-                          <li key={def.id} className="py-2.5">
-                            <div className="flex items-center justify-between gap-3 min-h-[52px]">
-                              <span className="flex items-center gap-3">
-                                <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-60 shrink-0" />
-                                <span className="flex flex-col">
-                                  <span className="text-ap-caption font-semibold text-carbon-90">{def.name}</span>
-                                  {def.caption ? (
-                                    <span className="text-xs text-carbon-60">{def.caption}</span>
-                                  ) : null}
-                                </span>
-                              </span>
-                              <span className="flex items-center gap-1.5">
-                                {isActive || isUnavailable ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => setIsRainExpanded(!isRainExpanded)}
-                                    aria-expanded={isRainExpanded}
-                                    aria-label={isRainExpanded ? 'Hide rain controls' : 'Show rain controls'}
-                                    className="tap-target w-11 h-11 rounded-full text-carbon-60 hover:bg-carbon-10 dark:hover:bg-carbon-80 flex items-center justify-center transition-colors"
-                                  >
-                                    <MaterialIcon name={isRainExpanded ? 'expand_less' : 'expand_more'} className="w-5 h-5" />
-                                  </button>
-                                ) : null}
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setIsRainActive(!isActive);
-                                    if (isActive) setIsRainExpanded(false);
-                                  }}
-                                  aria-pressed={isActive}
-                                  title={
-                                    isUnavailable
-                                      ? 'GIBS is not answering right now. See the NASA Earthdata status page.'
-                                      : isActive
-                                        ? 'Turn the rain-rate overlay off'
-                                        : 'Show the newest IMERG rain-rate frames'
-                                  }
-                                  className={`min-h-[40px] px-4 rounded-full text-xs font-bold uppercase tracking-wide transition-colors ${
-                                    chipAmber
-                                      ? 'bg-amber-100 text-amber-900 border border-amber-200'
-                                      : 'bg-carbon-10 text-carbon-50 '
-                                  }`}
-                                >
-                                  {chipLabel}
-                                </button>
-                              </span>
-                            </div>
-
-                            {isUnavailable ? (
-                              <p className="text-xs leading-[1.62] text-carbon-60 pl-8 pt-1">
-                                Rain-rate tiles are not answering right now. Try again shortly, or check{' '}
-                                <a
-                                  href={GIBS_STATUS_URL}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="underline underline-offset-2 text-carbon-90"
-                                >
-                                  NASA Earthdata status
-                                </a>
-                                . The district forecast card still carries the precipitation outlook in the meantime.
-                              </p>
-                            ) : null}
-
-                            {isActive && isRainExpanded && rainStatus === 'ready' && rainFrames.length > 0 && latestRainIso ? (
-                              <div className="mt-2 pl-8 flex flex-col gap-3">
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => setIsRainPlaying(!isRainPlaying)}
-                                    disabled={rainFrames.length < 2}
-                                    aria-label={isRainPlaying ? 'Pause the rain replay' : 'Play the rain replay'}
-                                    className="tap-target w-11 h-11 rounded-full bg-carbon-90 text-carbon-05 flex items-center justify-center disabled:opacity-40 transition-colors"
-                                  >
-                                    <MaterialIcon name={isRainPlaying ? 'pause' : 'play_arrow'} className="w-5 h-5" />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => setRainFrameIndex(Math.max(0, rainFrameIndex - 1))}
-                                    disabled={rainFrameIndex <= 0}
-                                    aria-label="One frame newer"
-                                    className="tap-target w-11 h-11 rounded-full bg-carbon-10 text-carbon-70 flex items-center justify-center disabled:opacity-40 transition-colors"
-                                  >
-                                    <MaterialIcon name="chevron_left" className="w-5 h-5" />
-                                  </button>
-                                  <span className="flex flex-col items-center min-w-[120px]">
-                                    <span className="text-sm font-bold text-carbon-90 dark:text-white tabular-nums">
-                                      {gibsTimeLabel(latestRainIso)}
-                                    </span>
-                                    <span className="text-xs text-carbon-60">
-                                      {rainFrameIndex === 0
-                                        ? 'Latest frame'
-                                        : `${rainFrameIndex * 30} min earlier`}
-                                    </span>
+                  {/* Overlays: flat rows, icon + name + one On/Off pill each. */}
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-carbon-60 mb-1.5">
+                      {LIVE_SECTIONS[1].label}
+                    </p>
+                    <ul className="flex flex-col" role="group" aria-labelledby="map-layers-title">
+                      {LIVE_LAYERS.filter((l) => l.section === 'overlays').map((def) => {
+                        if (def.id === 'overlay-wind') {
+                          // Wind row (Phase E): model chip with the cycle time,
+                          // issue/valid times in the expansion, honest states only.
+                          const isActive = isWindActive;
+                          const isUnavailable = windStatus === 'unavailable';
+                          const isLoading = windStatus === 'loading';
+                          const chipLabel = !isActive
+                            ? 'Off'
+                            : isLoading
+                              ? 'Loading'
+                              : isUnavailable
+                                ? 'UNAVAILABLE'
+                                : windChipLabel(windFeed);
+                          const chipActive = isActive && !isUnavailable && !isLoading && windFeed.kind === 'live';
+                          return (
+                            <li key={def.id} className="py-2.5">
+                              <div className="flex items-center justify-between gap-3 min-h-[52px]">
+                                <span className="flex items-center gap-3">
+                                  <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-60 shrink-0" />
+                                  <span className="flex flex-col">
+                                    <span className="text-ap-caption font-semibold text-carbon-90">{def.name}</span>
+                                    {def.caption ? <span className="text-xs text-carbon-60">{def.caption}</span> : null}
                                   </span>
+                                </span>
+                                <span className="flex items-center gap-1.5">
+                                  {isActive || isUnavailable ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => setIsWindExpanded(!isWindExpanded)}
+                                      aria-expanded={isWindExpanded}
+                                      aria-label={isWindExpanded ? 'Hide wind details' : 'Show wind details'}
+                                      className="tap-target w-11 h-11 rounded-full text-carbon-60 hover:bg-carbon-10 dark:hover:bg-carbon-80 flex items-center justify-center transition-colors"
+                                    >
+                                      <MaterialIcon
+                                        name={isWindExpanded ? 'expand_less' : 'expand_more'}
+                                        className="w-5 h-5"
+                                      />
+                                    </button>
+                                  ) : null}
                                   <button
                                     type="button"
-                                    onClick={() => setRainFrameIndex(Math.min(rainFrames.length - 1, rainFrameIndex + 1))}
-                                    disabled={rainFrameIndex >= rainFrames.length - 1}
-                                    aria-label="One frame older"
-                                    className="tap-target w-11 h-11 rounded-full bg-carbon-10 text-carbon-70 flex items-center justify-center disabled:opacity-40 transition-colors"
-                                  >
-                                    <MaterialIcon name="chevron_right" className="w-5 h-5" />
-                                  </button>
-                                </div>
-                                <p className="text-xs text-carbon-60">
-                                  Observed {gibsTimeLabel(latestRainIso)} · now {nowUtcLabel}
-                                </p>
-
-                                <div className="flex flex-col gap-1">
-                                  <div
-                                    className="h-2.5 rounded-full"
-                                    style={{
-                                      background: `linear-gradient(to right, ${MAP_RAIN_RAMP.trace} 0%, ${MAP_RAIN_RAMP.light} 20%, ${MAP_RAIN_RAMP.moderate} 40%, ${MAP_RAIN_RAMP.heavy} 60%, ${MAP_RAIN_RAMP.intense} 80%, ${MAP_RAIN_RAMP.extreme} 100%)`,
+                                    onClick={() => {
+                                      setIsWindActive(!isActive);
+                                      if (isActive) setIsWindExpanded(false);
                                     }}
-                                    role="img"
-                                    aria-label="Rain-rate colour ramp from trace to extreme, in millimetres per hour"
-                                  />
-                                  <div className="flex justify-between text-xs text-carbon-60 tabular-nums">
-                                    <span>0.1</span>
-                                    <span>0.5</span>
-                                    <span>1</span>
-                                    <span>2</span>
-                                    <span>4</span>
-                                    <span>10+ mm/h</span>
-                                  </div>
-                                  <p className="flex items-center gap-1.5 text-xs text-carbon-60">
-                                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: MAP_RAIN_RAMP.snowLight }} />
-                                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: MAP_RAIN_RAMP.snowModerate }} />
-                                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: MAP_RAIN_RAMP.snowHeavy }} />
-                                    Cyan to purple is snowfall, shown as liquid-water equivalent.
+                                    aria-pressed={isActive}
+                                    title={
+                                      isUnavailable
+                                        ? 'The wind pipeline has no artifact to show right now.'
+                                        : isActive
+                                          ? 'Turn the wind field off'
+                                          : 'Animate the latest modelled wind field'
+                                    }
+                                    className={`min-h-[40px] px-4 rounded-full text-xs font-bold uppercase tracking-wide transition-colors ${
+                                      chipActive ? 'bg-carbon-90 text-ap-on-inverse ' : 'bg-carbon-10 text-carbon-50 '
+                                    }`}
+                                  >
+                                    {chipLabel}
+                                  </button>
+                                </span>
+                              </div>
+
+                              {isUnavailable ? (
+                                <p className="text-xs leading-[1.62] text-carbon-60 pl-8 pt-1">
+                                  No wind field is available right now. The pipeline publishes a new one every six hours
+                                  from GFS, falling back to ECMWF open data; if this message stays, the latest run could
+                                  not reach either model.
+                                </p>
+                              ) : null}
+
+                              {isActive && isWindExpanded && windStatus === 'ready' && windArtifact ? (
+                                <div className="mt-2 pl-8 flex flex-col gap-2">
+                                  <p className="text-sm font-semibold text-carbon-90 dark:text-white">
+                                    {windArtifact.model_name}
+                                  </p>
+                                  <p className="text-xs leading-[1.62] text-carbon-60">
+                                    {windArtifact.kind === 'forecast'
+                                      ? `${windArtifact.step_hours}-hour forecast.`
+                                      : 'Analysis (zero-hour) field.'}{' '}
+                                    Issued {windArtifact.issue_time.slice(11, 16)} UTC · valid{' '}
+                                    {windArtifact.valid_time.slice(11, 16)} UTC
+                                    {windFeed.kind === 'stale'
+                                      ? ' · older than the six-hourly schedule; last good field kept'
+                                      : ''}
+                                    .
+                                  </p>
+                                  <p className="text-xs leading-[1.62] text-carbon-60">
+                                    What this is: air flowing through one model field over Bangladesh and the Bay of
+                                    Bengal, resampled to 1 degree. What it is not: an observation, or a movie of the
+                                    forecast advancing. The animation does not advance forecast time.
                                   </p>
                                 </div>
-
-                                <p className="text-xs leading-[1.62] text-carbon-60">
-                                  Rainfall rate in millimetres per hour: the depth that would accumulate in an hour if this
-                                  rate persisted. Near-real-time multi-satellite estimate at about 10 km resolution with
-                                  roughly a four-hour lag, not gauge data. Colour boundaries are approximate; the tiles are
-                                  rendered by NASA GIBS.
-                                </p>
-                              </div>
-                            ) : null}
-
-                            {isActive && isRainExpanded && rainStatus === 'loading' ? (
-                              <p className="text-xs leading-[1.62] text-carbon-60 pl-8 pt-2">
-                                Finding the newest rain frames.
-                              </p>
-                            ) : null}
-                          </li>
-                        );
-                      }
-
-                      if (def.id === 'overlay-truecolor') {
-                        // True-colour satellite row (Phase C): freshness chip,
-                        // expandable date + opacity controls, honest states only.
-                        const isActive = isTrueColorActive;
-                        const isUnavailable = trueColorStatus === 'unavailable';
-                        const chipLabel = !isActive
-                          ? 'Off'
-                          : isUnavailable
-                            ? mapFreshnessLabel({ kind: 'unavailable' })
-                            : trueColorOffset > 0 && trueColorDateIso
-                              ? trueColorDateIso
-                              : mapFreshnessLabel({ kind: 'nrt', lag: def.freshness?.cadence ?? '4 h' });
-                        const chipAmber = isActive && !isUnavailable && trueColorOffset === 0;
-                        return (
-                          <li key={def.id} className="py-2.5">
-                            <div className="flex items-center justify-between gap-3 min-h-[52px]">
-                              <span className="flex items-center gap-3">
-                                <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-60 shrink-0" />
-                                <span className="flex flex-col">
-                                  <span className="text-ap-caption font-semibold text-carbon-90">{def.name}</span>
-                                  {def.caption ? (
-                                    <span className="text-xs text-carbon-60">{def.caption}</span>
-                                  ) : null}
-                                </span>
-                              </span>
-                              <span className="flex items-center gap-1.5">
-                                {isActive || isUnavailable ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => setIsTrueColorExpanded(!isTrueColorExpanded)}
-                                    aria-expanded={isTrueColorExpanded}
-                                    aria-label={isTrueColorExpanded ? 'Hide satellite controls' : 'Show satellite controls'}
-                                    className="tap-target w-11 h-11 rounded-full text-carbon-60 hover:bg-carbon-10 dark:hover:bg-carbon-80 flex items-center justify-center transition-colors"
-                                  >
-                                    <MaterialIcon name={isTrueColorExpanded ? 'expand_less' : 'expand_more'} className="w-5 h-5" />
-                                  </button>
-                                ) : null}
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setIsTrueColorActive(!isActive);
-                                    if (isActive) setIsTrueColorExpanded(false);
-                                  }}
-                                  aria-pressed={isActive}
-                                  title={
-                                    isUnavailable
-                                      ? 'GIBS is not answering right now. See the NASA Earthdata status page.'
-                                      : isActive
-                                        ? 'Turn true-colour satellite imagery off'
-                                        : 'Show the newest available true-colour satellite imagery'
-                                  }
-                                  className={`min-h-[40px] px-4 rounded-full text-xs font-bold uppercase tracking-wide transition-colors ${
-                                    chipAmber
-                                      ? 'bg-amber-100 text-amber-900 border border-amber-200'
-                                      : isActive && !isUnavailable
-                                        ? 'bg-carbon-90 text-ap-on-inverse '
-                                        : 'bg-carbon-10 text-carbon-50 '
-                                  }`}
-                                >
-                                  {chipLabel}
-                                </button>
-                              </span>
-                            </div>
-
-                            {isUnavailable ? (
-                              <p className="text-xs leading-[1.62] text-carbon-60 pl-8 pt-1">
-                                Satellite imagery is not answering right now. Try again in a few minutes, or check{' '}
-                                <a
-                                  href={GIBS_STATUS_URL}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="underline underline-offset-2 text-carbon-90"
-                                >
-                                  NASA Earthdata status
-                                </a>
-                                .
-                              </p>
-                            ) : null}
-
-                            {isActive && isTrueColorExpanded && trueColorStatus === 'ready' && trueColorPlan && trueColorDateIso ? (
-                              <div className="mt-2 pl-8 flex flex-col gap-3">
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => setTrueColorOffset(Math.min(2, trueColorOffset + 1))}
-                                    disabled={trueColorOffset >= 2}
-                                    aria-label="One day earlier"
-                                    className="tap-target w-11 h-11 rounded-full bg-carbon-10 text-carbon-70 flex items-center justify-center disabled:opacity-40 transition-colors"
-                                  >
-                                    <MaterialIcon name="chevron_left" className="w-5 h-5" />
-                                  </button>
-                                  <span className="flex flex-col items-center min-w-[132px]">
-                                    <span className="text-sm font-bold text-carbon-90 dark:text-white tabular-nums">{trueColorDateIso}</span>
-                                    <span className="text-xs text-carbon-60">
-                                      {trueColorOffset === 0 ? 'Newest available' : `${trueColorOffset} ${trueColorOffset === 1 ? 'day' : 'days'} earlier`}
-                                    </span>
-                                  </span>
-                                  <button
-                                    type="button"
-                                    onClick={() => setTrueColorOffset(Math.max(0, trueColorOffset - 1))}
-                                    disabled={trueColorOffset <= 0}
-                                    aria-label="One day newer"
-                                    className="tap-target w-11 h-11 rounded-full bg-carbon-10 text-carbon-70 flex items-center justify-center disabled:opacity-40 transition-colors"
-                                  >
-                                    <MaterialIcon name="chevron_right" className="w-5 h-5" />
-                                  </button>
-                                </div>
-                                <label className="flex flex-col gap-1.5">
-                                  <span className="flex items-center justify-between text-xs text-carbon-60">
-                                    <span>Imagery opacity</span>
-                                    <span className="font-semibold tabular-nums">{trueColorOpacity}%</span>
-                                  </span>
-                                  <input
-                                    type="range"
-                                    min={0}
-                                    max={100}
-                                    step={5}
-                                    value={trueColorOpacity}
-                                    onChange={(e) => setTrueColorOpacity(Number(e.target.value))}
-                                    aria-label="Imagery opacity"
-                                    className="w-full accent-carbon-90 dark:accent-white min-h-[44px]"
-                                  />
-                                </label>
-                                <p className="text-xs leading-[1.62] text-carbon-60">
-                                  {trueColorPlan.source.name} · {trueColorPlan.source.resolution} · usually available{' '}
-                                  {trueColorPlan.source.typicalLag} after the satellite pass.
-                                  {trueColorPlan.degraded
-                                    ? ' MODIS Terra is not answering right now, so this shows VIIRS SNPP instead.'
-                                    : ''}
-                                </p>
-                                <p className="text-xs leading-[1.62] text-carbon-60">
-                                  What this is: a true-colour photograph of Bangladesh from space on the date above. What it
-                                  is not: a live feed. Imagery arrives a few hours after acquisition and clouds can hide the
-                                  ground.
-                                </p>
-                              </div>
-                            ) : null}
-
-                            {isActive && isTrueColorExpanded && trueColorStatus === 'loading' ? (
-                              <p className="text-xs leading-[1.62] text-carbon-60 pl-8 pt-2">
-                                Finding the newest available imagery.
-                              </p>
-                            ) : null}
-                          </li>
-                        );
-                      }
-
-                      const toggle = overlayToggles[def.id];
-                      return (
-                        <li key={def.id} className="flex items-center justify-between gap-3 py-2.5 min-h-[52px]">
-                          <span className="flex items-center gap-3">
-                            <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-60 shrink-0" />
-                            <span className="flex flex-col">
-                              <span className="text-ap-caption font-semibold text-carbon-90">{def.name}</span>
-                              {def.caption ? (
-                                <span className="text-xs text-carbon-60">{def.caption}</span>
                               ) : null}
+
+                              {isActive && isWindExpanded && isLoading ? (
+                                <p className="text-xs leading-[1.62] text-carbon-60 pl-8 pt-2">
+                                  Fetching the latest wind artifact.
+                                </p>
+                              ) : null}
+                            </li>
+                          );
+                        }
+
+                        if (def.id === 'overlay-rain') {
+                          // GPM IMERG rain-rate row (Phase D): amber NRT chip,
+                          // six-frame replay, mm/h legend, honest unavailable state.
+                          const isActive = isRainActive;
+                          const isUnavailable = rainStatus === 'unavailable';
+                          const chipLabel = !isActive
+                            ? 'Off'
+                            : isUnavailable
+                              ? mapFreshnessLabel({ kind: 'unavailable' })
+                              : mapFreshnessLabel({ kind: 'nrt', lag: def.freshness?.cadence ?? '30 min' });
+                          const chipAmber = isActive && !isUnavailable;
+                          const latestRainIso = rainFrames[rainFrameIndex] ?? null;
+                          const nowUtcLabel = `${new Date().toISOString().slice(11, 16)} UTC`;
+                          return (
+                            <li key={def.id} className="py-2.5">
+                              <div className="flex items-center justify-between gap-3 min-h-[52px]">
+                                <span className="flex items-center gap-3">
+                                  <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-60 shrink-0" />
+                                  <span className="flex flex-col">
+                                    <span className="text-ap-caption font-semibold text-carbon-90">{def.name}</span>
+                                    {def.caption ? <span className="text-xs text-carbon-60">{def.caption}</span> : null}
+                                  </span>
+                                </span>
+                                <span className="flex items-center gap-1.5">
+                                  {isActive || isUnavailable ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => setIsRainExpanded(!isRainExpanded)}
+                                      aria-expanded={isRainExpanded}
+                                      aria-label={isRainExpanded ? 'Hide rain controls' : 'Show rain controls'}
+                                      className="tap-target w-11 h-11 rounded-full text-carbon-60 hover:bg-carbon-10 dark:hover:bg-carbon-80 flex items-center justify-center transition-colors"
+                                    >
+                                      <MaterialIcon
+                                        name={isRainExpanded ? 'expand_less' : 'expand_more'}
+                                        className="w-5 h-5"
+                                      />
+                                    </button>
+                                  ) : null}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setIsRainActive(!isActive);
+                                      if (isActive) setIsRainExpanded(false);
+                                    }}
+                                    aria-pressed={isActive}
+                                    title={
+                                      isUnavailable
+                                        ? 'GIBS is not answering right now. See the NASA Earthdata status page.'
+                                        : isActive
+                                          ? 'Turn the rain-rate overlay off'
+                                          : 'Show the newest IMERG rain-rate frames'
+                                    }
+                                    className={`min-h-[40px] px-4 rounded-full text-xs font-bold uppercase tracking-wide transition-colors ${
+                                      chipAmber
+                                        ? 'bg-amber-100 text-amber-900 border border-amber-200'
+                                        : 'bg-carbon-10 text-carbon-50 '
+                                    }`}
+                                  >
+                                    {chipLabel}
+                                  </button>
+                                </span>
+                              </div>
+
+                              {isUnavailable ? (
+                                <p className="text-xs leading-[1.62] text-carbon-60 pl-8 pt-1">
+                                  Rain-rate tiles are not answering right now. Try again shortly, or check{' '}
+                                  <a
+                                    href={GIBS_STATUS_URL}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="underline underline-offset-2 text-carbon-90"
+                                  >
+                                    NASA Earthdata status
+                                  </a>
+                                  . The district forecast card still carries the precipitation outlook in the meantime.
+                                </p>
+                              ) : null}
+
+                              {isActive &&
+                              isRainExpanded &&
+                              rainStatus === 'ready' &&
+                              rainFrames.length > 0 &&
+                              latestRainIso ? (
+                                <div className="mt-2 pl-8 flex flex-col gap-3">
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => setIsRainPlaying(!isRainPlaying)}
+                                      disabled={rainFrames.length < 2}
+                                      aria-label={isRainPlaying ? 'Pause the rain replay' : 'Play the rain replay'}
+                                      className="tap-target w-11 h-11 rounded-full bg-carbon-90 text-carbon-05 flex items-center justify-center disabled:opacity-40 transition-colors"
+                                    >
+                                      <MaterialIcon name={isRainPlaying ? 'pause' : 'play_arrow'} className="w-5 h-5" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setRainFrameIndex(Math.max(0, rainFrameIndex - 1))}
+                                      disabled={rainFrameIndex <= 0}
+                                      aria-label="One frame newer"
+                                      className="tap-target w-11 h-11 rounded-full bg-carbon-10 text-carbon-70 flex items-center justify-center disabled:opacity-40 transition-colors"
+                                    >
+                                      <MaterialIcon name="chevron_left" className="w-5 h-5" />
+                                    </button>
+                                    <span className="flex flex-col items-center min-w-[120px]">
+                                      <span className="text-sm font-bold text-carbon-90 dark:text-white tabular-nums">
+                                        {gibsTimeLabel(latestRainIso)}
+                                      </span>
+                                      <span className="text-xs text-carbon-60">
+                                        {rainFrameIndex === 0 ? 'Latest frame' : `${rainFrameIndex * 30} min earlier`}
+                                      </span>
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setRainFrameIndex(Math.min(rainFrames.length - 1, rainFrameIndex + 1))
+                                      }
+                                      disabled={rainFrameIndex >= rainFrames.length - 1}
+                                      aria-label="One frame older"
+                                      className="tap-target w-11 h-11 rounded-full bg-carbon-10 text-carbon-70 flex items-center justify-center disabled:opacity-40 transition-colors"
+                                    >
+                                      <MaterialIcon name="chevron_right" className="w-5 h-5" />
+                                    </button>
+                                  </div>
+                                  <p className="text-xs text-carbon-60">
+                                    Observed {gibsTimeLabel(latestRainIso)} · now {nowUtcLabel}
+                                  </p>
+
+                                  <div className="flex flex-col gap-1">
+                                    <div
+                                      className="h-2.5 rounded-full"
+                                      style={{
+                                        background: `linear-gradient(to right, ${MAP_RAIN_RAMP.trace} 0%, ${MAP_RAIN_RAMP.light} 20%, ${MAP_RAIN_RAMP.moderate} 40%, ${MAP_RAIN_RAMP.heavy} 60%, ${MAP_RAIN_RAMP.intense} 80%, ${MAP_RAIN_RAMP.extreme} 100%)`,
+                                      }}
+                                      role="img"
+                                      aria-label="Rain-rate colour ramp from trace to extreme, in millimetres per hour"
+                                    />
+                                    <div className="flex justify-between text-xs text-carbon-60 tabular-nums">
+                                      <span>0.1</span>
+                                      <span>0.5</span>
+                                      <span>1</span>
+                                      <span>2</span>
+                                      <span>4</span>
+                                      <span>10+ mm/h</span>
+                                    </div>
+                                    <p className="flex items-center gap-1.5 text-xs text-carbon-60">
+                                      <span
+                                        className="w-2.5 h-2.5 rounded-full"
+                                        style={{ backgroundColor: MAP_RAIN_RAMP.snowLight }}
+                                      />
+                                      <span
+                                        className="w-2.5 h-2.5 rounded-full"
+                                        style={{ backgroundColor: MAP_RAIN_RAMP.snowModerate }}
+                                      />
+                                      <span
+                                        className="w-2.5 h-2.5 rounded-full"
+                                        style={{ backgroundColor: MAP_RAIN_RAMP.snowHeavy }}
+                                      />
+                                      Cyan to purple is snowfall, shown as liquid-water equivalent.
+                                    </p>
+                                  </div>
+
+                                  <p className="text-xs leading-[1.62] text-carbon-60">
+                                    Rainfall rate in millimetres per hour: the depth that would accumulate in an hour if
+                                    this rate persisted. Near-real-time multi-satellite estimate at about 10 km
+                                    resolution with roughly a four-hour lag, not gauge data. Colour boundaries are
+                                    approximate; the tiles are rendered by NASA GIBS.
+                                  </p>
+                                </div>
+                              ) : null}
+
+                              {isActive && isRainExpanded && rainStatus === 'loading' ? (
+                                <p className="text-xs leading-[1.62] text-carbon-60 pl-8 pt-2">
+                                  Finding the newest rain frames.
+                                </p>
+                              ) : null}
+                            </li>
+                          );
+                        }
+
+                        if (def.id === 'overlay-truecolor') {
+                          // True-colour satellite row (Phase C): freshness chip,
+                          // expandable date + opacity controls, honest states only.
+                          const isActive = isTrueColorActive;
+                          const isUnavailable = trueColorStatus === 'unavailable';
+                          const chipLabel = !isActive
+                            ? 'Off'
+                            : isUnavailable
+                              ? mapFreshnessLabel({ kind: 'unavailable' })
+                              : trueColorOffset > 0 && trueColorDateIso
+                                ? trueColorDateIso
+                                : mapFreshnessLabel({ kind: 'nrt', lag: def.freshness?.cadence ?? '4 h' });
+                          const chipAmber = isActive && !isUnavailable && trueColorOffset === 0;
+                          return (
+                            <li key={def.id} className="py-2.5">
+                              <div className="flex items-center justify-between gap-3 min-h-[52px]">
+                                <span className="flex items-center gap-3">
+                                  <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-60 shrink-0" />
+                                  <span className="flex flex-col">
+                                    <span className="text-ap-caption font-semibold text-carbon-90">{def.name}</span>
+                                    {def.caption ? <span className="text-xs text-carbon-60">{def.caption}</span> : null}
+                                  </span>
+                                </span>
+                                <span className="flex items-center gap-1.5">
+                                  {isActive || isUnavailable ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => setIsTrueColorExpanded(!isTrueColorExpanded)}
+                                      aria-expanded={isTrueColorExpanded}
+                                      aria-label={
+                                        isTrueColorExpanded ? 'Hide satellite controls' : 'Show satellite controls'
+                                      }
+                                      className="tap-target w-11 h-11 rounded-full text-carbon-60 hover:bg-carbon-10 dark:hover:bg-carbon-80 flex items-center justify-center transition-colors"
+                                    >
+                                      <MaterialIcon
+                                        name={isTrueColorExpanded ? 'expand_less' : 'expand_more'}
+                                        className="w-5 h-5"
+                                      />
+                                    </button>
+                                  ) : null}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setIsTrueColorActive(!isActive);
+                                      if (isActive) setIsTrueColorExpanded(false);
+                                    }}
+                                    aria-pressed={isActive}
+                                    title={
+                                      isUnavailable
+                                        ? 'GIBS is not answering right now. See the NASA Earthdata status page.'
+                                        : isActive
+                                          ? 'Turn true-colour satellite imagery off'
+                                          : 'Show the newest available true-colour satellite imagery'
+                                    }
+                                    className={`min-h-[40px] px-4 rounded-full text-xs font-bold uppercase tracking-wide transition-colors ${
+                                      chipAmber
+                                        ? 'bg-amber-100 text-amber-900 border border-amber-200'
+                                        : isActive && !isUnavailable
+                                          ? 'bg-carbon-90 text-ap-on-inverse '
+                                          : 'bg-carbon-10 text-carbon-50 '
+                                    }`}
+                                  >
+                                    {chipLabel}
+                                  </button>
+                                </span>
+                              </div>
+
+                              {isUnavailable ? (
+                                <p className="text-xs leading-[1.62] text-carbon-60 pl-8 pt-1">
+                                  Satellite imagery is not answering right now. Try again in a few minutes, or check{' '}
+                                  <a
+                                    href={GIBS_STATUS_URL}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="underline underline-offset-2 text-carbon-90"
+                                  >
+                                    NASA Earthdata status
+                                  </a>
+                                  .
+                                </p>
+                              ) : null}
+
+                              {isActive &&
+                              isTrueColorExpanded &&
+                              trueColorStatus === 'ready' &&
+                              trueColorPlan &&
+                              trueColorDateIso ? (
+                                <div className="mt-2 pl-8 flex flex-col gap-3">
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => setTrueColorOffset(Math.min(2, trueColorOffset + 1))}
+                                      disabled={trueColorOffset >= 2}
+                                      aria-label="One day earlier"
+                                      className="tap-target w-11 h-11 rounded-full bg-carbon-10 text-carbon-70 flex items-center justify-center disabled:opacity-40 transition-colors"
+                                    >
+                                      <MaterialIcon name="chevron_left" className="w-5 h-5" />
+                                    </button>
+                                    <span className="flex flex-col items-center min-w-[132px]">
+                                      <span className="text-sm font-bold text-carbon-90 dark:text-white tabular-nums">
+                                        {trueColorDateIso}
+                                      </span>
+                                      <span className="text-xs text-carbon-60">
+                                        {trueColorOffset === 0
+                                          ? 'Newest available'
+                                          : `${trueColorOffset} ${trueColorOffset === 1 ? 'day' : 'days'} earlier`}
+                                      </span>
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => setTrueColorOffset(Math.max(0, trueColorOffset - 1))}
+                                      disabled={trueColorOffset <= 0}
+                                      aria-label="One day newer"
+                                      className="tap-target w-11 h-11 rounded-full bg-carbon-10 text-carbon-70 flex items-center justify-center disabled:opacity-40 transition-colors"
+                                    >
+                                      <MaterialIcon name="chevron_right" className="w-5 h-5" />
+                                    </button>
+                                  </div>
+                                  <label className="flex flex-col gap-1.5">
+                                    <span className="flex items-center justify-between text-xs text-carbon-60">
+                                      <span>Imagery opacity</span>
+                                      <span className="font-semibold tabular-nums">{trueColorOpacity}%</span>
+                                    </span>
+                                    <input
+                                      type="range"
+                                      min={0}
+                                      max={100}
+                                      step={5}
+                                      value={trueColorOpacity}
+                                      onChange={(e) => setTrueColorOpacity(Number(e.target.value))}
+                                      aria-label="Imagery opacity"
+                                      className="w-full accent-carbon-90 dark:accent-white min-h-[44px]"
+                                    />
+                                  </label>
+                                  <p className="text-xs leading-[1.62] text-carbon-60">
+                                    {trueColorPlan.source.name} · {trueColorPlan.source.resolution} · usually available{' '}
+                                    {trueColorPlan.source.typicalLag} after the satellite pass.
+                                    {trueColorPlan.degraded
+                                      ? ' MODIS Terra is not answering right now, so this shows VIIRS SNPP instead.'
+                                      : ''}
+                                  </p>
+                                  <p className="text-xs leading-[1.62] text-carbon-60">
+                                    What this is: a true-colour photograph of Bangladesh from space on the date above.
+                                    What it is not: a live feed. Imagery arrives a few hours after acquisition and
+                                    clouds can hide the ground.
+                                  </p>
+                                </div>
+                              ) : null}
+
+                              {isActive && isTrueColorExpanded && trueColorStatus === 'loading' ? (
+                                <p className="text-xs leading-[1.62] text-carbon-60 pl-8 pt-2">
+                                  Finding the newest available imagery.
+                                </p>
+                              ) : null}
+                            </li>
+                          );
+                        }
+
+                        const toggle = overlayToggles[def.id];
+                        return (
+                          <li key={def.id} className="flex items-center justify-between gap-3 py-2.5 min-h-[52px]">
+                            <span className="flex items-center gap-3">
+                              <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-60 shrink-0" />
+                              <span className="flex flex-col">
+                                <span className="text-ap-caption font-semibold text-carbon-90">{def.name}</span>
+                                {def.caption ? <span className="text-xs text-carbon-60">{def.caption}</span> : null}
+                              </span>
                             </span>
-                          </span>
+                            <button
+                              type="button"
+                              onClick={() => toggle.set(!toggle.value)}
+                              aria-pressed={toggle.value}
+                              className={`min-h-[40px] px-4 rounded-full text-xs font-bold uppercase tracking-wide transition-colors ${
+                                toggle.value ? 'bg-carbon-90 text-ap-on-inverse ' : 'bg-carbon-10 text-carbon-50 '
+                              }`}
+                            >
+                              {toggle.value ? 'On' : 'Off'}
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+
+                  {/* Hazards: hairline chips, colored dot + name. A chip is on while
+                    its hazard type is in the marker filter. */}
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-carbon-60 mb-2.5">
+                      {LIVE_SECTIONS[2].label}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {HAZARD_LAYERS.map((h) => {
+                        const isOn = selectedHazards.includes(h.id);
+                        return (
                           <button
+                            key={h.id}
                             type="button"
-                            onClick={() => toggle.set(!toggle.value)}
-                            aria-pressed={toggle.value}
-                            className={`min-h-[40px] px-4 rounded-full text-xs font-bold uppercase tracking-wide transition-colors ${
-                              toggle.value
-                                ? 'bg-carbon-90 text-ap-on-inverse '
-                                : 'bg-carbon-10 text-carbon-50 '
+                            aria-pressed={isOn}
+                            onClick={() =>
+                              setSelectedHazards((prev) =>
+                                prev.includes(h.id) ? prev.filter((id) => id !== h.id) : [...prev, h.id],
+                              )
+                            }
+                            className={`min-h-[40px] px-3.5 rounded-full border text-sm font-semibold flex items-center gap-2 transition-colors ${
+                              isOn
+                                ? 'border-carbon-30 text-carbon-90 dark:text-white'
+                                : 'border-carbon-20 text-carbon-50 '
                             }`}
                           >
-                            {toggle.value ? 'On' : 'Off'}
+                            <span
+                              className="w-2.5 h-2.5 rounded-full"
+                              style={{ backgroundColor: h.color, opacity: isOn ? 1 : 0.35 }}
+                            />
+                            {h.name}
                           </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-
-                {/* Hazards: hairline chips, colored dot + name. A chip is on while
-                    its hazard type is in the marker filter. */}
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-carbon-60 mb-2.5">
-                    {LIVE_SECTIONS[2].label}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {HAZARD_LAYERS.map((h) => {
-                      const isOn = selectedHazards.includes(h.id);
-                      return (
-                        <button
-                          key={h.id}
-                          type="button"
-                          aria-pressed={isOn}
-                          onClick={() =>
-                            setSelectedHazards((prev) =>
-                              prev.includes(h.id) ? prev.filter((id) => id !== h.id) : [...prev, h.id]
-                            )
-                          }
-                          className={`min-h-[40px] px-3.5 rounded-full border text-sm font-semibold flex items-center gap-2 transition-colors ${
-                            isOn
-                              ? 'border-carbon-30 text-carbon-90 dark:text-white'
-                              : 'border-carbon-20 text-carbon-50 '
-                          }`}
-                        >
-                          <span
-                            className="w-2.5 h-2.5 rounded-full"
-                            style={{ backgroundColor: h.color, opacity: isOn ? 1 : 0.35 }}
-                          />
-                          {h.name}
-                        </button>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
 
-                {/* Footer: attribution entry on the left, high-contrast Done pill on the right. */}
-                <div className="flex items-center justify-between gap-3 border-t border-carbon-20 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setIsAttributionOpen(true)}
-                    className="min-h-[44px] px-1 flex items-center gap-1.5 text-xs font-medium text-carbon-60 hover:text-carbon-90 dark:hover:text-white transition-colors"
-                  >
-                    <MaterialIcon name="info" className="w-4 h-4" />
-                    Data attribution ({attributionList.length})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsLayerModalOpen(false)}
-                    className="min-h-[44px] px-6 rounded-full bg-carbon-90 hover:bg-carbon-80 dark:hover:bg-carbon-10 text-carbon-05 text-sm font-bold transition-colors"
-                  >
-                    Done
-                  </button>
-                </div>
-              </motion.div>
-            </div>
-          )}
+                  {/* Footer: attribution entry on the left, high-contrast Done pill on the right. */}
+                  <div className="flex items-center justify-between gap-3 border-t border-carbon-20 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => setIsAttributionOpen(true)}
+                      className="min-h-[44px] px-1 flex items-center gap-1.5 text-xs font-medium text-carbon-60 hover:text-carbon-90 dark:hover:text-white transition-colors"
+                    >
+                      <MaterialIcon name="info" className="w-4 h-4" />
+                      Data attribution ({attributionList.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsLayerModalOpen(false)}
+                      className="min-h-[44px] px-6 rounded-full bg-carbon-90 hover:bg-carbon-80 dark:hover:bg-carbon-10 text-carbon-05 text-sm font-bold transition-colors"
+                    >
+                      Done
+                    </button>
+                  </div>
+                </motion.div>
+              </div>
+            )}
           </AnimatePresence>
 
           {/* Data attribution lightbox: exactly the credits of what is on screen,
               each with its licence and a pointer to the provider's terms. */}
           <AnimatePresence>
-          {isAttributionOpen && (
-            <div className="fixed inset-0 z-[var(--ap-z-modal)] bg-carbon-black/50 flex items-center justify-center p-4 pointer-events-auto">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.97 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.97 }}
-                transition={{ duration: 0.18 }}
-                className="w-full max-w-sm rounded-xl bg-white border border-carbon-20 p-5 sm:p-6 flex flex-col gap-4"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="data-attribution-title"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <h3 id="data-attribution-title" className="text-lg font-bold tracking-tight text-carbon-90 dark:text-white">Data attribution</h3>
-                  <button
-                    type="button"
-                    onClick={() => setIsAttributionOpen(false)}
-                    className="tap-target w-11 h-11 rounded-full bg-carbon-10 hover:bg-carbon-20 dark:hover:bg-carbon-70 text-carbon-60 flex items-center justify-center transition-colors"
-                    aria-label="Close data attribution"
-                  >
-                    <MaterialIcon name="close" className="w-5 h-5" />
-                  </button>
-                </div>
-                <ul className="flex flex-col gap-4">
-                  {attributionList.map((credit) => (
-                    <li key={credit.id} className="flex flex-col gap-1">
-                      <p className="text-sm font-semibold text-carbon-90">{credit.label}</p>
-                      <p className="text-xs text-carbon-60">
-                        {credit.licence} ·{' '}
-                        <a
-                          href={credit.href}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="underline underline-offset-2 hover:text-carbon-90 dark:hover:text-white"
-                        >
-                          source terms
-                        </a>
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
-            </div>
-          )}
+            {isAttributionOpen && (
+              <div className="fixed inset-0 z-[var(--ap-z-modal)] bg-carbon-black/50 flex items-center justify-center p-4 pointer-events-auto">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.97 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.97 }}
+                  transition={{ duration: 0.18 }}
+                  className="w-full max-w-sm rounded-xl bg-white border border-carbon-20 p-5 sm:p-6 flex flex-col gap-4"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="data-attribution-title"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <h3
+                      id="data-attribution-title"
+                      className="text-lg font-bold tracking-tight text-carbon-90 dark:text-white"
+                    >
+                      Data attribution
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setIsAttributionOpen(false)}
+                      className="tap-target w-11 h-11 rounded-full bg-carbon-10 hover:bg-carbon-20 dark:hover:bg-carbon-70 text-carbon-60 flex items-center justify-center transition-colors"
+                      aria-label="Close data attribution"
+                    >
+                      <MaterialIcon name="close" className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <ul className="flex flex-col gap-4">
+                    {attributionList.map((credit) => (
+                      <li key={credit.id} className="flex flex-col gap-1">
+                        <p className="text-sm font-semibold text-carbon-90">{credit.label}</p>
+                        <p className="text-xs text-carbon-60">
+                          {credit.licence} ·{' '}
+                          <a
+                            href={credit.href}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="underline underline-offset-2 hover:text-carbon-90 dark:hover:text-white"
+                          >
+                            source terms
+                          </a>
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              </div>
+            )}
           </AnimatePresence>
 
-                    {/* Bottom-Center Floating Clear Search & Inspect Pill */}
+          {/* Bottom-Center Floating Clear Search & Inspect Pill */}
           <AnimatePresence>
-          {(searchQuery || inspectedPoint || measurePoints.length > 0) && (
-            <motion.div
-              initial={{ opacity: 0, y: 20, x: "-50%" }}
-              animate={{ opacity: 1, y: 0, x: "-50%" }}
-              exit={{ opacity: 0, y: 20, x: "-50%" }}
-              transition={{ duration: 0.3 }}
-              className="absolute bottom-20 sm:bottom-12 left-1/2 z-[var(--ap-z-sticky)] pointer-events-auto flex items-center gap-2 max-w-[90vw]"
-            >
-              <button
-                onClick={() => {
-                  setSearchQuery('');
-                  setInspectedPoint(null);
-                  setMeasurePoints([]);
-                  setIsolateSelected(false);
-                  if (mapInstanceRef.current) {
-                    mapInstanceRef.current.flyTo([23.8103, 90.4125], 7, { duration: 1.2 });
-                  }
-                }}
-                className="min-h-[44px] px-4 py-2 glass-pill text-carbon-90 font-semibold text-sm flex items-center gap-2 touch-manipulation hover:bg-white transition-colors"
+            {(searchQuery || inspectedPoint || measurePoints.length > 0) && (
+              <motion.div
+                initial={{ opacity: 0, y: 20, x: '-50%' }}
+                animate={{ opacity: 1, y: 0, x: '-50%' }}
+                exit={{ opacity: 0, y: 20, x: '-50%' }}
+                transition={{ duration: 0.3 }}
+                className="absolute bottom-20 sm:bottom-12 left-1/2 z-[var(--ap-z-sticky)] pointer-events-auto flex items-center gap-2 max-w-[90vw]"
               >
-                <span className="flex items-center gap-1.5">
-                  <span className="w-4 h-4 rounded-full bg-carbon-90 text-carbon-05 flex items-center justify-center text-xs"><MaterialIcon name="close" className="w-4 h-4" /></span>
-                  <span>Clear Active Overlays & Filter</span>
-                </span>
-              </button>
-            </motion.div>
-          )}
+                <button
+                  onClick={() => {
+                    setSearchQuery('');
+                    setInspectedPoint(null);
+                    setMeasurePoints([]);
+                    setIsolateSelected(false);
+                    if (mapInstanceRef.current) {
+                      mapInstanceRef.current.flyTo([23.8103, 90.4125], 7, { duration: 1.2 });
+                    }
+                  }}
+                  className="min-h-[44px] px-4 py-2 glass-pill text-carbon-90 font-semibold text-sm flex items-center gap-2 touch-manipulation hover:bg-white transition-colors"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-4 h-4 rounded-full bg-carbon-90 text-carbon-05 flex items-center justify-center text-xs">
+                      <MaterialIcon name="close" className="w-4 h-4" />
+                    </span>
+                    <span>Clear Active Overlays & Filter</span>
+                  </span>
+                </button>
+              </motion.div>
+            )}
           </AnimatePresence>
 
           {/* Bottom-right map controls — one 48px circular button per job. The "+"
@@ -2535,7 +2624,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               title="Center the map on my location"
               aria-label="Center the map on my location"
             >
-              <MaterialIcon name={isLocatingUser ? 'gps_fixed' : 'my_location'} className={`w-5 h-5 ${isLocatingUser ? 'animate-pulse' : ''}`} />
+              <MaterialIcon
+                name={isLocatingUser ? 'gps_fixed' : 'my_location'}
+                className={`w-5 h-5 ${isLocatingUser ? 'animate-pulse' : ''}`}
+              />
             </button>
           </div>
 
@@ -2545,9 +2637,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               over any ground. Every character stays visible (map attribution is
               not collapsible), it just stops pretending to be chrome. */}
           <div className="absolute bottom-1.5 left-2 z-[var(--ap-z-sticky)] text-xs leading-snug text-carbon-60 [text-shadow:0_1px_2px_rgba(255,255,255,0.7),0_0_6px_rgba(255,255,255,0.5)] dark:[text-shadow:0_1px_2px_rgba(0,0,0,0.8),0_0_6px_rgba(0,0,0,0.6)] pointer-events-auto max-w-[calc(100%-7rem)]">
-            <p className="leading-snug">
-              {attributionFor(activeLayer)}
-            </p>
+            <p className="leading-snug">{attributionFor(activeLayer)}</p>
           </div>
 
           <div className="absolute bottom-2 right-16 z-[var(--ap-z-sticky)] glass-pill px-4 py-2 text-xs font-mono font-semibold text-carbon-70 pointer-events-auto hidden lg:flex items-center gap-3 tabular-nums">
@@ -2568,49 +2658,48 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
       {/* Exterior Bottom Quick Jumps Bar */}
       <AnimatePresence>
-      {!isFullScreen && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
-          transition={{ duration: 0.3 }}
-          className="p-4 bg-carbon-05 border-t border-carbon-20 rounded-b-2xl flex flex-wrap items-center justify-between gap-3 text-xs"
-        >
-          <div className="flex items-center gap-2">
-            
-            <span className="font-extrabold text-carbon-70 text-xs uppercase tracking-wider font-mono">
-              Agricultural Vulnerability Hotspot Quick Jumps:
-            </span>
-          </div>
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none whitespace-nowrap py-1 touch-scroll w-full sm:w-auto shrink-0">
-            {[
-              { label: 'Haor Flash Flood (Sunamganj)', id: 'sunamganj' },
-              { label: 'Northern Char (Kurigram)', id: 'kurigram' },
-              { label: 'Coastal Saline (Satkhira)', id: 'satkhira' },
-              { label: 'Barind Drought (Rajshahi)', id: 'rajshahi' },
-              { label: 'Coastal Surge (Cox\'s Bazar)', id: 'coxsbazar' },
-            ].map((preset) => {
-              const isAct = selectedDistrictId === preset.id;
-              return (
-                <button
-                  key={preset.id}
-                  onClick={() => {
-                    const target = liveDistricts.find((d) => d.id === preset.id);
-                    if (target) handleSelectDistrict(target);
-                  }}
-                  className={`min-h-[44px] px-3.5 rounded-full border text-xs font-semibold touch-manipulation transition-colors ${
- isAct
- ? 'bg-primary border-ap-primary text-ap-action-fg '
- : 'bg-white border-carbon-20 text-carbon-70 hover:text-carbon-90 hover:bg-carbon-10'
- }`}
-                >
-                  {preset.label}
-                </button>
-              );
-            })}
-          </div>
-        </motion.div>
-      )}
+        {!isFullScreen && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.3 }}
+            className="p-4 bg-carbon-05 border-t border-carbon-20 rounded-b-2xl flex flex-wrap items-center justify-between gap-3 text-xs"
+          >
+            <div className="flex items-center gap-2">
+              <span className="font-extrabold text-carbon-70 text-xs uppercase tracking-wider font-mono">
+                Agricultural Vulnerability Hotspot Quick Jumps:
+              </span>
+            </div>
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-none whitespace-nowrap py-1 touch-scroll w-full sm:w-auto shrink-0">
+              {[
+                { label: 'Haor Flash Flood (Sunamganj)', id: 'sunamganj' },
+                { label: 'Northern Char (Kurigram)', id: 'kurigram' },
+                { label: 'Coastal Saline (Satkhira)', id: 'satkhira' },
+                { label: 'Barind Drought (Rajshahi)', id: 'rajshahi' },
+                { label: "Coastal Surge (Cox's Bazar)", id: 'coxsbazar' },
+              ].map((preset) => {
+                const isAct = selectedDistrictId === preset.id;
+                return (
+                  <button
+                    key={preset.id}
+                    onClick={() => {
+                      const target = liveDistricts.find((d) => d.id === preset.id);
+                      if (target) handleSelectDistrict(target);
+                    }}
+                    className={`min-h-[44px] px-3.5 rounded-full border text-xs font-semibold touch-manipulation transition-colors ${
+                      isAct
+                        ? 'bg-primary border-ap-primary text-ap-action-fg '
+                        : 'bg-white border-carbon-20 text-carbon-70 hover:text-carbon-90 hover:bg-carbon-10'
+                    }`}
+                  >
+                    {preset.label}
+                  </button>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
       </AnimatePresence>
     </motion.div>
   );

@@ -44,7 +44,10 @@ export const DistrictAlertStrip: React.FC<DistrictAlertStripProps> = ({
 
   if (loading && alerts.length === 0) {
     return (
-      <div className={`border border-carbon-20 bg-white p-4 text-sm text-carbon-60 ${className}`} role="status">
+      <div
+        className={`border border-carbon-20 rounded-2xl bg-white p-4 text-sm text-carbon-60 ${className}`}
+        role="status"
+      >
         {t('common.loading')}
       </div>
     );
@@ -52,10 +55,8 @@ export const DistrictAlertStrip: React.FC<DistrictAlertStripProps> = ({
 
   if (!alert) {
     return (
-      <div className={`border border-carbon-20 bg-white p-4 ${className}`}>
-        <h2 className="text-base font-bold text-carbon-90">
-          {t('district.alerts', { district: district || '—' })}
-        </h2>
+      <div className={`border border-carbon-20 rounded-2xl bg-white p-4 ${className}`}>
+        <h2 className="text-base font-bold text-carbon-90">{t('district.alerts', { district: district || '—' })}</h2>
         <p className="mt-1 text-base leading-[1.62] text-carbon-70">
           {t('district.noAlert')}
           {source === 'none' ? ` ${t('alerts.empty.unavailable')}` : ''}
@@ -74,7 +75,7 @@ export const DistrictAlertStrip: React.FC<DistrictAlertStripProps> = ({
 
   return (
     <div
-      className={`border border-carbon-20 border-l-[2px] border-l-amber-500 bg-white p-4 ${className}`}
+      className={`border border-carbon-20 rounded-xl border-l-4 border-l-amber-500 bg-white p-4 ${className}`}
       data-alert-id={alert.id}
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -90,10 +91,13 @@ export const DistrictAlertStrip: React.FC<DistrictAlertStripProps> = ({
         />
       </div>
       <p className="mt-1.5 text-sm text-carbon-80">
-        {hazardLabel(alert.hazard_type)} · {alert.horizon?.replace('_', ' ') || '—'} ·{' '}
-        {t('common.targetDate')} {formatDate(alert.target_date)}
+        {hazardLabel(alert.hazard_type)} · {alert.horizon?.replace('_', ' ') || '—'} · {t('common.targetDate')}{' '}
+        {formatDate(alert.target_date)}
         {typeof alert.severity_score === 'number' && (
-          <> · {t('alerts.evidence.modelSeverity')} {formatNumber(alert.severity_score)}</>
+          <>
+            {' '}
+            · {t('alerts.evidence.modelSeverity')} {formatNumber(alert.severity_score)}
+          </>
         )}
       </p>
       <Link

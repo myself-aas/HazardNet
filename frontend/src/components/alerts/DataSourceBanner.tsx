@@ -42,19 +42,25 @@ export const DataSourceBanner: React.FC<DataSourceBannerProps> = ({
 }) => {
   const { t, formatDate, formatNumber } = useI18n();
 
-  const sourceLabel = source === 'api' ? t('source.live')
-    : source === 'cache' ? t('source.cache')
-      : source === 'snapshot' ? t('source.snapshot')
-        : t('source.none');
+  const sourceLabel =
+    source === 'api'
+      ? t('source.live')
+      : source === 'cache'
+        ? t('source.cache')
+        : source === 'snapshot'
+          ? t('source.snapshot')
+          : t('source.none');
 
   const stale = withinSlo === false || source === 'cache';
-  const tone = source === 'none' || stale
-    ? 'border-carbon-20 border-l-[2px] border-l-amber-500 bg-white text-carbon-90'
-    : 'border-carbon-20 bg-white text-carbon-70';
+  const tone =
+    source === 'none' || stale
+      ? 'border-carbon-20 border-l-4 border-l-amber-500 rounded-r-xl bg-white text-carbon-90'
+      : 'border-carbon-20 bg-white text-carbon-70';
 
-  const ageText = typeof ageHours === 'number' && Number.isFinite(ageHours)
-    ? t('source.staleNote', { hours: formatNumber(Math.round(ageHours), { maximumFractionDigits: 0 }) })
-    : null;
+  const ageText =
+    typeof ageHours === 'number' && Number.isFinite(ageHours)
+      ? t('source.staleNote', { hours: formatNumber(Math.round(ageHours), { maximumFractionDigits: 0 }) })
+      : null;
 
   return (
     <div
@@ -65,7 +71,15 @@ export const DataSourceBanner: React.FC<DataSourceBannerProps> = ({
     >
       <span className="inline-flex items-center gap-1.5">
         <MaterialIcon
-          name={source === 'api' ? 'cloud_sync' : source === 'cache' ? 'cloud_download' : source === 'snapshot' ? 'save' : 'error_outline'}
+          name={
+            source === 'api'
+              ? 'cloud_sync'
+              : source === 'cache'
+                ? 'cloud_download'
+                : source === 'snapshot'
+                  ? 'save'
+                  : 'error_outline'
+          }
           className="text-sm"
           aria-hidden="true"
         />

@@ -14,11 +14,11 @@ export const Privacy: React.FC = () => {
     >
       <Breadcrumbs />
 
-      <div className="max-w-[65ch] space-y-6 border border-carbon-20 bg-white p-6 text-base leading-[1.62] text-carbon-70 lg:p-8">
+      <div className="max-w-[65ch] space-y-6 border border-carbon-20 rounded-2xl bg-white p-6 text-base leading-[1.62] text-carbon-70 lg:p-8">
         
         <div className="border-b border-carbon-20 pb-4 space-y-2">
           <div className="flex items-center gap-2">
-            <span className="rounded-sm border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-mono font-bold uppercase text-amber-900">
+            <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-mono font-bold uppercase text-amber-900">
               Privacy Policy
             </span>
             <span className="text-carbon-60">•</span>
@@ -51,7 +51,7 @@ export const Privacy: React.FC = () => {
 
         <section className="space-y-2">
           <h2 className="text-sm font-bold text-carbon-90">3. Zero Third-Party Tracker Guarantee</h2>
-          <p className="p-3 bg-amber-50 border border-amber-200 text-amber-900 font-medium">
+          <p className="rounded-lg p-3 bg-amber-50 border border-amber-200 text-amber-900 font-medium">
             HazardNet contains <strong>no third-party advertising trackers</strong>, no social media tracking scripts, and no commercial data brokers. All telemetry is limited to anonymous error logs required for system uptime maintenance.
           </p>
         </section>

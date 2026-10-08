@@ -39,14 +39,18 @@
   pointer-events: auto !important;
 }
 
-/* Popups — ground and ink must invert together. */
+/* Popups — ground and ink must invert together. The wrapper carries the Apple
+   card radius; the tip stays a sharp rotated square because it is the arrow
+   pointing at the feature, not a card. */
 .leaflet-popup-content-wrapper,
 .leaflet-popup-tip {
   background: var(--ap-bg-canvas);
   color: var(--ap-label);
-  border-radius: 0;
   box-shadow: none;
   border: 1px solid var(--ap-separator-opaque);
+}
+.leaflet-popup-content-wrapper {
+  border-radius: var(--ap-radius-lg);
 }
 .leaflet-popup-content-wrapper {
   border-bottom: 0;

@@ -127,7 +127,7 @@ export const BlogArticlePage: React.FC = () => {
             Browse all articles
           </Link>
           {isPrimarySuperAdmin(user?.email) && (
-            <Link to="/dashboard/blog" className="border border-carbon-20 bg-white px-4 py-2.5 text-xs font-black text-carbon-70 hover:bg-carbon-05">
+            <Link to="/dashboard/blog" className="border border-carbon-20 rounded-full bg-white px-4 py-2.5 text-xs font-black text-carbon-70 hover:bg-carbon-05">
               Open Blog Studio
             </Link>
           )}
@@ -161,13 +161,13 @@ export const BlogArticlePage: React.FC = () => {
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="max-w-3xl mx-auto space-y-6 pb-10">
       <Breadcrumbs />
 
-      <article className="bg-white border border-carbon-20/90 overflow-hidden">
+      <article className="rounded-xl bg-white border border-carbon-20/90 overflow-hidden">
         {article.coverImageUrl && (
           <img src={article.coverImageUrl} alt={article.title} className="w-full h-48 sm:h-64 object-cover" />
         )}
         <div className="p-6 sm:p-9 space-y-5">
           <div className="flex items-center gap-2 flex-wrap text-xs font-mono font-bold uppercase tracking-wider">
-            <span className="px-2.5 py-1 rounded-sm bg-amber-50 border border-amber-200 text-amber-900">{article.category}</span>
+            <span className="px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-900">{article.category}</span>
             <span className="text-carbon-60">{date}</span>
             <span className="text-carbon-60">•</span>
             <span className="text-carbon-60">{readingTimeMinutes(article.contentHtml)} min read</span>
@@ -193,7 +193,7 @@ export const BlogArticlePage: React.FC = () => {
             <button
               type="button"
               onClick={copyLink}
-              className="shrink-0 inline-flex items-center gap-1.5 border border-carbon-20 px-3 py-1.5 text-xs font-black text-carbon-60 hover:bg-carbon-10 cursor-pointer"
+              className="shrink-0 inline-flex items-center gap-1.5 border border-carbon-20 rounded-full px-3 py-1.5 text-xs font-black text-carbon-60 hover:bg-carbon-10 cursor-pointer"
               title="Copy article link"
             >
               <MaterialIcon name="share" className="w-3.5 h-3.5" /> Copy link
@@ -217,7 +217,7 @@ export const BlogArticlePage: React.FC = () => {
           {article.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 pt-2 border-t border-carbon-20">
               {article.tags.map((tag) => (
-                <span key={tag} className="px-2 py-1 rounded-sm bg-carbon-10 border border-carbon-20 text-xs font-bold text-carbon-60">
+                <span key={tag} className="px-2 py-1 rounded-full bg-carbon-10 border border-carbon-20 text-xs font-bold text-carbon-60">
                   #{tag}
                 </span>
               ))}
@@ -226,7 +226,7 @@ export const BlogArticlePage: React.FC = () => {
 
           {/* Author bio box (E-E-A-T) */}
           {(article.authorBio || article.authorWebsite) && (
-            <div className="flex items-start gap-3 bg-carbon-05 border border-carbon-20 p-4">
+            <div className="flex items-start gap-3 bg-carbon-05 border border-carbon-20 rounded-2xl p-4">
               {article.authorAvatarUrl ? (
                 <img src={article.authorAvatarUrl} alt="" className="h-12 w-12 rounded-full border border-carbon-20 object-cover shrink-0" />
               ) : (

@@ -68,13 +68,15 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
   const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('portrait');
   const [copiedText, setCopiedText] = useState<boolean>(false);
   const [isConfigOpen, setIsConfigOpen] = useState<boolean>(false);
-  
+
   const previewPaperRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   // Escape, focus save/restore, scroll lock and the Tab cycle. The preview
   // closed on Escape already but let Tab walk out of it.
   useDialogBehavior({ isOpen, onClose, containerRef: dialogRef });
-  const dispatchRef = useRef<string>(`HN-BD-${new Date().getFullYear()}-${Date.now().toString(36).slice(-5).toUpperCase()}`);
+  const dispatchRef = useRef<string>(
+    `HN-BD-${new Date().getFullYear()}-${Date.now().toString(36).slice(-5).toUpperCase()}`,
+  );
 
   const resolvedRegion = regionName || districtName || filenameContext.region || filenameContext.district || 'National';
   const resolvedHazard = hazardType || filenameContext.hazard || filenameContext.hazardType || 'Disaster_Alert';
@@ -117,9 +119,13 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
 
       // 1. Remove duplicate inner print-only headers and inner footers because
       // PrintPreviewModal renders the official master A4 header & footer!
-      clone.querySelectorAll('.print-only.border-b-2, .print-only.print-page-footer, .print-only.mt-8, .print-only.p-4.border-2').forEach((el) => {
-        el.remove();
-      });
+      clone
+        .querySelectorAll(
+          '.print-only.border-b-2, .print-only.print-page-footer, .print-only.mt-8, .print-only.p-4.border-2',
+        )
+        .forEach((el) => {
+          el.remove();
+        });
 
       // 2. Force show remaining print-only elements (e.g. uncollapsed details, tables, QR codes)
       clone.querySelectorAll('.print-only').forEach((el) => {
@@ -131,9 +137,11 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
       });
 
       // 3. Remove screen-only interactive navigation, buttons, selectors, tabs, chatbot
-      clone.querySelectorAll('.no-print, .screen-only, button:not(.print-keep), input, select, textarea').forEach((el) => {
-        (el as HTMLElement).style.setProperty('display', 'none', 'important');
-      });
+      clone
+        .querySelectorAll('.no-print, .screen-only, button:not(.print-keep), input, select, textarea')
+        .forEach((el) => {
+          (el as HTMLElement).style.setProperty('display', 'none', 'important');
+        });
 
       // 4. Uncollapse all details/accordions
       clone.querySelectorAll('details').forEach((details) => {
@@ -257,7 +265,10 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
             </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 id="print-preview-modal-title" className="text-sm sm:text-base font-black text-ap-on-inverse tracking-tight truncate max-w-sm sm:max-w-md">
+                <h2
+                  id="print-preview-modal-title"
+                  className="text-sm sm:text-base font-black text-ap-on-inverse tracking-tight truncate max-w-sm sm:max-w-md"
+                >
                   {title}
                 </h2>
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 text-xs font-mono font-bold">
@@ -269,7 +280,8 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-carbon-30 font-mono truncate">
-                {orientation === 'portrait' ? 'A4 Portrait (210×297mm)' : 'A4 Landscape (297×210mm)'} • Real-time QR Mobile Telemetry • High-Contrast Field Standard
+                {orientation === 'portrait' ? 'A4 Portrait (210×297mm)' : 'A4 Landscape (297×210mm)'} • Real-time QR
+                Mobile Telemetry • High-Contrast Field Standard
               </p>
             </div>
           </div>
@@ -399,14 +411,14 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
         {/* 2. PRINT PREVIEW WORKSPACE / SIMULATED A4 PAPER SHEET */}
         <div className="flex-1 overflow-y-auto p-3 sm:p-6 md:p-8 flex justify-center items-start bg-carbon-black/70 custom-scrollbar">
           <div
-            style={{
-              scale: `${zoomLevel / 100}`,
-              transformOrigin: 'top center',
-              transition: 'scale 0.15s ease-out',
-            } as React.CSSProperties}
-            className={`w-full my-2 transition-all ${
-              orientation === 'landscape' ? 'max-w-[1140px]' : 'max-w-[840px]'
-            }`}
+            style={
+              {
+                scale: `${zoomLevel / 100}`,
+                transformOrigin: 'top center',
+                transition: 'scale 0.15s ease-out',
+              } as React.CSSProperties
+            }
+            className={`w-full my-2 transition-all ${orientation === 'landscape' ? 'max-w-[1140px]' : 'max-w-[840px]'}`}
           >
             {/* SIMULATED A4 PRINTED PAPER SHEET */}
             <div
@@ -437,11 +449,11 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
 
                     <div className="flex flex-wrap items-center gap-2 mt-2 pt-1 border-t border-carbon-20 text-[7.5pt] font-mono">
                       <span className="print-last-updated">
-                        <strong>GENERATED:</strong> {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}, {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} BST
+                        <strong>GENERATED:</strong>{' '}
+                        {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })},{' '}
+                        {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} BST
                       </span>
-                      <span className="print-currency-tag">
-                        DISPATCH REF: {dispatchRef.current}
-                      </span>
+                      <span className="print-currency-tag">DISPATCH REF: {dispatchRef.current}</span>
                       <span className="bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded font-bold border border-emerald-300">
                         STATUS: ACTIVE OPERATIONAL BULLETIN
                       </span>
@@ -462,18 +474,16 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
               {/* AUTHENTIC WATERMARK */}
               <div
                 aria-hidden="true"
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-[32deg] pointer-events-none select-none z-0 border-2 border-dashed border-carbon-90/4 text-carbon-90/5 font-mono font-black text-sm uppercase tracking-widest p-8 text-center max-w-[560px] leading-relaxed"
+                className="rounded-2xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-[32deg] pointer-events-none select-none z-0 border-2 border-dashed border-carbon-90/4 text-carbon-90/5 font-mono font-black text-sm uppercase tracking-widest p-8 text-center max-w-[560px] leading-relaxed"
               >
-                HAZARDNET BANGLADESH • OFFICIAL EMERGENCY ADVISORY • SOD 2019 OPERATIONAL DIRECTIVE • UNRESTRICTED FIELD DISTRIBUTION
+                HAZARDNET BANGLADESH • OFFICIAL EMERGENCY ADVISORY • SOD 2019 OPERATIONAL DIRECTIVE • UNRESTRICTED FIELD
+                DISTRIBUTION
               </div>
 
               {/* PREVIEW CONTAINER FOR CLONED REPORT */}
               <div className="relative z-10 space-y-6">
                 {clonedContent ? (
-                  <div
-                    className="print-preview-rendered-body"
-                    dangerouslySetInnerHTML={{ __html: clonedContent }}
-                  />
+                  <div className="print-preview-rendered-body" dangerouslySetInnerHTML={{ __html: clonedContent }} />
                 ) : (
                   <div className="flex flex-col items-center justify-center py-24 text-carbon-60 font-mono text-xs">
                     <RefreshCw className="w-8 h-8 text-carbon-60 animate-spin mb-3" />
@@ -489,7 +499,9 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
                   <p>Ministry of Disaster Management and Relief (MoDMR) • Department of Agricultural Extension (DAE)</p>
                 </div>
                 <div className="text-right">
-                  <span className="font-bold text-carbon-90">HOTLINES: 999 (National) • 1090 (Disaster) • 16123 (Krishi)</span>
+                  <span className="font-bold text-carbon-90">
+                    HOTLINES: 999 (National) • 1090 (Disaster) • 16123 (Krishi)
+                  </span>
                   <p>Official Directive Page 1 of 1 • SOD 2019 Public Safety Standard</p>
                 </div>
               </div>
@@ -502,11 +514,16 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
             <span className="text-xs sm:text-xs">
-              Print layout verified: High-contrast ink optimization active, dark backdrops sanitized, vector QR tags attached.
+              Print layout verified: High-contrast ink optimization active, dark backdrops sanitized, vector QR tags
+              attached.
             </span>
           </div>
           <div className="text-xs font-mono text-carbon-30 hidden sm:block">
-            Shortcuts: <kbd className="px-1.5 py-0.5 bg-carbon-80 border border-carbon-70 rounded text-carbon-30">Ctrl + P</kbd> Print • <kbd className="px-1.5 py-0.5 bg-carbon-80 border border-carbon-70 rounded text-carbon-30">+</kbd> / <kbd className="px-1.5 py-0.5 bg-carbon-80 border border-carbon-70 rounded text-carbon-30">-</kbd> Zoom • <kbd className="px-1.5 py-0.5 bg-carbon-80 border border-carbon-70 rounded text-carbon-30">Esc</kbd> Exit
+            Shortcuts:{' '}
+            <kbd className="px-1.5 py-0.5 bg-carbon-80 border border-carbon-70 rounded text-carbon-30">Ctrl + P</kbd>{' '}
+            Print • <kbd className="px-1.5 py-0.5 bg-carbon-80 border border-carbon-70 rounded text-carbon-30">+</kbd> /{' '}
+            <kbd className="px-1.5 py-0.5 bg-carbon-80 border border-carbon-70 rounded text-carbon-30">-</kbd> Zoom •{' '}
+            <kbd className="px-1.5 py-0.5 bg-carbon-80 border border-carbon-70 rounded text-carbon-30">Esc</kbd> Exit
           </div>
         </div>
       </div>

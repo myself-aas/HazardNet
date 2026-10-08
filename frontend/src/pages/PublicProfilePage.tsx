@@ -82,14 +82,17 @@ const PublicProfilePage: React.FC = () => {
 
     void (async () => {
       try {
-        let data: any = null; let error = null;
+        let data: any = null;
+        let error = null;
         try {
           // limit(1) is mandatory: firestore.rules denies an uncapped `list` on profiles,
           // which is what stops the collection being read as a directory of every account.
           const q = query(collection(db, 'profiles'), where('username', '==', username), limit(1));
           const snap = await getDocs(q);
-          if(!snap.empty) data = { id: snap.docs[0].id, ...snap.docs[0].data() };
-        } catch(e) { error = e; }
+          if (!snap.empty) data = { id: snap.docs[0].id, ...snap.docs[0].data() };
+        } catch (e) {
+          error = e;
+        }
         if (cancelled) return;
         if (error) {
           // Private rows deny this read rather than returning nothing, so a denied query is
@@ -151,9 +154,7 @@ const PublicProfilePage: React.FC = () => {
 
   const district = profile?.district || profile?.primaryDistrict;
   const division = profile?.division || profile?.primaryDivision;
-  const memberSince = profile?.createdAt
-    ? formatDate(profile.createdAt, { monthYear: true })
-    : null;
+  const memberSince = profile?.createdAt ? formatDate(profile.createdAt, { monthYear: true }) : null;
 
   return (
     <div className="mx-auto w-full max-w-3xl">
@@ -175,7 +176,7 @@ const PublicProfilePage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="border border-carbon-20 bg-carbon-05 p-6 sm:p-10 text-center"
+          className="border border-carbon-20 rounded-2xl bg-carbon-05 p-6 sm:p-10 text-center"
           data-testid="profile-not-found"
         >
           <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white text-carbon-60">
@@ -199,7 +200,7 @@ const PublicProfilePage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="border border-carbon-20 bg-carbon-05 p-6 sm:p-10 text-center"
+          className="border border-carbon-20 rounded-2xl bg-carbon-05 p-6 sm:p-10 text-center"
           data-testid="profile-private"
         >
           <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white text-carbon-60">

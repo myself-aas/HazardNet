@@ -393,7 +393,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               isTransparent ? 'text-white' : 'text-carbon-80 group-hover:text-carbon-black'
             }`}
           />
-
         </button>
       )}
 
@@ -466,7 +465,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                   ) : (
                     <button
                       onClick={() => setIsOpen(false)}
-                      className="min-h-[44px] px-2 py-1 bg-white border border-carbon-20 text-xs font-mono text-carbon-60 hover:text-carbon-90 transition-colors"
+                      className="min-h-[44px] px-2 py-1 bg-white border border-carbon-20 rounded-full text-xs font-mono text-carbon-60 hover:text-carbon-90 transition-colors"
                     >
                       ESC
                     </button>
@@ -538,7 +537,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                                   {item.title}
                                 </span>
                                 {item.badge && (
-                                  <span className="px-2 py-0.5 text-xs font-mono font-bold bg-carbon-10 text-carbon-70 border border-carbon-20 shrink-0">
+                                  <span className="px-2 py-0.5 text-xs font-mono font-bold bg-carbon-10 text-carbon-70 border border-carbon-20 rounded-full shrink-0">
                                     {item.badge}
                                   </span>
                                 )}

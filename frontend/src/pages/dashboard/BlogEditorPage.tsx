@@ -324,7 +324,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
       <Breadcrumbs />
 
       {/* Editor header */}
-      <div className="bg-white border border-carbon-20/90 p-5 relative overflow-hidden space-y-3">
+      <div className="rounded-xl bg-white border border-carbon-20/90 p-5 relative overflow-hidden space-y-3">
         <div aria-hidden="true" className="absolute top-0 left-0 w-full h-1 bg-primary" />
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
@@ -346,7 +346,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
           <div className="flex items-center gap-2">
             <Link
               to="/dashboard/blog"
-              className="px-3.5 py-2 border border-carbon-20 bg-white text-xs font-black text-carbon-70 hover:bg-carbon-10"
+              className="px-3.5 py-2 border border-carbon-20 rounded-full bg-white text-xs font-black text-carbon-70 hover:bg-carbon-10"
             >
               <span className="inline-flex items-center gap-1.5">
                 <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" /> All articles
@@ -356,7 +356,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               type="button"
               onClick={() => handleSave('draft')}
               disabled={saving}
-              className="px-3.5 py-2 border border-carbon-30 bg-white text-xs font-black text-carbon-80 hover:bg-carbon-10 disabled:opacity-50 cursor-pointer"
+              className="rounded-full px-3.5 py-2 border border-carbon-30 bg-white text-xs font-black text-carbon-80 hover:bg-carbon-10 disabled:opacity-50 cursor-pointer"
             >
               {saving ? 'Saving…' : 'Save draft'}
             </button>
@@ -380,7 +380,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 items-start">
         <div className="xl:col-span-2 space-y-4">
           {/* Core content */}
-          <div className="bg-white border border-carbon-20/90 p-5 space-y-4">
+          <div className="rounded-2xl bg-white border border-carbon-20/90 p-5 space-y-4">
             <div>
               <label htmlFor="blog-title" className="block text-xs font-bold text-carbon-80 mb-1.5">Title</label>
               <input
@@ -413,7 +413,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                       setSlugEdited(false);
                       setSlug(slugify(title));
                     }}
-                    className="shrink-0 px-2.5 py-2 border border-carbon-20 text-xs font-black text-carbon-60 hover:bg-carbon-10 cursor-pointer"
+                    className="shrink-0 px-2.5 py-2 border border-carbon-20 rounded-full text-xs font-black text-carbon-60 hover:bg-carbon-10 cursor-pointer"
                     title="Re-generate from title"
                   >
                     Auto
@@ -437,7 +437,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
           <RichTextEditor value={contentHtml} onChange={markDirty(setContentHtml)} />
 
           {/* ── SEO & Google Search Console ───────────────────────────── */}
-          <div className="bg-white border border-carbon-20/90 p-5 space-y-4" data-testid="seo-panel">
+          <div className="rounded-2xl bg-white border border-carbon-20/90 p-5 space-y-4" data-testid="seo-panel">
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-xs font-black uppercase tracking-wider text-carbon-90 font-mono flex items-center gap-1.5">
                 <MaterialIcon name="search" className="w-4 h-4 text-ap-link" /> SEO &amp; Google Search Console
@@ -453,7 +453,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
             </div>
 
             {/* Google SERP preview */}
-            <div className="border border-carbon-20 bg-carbon-05 p-4" data-testid="serp-preview">
+            <div className="border border-carbon-20 rounded-2xl bg-carbon-05 p-4" data-testid="serp-preview">
               <p className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-carbon-60">Google result preview</p>
               <p className="truncate text-xs text-carbon-70 leading-none mb-1">{serpUrl}</p>
               <p className="text-ap-caption leading-snug text-blue-800 font-medium truncate">{serpTitle || 'Your SEO title appears here'}</p>
@@ -538,7 +538,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
             </label>
 
             {/* FAQ builder → FAQPage rich results */}
-            <div className="border border-carbon-20 p-4 space-y-3" data-testid="faq-builder">
+            <div className="border border-carbon-20 rounded-2xl p-4 space-y-3" data-testid="faq-builder">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-bold text-carbon-80 flex items-center gap-1.5">
                   <MaterialIcon name="faq" className="w-4 h-4 text-ap-link" /> FAQ section
@@ -547,7 +547,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                 <button
                   type="button"
                   onClick={() => markDirty(setFaqs)([...faqs, { question: '', answer: '' }])}
-                  className="border border-carbon-20 px-2.5 py-1.5 text-xs font-black text-carbon-70 hover:bg-carbon-10 cursor-pointer"
+                  className="border border-carbon-20 rounded-full px-2.5 py-1.5 text-xs font-black text-carbon-70 hover:bg-carbon-10 cursor-pointer"
                 >
                   + Add question
                 </button>
@@ -568,7 +568,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                     <button
                       type="button"
                       onClick={() => markDirty(setFaqs)(faqs.filter((_, i) => i !== index))}
-                      className="shrink-0 border border-ap-primary p-2 text-rose-500 hover:bg-white cursor-pointer"
+                      className="rounded-full shrink-0 border border-ap-primary p-2 text-rose-500 hover:bg-white cursor-pointer"
                       aria-label={`Remove FAQ ${index + 1}`}
                     >
                       <MaterialIcon name="delete" className="w-3.5 h-3.5" />
@@ -612,7 +612,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
 
         {/* Sidebar settings */}
         <aside className="space-y-4">
-          <div className="bg-white border border-carbon-20/90 p-5 space-y-4">
+          <div className="rounded-2xl bg-white border border-carbon-20/90 p-5 space-y-4">
             <h3 className="text-xs font-black uppercase tracking-wider text-carbon-90 font-mono">Publishing</h3>
             <div>
               <label htmlFor="blog-status" className="block text-xs font-bold text-carbon-80 mb-1.5">Status</label>
@@ -661,13 +661,13 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                 className={inputClass}
               />
               {coverImageUrl && (
-                <img src={coverImageUrl} alt="Cover preview" className="mt-2 border border-carbon-20 h-28 w-full object-cover" />
+                <img src={coverImageUrl} alt="Cover preview" className="mt-2 border border-carbon-20 rounded-lg h-28 w-full object-cover" />
               )}
             </div>
           </div>
 
           {/* Editable author byline */}
-          <div className="bg-white border border-carbon-20/90 p-5 space-y-3" data-testid="author-panel">
+          <div className="rounded-2xl bg-white border border-carbon-20/90 p-5 space-y-3" data-testid="author-panel">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-black uppercase tracking-wider text-carbon-90 font-mono">Author byline</h3>
               <button
@@ -676,7 +676,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                   markDirty(setAuthorName)(signedInAuthor.name);
                   setDirty(true);
                 }}
-                className="rounded-sm px-2 py-1 text-xs font-black text-amber-700 hover:bg-amber-50 cursor-pointer"
+                className="rounded-full px-2 py-1 text-xs font-black text-amber-700 hover:bg-amber-50 cursor-pointer"
                 title="Reset display name to your account name"
               >
                 Use my profile

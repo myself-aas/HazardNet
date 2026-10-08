@@ -1,15 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  Legend,
-} from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts';
 import {
   Wind,
   Droplets,
@@ -23,7 +14,13 @@ import {
   TrendingUp,
   ShieldAlert,
 } from 'lucide-react';
-import { fetchEventsSummary, fetchForecastFeed, EventsSummary, ForecastRecord, ForecastFeed } from '../lib/eventsClient';
+import {
+  fetchEventsSummary,
+  fetchForecastFeed,
+  EventsSummary,
+  ForecastRecord,
+  ForecastFeed,
+} from '../lib/eventsClient';
 import { getHazardColor, getHazardSurface } from '../lib/hazardPalette';
 import { DataStateEmpty, DataStateError, DataStateLoading } from '../components/ui/DataState';
 
@@ -49,7 +46,8 @@ const HAZARDS_CATALOG = [
     name: 'Tropical Cyclone',
     icon: Wind,
     season: 'May, Oct - Nov (Pre & Post-Monsoon)',
-    description: 'Catastrophic marine vortexes accompanied by storm surges penetrating coastal embankments in the Bay of Bengal.',
+    description:
+      'Catastrophic marine vortexes accompanied by storm surges penetrating coastal embankments in the Bay of Bengal.',
   },
   {
     id: 'flood',
@@ -57,7 +55,8 @@ const HAZARDS_CATALOG = [
     name: 'Flood',
     icon: Droplets,
     season: 'Jun - Sep (Monsoon Inundation)',
-    description: 'Major transboundary river swells across the Brahmaputra, Ganges, and Meghna basins affecting millions.',
+    description:
+      'Major transboundary river swells across the Brahmaputra, Ganges, and Meghna basins affecting millions.',
   },
   {
     id: 'flash-flood',
@@ -65,7 +64,8 @@ const HAZARDS_CATALOG = [
     name: 'Flash Flood',
     icon: Waves,
     season: 'Apr - Jun (Pre-Monsoon Haor Basins)',
-    description: 'Sudden, high-velocity hill torrents rushing from Meghalaya and Tripura hills drowning standing Boro paddy.',
+    description:
+      'Sudden, high-velocity hill torrents rushing from Meghalaya and Tripura hills drowning standing Boro paddy.',
   },
   {
     id: 'severe-local-storm',
@@ -73,7 +73,8 @@ const HAZARDS_CATALOG = [
     name: 'Severe Local Storm',
     icon: CloudLightning,
     season: 'Mar - May (Norwesters / Kalbaishakhi)',
-    description: 'Violent squalls, tornado cells, lightning strikes, and hailstorms causing localized structural and crop ruin.',
+    description:
+      'Violent squalls, tornado cells, lightning strikes, and hailstorms causing localized structural and crop ruin.',
   },
   {
     id: 'cold-wave',
@@ -81,7 +82,8 @@ const HAZARDS_CATALOG = [
     name: 'Cold Wave',
     icon: Snowflake,
     season: 'Dec - Jan (Winter)',
-    description: 'Severe temperature drops and persistent dense fog in the northern/north-western divisions harming health and crops.',
+    description:
+      'Severe temperature drops and persistent dense fog in the northern/north-western divisions harming health and crops.',
   },
   {
     id: 'drought',
@@ -97,7 +99,8 @@ const HAZARDS_CATALOG = [
     name: 'Heat Wave',
     icon: Sun,
     season: 'Apr - Jun (Pre-Monsoon)',
-    description: 'Extreme thermal stress with ambient temperatures exceeding 40°C triggering power grid strain and livestock mortality.',
+    description:
+      'Extreme thermal stress with ambient temperatures exceeding 40°C triggering power grid strain and livestock mortality.',
   },
   {
     id: 'earthquake',
@@ -105,7 +108,8 @@ const HAZARDS_CATALOG = [
     name: 'Earthquake',
     icon: Activity,
     season: 'Seismic faults (Dauki, Chittagong-Tripura)',
-    description: 'Tectonic vulnerability along the Dauki Fault and Indo-Burma subduction zones threatening dense urban centers.',
+    description:
+      'Tectonic vulnerability along the Dauki Fault and Indo-Burma subduction zones threatening dense urban centers.',
   },
   {
     id: 'fire',
@@ -113,7 +117,8 @@ const HAZARDS_CATALOG = [
     name: 'Fire',
     icon: Flame,
     season: 'Mar - May (Dry Season)',
-    description: 'Dry season structural and agricultural fires exacerbated by low humidity and strong southerly breezes.',
+    description:
+      'Dry season structural and agricultural fires exacerbated by low humidity and strong southerly breezes.',
   },
 ];
 
@@ -131,10 +136,7 @@ export const HazardsPage: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        const [sumData, fcFeed] = await Promise.all([
-          fetchEventsSummary(),
-          fetchForecastFeed(),
-        ]);
+        const [sumData, fcFeed] = await Promise.all([fetchEventsSummary(), fetchForecastFeed()]);
         if (mounted) {
           setSummary(sumData);
           setForecasts(fcFeed.records);
@@ -149,20 +151,30 @@ export const HazardsPage: React.FC = () => {
       }
     }
     loadData();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [reloadNonce]);
 
   // `source: 'fallback'` means neither the API nor the committed summary artifact answered. Keep
   // the catalogue visible, but show the archive's empty state instead of claiming statistics.
   const archiveLoaded = summary !== null && summary.source !== 'fallback';
 
-  const hazardsList: HazardCardData[] = HAZARDS_CATALOG.map(h => {
-    const histEvents = summary?.hazardBreakdown?.find(hb => hb.hazard.toLowerCase() === h.name.toLowerCase() || hb.hazard.toLowerCase().includes(h.slug) || h.name.toLowerCase().includes(hb.hazard.toLowerCase()))?.count
-      || summary?.byHazard?.[h.name]
-      || 0;
+  const hazardsList: HazardCardData[] = HAZARDS_CATALOG.map((h) => {
+    const histEvents =
+      summary?.hazardBreakdown?.find(
+        (hb) =>
+          hb.hazard.toLowerCase() === h.name.toLowerCase() ||
+          hb.hazard.toLowerCase().includes(h.slug) ||
+          h.name.toLowerCase().includes(hb.hazard.toLowerCase()),
+      )?.count ||
+      summary?.byHazard?.[h.name] ||
+      0;
     const totalEvents = archiveLoaded ? summary!.totalEvents : 0;
     const pct = totalEvents > 0 ? Math.round((histEvents / totalEvents) * 1000) / 10 : null;
-    const activeFc = forecasts.filter(f => f.hazardType.toLowerCase().includes(h.slug) || h.name.toLowerCase().includes(f.hazardType.toLowerCase()));
+    const activeFc = forecasts.filter(
+      (f) => f.hazardType.toLowerCase().includes(h.slug) || h.name.toLowerCase().includes(f.hazardType.toLowerCase()),
+    );
 
     return {
       ...h,
@@ -174,26 +186,30 @@ export const HazardsPage: React.FC = () => {
     };
   });
 
-  const chartData = hazardsList.map(h => ({
-    name: h.name,
-    'Historical Occurrences': h.totalHistoricalEvents,
-    'Active Warning Records': h.activeForecastsCount,
-  })).sort((a, b) => b['Historical Occurrences'] - a['Historical Occurrences']);
+  const chartData = hazardsList
+    .map((h) => ({
+      name: h.name,
+      'Historical Occurrences': h.totalHistoricalEvents,
+      'Active Warning Records': h.activeForecastsCount,
+    }))
+    .sort((a, b) => b['Historical Occurrences'] - a['Historical Occurrences']);
 
   return (
     <div className="min-h-dvh bg-carbon-05 text-carbon-80 pb-8 pt-6 px-4 sm:px-6 lg:px-8 max-w-[1200px] mx-auto">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-carbon-60 mb-4">
-        <Link to="/" className="hover:text-ap-link transition-colors">Home</Link>
+        <Link to="/" className="hover:text-ap-link transition-colors">
+          Home
+        </Link>
         <span>/</span>
         <span className="text-carbon-80 font-medium">Hazards</span>
       </div>
 
       {/* Header Banner */}
-      <div className="bg-white border border-carbon-20 p-6 sm:p-8 mb-8">
+      <div className="bg-white border border-carbon-20 rounded-2xl p-6 sm:p-8 mb-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold bg-carbon-05 text-ap-link border border-carbon-20 mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold bg-carbon-05 text-ap-link border border-carbon-20 rounded-full mb-3">
               <ShieldAlert className="w-3.5 h-3.5" />
               <span>Multi-Hazard Classification Framework</span>
             </div>
@@ -201,22 +217,23 @@ export const HazardsPage: React.FC = () => {
               Climatic Hazards of Bangladesh
             </h1>
             <p className="mt-2 text-base leading-[1.62] text-carbon-70 max-w-2xl leading-relaxed">
-              Comprehensive taxonomy and real-time record monitoring for the 9 primary disaster perils documented in Bangladesh (2000–2026), grounded in the BGD Climatic Hazards Dataset and HazardNet forecasts.
+              Comprehensive taxonomy and real-time record monitoring for the 9 primary disaster perils documented in
+              Bangladesh (2000–2026), grounded in the BGD Climatic Hazards Dataset and HazardNet forecasts.
             </p>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full md:w-auto">
-            <div className="bg-carbon-05 border border-carbon-20/80 p-3 text-center">
+            <div className="rounded-xl bg-carbon-05 border border-carbon-20/80 p-3 text-center">
               <div className="text-xl sm:text-2xl font-bold text-carbon-90">9</div>
               <div className="text-xs text-carbon-60 font-medium">Hazard Types</div>
             </div>
-            <div className="bg-carbon-05 border border-carbon-20/80 p-3 text-center">
+            <div className="rounded-xl bg-carbon-05 border border-carbon-20/80 p-3 text-center">
               <div className="text-xl sm:text-2xl font-bold text-ap-link">
                 {archiveLoaded ? summary!.totalEvents.toLocaleString() : '—'}
               </div>
               <div className="text-xs text-carbon-60 font-medium">Historical Records</div>
             </div>
-            <div className="bg-carbon-05 border border-carbon-20/80 p-3 text-center col-span-2 sm:col-span-1">
+            <div className="rounded-xl bg-carbon-05 border border-carbon-20/80 p-3 text-center col-span-2 sm:col-span-1">
               <div className="text-xl sm:text-2xl font-bold text-amber-700">
                 {feed === 'none' ? '—' : forecasts.length}
               </div>
@@ -227,7 +244,7 @@ export const HazardsPage: React.FC = () => {
       </div>
 
       {/* Interactive National Hazards Frequency Chart */}
-      <div className="bg-white border border-carbon-20 p-6 mb-8">
+      <div className="bg-white border border-carbon-20 rounded-2xl p-6 mb-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-carbon-20 gap-2">
           <div>
             <h2 className="text-base font-semibold text-carbon-90 flex items-center gap-2">
@@ -276,7 +293,12 @@ export const HazardsPage: React.FC = () => {
               <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
               <YAxis tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
               <Tooltip
-                contentStyle={{ backgroundColor: 'var(--ap-bg-canvas)', borderColor: 'var(--ap-separator-opaque)', borderRadius: 'var(--ap-radius-md)', boxShadow: 'var(--ap-elev-flat)' }}
+                contentStyle={{
+                  backgroundColor: 'var(--ap-bg-canvas)',
+                  borderColor: 'var(--ap-separator-opaque)',
+                  borderRadius: 'var(--ap-radius-md)',
+                  boxShadow: 'var(--ap-elev-flat)',
+                }}
               />
               <Legend wrapperStyle={{ paddingTop: '10px' }} />
               <Bar dataKey="Historical Occurrences" fill="var(--ap-primary)" radius={[6, 6, 0, 0]} />
@@ -290,7 +312,9 @@ export const HazardsPage: React.FC = () => {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-carbon-90">Individual Hazard Profiles</h2>
-          <span className="text-xs text-carbon-60">Select any hazard for dedicated temporal and geographic analytics</span>
+          <span className="text-xs text-carbon-60">
+            Select any hazard for dedicated temporal and geographic analytics
+          </span>
         </div>
 
         <div className="grid grid-cols-1 min-[880px]:grid-cols-2 min-[1200px]:grid-cols-3 gap-5">
@@ -300,7 +324,7 @@ export const HazardsPage: React.FC = () => {
               <Link
                 key={hazard.id}
                 to={`/hazards/${hazard.slug}`}
-                className="bg-white border border-carbon-20 p-6 hover:border-carbon-30 group flex flex-col justify-between"
+                className="bg-white border border-carbon-20 rounded-2xl p-6 hover:border-carbon-30 group flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
@@ -311,16 +335,16 @@ export const HazardsPage: React.FC = () => {
                       <Icon className="w-5 h-5" />
                     </div>
                     <span className="text-xs font-semibold px-2 py-0.5 bg-carbon-10 text-carbon-70">
-                      {hazard.percentage === null ? 'Share of events not available' : `${hazard.percentage}% of all events`}
+                      {hazard.percentage === null
+                        ? 'Share of events not available'
+                        : `${hazard.percentage}% of all events`}
                     </span>
                   </div>
 
                   <h3 className="text-lg font-bold text-carbon-90 group-hover:text-ap-link transition-colors">
                     {hazard.name}
                   </h3>
-                  <p className="text-xs text-carbon-60 mt-2 leading-relaxed line-clamp-2">
-                    {hazard.description}
-                  </p>
+                  <p className="text-xs text-carbon-60 mt-2 leading-relaxed line-clamp-2">{hazard.description}</p>
 
                   <div className="mt-4 pt-3 border-t border-carbon-20 space-y-2 text-xs">
                     <div className="flex justify-between items-center">

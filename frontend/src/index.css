@@ -454,7 +454,9 @@ html[data-map-debug-fx='true'] .cluster-pulse-ring {
 @media (max-width: 640px) {
   .leaflet-popup-content-wrapper {
     max-width: 88vw !important;
-    border-radius: 0 !important;
+    /* Rounded on phones too — a sharp-cornered popup is exactly the squared chrome
+       the Apple migration removed everywhere else. */
+    border-radius: var(--ap-radius-lg) !important;
   }
 
   .leaflet-container a.leaflet-popup-close-button {
@@ -717,7 +719,12 @@ html[data-map-debug-fx='true'] .marker-high-risk {
   --radius-2xl: var(--ap-radius-xl);
   --radius-3xl: var(--ap-radius-xl);
   --radius-4xl: var(--ap-radius-xl);
-  --radius-control: var(--ap-radius-sm);
+  /* Controls are pills. apple.com sets every button, chip and badge with fully
+     rounded contours (DESIGN.md §Shapes: "Action buttons … use fully rounded
+     contours (border-radius: 9999px) to contrast cleanly with structural
+     rectangular cards"), so `rounded-control` resolves to the pill token — an
+     8px half-measure read as "squircle that never finished". */
+  --radius-control: var(--ap-radius-full);
   --radius-full: var(--ap-radius-full);
 
   /* Apple's eight-step spacing scale, available as `p-ap-md`, `gap-ap-lg`, … */

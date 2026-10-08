@@ -1,22 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts';
+import { MapPin, ArrowRight, TrendingUp, Layers } from 'lucide-react';
 import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  Legend,
-} from 'recharts';
-import {
-  MapPin,
-  ArrowRight,
-  TrendingUp,
-  Layers,
-} from 'lucide-react';
-import { fetchEventsSummary, fetchForecastFeed, EventsSummary, ForecastRecord, ForecastFeed } from '../lib/eventsClient';
+  fetchEventsSummary,
+  fetchForecastFeed,
+  EventsSummary,
+  ForecastRecord,
+  ForecastFeed,
+} from '../lib/eventsClient';
 import { DataStateEmpty, DataStateError, DataStateLoading } from '../components/ui/DataState';
 
 interface DivisionCardData {
@@ -33,13 +25,49 @@ interface DivisionCardData {
 
 const DIVISION_META = [
   { id: 'dhaka', name: 'Dhaka', capital: 'Dhaka', districtCount: 13, primaryHazard: 'Monsoon Flood & River Erosion' },
-  { id: 'chattogram', name: 'Chattogram', capital: 'Chattogram', districtCount: 11, primaryHazard: 'Coastal Cyclone & Flash Flood' },
-  { id: 'rajshahi', name: 'Rajshahi', capital: 'Rajshahi', districtCount: 8, primaryHazard: 'Severe Drought & Heat Wave' },
-  { id: 'khulna', name: 'Khulna', capital: 'Khulna', districtCount: 10, primaryHazard: 'Tropical Cyclone & Saline Intrusion' },
-  { id: 'barisal', name: 'Barisal', capital: 'Barisal', districtCount: 6, primaryHazard: 'Coastal Storm Surge & Inundation' },
+  {
+    id: 'chattogram',
+    name: 'Chattogram',
+    capital: 'Chattogram',
+    districtCount: 11,
+    primaryHazard: 'Coastal Cyclone & Flash Flood',
+  },
+  {
+    id: 'rajshahi',
+    name: 'Rajshahi',
+    capital: 'Rajshahi',
+    districtCount: 8,
+    primaryHazard: 'Severe Drought & Heat Wave',
+  },
+  {
+    id: 'khulna',
+    name: 'Khulna',
+    capital: 'Khulna',
+    districtCount: 10,
+    primaryHazard: 'Tropical Cyclone & Saline Intrusion',
+  },
+  {
+    id: 'barisal',
+    name: 'Barisal',
+    capital: 'Barisal',
+    districtCount: 6,
+    primaryHazard: 'Coastal Storm Surge & Inundation',
+  },
   { id: 'sylhet', name: 'Sylhet', capital: 'Sylhet', districtCount: 4, primaryHazard: 'Haor Pre-Monsoon Flash Flood' },
-  { id: 'rangpur', name: 'Rangpur', capital: 'Rangpur', districtCount: 8, primaryHazard: 'River Inundation & Cold Wave' },
-  { id: 'mymensingh', name: 'Mymensingh', capital: 'Mymensingh', districtCount: 4, primaryHazard: 'Flash Flood & River Swell' },
+  {
+    id: 'rangpur',
+    name: 'Rangpur',
+    capital: 'Rangpur',
+    districtCount: 8,
+    primaryHazard: 'River Inundation & Cold Wave',
+  },
+  {
+    id: 'mymensingh',
+    name: 'Mymensingh',
+    capital: 'Mymensingh',
+    districtCount: 4,
+    primaryHazard: 'Flash Flood & River Swell',
+  },
 ];
 
 export const DivisionsPage: React.FC = () => {
@@ -56,10 +84,7 @@ export const DivisionsPage: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        const [sumData, fcFeed] = await Promise.all([
-          fetchEventsSummary(),
-          fetchForecastFeed(),
-        ]);
+        const [sumData, fcFeed] = await Promise.all([fetchEventsSummary(), fetchForecastFeed()]);
         if (mounted) {
           setSummary(sumData);
           setForecasts(fcFeed.records);
@@ -74,26 +99,41 @@ export const DivisionsPage: React.FC = () => {
       }
     }
     loadData();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [reloadNonce]);
 
   /** A summary tagged `fallback` is an unavailable sentinel, not this deployment's archive. */
   const archiveLoaded = summary !== null && summary.source !== 'fallback';
 
-  const divisionsList: DivisionCardData[] = DIVISION_META.map(div => {
-    const histEvents = summary?.divisionBreakdown?.find(d => d.division.toLowerCase() === div.name.toLowerCase() || (div.name === 'Chattogram' && d.division.toLowerCase() === 'chittagong'))?.count
-      || summary?.byDivision?.[div.name]
-      || summary?.byDivision?.[div.id]
-      || 0;
-    const divForecasts = forecasts.filter(f => f.division.toLowerCase() === div.name.toLowerCase() || (div.name === 'Chattogram' && f.division.toLowerCase() === 'chittagong'));
-    const avgSev = divForecasts.length > 0
-      ? divForecasts.reduce((acc, f) => acc + f.severityScore, 0) / divForecasts.length
-      : 0;
+  const divisionsList: DivisionCardData[] = DIVISION_META.map((div) => {
+    const histEvents =
+      summary?.divisionBreakdown?.find(
+        (d) =>
+          d.division.toLowerCase() === div.name.toLowerCase() ||
+          (div.name === 'Chattogram' && d.division.toLowerCase() === 'chittagong'),
+      )?.count ||
+      summary?.byDivision?.[div.name] ||
+      summary?.byDivision?.[div.id] ||
+      0;
+    const divForecasts = forecasts.filter(
+      (f) =>
+        f.division.toLowerCase() === div.name.toLowerCase() ||
+        (div.name === 'Chattogram' && f.division.toLowerCase() === 'chittagong'),
+    );
+    const avgSev =
+      divForecasts.length > 0 ? divForecasts.reduce((acc, f) => acc + f.severityScore, 0) / divForecasts.length : 0;
 
-    const divDistricts = summary?.topDistricts
-      ?.filter(d => d.division.toLowerCase() === div.name.toLowerCase() || (div.name === 'Chattogram' && d.division.toLowerCase() === 'chittagong'))
-      ?.slice(0, 3)
-      ?.map(d => d.district) || [];
+    const divDistricts =
+      summary?.topDistricts
+        ?.filter(
+          (d) =>
+            d.division.toLowerCase() === div.name.toLowerCase() ||
+            (div.name === 'Chattogram' && d.division.toLowerCase() === 'chittagong'),
+        )
+        ?.slice(0, 3)
+        ?.map((d) => d.district) || [];
 
     return {
       ...div,
@@ -104,26 +144,30 @@ export const DivisionsPage: React.FC = () => {
     };
   });
 
-  const chartData = divisionsList.map(d => ({
-    name: d.name,
-    'Historical Events (2000-2026)': d.totalHistoricalEvents,
-    'Active Forecast Records': d.activeForecastsCount,
-  })).sort((a, b) => b['Historical Events (2000-2026)'] - a['Historical Events (2000-2026)']);
+  const chartData = divisionsList
+    .map((d) => ({
+      name: d.name,
+      'Historical Events (2000-2026)': d.totalHistoricalEvents,
+      'Active Forecast Records': d.activeForecastsCount,
+    }))
+    .sort((a, b) => b['Historical Events (2000-2026)'] - a['Historical Events (2000-2026)']);
 
   return (
     <div className="min-h-dvh bg-carbon-05 text-carbon-80 pb-8 pt-6 px-4 sm:px-6 lg:px-8 max-w-[1200px] mx-auto">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-carbon-60 mb-4">
-        <Link to="/" className="hover:text-ap-link transition-colors">Home</Link>
+        <Link to="/" className="hover:text-ap-link transition-colors">
+          Home
+        </Link>
         <span>/</span>
         <span className="text-carbon-80 font-medium">Divisions</span>
       </div>
 
       {/* Header Banner */}
-      <div className="bg-white border border-carbon-20 p-6 sm:p-8 mb-8">
+      <div className="bg-white border border-carbon-20 rounded-2xl p-6 sm:p-8 mb-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold bg-carbon-05 text-ap-link border border-carbon-20 mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold bg-carbon-05 text-ap-link border border-carbon-20 rounded-full mb-3">
               <Layers className="w-3.5 h-3.5" />
               <span>National Administrative Tiers</span>
             </div>
@@ -131,20 +175,21 @@ export const DivisionsPage: React.FC = () => {
               Bangladesh Regional Divisions
             </h1>
             <p className="mt-2 text-base leading-[1.62] text-carbon-70 max-w-2xl leading-relaxed">
-              Real-time multi-hazard exposure, 26-year historical disaster analysis (2000–2026), and active record forecasts across all 8 administrative divisions.
+              Real-time multi-hazard exposure, 26-year historical disaster analysis (2000–2026), and active record
+              forecasts across all 8 administrative divisions.
             </p>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full md:w-auto">
-            <div className="bg-carbon-05 border border-carbon-20/80 p-3 text-center">
+            <div className="rounded-xl bg-carbon-05 border border-carbon-20/80 p-3 text-center">
               <div className="text-xl sm:text-2xl font-bold text-carbon-90">8</div>
               <div className="text-xs text-carbon-60 font-medium">Divisions</div>
             </div>
-            <div className="bg-carbon-05 border border-carbon-20/80 p-3 text-center">
+            <div className="rounded-xl bg-carbon-05 border border-carbon-20/80 p-3 text-center">
               <div className="text-xl sm:text-2xl font-bold text-carbon-90">64</div>
               <div className="text-xs text-carbon-60 font-medium">Districts</div>
             </div>
-            <div className="bg-carbon-05 border border-carbon-20/80 p-3 text-center col-span-2 sm:col-span-1">
+            <div className="rounded-xl bg-carbon-05 border border-carbon-20/80 p-3 text-center col-span-2 sm:col-span-1">
               <div className="text-xl sm:text-2xl font-bold text-ap-link">
                 {archiveLoaded ? summary!.totalEvents.toLocaleString() : '—'}
               </div>
@@ -155,7 +200,7 @@ export const DivisionsPage: React.FC = () => {
       </div>
 
       {/* Interactive Division Comparative Chart */}
-      <div className="bg-white border border-carbon-20 p-6 mb-8">
+      <div className="bg-white border border-carbon-20 rounded-2xl p-6 mb-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-carbon-20 gap-2">
           <div>
             <h2 className="text-base font-semibold text-carbon-90 flex items-center gap-2">
@@ -204,7 +249,12 @@ export const DivisionsPage: React.FC = () => {
               <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
               <YAxis tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
               <Tooltip
-                contentStyle={{ backgroundColor: 'var(--ap-bg-canvas)', borderColor: 'var(--ap-separator-opaque)', borderRadius: 'var(--ap-radius-md)', boxShadow: 'var(--ap-elev-flat)' }}
+                contentStyle={{
+                  backgroundColor: 'var(--ap-bg-canvas)',
+                  borderColor: 'var(--ap-separator-opaque)',
+                  borderRadius: 'var(--ap-radius-md)',
+                  boxShadow: 'var(--ap-elev-flat)',
+                }}
                 cursor={{ fill: 'var(--ap-bg-canvas)' }}
               />
               <Legend wrapperStyle={{ paddingTop: '10px' }} />
@@ -227,7 +277,7 @@ export const DivisionsPage: React.FC = () => {
             <Link
               key={division.id}
               to={`/divisions/${division.id}`}
-              className="bg-white border border-carbon-20 p-6 hover:border-carbon-30 group flex flex-col justify-between"
+              className="bg-white border border-carbon-20 rounded-2xl p-6 hover:border-carbon-30 group flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between mb-3">
@@ -267,8 +317,11 @@ export const DivisionsPage: React.FC = () => {
                   <div className="mt-3 pt-2">
                     <div className="text-xs text-carbon-60 mb-1">Key Districts:</div>
                     <div className="flex flex-wrap gap-1">
-                      {division.topDistricts.map(dist => (
-                        <span key={dist} className="px-2 py-0.5 bg-carbon-05 border border-carbon-20 text-carbon-60 rounded text-xs">
+                      {division.topDistricts.map((dist) => (
+                        <span
+                          key={dist}
+                          className="px-2 py-0.5 bg-carbon-05 border border-carbon-20 text-carbon-60 rounded text-xs"
+                        >
                           {dist}
                         </span>
                       ))}

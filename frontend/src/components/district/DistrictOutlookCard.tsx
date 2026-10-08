@@ -62,7 +62,7 @@ export const DistrictOutlookCard: React.FC = () => {
   return (
     <>
         {/* 2. EXECUTIVE HERO COMMAND CARD */}
-        <section className="bg-white border border-carbon-20 p-4 sm:p-6 relative overflow-hidden">
+        <section className="bg-white border border-carbon-20 rounded-xl p-4 sm:p-6 relative overflow-hidden">
           {/* Subtle decorative background glow */}
 
           
@@ -70,22 +70,22 @@ export const DistrictOutlookCard: React.FC = () => {
             {/* Status indicators & Descriptive summary — Starts directly with descriptive summary */}
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-2 screen-only">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-sm bg-carbon-10 border border-carbon-20 text-carbon-70 text-xs font-mono font-bold">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-carbon-10 border border-carbon-20 text-carbon-70 text-xs font-mono font-bold">
                   <MapPin className="w-3 h-3 text-carbon-60" />
                   {data.division} Division
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-sm bg-carbon-10 border border-carbon-20 text-carbon-70 text-xs font-mono font-bold">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-carbon-10 border border-carbon-20 text-carbon-70 text-xs font-mono font-bold">
                   <Compass className="w-3 h-3 text-carbon-60" />
                   {district.lat.toFixed(3)}°N, {district.lng.toFixed(3)}°E
                 </span>
-                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-sm border text-xs font-mono font-extrabold ${riskStyles.bg}`}>
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-mono font-extrabold ${riskStyles.bg}`}>
                   <span className={`w-2 h-2 rounded-full ${
                     data.modelAssessment.riskCategory === 'High' ? 'bg-[var(--ap-sev-very-high)] animate-pulse' :
                     data.modelAssessment.riskCategory === 'Moderate' ? 'bg-[var(--ap-sev-moderate)]' : 'bg-[var(--ap-sev-low)]'
                   }`} />
                   {data.modelAssessment.riskCategory} Risk Classification
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-sm bg-carbon-05 border border-carbon-20 text-ap-link text-xs font-mono font-bold">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-carbon-05 border border-carbon-20 text-ap-link text-xs font-mono font-bold">
                   <Bot className="w-3 h-3 text-ap-link" />
                   Model Score: {data.modelAssessment.confidenceLevel}% (uncalibrated)
                 </span>
@@ -101,7 +101,7 @@ export const DistrictOutlookCard: React.FC = () => {
                 </p>
 
                 {/* Quick Live Link / QR preview for Screen */}
-                <div className="hidden lg:flex items-center gap-3 bg-carbon-05 border border-carbon-20/80 p-3 shrink-0 screen-only">
+                <div className="rounded-lg hidden lg:flex items-center gap-3 bg-carbon-05 border border-carbon-20/80 p-3 shrink-0 screen-only">
                   <div className="shrink-0">
                     <PrintQrCode
                       url={`https://www.hazardnet.live/forecast/district/${districtId}`}
@@ -129,10 +129,10 @@ export const DistrictOutlookCard: React.FC = () => {
           {/* 3-Column Key Metrics Summary Card */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-carbon-20">
             {/* Metric 1: Severity Gauge */}
-            <div className="metric-card bg-carbon-05 border border-carbon-20 p-4 sm:p-6 space-y-2">
+            <div className="metric-card bg-carbon-05 border border-carbon-20 rounded-xl p-4 sm:p-6 space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-mono font-bold text-carbon-60 uppercase">Severity Gauge</span>
-                <span className={`px-2 py-0.5 rounded-sm text-xs font-mono font-extrabold ${riskStyles.badge}`}>
+                <span className={`px-2 py-0.5 rounded-full text-xs font-mono font-extrabold ${riskStyles.badge}`}>
                   {data.modelAssessment.riskCategory}
                 </span>
               </div>
@@ -145,9 +145,9 @@ export const DistrictOutlookCard: React.FC = () => {
                   | {data.hazardType}
                 </span>
               </div>
-              <div className="w-full bg-carbon-20 h-2 rounded-sm overflow-hidden">
+              <div className="w-full bg-carbon-20 h-2 rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-sm transition-all duration-700 ${riskStyles.bar}`}
+                  className={`h-full rounded-full transition-all duration-700 ${riskStyles.bar}`}
                   style={{ width: `${Math.min(100, Math.max(5, data.modelAssessment.continuousSeverityIndex * 100))}%` }}
                 />
               </div>
@@ -157,10 +157,10 @@ export const DistrictOutlookCard: React.FC = () => {
             </div>
 
             {/* Metric 2: AI Model Confidence */}
-            <div className="metric-card bg-carbon-05 border border-carbon-20 p-4 sm:p-6 space-y-2">
+            <div className="metric-card bg-carbon-05 border border-carbon-20 rounded-xl p-4 sm:p-6 space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-mono font-bold text-carbon-60 uppercase">AI Model Confidence</span>
-                <span className="inline-flex items-center gap-1.5 rounded-sm bg-carbon-10 px-2 py-0.5 text-xs font-mono font-bold text-carbon-80">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-carbon-10 px-2 py-0.5 text-xs font-mono font-bold text-carbon-80">
                   <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" /> High Reliability
                 </span>
               </div>
@@ -172,9 +172,9 @@ export const DistrictOutlookCard: React.FC = () => {
                   | Neural Attention
                 </span>
               </div>
-              <div className="w-full bg-carbon-20 h-2 rounded-sm overflow-hidden">
+              <div className="w-full bg-carbon-20 h-2 rounded-full overflow-hidden">
                 <div
-                  className="h-full rounded-sm bg-severity-low transition-all duration-700"
+                  className="h-full rounded-full bg-severity-low transition-all duration-700"
                   style={{ width: `${data.modelAssessment.confidenceLevel}%` }}
                 />
               </div>
@@ -184,10 +184,10 @@ export const DistrictOutlookCard: React.FC = () => {
             </div>
 
             {/* Metric 3: Hydro-Dynamic Elevation */}
-            <div className="metric-card bg-carbon-05 border border-carbon-20 p-4 sm:p-6 space-y-2">
+            <div className="metric-card bg-carbon-05 border border-carbon-20 rounded-xl p-4 sm:p-6 space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-mono font-bold text-carbon-60 uppercase">Elevation Datum</span>
-                <span className="px-2 py-0.5 rounded-sm text-xs font-mono font-bold bg-blue-100 text-blue-800">
+                <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-blue-100 text-blue-800">
                   SRTM Geodetic
                 </span>
               </div>
@@ -200,9 +200,9 @@ export const DistrictOutlookCard: React.FC = () => {
                   | Mean Sea Level
                 </span>
               </div>
-              <div className="w-full bg-carbon-20 h-2 rounded-sm overflow-hidden">
+              <div className="w-full bg-carbon-20 h-2 rounded-full overflow-hidden">
                 <div
-                  className="h-full rounded-sm bg-blue-500 transition-all duration-700"
+                  className="h-full rounded-full bg-blue-500 transition-all duration-700"
                   style={{ width: `${Math.min(100, (data.elevationMeters / 40) * 100)}%` }}
                 />
               </div>

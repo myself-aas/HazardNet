@@ -25,7 +25,12 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import MaterialIcon from '../components/MaterialIcon';
 import { AlertCard } from '../components/alerts/AlertCard';
-import { AlertFilters, DEFAULT_ALERT_FILTERS, filterAlerts, type AlertFilterState } from '../components/alerts/AlertFilters';
+import {
+  AlertFilters,
+  DEFAULT_ALERT_FILTERS,
+  filterAlerts,
+  type AlertFilterState,
+} from '../components/alerts/AlertFilters';
 import { AlertLevelLegend } from '../components/alerts/AlertLevelBadge';
 import { DataSourceBanner } from '../components/alerts/DataSourceBanner';
 import { Disclaimer } from '../components/alerts/Disclaimer';
@@ -68,18 +73,22 @@ export const AlertsPage: React.FC = () => {
   }, [t]);
 
   const tableRows: DistrictAlertRow[] = useMemo(
-    () => data.alerts.map((alert) => ({
-      district: alert.district_name || String(alert.district_id ?? '—'),
-      division: alert.division || null,
-      alert,
-      baselineOnly: false,
-    })),
+    () =>
+      data.alerts.map((alert) => ({
+        district: alert.district_name || String(alert.district_id ?? '—'),
+        division: alert.division || null,
+        alert,
+        baselineOnly: false,
+      })),
     [data.alerts],
   );
 
-  const onSelectDistrict = useCallback((district: string) => {
-    navigate(`/district/${encodeURIComponent(district.toLowerCase().replace(/\s+/g, '-'))}`);
-  }, [navigate]);
+  const onSelectDistrict = useCallback(
+    (district: string) => {
+      navigate(`/district/${encodeURIComponent(district.toLowerCase().replace(/\s+/g, '-'))}`);
+    },
+    [navigate],
+  );
 
   const onExportCsv = useCallback(() => {
     downloadAlertsCsv(sorted, {
@@ -105,11 +114,12 @@ export const AlertsPage: React.FC = () => {
   // when the payload simply cannot say.
   const suppressed = data.notPublished ?? data.droppedUnpublished;
 
-  const headline = data.alerts.length === 0
-    ? t('alerts.empty.title')
-    : (data.alerts.length === 1
-      ? t('alerts.count.one', { count: formatNumber(1) })
-      : t('alerts.count.other', { count: formatNumber(data.alerts.length) }));
+  const headline =
+    data.alerts.length === 0
+      ? t('alerts.empty.title')
+      : data.alerts.length === 1
+        ? t('alerts.count.one', { count: formatNumber(1) })
+        : t('alerts.count.other', { count: formatNumber(data.alerts.length) });
 
   return (
     <div className="mx-auto w-full max-w-[1100px] px-3 pb-16 pt-6 sm:px-6">
@@ -118,9 +128,7 @@ export const AlertsPage: React.FC = () => {
           <h1 className="text-ap-lead font-bold leading-[1.2] tracking-tight text-carbon-90 sm:text-ap-display-md">
             {t('alerts.title')}
           </h1>
-          <p className="mt-1 max-w-2xl text-base leading-[1.62] text-carbon-70">
-            {t('alerts.standfirst')}
-          </p>
+          <p className="mt-1 max-w-2xl text-base leading-[1.62] text-carbon-70">{t('alerts.standfirst')}</p>
         </div>
         <div className="flex flex-col items-end gap-2">
           <LanguageToggle variant="switch" />
@@ -133,9 +141,7 @@ export const AlertsPage: React.FC = () => {
               aria-describedby="low-bandwidth-hint"
             />
             {t('bandwidth.toggle')}
-            {override === null && (
-              <span className="text-xs font-normal text-carbon-60">(auto)</span>
-            )}
+            {override === null && <span className="text-xs font-normal text-carbon-60">(auto)</span>}
           </label>
           <span id="low-bandwidth-hint" className="max-w-[240px] text-right text-xs text-carbon-60">
             {t('bandwidth.toggleHint')}
@@ -156,7 +162,7 @@ export const AlertsPage: React.FC = () => {
           <button
             type="button"
             onClick={data.refresh}
-            className="inline-flex min-h-[44px] items-center gap-1 border border-carbon-20 bg-primary px-3 py-2 font-semibold text-ap-action-fg transition-colors hover:bg-primary-strong touch-manipulation"
+            className="inline-flex min-h-[44px] items-center gap-1 rounded-full border border-carbon-20 bg-primary px-3 py-2 font-semibold text-ap-action-fg transition-colors hover:bg-primary-strong touch-manipulation"
           >
             <MaterialIcon name="refresh" className="text-sm" aria-hidden="true" />
             {t('alerts.page.refresh')}
@@ -164,9 +170,13 @@ export const AlertsPage: React.FC = () => {
           {data.fetchedAt && (
             <span>{t('alerts.page.loadedAt', { time: formatDate(data.fetchedAt, { withTime: true }) })}</span>
           )}
-          <span aria-live="polite" className="font-semibold text-carbon-80">{headline}</span>
+          <span aria-live="polite" className="font-semibold text-carbon-80">
+            {headline}
+          </span>
           {data.assessed !== null && (
-            <span>{t('alerts.page.assessed', { count: formatNumber(data.assessed, { maximumFractionDigits: 0 }) })}</span>
+            <span>
+              {t('alerts.page.assessed', { count: formatNumber(data.assessed, { maximumFractionDigits: 0 }) })}
+            </span>
           )}
           {suppressed > 0 && (
             <span className="text-amber-800">
@@ -177,7 +187,7 @@ export const AlertsPage: React.FC = () => {
             <button
               type="button"
               onClick={onExportCsv}
-              className="inline-flex min-h-[44px] items-center gap-1 border border-carbon-20 px-3 py-2 font-semibold text-carbon-80 hover:bg-carbon-05 touch-manipulation"
+              className="inline-flex min-h-[44px] items-center gap-1 rounded-full border border-carbon-20 px-3 py-2 font-semibold text-carbon-80 hover:bg-carbon-05 touch-manipulation"
             >
               <MaterialIcon name="download" className="text-sm" aria-hidden="true" />
               {t('alerts.page.csv')}
@@ -185,10 +195,12 @@ export const AlertsPage: React.FC = () => {
           )}
         </div>
         {data.warnings.length > 0 && (
-          <details className="border border-carbon-20 border-l-[2px] border-l-amber-500 bg-white p-4 text-base text-carbon-90">
+          <details className="rounded-xl border border-carbon-20 border-l-4 border-l-amber-500 bg-white p-4 text-base text-carbon-90">
             <summary className="min-h-[44px] cursor-pointer font-bold">{t('alerts.page.degraded')}</summary>
             <ul className="mt-1 list-disc space-y-0.5 pl-4">
-              {data.warnings.map((warning) => <li key={warning}>{warning}</li>)}
+              {data.warnings.map((warning) => (
+                <li key={warning}>{warning}</li>
+              ))}
             </ul>
           </details>
         )}
@@ -198,138 +210,135 @@ export const AlertsPage: React.FC = () => {
       <div className="mt-6 flex flex-col">
         {/* Filters + list/table */}
         <section className="order-1 mt-8 lg:order-2" aria-labelledby="alerts-list-heading">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h2 id="alerts-list-heading" className="text-base font-bold text-carbon-90">
-            {t('alerts.page.listTitle')}
-          </h2>
-          <div className="no-print inline-flex items-center border border-carbon-20 bg-white p-0.5 text-sm font-semibold">
-            <button
-              type="button"
-              onClick={() => setView('cards')}
-              aria-pressed={view === 'cards'}
-              className={`min-h-[44px] px-3 py-2 touch-manipulation ${view === 'cards' ? 'bg-primary text-ap-action-fg' : 'text-carbon-70'}`}
-            >
-              {t('alerts.page.viewCards')}
-            </button>
-            <button
-              type="button"
-              onClick={() => setView('list')}
-              aria-pressed={view === 'list'}
-              className={`min-h-[44px] px-3 py-2 touch-manipulation ${view === 'list' ? 'bg-primary text-ap-action-fg' : 'text-carbon-70'}`}
-            >
-              {t('alerts.page.viewList')}
-            </button>
-          </div>
-        </div>
-
-        <AlertFilters
-          alerts={data.alerts}
-          filters={filters}
-          onChange={setFilters}
-          shown={sorted.length}
-          className="mb-4"
-        />
-
-        {data.loading && data.alerts.length === 0 && (
-          <p className="text-sm text-carbon-60" role="status">{t('common.loading')}</p>
-        )}
-
-        {!data.loading && data.alerts.length === 0 && (
-          <div className="border border-carbon-20 bg-white p-4">
-            <h3 className="text-sm font-bold text-carbon-90">
-              {data.source === 'none' ? t('alerts.empty.unavailable') : t('alerts.empty.title')}
-            </h3>
-            {data.source === 'none' && data.error && (
-              <p className="mt-1 font-mono text-xs text-carbon-60">
-                {data.error}
-              </p>
-            )}
-            {data.source === 'none' && (
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h2 id="alerts-list-heading" className="text-base font-bold text-carbon-90">
+              {t('alerts.page.listTitle')}
+            </h2>
+            <div className="no-print inline-flex items-center rounded-full border border-carbon-20 bg-white p-0.5 text-sm font-semibold">
               <button
                 type="button"
-                onClick={data.refresh}
-                className="mt-3 inline-flex min-h-[44px] items-center gap-2 border border-carbon-20 bg-carbon-05 px-4 text-sm font-semibold text-carbon-90 hover:bg-carbon-10 touch-manipulation"
+                onClick={() => setView('cards')}
+                aria-pressed={view === 'cards'}
+                className={`min-h-[44px] rounded-full px-3 py-2 touch-manipulation ${view === 'cards' ? 'bg-primary text-ap-action-fg' : 'text-carbon-70'}`}
               >
-                <MaterialIcon name="refresh" className="text-base" aria-hidden="true" />
-                {t('alerts.page.retry')}
+                {t('alerts.page.viewCards')}
               </button>
-            )}
-            <p className="mt-1 text-xs text-carbon-60">
-              {suppressed > 0
-                ? t('alerts.empty.blocked', {
-                  assessed: formatNumber(data.assessed ?? suppressed, { maximumFractionDigits: 0 }),
-                })
-                : t('alerts.empty.body')}
-            </p>
-            {data.assessed !== null && (
-              <p className="mt-1 text-xs font-semibold text-carbon-60">
-                {t('alerts.page.assessed', { count: formatNumber(data.assessed, { maximumFractionDigits: 0 }) })}
-              </p>
-            )}
+              <button
+                type="button"
+                onClick={() => setView('list')}
+                aria-pressed={view === 'list'}
+                className={`min-h-[44px] rounded-full px-3 py-2 touch-manipulation ${view === 'list' ? 'bg-primary text-ap-action-fg' : 'text-carbon-70'}`}
+              >
+                {t('alerts.page.viewList')}
+              </button>
+            </div>
           </div>
-        )}
 
-        {data.alerts.length > 0 && (
-          <div id={DISTRICT_ALERT_LAYER_ID}>
-            {view === 'cards' ? (
-              sorted.length === 0 ? (
-                <p className="border border-carbon-20 bg-white p-4 text-sm text-carbon-60">
-                  {t('alerts.filter.results', { shown: '0', total: String(data.alerts.length) })}
+          <AlertFilters
+            alerts={data.alerts}
+            filters={filters}
+            onChange={setFilters}
+            shown={sorted.length}
+            className="mb-4"
+          />
+
+          {data.loading && data.alerts.length === 0 && (
+            <p className="text-sm text-carbon-60" role="status">
+              {t('common.loading')}
+            </p>
+          )}
+
+          {!data.loading && data.alerts.length === 0 && (
+            <div className="rounded-xl border border-carbon-20 bg-white p-4">
+              <h3 className="text-sm font-bold text-carbon-90">
+                {data.source === 'none' ? t('alerts.empty.unavailable') : t('alerts.empty.title')}
+              </h3>
+              {data.source === 'none' && data.error && (
+                <p className="mt-1 font-mono text-xs text-carbon-60">{data.error}</p>
+              )}
+              {data.source === 'none' && (
+                <button
+                  type="button"
+                  onClick={data.refresh}
+                  className="mt-3 inline-flex min-h-[44px] items-center gap-2 rounded-full border border-carbon-20 bg-carbon-05 px-4 text-sm font-semibold text-carbon-90 hover:bg-carbon-10 touch-manipulation"
+                >
+                  <MaterialIcon name="refresh" className="text-base" aria-hidden="true" />
+                  {t('alerts.page.retry')}
+                </button>
+              )}
+              <p className="mt-1 text-xs text-carbon-60">
+                {suppressed > 0
+                  ? t('alerts.empty.blocked', {
+                      assessed: formatNumber(data.assessed ?? suppressed, { maximumFractionDigits: 0 }),
+                    })
+                  : t('alerts.empty.body')}
+              </p>
+              {data.assessed !== null && (
+                <p className="mt-1 text-xs font-semibold text-carbon-60">
+                  {t('alerts.page.assessed', { count: formatNumber(data.assessed, { maximumFractionDigits: 0 }) })}
                 </p>
+              )}
+            </div>
+          )}
+
+          {data.alerts.length > 0 && (
+            <div id={DISTRICT_ALERT_LAYER_ID}>
+              {view === 'cards' ? (
+                sorted.length === 0 ? (
+                  <p className="rounded-xl border border-carbon-20 bg-white p-4 text-sm text-carbon-60">
+                    {t('alerts.filter.results', { shown: '0', total: String(data.alerts.length) })}
+                  </p>
+                ) : (
+                  <ul className="grid gap-3 sm:grid-cols-2">
+                    {sorted.map((alert) => (
+                      <li key={alert.id}>
+                        <AlertCard alert={alert} onOpen={() => navigate(`/alerts/${encodeURIComponent(alert.id)}`)} />
+                      </li>
+                    ))}
+                  </ul>
+                )
               ) : (
-                <ul className="grid gap-3 sm:grid-cols-2">
-                  {sorted.map((alert) => (
-                    <li key={alert.id}>
-                      <AlertCard
-                        alert={alert}
-                        onOpen={() => navigate(`/alerts/${encodeURIComponent(alert.id)}`)}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              )
-            ) : (
-              <div id="district-alert-list">
-                <DistrictAlertTable rows={tableRows} onSelectDistrict={onSelectDistrict} />
-              </div>
-            )}
-          </div>
-        )}
-      </section>
+                <div id="district-alert-list">
+                  <DistrictAlertTable rows={tableRows} onSelectDistrict={onSelectDistrict} />
+                </div>
+              )}
+            </div>
+          )}
+        </section>
 
         {/* Map. CSS order lifts it above the list on desktop. */}
         <section className="order-2 mt-8 lg:order-1 lg:mt-0" aria-labelledby="alerts-map-heading">
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <h2 id="alerts-map-heading" className="text-base font-bold text-carbon-90">
-            {t('alerts.page.mapTitle')}
-          </h2>
-          {/* The alert-level key lives in the map card's own legend slot,
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <h2 id="alerts-map-heading" className="text-base font-bold text-carbon-90">
+              {t('alerts.page.mapTitle')}
+            </h2>
+            {/* The alert-level key lives in the map card's own legend slot,
               directly under the thing it decodes. It used to be rendered here
               as well, which gave the page two identical keys and made a screen
               reader announce the whole scale twice. */}
-        </div>
-        <div className="overflow-hidden rounded-2xl border border-carbon-20">
-          <BangladeshSvgMap
-          lowBandwidth={lowBandwidth}
-          alertLevels={alertLayers}
-          alertLevelLabels={levelLabels}
-          onSelectDistrict={(district) => onSelectDistrict(district.name)}
-          legendSlot={
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="font-bold text-carbon-70">{t('map.legend.alerts')}:</span>
-              <AlertLevelLegend
-                levels={ALERT_LEVELS.map((level) => ({
-                  level,
-                  label: t(`alerts.level.${level}`),
-                  description: t(`alerts.level.${level}.desc`),
-                }))}
-              />
-            </div>
-          }
-        />
-        </div>
-        <p className="mt-1.5 text-xs leading-relaxed text-carbon-60">{t('map.layer.note')}</p>
-      </section>
+          </div>
+          <div className="overflow-hidden rounded-2xl border border-carbon-20">
+            <BangladeshSvgMap
+              lowBandwidth={lowBandwidth}
+              alertLevels={alertLayers}
+              alertLevelLabels={levelLabels}
+              onSelectDistrict={(district) => onSelectDistrict(district.name)}
+              legendSlot={
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="font-bold text-carbon-70">{t('map.legend.alerts')}:</span>
+                  <AlertLevelLegend
+                    levels={ALERT_LEVELS.map((level) => ({
+                      level,
+                      label: t(`alerts.level.${level}`),
+                      description: t(`alerts.level.${level}.desc`),
+                    }))}
+                  />
+                </div>
+              }
+            />
+          </div>
+          <p className="mt-1.5 text-xs leading-relaxed text-carbon-60">{t('map.layer.note')}</p>
+        </section>
       </div>
 
       {/* Policy in force */}
@@ -339,12 +348,15 @@ export const AlertsPage: React.FC = () => {
       </section>
 
       {/* Official sources */}
-      <section className="mt-6 border border-carbon-20 bg-white p-4">
+      <section className="mt-6 border border-carbon-20 rounded-2xl bg-white p-4">
         <h2 className="text-sm font-bold text-carbon-90">{t('alerts.page.official')}</h2>
         <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold text-carbon-80">
           {EMERGENCY_NUMBERS.map((entry) => (
             <li key={entry.number}>
-              <a href={`tel:${entry.number}`} className="underline decoration-dotted underline-offset-2 hover:text-amber-800">
+              <a
+                href={`tel:${entry.number}`}
+                className="underline decoration-dotted underline-offset-2 hover:text-amber-800"
+              >
                 {entry.number} — {entry.label}
               </a>
             </li>
