@@ -1,0 +1,175 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/mcp-server-card/v1.json",
+  "version": "1.0",
+  "protocolVersion": "2025-06-18",
+  "serverInfo": {
+    "name": "hazardnet",
+    "title": "HazardNet Multi-Hazard Early Warning",
+    "version": "3.2.0"
+  },
+  "description": "Multi-Hazard Early Warning AI server for Bangladesh agriculture. Provides tools for retrieving 7- and 15-day hazard outlooks across 8 climate hazards (flood, flash flood, tropical cyclone, drought, heat wave, cold wave, fire, severe local storm) for 64 districts, weather observations, published alerts, historical hazard data, AI advisory chat, and unit conversions.",
+  "iconUrl": "https://www.hazardnet.live/hazardnet-mark.svg",
+  "documentationUrl": "https://www.hazardnet.live/docs",
+  "transport": {
+    "type": "streamable-http",
+    "endpoint": "/mcp"
+  },
+  "capabilities": {
+    "tools": {
+      "listChanged": false
+    },
+    "resources": {
+      "subscribe": false,
+      "listChanged": false
+    },
+    "prompts": {}
+  },
+  "authentication": {
+    "required": false,
+    "schemes": ["bearer"]
+  },
+  "tools": [
+    {
+      "name": "get_hazard_forecast",
+      "description": "Retrieve 7- and 15-day hazard outlooks for Bangladesh's 64 districts across 8 hazard classes. Returns hazard class, severity index (0-1), confidence bin, and independent physics cross-check with full provenance.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "district": {
+            "type": "string",
+            "description": "District name (e.g., 'Dhaka', 'Chattogram', 'Rajshahi')"
+          },
+          "hazard": {
+            "type": "string",
+            "description": "Hazard class (flood, flash-flood, tropical-cyclone, drought, heat-wave, cold-wave, fire, severe-local-storm)",
+            "enum": ["flood", "flash-flood", "tropical-cyclone", "drought", "heat-wave", "cold-wave", "fire", "severe-local-storm"]
+          },
+          "horizon": {
+            "type": "string",
+            "description": "Forecast horizon",
+            "enum": ["7_days", "15_days"]
+          }
+        }
+      }
+    },
+    {
+      "name": "list_forecasts",
+      "description": "List all forecast records for a given prediction date. Returns the complete forecast snapshot with hazard class, severity, confidence, and physics cross-check for every district-horizon unit.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "prediction_date": {
+            "type": "string",
+            "description": "Prediction date in YYYY-MM-DD format (defaults to latest)"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_weather",
+      "description": "Fetch current weather observations for a location in Bangladesh from Open-Meteo. Returns temperature, precipitation, wind, humidity, radiation, and evapotranspiration.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "description": "Latitude (e.g., 23.8103 for Dhaka)"
+          },
+          "longitude": {
+            "type": "number",
+            "description": "Longitude (e.g., 90.4125 for Dhaka)"
+          }
+        },
+        "required": ["latitude", "longitude"]
+      }
+    },
+    {
+      "name": "list_alerts",
+      "description": "List published hazard alerts with evidence, drivers, policy version, and review status. Published alerts are public and carry full provenance.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "hazard": {
+            "type": "string",
+            "description": "Filter by hazard class (optional)"
+          },
+          "level": {
+            "type": "string",
+            "description": "Filter by alert level (optional)"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_historical_events",
+      "description": "Query the historical climatic hazard catalog for Bangladesh. Returns past events across all eight hazard classes with episode data.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "district": {
+            "type": "string",
+            "description": "District name to filter by (optional)"
+          },
+          "hazard": {
+            "type": "string",
+            "description": "Hazard class to filter by (optional)"
+          },
+          "year": {
+            "type": "integer",
+            "description": "Year to filter by (optional)"
+          }
+        }
+      }
+    },
+    {
+      "name": "chat_advisory",
+      "description": "Conversational AI advisory for Bangladesh hazard assessment. Ask natural-language questions about hazards, forecasts, districts, and severity. Returns grounded responses with references to committed artifacts.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Natural language question about Bangladesh hazards"
+          }
+        },
+        "required": ["message"]
+      }
+    },
+    {
+      "name": "convert_units",
+      "description": "Convert between measurement units relevant to hazard assessment: temperature (Celsius/Fahrenheit/Kelvin), precipitation (mm/inches), wind speed (km/h/mph/knots/m/s), and pressure (hPa/inHg/mmHg).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number",
+            "description": "Numeric value to convert"
+          },
+          "from_unit": {
+            "type": "string",
+            "description": "Source unit (e.g., 'celsius', 'mm', 'km/h', 'hPa')"
+          },
+          "to_unit": {
+            "type": "string",
+            "description": "Target unit (e.g., 'fahrenheit', 'inches', 'mph', 'inHg')"
+          }
+        },
+        "required": ["value", "from_unit", "to_unit"]
+      }
+    },
+    {
+      "name": "get_district_info",
+      "description": "Get information about a Bangladesh district including its division, elevation, main crops, baseline hazard risk, and static baseline severity.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "district": {
+            "type": "string",
+            "description": "District name"
+          }
+        },
+        "required": ["district"]
+      }
+    }
+  ]
+}

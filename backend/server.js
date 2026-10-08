@@ -392,6 +392,20 @@ app.get('/.well-known/agent-skills/index.json', (req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
+// MCP Server Card — per SEP-1649/SEP-2127 for MCP server discovery.
+// Serves at /.well-known/mcp/server-card.json describing the server's
+// capabilities, tools, resources, and transport.
+// https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2127
+app.get('/.well-known/mcp/server-card.json', (req, res) => {
+  const cardPath = path.resolve(process.cwd(), 'frontend', 'public', '.well-known', 'mcp', 'server-card.json');
+  if (fs.existsSync(cardPath)) {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.status(200).sendFile(cardPath);
+  }
+  res.status(404).json({ error: 'Not found' });
+});
+
 app.get('/.well-known/api-catalog', (req, res) => {
   const catalog = {
     linkset: [
