@@ -21,6 +21,7 @@ import { refreshForecastAgeGauge } from './utils/forecastFreshness.js';
 import { predictLimiter, apiLimiter, alertLimiter } from './middleware/rateLimit.js';
 import { requestId } from './middleware/requestId.js';
 import { attachFirebaseAuthUser, dynamicAiLimiter } from './middleware/firebaseAuth.js';
+import { markdownNegotiation } from './middleware/markdownNegotiation.js';
 import helmet from 'helmet';
 import { cspDirectivesFromString } from './security/csp.js';
 
@@ -173,6 +174,10 @@ app.get('/metrics', async (req, res) => {
 
 // Serve static frontend build files
 const distPath = path.resolve(process.cwd(), 'frontend', 'dist');
+
+// Markdown for Agents: content negotiation for Accept: text/markdown requests.
+// Placed before static serving so agents get clean markdown instead of HTML.
+app.use(markdownNegotiation());
 
 app.use(express.static(distPath));
 
