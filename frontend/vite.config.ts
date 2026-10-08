@@ -7,9 +7,25 @@ import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 /**
- * Strips unreferenced stock hero `.mp4` videos (`public/hero-section/*.mp4`, 148.6 MB)
- * from the production `dist/` output after Vite copies `public/` (`[P0] PERF-01`),
- * keeping the production bundle lean without deleting tracked working-tree binaries.
+ * Strips the retired stock hero `.mp4` videos from the production `dist/` output after Vite
+ * copies `public/` (`[P0] PERF-01`), keeping the deployed bundle lean without touching the
+ * tracked working-tree binaries.
+ *
+ * Five clips, 113 MB (`public/hero-section/`), and a byte-for-byte duplicate tree in
+ * `frontend/assets/hero-section/` — same five files, same sha256s, verified 2026-10-06; the
+ * `assets/` directory holds nothing else. Nothing in `src/` fetches them: the hero is a
+ * CSS-background carousel, and the five `EARTH_HERO_VIDEO_*` constants in `lib/heroMedia.ts` are
+ * retained-but-unreferenced (they are back with `main`'s hero, which owns that file). The files
+ * stay on disk on purpose (the audit trail records the same decision), so the exclusion happens at
+ * build time, where it cannot be forgotten by a deployment that adds `public/` wholesale.
+ *
+ * The other half of the leak is the service worker's precache manifest, which walks `public/`
+ * before this plugin runs — see `globIgnores` in the `VitePWA` options below.
+ *
+ * Deliberately NOT addressed here: the 226 MB those two trees occupy in git. The blobs are
+ * already in history, so deleting the files at the tip would not make a clone any smaller;
+ * reclaiming that space needs a history rewrite, which belongs to the repository owner rather
+ * than to a build config.
  */
 function excludeUnreferencedHeroVideos(): PluginOption {
   let outDir = 'dist';

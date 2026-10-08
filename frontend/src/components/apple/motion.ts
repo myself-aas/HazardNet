@@ -9,6 +9,20 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { APPLE_MOTION } from '@hazardnet/design-system';
+
+/**
+ * The one framer-motion transition the web app may use, in the shape framer wants.
+ *
+ * It is the token, not a copy of it: `APPLE_MOTION.springStandard` is critically damped
+ * (ζ = 1), so it settles without overshoot — which is the point. A spring on a menu that
+ * was only just pressed should arrive, not bounce; overshoot is reserved for a gesture
+ * that itself carried momentum, and the only such surface here is the drag sheet.
+ *
+ * Before this existed, seven call sites wrote their own `stiffness: 350` with a damping of
+ * 25-30 (ζ ≈ 0.67-0.80) and each one overshot. Import this instead of a literal.
+ */
+export const AP_SPRING = { type: 'spring', ...APPLE_MOTION.springStandard } as const;
 
 /** True when the user has asked the OS to reduce motion. SSR-safe. */
 export function prefersReducedMotion(): boolean {

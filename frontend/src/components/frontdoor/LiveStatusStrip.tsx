@@ -29,6 +29,7 @@ import { Interactive } from '../interactive/Interactive';
 import { useWebFrame, interpolate, Easing } from '../../lib/motion-interpolate';
 
 import { AlertLevelBadge } from '../alerts/AlertLevelBadge';
+import { StatusVerdict } from './StatusVerdict';
 import { useI18n } from '../../hooks/useI18n';
 import { useHazardLabel } from '../../hooks/useHazardLabel';
 import { describeAge, type FreshnessCoverage } from '../../lib/freshness';
@@ -131,7 +132,13 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
         translate: reduceMotion
           ? '0px 0px'
           : interpolate(frame, [0, 10], ['0px 8px', '0px 0px'], {
-              easing: Easing.spring({ damping: 200 }),
+              /* `Easing.spring({ damping: 200 })` until 2026-10-06 — a critically damped
+                 spring, i.e. a smooth decelerate with no overshoot, which is exactly what
+                 the house curve is (`--ap-ease`, and the opacity arm directly above). The
+                 spring was the last web-app caller of `Easing` from the `remotion` package
+                 root, and that import pulled the whole studio runtime into the entry chunk;
+                 a 10-frame entrance is not worth ~100 kB of renderer. */
+              easing: Easing.bezier(0.16, 1, 0.3, 1),
               extrapolateLeft: 'clamp',
               extrapolateRight: 'clamp',
             }),
@@ -142,6 +149,19 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
       className="border border-carbon-20 bg-carbon-05"
       data-testid="front-door-status-strip"
     >
+      {/* The answer first: one sentence, before the counts that support it. The counts are not
+          removed — they are the evidence a reader can check — but nothing has to be assembled
+          from them to learn whether the day is quiet. */}
+      <StatusVerdict
+        published={published}
+        worstLevel={LEVEL_ORDER.filter((level) => (counts?.[level] ?? 0) > 0)[0] ?? null}
+        assessed={assessed}
+        withheld={withheld}
+        loading={loading}
+        unread={!loading && counts === null}
+        generatedAt={generatedAt}
+      />
+
       <div className="flex flex-wrap items-center gap-x-5 gap-y-3 p-4 lg:p-6">
         {/* ── level counts ─────────────────────────────────────────────────── */}
         <div className="flex flex-wrap items-center gap-2">

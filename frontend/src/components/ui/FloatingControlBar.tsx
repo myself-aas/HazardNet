@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { AP_SPRING } from '../apple/motion';
 
 export interface ControlChip {
   id: string;
@@ -31,7 +32,7 @@ export const FloatingControlBar: React.FC<FloatingControlBarProps> = ({
     <motion.div
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+      transition={AP_SPRING}
       className={`w-full max-w-xl mx-auto bg-white/90 backdrop-blur-xl border border-carbon-20/60 rounded-2xl shadow-lg p-2 flex flex-col gap-2 ${className}`}
     >
       {/* Top Row: Search Input & Primary Action */}

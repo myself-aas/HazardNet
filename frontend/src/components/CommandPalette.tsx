@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import MaterialIcon from './MaterialIcon';
 import { ALL_64_DISTRICTS, ALL_8_DIVISIONS } from '../data/bangladeshDistricts';
 import { detectExactPinpointLocation } from '../services/geolocationService';
+import { AP_SPRING } from './apple/motion';
 
 export interface SearchItem {
   id: string;
@@ -427,7 +428,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 initial={{ opacity: 0, scale: 0.94, y: -12 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.94, y: -12 }}
-                transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+                transition={AP_SPRING}
                 className="max-w-2xl w-full bg-white border border-carbon-20 rounded-3xl shadow-2xl overflow-hidden text-carbon-90 flex flex-col max-h-[85vh]"
               >
                 {/* Header / Search Input */}

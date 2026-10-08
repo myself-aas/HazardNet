@@ -41,6 +41,12 @@
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import {
+  ADVISORY_TIERS,
+  ADVISORY_POLICY,
+  tierForRow,
+  requiresReview,
+} from './lib/advisory-tier.mjs';
 
 const CSV_PATH = resolve(process.argv[2] || 'backend/data/forecasts/hazardnet_forecasts_latest.csv');
 const OUT_PATH = resolve(process.argv[3] || 'frontend/public/data/forecasts-latest.json');
@@ -346,6 +352,28 @@ function main() {
       row.dataset_version = datasetVersion;
     }
 
+    /* ── The advisory tier, stamped here so no consumer has to invent one. ──────────────
+       The upstream Kaggle advisory CSV publishes `advisory_tier` and the mapper validates it,
+       so when the column is present it is authoritative and copied verbatim. Our own model
+       pipeline's CSV has no such column, and that is the case this exists for: the tier is cut
+       from `final_severity` when the merge produced it, else from `severity_score`.
+       `advisory_tier_source` says which, so a reader can tell the upstream decision from a
+       derivation, and `requires_review` marks the rows that are above the auto-publish ceiling
+       and still need a named duty officer before they become an alert. */
+    const publishedTier = String(get(cells, 'advisory_tier') || '').trim().toUpperCase();
+    if (ADVISORY_TIERS.includes(publishedTier)) {
+      row.advisory_tier = publishedTier;
+      row.advisory_tier_source = 'published';
+      row.requires_review = requiresReview(publishedTier);
+    } else {
+      const cut = tierForRow(row);
+      if (cut) {
+        row.advisory_tier = cut.tier;
+        row.advisory_tier_source = cut.source;
+        row.requires_review = requiresReview(cut.tier);
+      }
+    }
+
     (horizons[horizon] ??= []).push(row);
   }
 
@@ -430,6 +458,9 @@ function main() {
     lineage,
     dataset_version: lineage.dataset_version,
     soil_channels_fabricated: REPORT?.soil_channels_fabricated ?? null,
+    // The bands the rows' `advisory_tier` was cut on, so the artifact records the rule it was
+    // built under instead of leaving a reader to guess which thresholds were in force.
+    advisory_policy: ADVISORY_POLICY,
     horizons,
   };
 
@@ -442,6 +473,11 @@ function main() {
   console.log(`   Coverage: ${coverage.produced_units} units, ${coverage.districts_covered} districts, status=${coverage.status}`);
   console.log(`   Lineage: dataset_version=${lineage.dataset_version ?? 'none'} (${lineage.rows_with_version}/${lineage.rows_total} rows versioned, ${lineage.status})`);
   if (provenance.model_version) console.log(`   Model: ${provenance.model_version} (record ${provenance.record_build_id ?? 'unknown'})`);
+  const tierCounts = Object.values(horizons).flat().reduce((acc, r) => {
+    if (r.advisory_tier) acc[r.advisory_tier] = (acc[r.advisory_tier] ?? 0) + 1;
+    return acc;
+  }, {});
+  console.log(`   Advisory tiers: ${ADVISORY_TIERS.map((t) => `${t} ${tierCounts[t] ?? 0}`).join(' · ')} (bands ${Object.values(ADVISORY_POLICY.bands).join('/')})`);
   if (snapshot.soil_channels_fabricated) console.log('   ⚠ soil channels fabricated (training means) — rows are stamped soil_channels_fabricated=true');
   if (invalidHazards.size > 0) {
     console.error(`❌ Unrecognised hazard labels dropped from the CSV: ${[...invalidHazards.entries()].map(([h, n]) => `${h}×${n}`).join(', ')}`);

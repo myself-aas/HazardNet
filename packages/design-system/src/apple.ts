@@ -246,6 +246,10 @@ export const APPLE_TOUCH = {
 export const APPLE_MOTION = {
   /** The system-wide micro-interaction. DESIGN.md §Do's. */
   pressScale: 0.95,
+  /** EXTENSION — the softer dip for a cell-sized control (an option card, a chip-like
+   *  tile). A grid of cells pressing at the pill's 0.95 flickers; 0.97 stays perceptible
+   *  only on the cell under the finger. Mirrors `--ap-press-scale-soft` in apple.css. */
+  pressScaleSoft: 0.97,
   duration: {
     /** Press/release feedback. */
     press: 120,

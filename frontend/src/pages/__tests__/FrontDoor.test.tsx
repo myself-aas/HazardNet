@@ -214,6 +214,28 @@ describe('the front door', () => {
     expect(hero.querySelectorAll('.bg-carbon-90\\/40').length).toBe(0);
   });
 
+
+  it('enters on the design system’s CSS entrance, not on a frame loop', async () => {
+    const { container } = renderPage();
+
+    // The page arrives as ONE compositor animation — `.ap-enter`, the same 240ms `--ap-ease`
+    // every other entrance in the design system uses (apple.css §11). Nothing about the fade
+    // touches React, so the hero, the backdrop and the carousel are not re-rendered for it.
+    expect(container.firstElementChild).toHaveClass('ap-enter');
+
+    // And it stays that way: this module may not reach for the motion bridge again. Until
+    // 2026-10-06 the root ran `useWebFrame(30, 8)` and interpolated its own opacity, so eight
+    // rAF ticks re-rendered the entire front door per page load — including the live-fact hooks
+    // that read the artifacts, which is ~60 renders a second for 267ms.
+    const source = readFileSync(join(__dirname, '../FrontDoor.tsx'), 'utf8')
+      // Comments are allowed to name the old code (this file's own history explains the change);
+      // only executable source counts.
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+    expect(source).not.toMatch(/useWebFrame\(/);
+    expect(source).not.toMatch(/motion-interpolate/);
+  });
+
   it('renders the Bengali editorial copy, and writes the language on the document', async () => {
     renderPage();
 
@@ -262,17 +284,79 @@ describe('the front door', () => {
     expect(await axe(bengali.container)).toHaveNoViolations();
   });
 
-  it('shows the products section: eight hazard classes and both horizons', async () => {
+  it('shows the hazards section: eight hazard classes and both horizons', async () => {
     const { container, unmount } = renderPage();
     await waitFor(() => expect(screen.getByText('Monsoon outlook test post')).toBeInTheDocument());
-    const heading = screen.getByRole('heading', { name: 'Products' });
+    // Called "Hazards" since 2026-10-07 - the reader's word for the section, and the word the top
+    // bar uses for the same thing. "Products" was the vendor's word on a page that sells nothing.
+    const heading = screen.getByRole('heading', { name: 'Hazards' });
     expect(heading).toBeInTheDocument();
+    // The label points at the heading it names, and the caption is a caption, not a second
+    // paragraph: `<span>` here, next to the `<h2>` it describes.
+    const section = heading.closest('section')!;
+    expect(section).toHaveAttribute('aria-labelledby', 'hazards-heading');
+    expect(heading).toHaveAttribute('id', 'hazards-heading');
+    expect(within(section).getByText(/Eight classes · 7 and 15 day horizons/).tagName).toBe('SPAN');
+    // The eyebrow keeps the count, so the rename cost the reader no information.
+    expect(section.textContent).toContain('Eight hazard classes');
     // The eight classes come from the same methodology file the /hazards page reads.
     expect(container.textContent).toContain('Tropical Cyclone');
     expect(container.textContent).toContain('Cold Wave');
     expect(container.textContent).toContain('7-day outlook');
     expect(container.textContent).toContain('15-day outlook');
     expect(container.querySelectorAll('a[href^="/hazards/"]').length).toBeGreaterThanOrEqual(8);
+    unmount();
+  });
+
+  it('survives a 320px phone: no fixed widths, no unbreakable tokens', async () => {
+    const { container, unmount } = renderPage();
+    await screen.findByTestId('front-door-status-strip');
+
+    /*
+     * The front door cannot be laid out in jsdom, so this asserts the four things that decide
+     * whether it CAN fit a small phone, each of them the mechanical form of a ui-ux-pro-max rule:
+     *
+     *   · §5 `horizontal-scroll` / "no fixed px container widths" — nothing in the subtree may
+     *     declare a fixed width wider than the content box of the smallest phone we support.
+     *     320px minus the page's own `px-4` (32px) leaves 288px; `max-w-*` is not counted, because
+     *     a maximum cannot overflow, and neither is `min-h-*`, which is a touch target (below).
+     *   · §6 `long-token-wrapping` — the citation carries a URL, the only unbreakable token
+     *     on the page; it must be allowed to break.
+     *   · §5 `touch-density` — the in-section actions are 44px rows, phone and desktop alike.
+     *
+     * The hero is deliberately not covered here: it is `main`'s hero, held by its own test below,
+     * and the rules that shape it (the copy panel, the type sizes, the phone clamp) belong to that
+     * contract rather than to this page-level scan.
+     */
+    const PHONE_CONTENT_BOX = 320 - 2 * 16;
+
+    const fixed = new Map<string, string>();
+    for (const el of Array.from(container.querySelectorAll<HTMLElement>('*'))) {
+      const cls = el.getAttribute('class') ?? '';
+      for (const match of cls.matchAll(/(?:^|\s)(min-w|w|basis)-\[(\d+)px\]/g)) {
+        const width = Number(match[2]);
+        if (width > PHONE_CONTENT_BOX) fixed.set(`${match[1]}-[${match[2]}px]`, el.tagName);
+      }
+    }
+    expect([...fixed.entries()]).toEqual([]);
+
+    // The citation is the page's one long token (a 39-character repository URL). `break-words`
+    // lets it wrap instead of forcing the block wider than the phone.
+    // Matched on the bare URL, because the body paragraph above it also names the department.
+    const citation = [...container.querySelectorAll('p')].find((p) =>
+      p.textContent?.includes('github.com/myself-aas/HazardNet'),
+    )!;
+    expect(citation).toBeDefined();
+    expect(citation.className).toContain('break-words');
+    expect(citation.className).toContain('font-mono');
+
+    // Every in-section action is a 44px row, phone and desktop alike.
+    const sectionButtons = [...container.querySelectorAll('a')].filter((a) =>
+      /How each class is scored|How to read a forecast/i.test(a.textContent ?? ''),
+    );
+    expect(sectionButtons.length).toBe(2);
+    for (const button of sectionButtons) expect(button.className).toContain('min-h-[44px]');
+
     unmount();
   });
 

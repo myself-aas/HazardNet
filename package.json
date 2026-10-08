@@ -135,6 +135,7 @@
     "node": ">=20"
   },
   "overrides": {
-    "@grpc/grpc-js": "^1.13.6"
+    "@grpc/grpc-js": "^1.13.6",
+    "shell-quote": "^1.11.0"
   }
 }

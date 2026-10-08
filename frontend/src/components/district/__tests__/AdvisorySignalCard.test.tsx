@@ -68,8 +68,11 @@ describe('AdvisorySignalCard', () => {
     const { advisory_tier: _omitted, ...withoutTier } = ADVISORY_ROW;
     render(<AdvisorySignalCard rows={[withoutTier]} horizon="7_days" />);
 
-    // 0.76 severity bins to SEVERE, but the card must not claim the pipeline said so.
-    expect(screen.getByTestId('advisory-tier')).toHaveTextContent('Severe');
+    // 0.76 is well above the WATCH band and the card still answers WATCH. That is the policy,
+    // not a rounding choice: an unlabelled score cannot be promoted past the auto-publish
+    // ceiling, because WARNING and SEVERE require a named duty officer. The card says the tier
+    // was derived here, so nothing reads as the pipeline's own judgement.
+    expect(screen.getByTestId('advisory-tier')).toHaveTextContent('Watch');
     expect(screen.getByText('Derived locally')).toBeInTheDocument();
   });
 

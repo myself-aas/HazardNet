@@ -20,6 +20,7 @@ import { PdfExportButton } from '../components/PdfExportButton';
 import { ALL_64_DISTRICTS, DistrictData, getDistrictById } from '../data/bangladeshDistricts';
 import { useAuth } from '../context/AuthContext';
 import { findNearestDistrict } from '../services/geolocationService';
+import { AP_SPRING } from '../components/apple/motion';
 
 type District = DistrictData;
 
@@ -360,7 +361,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 50 }}
-                transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+                transition={AP_SPRING}
                 className="absolute top-[calc(var(--navbar-height)+8px)] right-4 left-4 lg:left-auto bottom-4 lg:w-[360px] z-[var(--ap-z-modal)] bg-white border border-carbon-20 rounded-2xl shadow-lg p-4 overflow-y-auto flex flex-col gap-4 text-carbon-90 custom-scrollbar"
               >
 

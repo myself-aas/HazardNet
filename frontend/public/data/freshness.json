@@ -1,13 +1,13 @@
 {
   "schema": "hazardnet-freshness/v1",
-  "built_at": "2026-10-08T09:11:44.222Z",
+  "built_at": "2026-10-08T09:13:24.101Z",
   "generated_by": "scripts/build_freshness_artifact.mjs",
   "what_this_is": "A derived statement about the committed data artifacts this deployment ships. It is not a live probe and it does not measure the running services — the site-health probe result it carries is whatever the last scheduled run published.",
   "overall": {
     "state": "failing",
     "counts": {
-      "fresh": 0,
-      "stale": 3,
+      "fresh": 1,
+      "stale": 2,
       "failing": 1,
       "missing": 0,
       "unknown": 0
@@ -15,7 +15,6 @@
     "not_fresh": [
       "forecast_ingest",
       "forecast_snapshot",
-      "alert_engine",
       "site_probe"
     ]
   },
@@ -43,10 +42,10 @@
       "artifact": "frontend/public/data/forecasts-latest.json",
       "state": "stale",
       "reason": "prediction_date 2026-09-16 is 537.2 h old (SLO 192 h)",
-      "generated_at": "2026-09-24T21:35:56.263Z",
+      "generated_at": "2026-10-06T12:31:16.895Z",
       "prediction_date": "2026-09-16",
       "age_hours": 537.2,
-      "run_age_hours": 323.6,
+      "run_age_hours": 44.7,
       "slo_hours": 192,
       "detail": {
         "schema": "hazardnet-forecast-snapshot/v2",
@@ -57,10 +56,10 @@
       "id": "alert_engine",
       "label": "Alert snapshot",
       "artifact": "frontend/public/data/alerts-latest.json",
-      "state": "stale",
-      "reason": "the snapshot was built 492.1 h ago (SLO 48 h)",
-      "generated_at": "2026-09-17T21:08:14.217Z",
-      "age_hours": 492.1,
+      "state": "fresh",
+      "reason": null,
+      "generated_at": "2026-10-06T12:34:02.134Z",
+      "age_hours": 44.7,
       "slo_hours": 48,
       "detail": {
         "schema": "hazardnet-alerts/v1",
@@ -165,7 +164,7 @@
   "inputs": {
     "forecast_snapshot": {
       "path": "frontend/public/data/forecasts-latest.json",
-      "generated_at": "2026-09-24T21:35:56.263Z"
+      "generated_at": "2026-10-06T12:31:16.895Z"
     },
     "forecast_manifest": {
       "path": "backend/data/forecasts/manifest.json",
@@ -173,7 +172,7 @@
     },
     "alerts_snapshot": {
       "path": "frontend/public/data/alerts-latest.json",
-      "generated_at": "2026-09-17T21:08:14.217Z"
+      "generated_at": "2026-10-06T12:34:02.134Z"
     },
     "site_probe": {
       "path": "data/site-health/latest.json",

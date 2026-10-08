@@ -3,6 +3,7 @@ import { Info } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import MaterialIcon from '../MaterialIcon';
+import { Button } from '../apple/primitives';
 import {
   ACCEPTED_IMAGE_TYPES,
   AVATAR_MAX_DIMENSION,
@@ -28,14 +29,12 @@ export const UserAvatarField: React.FC<{ size?: number; editable?: boolean }> = 
   const [busy, setBusy] = useState(false);
   const [stage, setStage] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const photoURL = preview ?? userProfile?.photoURL ?? undefined;
   const initial = (userProfile?.displayName || user?.email || 'U').charAt(0).toUpperCase();
 
   const handleFile = async (file: File) => {
     setBusy(true);
-    setMenuOpen(false);
     try {
       const resized = await resizeAvatarFile(file);
       setPreview(URL.createObjectURL(resized.blob));
@@ -75,7 +74,6 @@ export const UserAvatarField: React.FC<{ size?: number; editable?: boolean }> = 
   };
 
   const handleRemove = async () => {
-    setMenuOpen(false);
     if (!user) return;
     setBusy(true);
     try {
@@ -119,27 +117,22 @@ export const UserAvatarField: React.FC<{ size?: number; editable?: boolean }> = 
       {editable && (
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
+            <Button
+              intent="primary"
+              size="sm"
               disabled={busy}
               onClick={() => fileInputRef.current?.click()}
-              className="inline-flex min-h-[44px] items-center gap-1.5 bg-primary px-4 py-2 text-base font-semibold text-ap-action-fg hover:bg-primary-strong disabled:opacity-50 cursor-pointer touch-manipulation"
             >
               <MaterialIcon name="photo_camera" size={15} />
               {photoURL ? 'Replace photo' : 'Upload photo'}
-            </button>
+            </Button>
             {photoURL && (
-              <button
-                type="button"
-                disabled={busy}
-                onClick={handleRemove}
-                className="inline-flex min-h-[44px] items-center border border-carbon-20 px-3 py-2 text-base font-semibold text-carbon-60 hover:bg-carbon-05 disabled:opacity-50 cursor-pointer touch-manipulation"
-              >
+              <Button intent="secondary" size="sm" disabled={busy} onClick={handleRemove}>
                 Remove
-              </button>
+              </Button>
             )}
           </div>
-          <p className="mt-1.5 text-base leading-[1.62] text-carbon-60" aria-live="polite">
+          <p className="mt-1.5 text-sm leading-[1.62] text-carbon-60" aria-live="polite">
             {stage ??
               `JPG, PNG or WebP. Auto-resized to ${AVATAR_MAX_DIMENSION}×${AVATAR_MAX_DIMENSION}px & compressed, old copy replaced.`}
           </p>

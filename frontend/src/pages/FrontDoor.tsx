@@ -39,7 +39,10 @@
  *     repository under a licence the project can stand behind, and a stock image of a flood
  *     would date the page to a disaster it is not describing. On 2026-10-05 the card moved out
  *     of the hero to a page of its own (`/last-run`, `pages/LastRunPage.tsx`); the hero keeps
- *     the claim, the action and a hyperlink to the card that checks the claim.
+ *     the claim, the action and a hyperlink to the card that checks the claim. On 2026-10-06 the
+ *     copy panel around all of it was removed as well, so the hero is a photograph with type on
+ *     it: one heading, one tagline, one action, and the small print (see the hero block below for
+ *     what the small print carries, and why it is still legible without a panel).
  *   · The map stays at `/live`. The split was re-affirmed on 2026-09-19: `/` answers "who is
  *     telling me this, and how would I know if it stopped working", `/live` answers "where".
  *     A second map surface is a second thing to keep honest, for no reader who was lost.
@@ -50,10 +53,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
-import { useReducedMotion } from 'framer-motion';
 import { ExternalLink } from 'lucide-react';
 import { Interactive } from '../components/interactive/Interactive';
-import { useWebFrame, interpolate, Easing } from '../lib/motion-interpolate';
 
 import MaterialIcon from '../components/MaterialIcon';
 import { ButtonLink, Card, PillTabs, ProvenanceNote, SectionHeading, SeverityBadge } from '../components/apple/primitives';
@@ -289,10 +290,12 @@ export const FrontDoor: React.FC = () => {
   const content = usePageSeo('/');
   const { freshness, scorecard, loading, failed, retry: retryLiveFacts } = useLiveFacts();
   const [heroPaused, setHeroPaused] = useState(false);
-  // The full standfirst is 70 words; below `sm` it is clamped to three lines with this control.
+  // The standfirst is 70 words. Since 2026-10-06 it is small print in the hero (the copy panel it
+  // used to sit in is gone), clamped to two lines at every width with this disclosure — claim,
+  // tagline and action come first, and the reader asks for the rest.
   const [standfirstOpen, setStandfirstOpen] = useState(false);
-  // The phone-only evidence pointer under the CTA reads the same artifact the proof card does, so
-  // the first viewport on a phone is claim -> action -> one fact from the run (see the hero comment).
+  // The evidence pointer under the action reads the same artifact the proof card does: one fact
+  // from the run, pointing at the page that carries the card (/last-run).
   const coverageArtifact = freshness?.coverage ?? null;
   const { alerts, assessed, counts, notPublished, generatedAt, loading: alertsLoading, error, refresh: refreshAlerts } = useAlertsData();
   const hazardLabel = useHazardLabel();
@@ -355,9 +358,6 @@ export const FrontDoor: React.FC = () => {
   const published = alertsReadable ? alerts.length : null;
   const withheld = counts?.not_published ?? notPublished ?? null;
 
-  const reduceMotion = useReducedMotion();
-  const frame = useWebFrame(30, 8);
-
   if (!content) return null;
   if (redirectToLive) return <Navigate to={redirectToLive} replace />;
 
@@ -373,20 +373,21 @@ export const FrontDoor: React.FC = () => {
         })
       : '—';
 
+  /* The page's arrival is a CSS entrance from the design system (`.ap-enter`, apple.css §11), not
+     a frame loop. It was `useWebFrame(30, 8)` + `interpolate(...opacity)` until 2026-10-06: eight
+     rAF ticks of React state, each re-rendering the entire front door — hero, backdrop, carousel
+     and all — to fade one wrapper in, plus a `will-change` layer on the page root for 267ms.
+     `.ap-enter` is 240ms of `--ap-ease` (`cubic-bezier(0.25, 0.1, 0.25, 1)`) against the old
+     267ms of `(0.16, 1, 0.3, 1)`; the difference is a few frames on one opacity, and the win is
+     that the fade now runs on the compositor with React never re-rendering for it. It is also why
+     this page no longer imports the motion bridge at all. Reduced motion is handled where it
+     belongs: `index.css` collapses every animation duration under `prefers-reduced-motion`, and
+     `.ap-enter`'s `both` fill leaves the page at its final state, so it still arrives — without
+     the fade. */
   return (
     <Interactive.Div
       name="FrontDoor page — editorial front door"
-      style={{
-        width: '100%',
-        opacity: reduceMotion
-          ? 1
-          : interpolate(frame, [0, 8], [0, 1], {
-              easing: Easing.bezier(0.16, 1, 0.3, 1),
-              extrapolateLeft: 'clamp',
-              extrapolateRight: 'clamp',
-            }),
-      }}
-      className="w-full"
+      className="w-full ap-enter"
     >
       {/* ── Hero: one photograph, one claim, one action ──
           The backdrop was a five-layer motion build with a decorative telemetry HUD and a film
@@ -729,13 +730,25 @@ export const FrontDoor: React.FC = () => {
         )}
       </section>
 
-      {/* ── Products: the eight hazard classes and the two forecast horizons ── */}
-      <section aria-labelledby="products-heading" className="space-y-4">
-        <div className="flex flex-wrap items-end justify-between gap-2">
-          <h2 id="products-heading" className="text-ap-tagline font-bold tracking-tight text-carbon-90 lg:text-2xl">
+      {/* ── Hazards: the eight hazard classes and the two forecast horizons ──
+          The section was called "Products" until 2026-10-07. That word is the vendor's, not the
+          reader's: nothing here is for sale, and HazardNet's own vocabulary for these is the
+          hazard classes and the outlooks. The heading is now the word the nav uses for the same
+          thing, so the section and `Hazards` in the top bar stop being two names for one idea.
+          The eyebrow beneath it keeps the count, so nothing lost the "eight" but the phrase that
+          repeated "hazard" three times in two lines.
+
+          Both headings in this row are set mobile-first: `text-lg` at the base, one step up at
+          `sm`, the tagline token at `lg`. The `aside` is a `<span>` now, not a second `<p>`: it is
+          a caption on the heading, and a paragraph that exists to be read after another paragraph
+          is not what the DOM should say. It also drops `tracking-wider`, which at 12px uppercase
+          mono was the widest text in the section. */}
+      <section aria-labelledby="hazards-heading" className="space-y-4">
+        <div className="flex flex-wrap items-end justify-between gap-x-3 gap-y-1">
+          <h2 id="hazards-heading" className="text-lg font-bold tracking-tight text-carbon-90 sm:text-xl lg:text-2xl">
             {t('frontdoor.products.h2')}
           </h2>
-          <p className="font-mono text-xs uppercase tracking-wider text-carbon-60">{t('frontdoor.products.aside')}</p>
+          <span className="min-w-0 font-mono text-xs uppercase tracking-wide text-carbon-60">{t('frontdoor.products.aside')}</span>
         </div>
 
         <div>
@@ -951,7 +964,7 @@ export const FrontDoor: React.FC = () => {
         <p
           lang="en"
           translate="no"
-          className="mt-1 max-w-3xl border-l-2 border-carbon-20 bg-carbon-05 p-3 font-mono text-xs leading-[1.62] text-carbon-70"
+          className="mt-1 max-w-3xl break-words border-l-2 border-carbon-20 bg-carbon-05 p-3 font-mono text-xs leading-[1.62] text-carbon-70"
         >
           {attribution.work.citationText}
         </p>

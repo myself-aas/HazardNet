@@ -208,6 +208,7 @@ describe('the stylesheet matches the token module', () => {
     expect(cssToken('--ap-duration-press')).toBe(`${APPLE_MOTION.duration.press}ms`);
     expect(cssToken('--ap-duration-base')).toBe(`${APPLE_MOTION.duration.base}ms`);
     expect(cssToken('--ap-ease')).toBe(APPLE_MOTION.ease);
+    expect(cssToken('--ap-press-scale-soft')).toBe(String(APPLE_MOTION.pressScaleSoft));
   });
 });
 

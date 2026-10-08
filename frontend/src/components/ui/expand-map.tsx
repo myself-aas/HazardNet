@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import L from "leaflet";
 import { iconMarkup } from "../../lib/iconMarkup";
+import { AP_SPRING } from '../apple/motion';
 
 export interface LocationMapProps {
   location?: string;
@@ -301,7 +302,7 @@ export function LocationMap({
       <motion.div
         className="relative w-full overflow-hidden"
         animate={{ height: isExpanded ? 260 : 160 }}
-        transition={{ type: "spring", stiffness: 350, damping: 30 }}
+        transition={AP_SPRING}
       >
         {/* Leaflet Map DOM mount element */}
         <div

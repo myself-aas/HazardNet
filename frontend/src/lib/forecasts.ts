@@ -12,6 +12,7 @@
  *    alias table covering post-2015 district renames and GAUL spellings.
  */
 
+import { SEVERITY_THRESHOLDS } from '@hazardnet/core';
 import type { DistrictData } from '../data/bangladeshDistricts';
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -71,6 +72,18 @@ export interface ForecastRow {
   adm2_pcode?: string;
   // Phase B extensions (TRD §2.2, §2.3)
   advisory_tier?: AdvisoryTier | string;
+  /**
+   * Where the tier came from: `published` when the upstream advisory CSV carried it,
+   * `derived_final_severity` / `derived_severity_score` when the snapshot builder cut it from
+   * a score. Stamped by `scripts/lib/advisory-tier.mjs` so no client has to invent one.
+   */
+  advisory_tier_source?: string;
+  /**
+   * True when the tier is above the auto-publish ceiling, i.e. this is a severity statement and
+   * NOT a published alert: WARNING and SEVERE require a named duty officer's sign-off before
+   * they are issued (`packages/core/src/alertPolicy.ts`). The card says so.
+   */
+  requires_review?: boolean;
   physics_override?: boolean;
   latitude?: number;
   longitude?: number;
@@ -108,8 +121,27 @@ export function advisoryTierOf(row: Pick<ForecastRow, 'advisory_tier' | 'severit
     ? row.advisory_tier.trim().toUpperCase()
     : '';
   if ((ADVISORY_TIERS as readonly string[]).includes(published)) return published as AdvisoryTier;
-  if (!Number.isFinite(row.severity_score)) return null;
-  return row.severity_score >= 0.67 ? 'SEVERE' : row.severity_score >= 0.34 ? 'WARNING' : 'NORMAL';
+  return tierFromSeverity(row.severity_score);
+}
+
+/**
+ * The tier for a severity the pipeline did not label.
+ *
+ * **Capped at WATCH, on purpose.** `packages/core/src/alertPolicy.ts` sets
+ * `AUTO_PUBLISH_CEILING = 'WATCH'` and says in as many words that a client must never
+ * promote a raw model score to WARNING or SEVERE — those two require a named duty officer,
+ * and the reviewer's identity is stored on the published alert. A UI that derives SEVERE
+ * from `severity_score` is showing a tier no human approved, which is a safety claim the
+ * product is not allowed to make on its own.
+ *
+ * This function used to do exactly that: `>= 0.67 ? SEVERE : >= 0.34 ? WARNING : NORMAL`
+ * against a *third* set of thresholds, so a district with no published tier could be shown
+ * SEVERE, and WATCH — the one tier the pipeline may publish without review — could never be
+ * shown at all. It now reads the canonical bands and stops at the ceiling.
+ */
+export function tierFromSeverity(score: number | null | undefined): AdvisoryTier | null {
+  if (!Number.isFinite(score)) return null;
+  return (score as number) >= SEVERITY_THRESHOLDS.WATCH ? 'WATCH' : 'NORMAL';
 }
 
 /**
@@ -321,6 +353,13 @@ export function parseForecastRow(raw: unknown): ForecastRow | null {
   if (typeof r.advisory_tier === 'string'
       && (ADVISORY_TIERS as readonly string[]).includes(r.advisory_tier.trim().toUpperCase())) {
     row.advisory_tier = r.advisory_tier.trim().toUpperCase() as AdvisoryTier;
+    // Provenance and the review flag travel with the tier, and only with it: a source or a
+    // "needs review" mark on a row whose tier was dropped would describe a decision the UI is
+    // not showing. `published` is the upstream CSV's own word; anything else is a derivation
+    // and is kept verbatim so a reader can see which score it was cut from.
+    const source = typeof r.advisory_tier_source === 'string' ? r.advisory_tier_source.trim() : '';
+    if (source) row.advisory_tier_source = source.slice(0, 40);
+    if (typeof r.requires_review === 'boolean') row.requires_review = r.requires_review;
   }
   if (typeof r.physics_override === 'boolean') row.physics_override = r.physics_override;
 

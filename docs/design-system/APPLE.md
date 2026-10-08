@@ -6,7 +6,7 @@
 > **Tokens:** `packages/design-system/src/apple.ts` · **CSS:** `frontend/src/styles/apple.css`
 > **Native:** `packages/design-system/src/appleNative.ts`
 
-This document covers what the specification does not: the four places HazardNet *extends* the
+This document covers what the specification does not: the five places HazardNet *extends* the
 system, and why each extension exists. For anything else — a colour, a type style, a radius, a
 spacing step — `DESIGN.md` is the answer and this file will not repeat it.
 
@@ -26,6 +26,7 @@ This is enforced, not asked for:
 | `__tests__/colourDiscipline.test.js` | Any source file carrying a colour the system does not publish, outside a short, justified exemption list. |
 | `apps/mobile/__tests__/nativeAppleParity.test.tsx` | `appleNative.ts` diverging from `apple.ts`. A translation may change the units, never the values. |
 | `__tests__/darkTheme.test.js` | A second accent appearing in the dark scope; any dark-mode text that stops clearing AA. |
+| `__tests__/appleMotion.test.js` | A component animating layout properties, inventing a duration or curve, animating a keyboard-driven surface, or shipping a transition with no reduced-motion arm. |
 | `npm run check:tokens` · `check:design:source` · `check:brand` · `check:prose` · `check:important` · `check:fonts` | Token compliance, stray literals, unjustified `!important`, font budget. |
 
 ### What was removed
@@ -161,9 +162,53 @@ Bengali gets more room and no negative tracking.
 
 **Icons** are stroked, bound to `currentColor`, and generated into `packages/design-system/src/icons.ts`.
 
-**Motion** has one documented interaction: press is `scale(0.95)`. There is no documented hover
-state except the `.ap-link` underline. Shadows are near-absent by design — one product shadow,
-and it is not used on UI. A reduced-motion floor is enforced in §11 of the stylesheet.
+**Motion** has one documented interaction — press is `scale(0.95)` — plus the extension in
+Extension 5 below. There is no documented hover state except the `.ap-link` underline. Shadows are
+near-absent by design — one product shadow, and it is not used on UI.
+
+---
+
+## Extension 5 · Motion
+
+**Why:** the specification documents exactly one interaction — press is `scale(0.95)` — and no
+durations, easings or entrances. Something has to carry the moments the product actually has: a
+surface that appears rather than being present on load (`@keyframes ap-enter` / `ap-enter-drop`),
+a control that acknowledges a press, a state change that would otherwise land in a single frame,
+and the finger-tracked sheets in the mobile app. Without published roles for those, every call
+site writes its own duration and curve, which is how one system ends up with five of each.
+
+**What is NOT allowed is as much of the extension as what is.** Honouring the premise that most
+moments should not animate at all:
+
+- **Keyboard-initiated surfaces do not animate.** The command palette opens with no tween, and a
+  regression test enforces it. It is used hundreds of times a day; an entrance there reads as
+  latency, not polish.
+- **Functional data does not animate for style.** The live console's map/analytics/compare view
+  swap, the alert list, and every chart are static. Data the reader is scanning or acting on is
+  the one place motion actively hinders.
+- **No hover motion and no bounce on UI.** Overshoot is the mobile sheet's critically damped
+  spring (`APPLE_MOTION.springStandard`), which settles without overshoot by construction; no
+  cubic-bezier in the web stylesheet may overshoot.
+- **Only `opacity` and `transform` animate** (`APPLE_MOTION.animatableProps`). A width/height/top/
+  left tween is a layout animation: the completeness meter is `scaleX` on a full-width fill for
+  exactly this reason, not a `width` transition.
+
+**The roles** (`apple.css` §9 and §11, tokens in `packages/design-system/src/apple.ts` →
+`APPLE_MOTION`):
+
+| Role | Class | Use it for | Values |
+|---|---|---|---|
+| Press | `.ap-btn`, `.ap-icon-btn`, `.ap-chip`, `.ap-pressable` | A control acknowledging a press | `scale(0.95)` pills, `scale(0.97)` option cells, `--ap-duration-press` (120ms), `--ap-ease` |
+| Press (row) | `.ap-press-row` | A full-width row, where scaling would pull its edges inside the panel | background step, 120ms `--ap-ease` |
+| State change | `.ap-state-transition` | A tone/border swap that would otherwise be a jump cut | colours only, `--ap-duration-base` (240ms) `--ap-ease` |
+| Entrance | `.ap-enter`, `.ap-enter-drop` | A surface appearing: a state block, a route body, a disclosure hanging off its trigger | 240ms `--ap-ease`, fade; `-drop` adds −4px |
+| Group entrance | `.ap-stagger` | N children arriving as ONE beat | `--i` / `--n` per child, delay `min(60ms, 480ms/n) × i` |
+| Value | `.ap-meter` + `--ap-meter-value` | A progress/completeness fill | `scaleX`, 240ms; **not** a motion role — the custom property carries data |
+| Sheet drag | `APPLE_MOTION.springStandard` (native only) | A sheet following a finger | critically damped: stiffness 320, damping 36, mass 1 |
+
+**Reduced motion is a floor, not a switch-off.** §11 floors every duration and delay, keeps the
+meter's value intact (reset the transform there and every reduced-motion reader gets a full bar),
+and keeps colour state changes, which carry meaning and are not motion.
 
 ---
 
@@ -175,8 +220,10 @@ kind; "it was easier" is not one.
 - **Third-party brand marks** — `ProviderGlyph.tsx`, `oauthProviders.ts`, `connectors.ts`. A
   Google "G" in the wrong blue is wrong, and the same goes for Slack, Discord and GitHub.
 - **Cinematic media** — `heroMedia.ts`, `remotionTheme.ts`, the Remotion compositions, the WebGL
-  globe, the hero background. These are *content*, the same category as a photograph. The system
-  governs the chrome around media, not the pixels inside it.
+  globe. These are *content*, the same category as a photograph. The system governs the chrome
+  around media, not the pixels inside it. The hero background is on this list again as of
+  2026-10-07, when the hero was restored to `main`: it carries its own grade colours inline, as it
+  does on `main`.
 - **Generated assets** — `infinity.generated.ts` is produced by a script, not authored.
 
 The test also asserts every exempt file *still* carries off-system colour, so a file cannot sit on

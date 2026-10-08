@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import ProviderGlyph from './ProviderGlyph'
+import { Button } from './apple/primitives'
 import { useAuth } from '../context/AuthContext'
 import {
   describeOAuthError,
@@ -16,6 +16,14 @@ import {
  * signed-in Firebase user and lets them connect Google/GitHub (linkWithPopup)
  * or disconnect an existing one (unlink). Email/password is shown as the
  * built-in "email" method.
+ *
+ * The block renders ROWS, not a card. It used to draw its own bordered,
+ * rounded-xl box with its own uppercase heading and its own emerald "Connected"
+ * pill, which is why one screen had a panel inside a card inside a page — and
+ * why the unlink action had to improvise with rose, the severity vocabulary,
+ * for a control that is not a hazard reading. It now assumes the caller's
+ * `Panel` for grouping and uses the system's destructive grammar: the one
+ * Action Blue, with the word "Disconnect" carrying the meaning.
  */
 export const IdentityConnections: React.FC = () => {
   const { user, linkIdentity, unlinkIdentity, refreshProfile } = useAuth()
@@ -72,59 +80,48 @@ export const IdentityConnections: React.FC = () => {
   const available = unlinkedProviders(user.providerData)
 
   return (
-    <div className="bg-carbon-05 border border-carbon-20 rounded-xl p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <ProviderGlyph provider="github" className="h-4 w-4" />
-          <h4 className="text-xs font-extrabold text-carbon-90 uppercase tracking-wide">
-            Connected Accounts & Social Sign-In
-          </h4>
-        </div>
-        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-carbon-10 text-carbon-70 border border-carbon-20">
-          {linked.length} linked
-        </span>
-      </div>
-
-      <p className="text-xs text-carbon-60 leading-relaxed">
-        Link Google or GitHub to sign into this same HazardNet account with any of them.
-        Disconnecting removes only the sign-in method. Your advisories and saved assessments stay.
+    <div className="space-y-4">
+      <p className="text-sm leading-[1.62] text-carbon-70">
+        Link Google or GitHub to sign into this same HazardNet account with any of them. Disconnecting removes only
+        the sign-in method. Your advisories and saved assessments stay.
       </p>
 
       {loadError && (
-        <p role="alert" className="text-xs font-semibold text-rose-700">
+        <p role="alert" className="text-sm font-semibold text-ap-link">
           {loadError}
         </p>
       )}
 
       {linked.length > 0 && (
-        <ul className="space-y-1.5" data-testid="linked-identities">
+        <ul className="divide-y divide-carbon-10 border-t border-carbon-10" data-testid="linked-identities">
           {linked.map((identity) => {
             const label = identity.provider === 'email' ? 'Email & password' : getProvider(identity.provider).label
             const isLastIdentity = linked.length === 1
             return (
-              <li
-                key={identity.provider}
-                className="flex items-center justify-between gap-3 rounded-lg border border-carbon-20 bg-white p-2.5"
-              >
-                <div className="flex min-w-0 items-center gap-2.5">
+              <li key={identity.provider} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                <div className="flex min-w-0 items-center gap-3">
                   {identity.provider === 'email' ? (
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-carbon-20 text-xs font-black text-carbon-60">
+                    <span
+                      aria-hidden="true"
+                      className="flex h-9 w-9 items-center justify-center rounded-full bg-carbon-05 text-sm font-bold text-carbon-70"
+                    >
                       @
                     </span>
                   ) : (
-                    <ProviderGlyph provider={identity.provider} className="h-5 w-5" />
+                    <ProviderGlyph provider={identity.provider} className="h-6 w-6" />
                   )}
                   <div className="min-w-0">
-                    <p className="truncate text-xs font-bold text-carbon-80">{label}</p>
+                    <p className="truncate text-sm font-semibold text-carbon-90">{label}</p>
                     <p className="truncate text-xs text-carbon-60">
                       {identity.email ?? 'Identity linked'}
-                      {isLastIdentity && ' (last sign-in method)'}
+                      {isLastIdentity && ' · last sign-in method'}
                     </p>
                   </div>
                 </div>
                 {identity.provider !== 'email' && (
-                  <button
-                    type="button"
+                  <Button
+                    intent="secondary"
+                    size="sm"
                     onClick={() => handleUnlink(identity.provider as OAuthProviderId)}
                     disabled={unlinking === identity.provider || isLastIdentity}
                     title={
@@ -132,10 +129,9 @@ export const IdentityConnections: React.FC = () => {
                         ? 'Add another sign-in method before removing the last one'
                         : `Disconnect ${label}`
                     }
-                    className="shrink-0 rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1.5 text-xs font-bold text-rose-700 transition-colors hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {unlinking === identity.provider ? 'Removing…' : 'Disconnect'}
-                  </button>
+                    {unlinking === identity.provider ? 'Disconnecting…' : 'Disconnect'}
+                  </Button>
                 )}
               </li>
             )
@@ -144,27 +140,29 @@ export const IdentityConnections: React.FC = () => {
       )}
 
       {available.length > 0 && (
-        <div className="space-y-1.5">
-          <p className="text-xs font-extrabold uppercase tracking-wider text-carbon-60">Connect another provider</p>
-          <div className="flex flex-wrap gap-1.5" data-testid="linkable-providers">
+        <div className="space-y-2 border-t border-carbon-10 pt-4">
+          <p className="text-sm font-semibold text-carbon-80">Connect another provider</p>
+          <div className="flex flex-wrap gap-2" data-testid="linkable-providers">
             {available.map((provider) => {
               const config = getProvider(provider)
               return (
-                <motion.button
+                <Button
                   key={provider}
-                  type="button"
-                  whileTap={{ scale: 0.96 }}
+                  intent="secondary"
+                  size="sm"
                   onClick={() => handleLink(provider)}
                   disabled={linking !== null}
-                  className="flex items-center gap-1.5 rounded-lg border border-carbon-20 bg-white px-2.5 py-1.5 text-xs font-bold text-carbon-70 transition-colors hover:border-carbon-30 hover:bg-carbon-05 disabled:cursor-wait disabled:opacity-60"
                 >
                   {linking === provider ? (
-                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-carbon-30 border-t-carbon-60" />
+                    <span
+                      aria-hidden="true"
+                      className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-carbon-30 border-t-carbon-60"
+                    />
                   ) : (
                     <ProviderGlyph provider={provider} className="h-3.5 w-3.5" />
                   )}
-                  {linking === provider ? 'Connecting…' : config.label}
-                </motion.button>
+                  {linking === provider ? 'Connecting…' : `Connect ${config.label}`}
+                </Button>
               )
             })}
           </div>

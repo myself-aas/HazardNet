@@ -6,6 +6,7 @@ import { GranularDisasterData } from '../data/disasterDetails';
 import { PdfExportButton } from './PdfExportButton';
 import { PrintQrCode } from './PrintQrCode';
 import { useDialogBehavior } from '../hooks/useDialogBehavior';
+import { AP_SPRING } from './apple/motion';
 
 export interface DisasterDetailModalUIProps {
   data: GranularDisasterData;
@@ -511,7 +512,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
               initial={{ opacity: 0, scale: 0.92, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.92, y: 15 }}
-              transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+              transition={AP_SPRING}
               className="bg-white border border-carbon-20 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden relative text-carbon-90"
               onClick={(e) => e.stopPropagation()}
             >

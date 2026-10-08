@@ -279,7 +279,10 @@ export function ToggleIcon({ size = 40, color = "currentColor", className, durat
         opacity={on ? 1 : 0.4} />
       <motion.circle cy="20" r="5" fill={color}
         animate={on ? { cx: 28 } : { cx: 12 }}
-        transition={{ type: "spring", stiffness: 500, damping: 25 }}
+        /* Critical damping for this stiffness: the pupil keeps its speed (500 is a snappy
+           response for a 16px travel) and loses the bounce, which nothing here earned — the
+           eye is not flicked. damping = 2 · sqrt(stiffness · mass) = 44.7. */
+        transition={{ type: "spring", stiffness: 500, damping: 45 }}
       />
     </svg>
   );
