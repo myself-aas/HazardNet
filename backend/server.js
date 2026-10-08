@@ -379,6 +379,19 @@ app.get('/.well-known/agent-card.json', (req, res) => {
   });
 });
 
+// Agent Skills Discovery Index — per the Agent Skills Discovery RFC v0.2.0.
+// Serves the skills index at /.well-known/agent-skills/index.json.
+// https://github.com/cloudflare/agent-skills-discovery-rfc
+app.get('/.well-known/agent-skills/index.json', (req, res) => {
+  const indexPath = path.resolve(process.cwd(), 'frontend', 'public', '.well-known', 'agent-skills', 'index.json');
+  if (fs.existsSync(indexPath)) {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.status(200).sendFile(indexPath);
+  }
+  res.status(404).json({ error: 'Not found' });
+});
+
 app.get('/.well-known/api-catalog', (req, res) => {
   const catalog = {
     linkset: [
