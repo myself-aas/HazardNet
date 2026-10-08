@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Check, Circle } from 'lucide-react';
-import { AuthLayout } from '../components/auth/AuthLayout'
-import { useAuth } from '../context/AuthContext'
-import MaterialIcon from '../components/MaterialIcon'
-import { PASSWORD_REQUIREMENTS, passwordStrength } from '../lib/passwordStrength'
+import { AuthLayout } from '../components/auth/AuthLayout';
+import { useAuth } from '../context/AuthContext';
+import MaterialIcon from '../components/MaterialIcon';
+import { PASSWORD_REQUIREMENTS, passwordStrength } from '../lib/passwordStrength';
 import { auth } from '../services/firebase';
 import { InfinityLoader } from '../components/brand';
 const isAuthConfigured = true;
@@ -26,52 +26,52 @@ const Requirement: React.FC<{ met: boolean; children: React.ReactNode }> = ({ me
     </span>
     <span className="text-xs font-medium">{children}</span>
   </li>
-)
+);
 
-type Phase = 'waiting' | 'ready' | 'done'
+type Phase = 'waiting' | 'ready' | 'done';
 
 export default function SetPasswordPage() {
-  const { user, updatePassword } = useAuth()
-  const navigate = useNavigate()
-  const [password, setPassword] = useState('')
-  const [confirmation, setConfirmation] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [phase, setPhase] = useState<Phase>('waiting')
-  const [error, setError] = useState<string | null>(null)
-  const [saving, setSaving] = useState(false)
+  const { user, updatePassword } = useAuth();
+  const navigate = useNavigate();
+  const [password, setPassword] = useState('');
+  const [confirmation, setConfirmation] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [phase, setPhase] = useState<Phase>('waiting');
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   // Give detectSessionInUrl a moment to exchange the emailed verification
   // link, then settle into "ready" (with or without a session).
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
     const timer = window.setTimeout(() => {
-      if (!cancelled) setPhase((current) => (current === 'waiting' ? 'ready' : current))
-    }, 600)
+      if (!cancelled) setPhase((current) => (current === 'waiting' ? 'ready' : current));
+    }, 600);
     if (typeof auth?.authStateReady === 'function') {
       void auth.authStateReady().then(() => {
-        if (!cancelled && auth.currentUser) setPhase('ready')
-      })
+        if (!cancelled && auth.currentUser) setPhase('ready');
+      });
     }
     return () => {
-      cancelled = true
-      window.clearTimeout(timer)
-    }
-  }, [])
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, []);
 
-  const strength = passwordStrength(password)
-  const allMet = PASSWORD_REQUIREMENTS.every((requirement) => requirement.test(password))
+  const strength = passwordStrength(password);
+  const allMet = PASSWORD_REQUIREMENTS.every((requirement) => requirement.test(password));
 
   const submit = async (event: React.FormEvent) => {
-    event.preventDefault()
-    setError(null)
-    if (password.length < 8) return setError('Your password must contain at least 8 characters.')
-    if (!allMet) return setError('Please satisfy every requirement before continuing.')
-    if (password !== confirmation) return setError('The passwords do not match.')
-    setSaving(true)
+    event.preventDefault();
+    setError(null);
+    if (password.length < 8) return setError('Your password must contain at least 8 characters.');
+    if (!allMet) return setError('Please satisfy every requirement before continuing.');
+    if (password !== confirmation) return setError('The passwords do not match.');
+    setSaving(true);
     try {
-      await updatePassword(password)
-      setPhase('done')
-      window.setTimeout(() => navigate('/dashboard', { replace: true }), 1200)
+      await updatePassword(password);
+      setPhase('done');
+      window.setTimeout(() => navigate('/dashboard', { replace: true }), 1200);
     } catch (reason) {
       setError(
         reason instanceof Error
@@ -79,14 +79,14 @@ export default function SetPasswordPage() {
             ? 'Your verification link expired. Request a new link from the sign-up page and try again.'
             : reason.message
           : 'Unable to set your password.',
-      )
+      );
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   const inputClass =
-    'mt-1.5 h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 outline-none focus:border-ap-primary focus:ring-2 focus:ring-ap-primary/40'
+    'mt-1.5 h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 outline-none focus:border-ap-primary focus:ring-2 focus:ring-ap-primary/40';
 
   if (phase === 'done') {
     return (
@@ -102,7 +102,7 @@ export default function SetPasswordPage() {
           <p className="text-sm text-carbon-60">Taking you to your dashboard…</p>
         </div>
       </AuthLayout>
-    )
+    );
   }
 
   return (
@@ -123,9 +123,12 @@ export default function SetPasswordPage() {
       ) : (
         <form onSubmit={submit} className="space-y-4" data-testid="set-password-form">
           {!user && phase === 'ready' && (
-            <p role="alert" className="border-l-2 border-severity-high bg-white p-4 text-sm font-medium text-carbon-80">
-              We couldn’t detect your verification session. Open the newest link we emailed you; it must be
-              opened on this browser. Or{' '}
+            <p
+              role="alert"
+              className="rounded-r-xl border-l-4 border-severity-high bg-white p-4 text-sm font-medium text-carbon-80"
+            >
+              We couldn’t detect your verification session. Open the newest link we emailed you; it must be opened on
+              this browser. Or{' '}
               <Link to="/signup" className="font-extrabold underline underline-offset-2">
                 request a fresh link
               </Link>
@@ -134,7 +137,10 @@ export default function SetPasswordPage() {
           )}
 
           {error && (
-            <p role="alert" className="border-l-2 border-ap-primary bg-white p-4 text-sm font-medium text-ap-link">
+            <p
+              role="alert"
+              className="rounded-r-xl border-l-4 border-ap-primary bg-white p-4 text-sm font-medium text-ap-link"
+            >
               {error}
             </p>
           )}
@@ -218,5 +224,5 @@ export default function SetPasswordPage() {
         </form>
       )}
     </AuthLayout>
-  )
+  );
 }

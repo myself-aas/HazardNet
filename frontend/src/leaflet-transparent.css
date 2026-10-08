@@ -29,7 +29,16 @@
 .leaflet-container {
   background: var(--ap-n-10) !important;
 }
-.leaflet-pane, .leaflet-tile, .leaflet-marker-icon, .leaflet-marker-shadow, .leaflet-tile-container, .leaflet-pane > svg, .leaflet-pane > canvas, .leaflet-zoom-box, .leaflet-image-layer, .leaflet-layer {
+.leaflet-pane,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-container,
+.leaflet-pane > svg,
+.leaflet-pane > canvas,
+.leaflet-zoom-box,
+.leaflet-image-layer,
+.leaflet-layer {
   pointer-events: none !important;
 }
 .leaflet-interactive {
@@ -39,14 +48,18 @@
   pointer-events: auto !important;
 }
 
-/* Popups — ground and ink must invert together. */
+/* Popups — ground and ink must invert together. The wrapper carries the Apple
+   card radius; the tip stays a sharp rotated square because it is the arrow
+   pointing at the feature, not a card. */
 .leaflet-popup-content-wrapper,
 .leaflet-popup-tip {
   background: var(--ap-bg-canvas);
   color: var(--ap-label);
-  border-radius: 0;
   box-shadow: none;
   border: 1px solid var(--ap-separator-opaque);
+}
+.leaflet-popup-content-wrapper {
+  border-radius: var(--ap-radius-lg);
 }
 .leaflet-popup-content-wrapper {
   border-bottom: 0;
@@ -76,10 +89,18 @@
   line-height: var(--ap-type-body-sm-line);
   padding: 4px 8px;
 }
-.leaflet-tooltip-top::before { border-top-color: var(--ap-separator-opaque); }
-.leaflet-tooltip-bottom::before { border-bottom-color: var(--ap-separator-opaque); }
-.leaflet-tooltip-left::before { border-left-color: var(--ap-separator-opaque); }
-.leaflet-tooltip-right::before { border-right-color: var(--ap-separator-opaque); }
+.leaflet-tooltip-top::before {
+  border-top-color: var(--ap-separator-opaque);
+}
+.leaflet-tooltip-bottom::before {
+  border-bottom-color: var(--ap-separator-opaque);
+}
+.leaflet-tooltip-left::before {
+  border-left-color: var(--ap-separator-opaque);
+}
+.leaflet-tooltip-right::before {
+  border-right-color: var(--ap-separator-opaque);
+}
 
 /* Zoom / attribution chrome. */
 .leaflet-bar a,

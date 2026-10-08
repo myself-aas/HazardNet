@@ -59,8 +59,7 @@ export const DistrictAlertTable: React.FC<DistrictAlertTableProps> = ({
   const [ascending, setAscending] = useState(false);
 
   const sorted = useMemo(() => {
-    const withSeverity = (row: DistrictAlertRow) =>
-      row.alert?.severity_score ?? (row.baselineOnly ? -1 : -0.5);
+    const withSeverity = (row: DistrictAlertRow) => row.alert?.severity_score ?? (row.baselineOnly ? -1 : -0.5);
     const list = [...rows];
     list.sort((a, b) => {
       if (sort === 'district') return a.district.localeCompare(b.district);
@@ -94,7 +93,11 @@ export const DistrictAlertTable: React.FC<DistrictAlertTableProps> = ({
       {label}
       <span aria-hidden="true" className={sort === key ? 'text-carbon-90' : 'text-carbon-60'}>
         {sort === key ? (
-          ascending ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />
+          ascending ? (
+            <ArrowUp className="h-3.5 w-3.5" />
+          ) : (
+            <ArrowDown className="h-3.5 w-3.5" />
+          )
         ) : (
           <ArrowDownUp className="h-3.5 w-3.5" />
         )}
@@ -123,7 +126,7 @@ export const DistrictAlertTable: React.FC<DistrictAlertTableProps> = ({
         {sorted.map((row) => {
           const { level, hazard, severity } = renderRowMeta(row);
           return (
-            <li key={row.district} className="border border-carbon-20 bg-white p-4">
+            <li key={row.district} className="border border-carbon-20 rounded-2xl bg-white p-4">
               <dl className="space-y-2 text-sm">
                 <div>
                   <dt className="text-xs font-bold uppercase tracking-wide text-carbon-60">
@@ -138,7 +141,9 @@ export const DistrictAlertTable: React.FC<DistrictAlertTableProps> = ({
                       >
                         {row.district}
                       </button>
-                    ) : row.district}
+                    ) : (
+                      row.district
+                    )}
                     {row.baselineOnly && (
                       <span className="ml-1.5 rounded-control border border-carbon-20 bg-carbon-10 px-1.5 py-0.5 text-xs font-bold uppercase text-carbon-60">
                         {t('coverage.baselineBadge')}
@@ -153,9 +158,7 @@ export const DistrictAlertTable: React.FC<DistrictAlertTableProps> = ({
                   <dd className="text-carbon-70">{row.division || '—'}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs font-bold uppercase tracking-wide text-carbon-60">
-                    {t('map.column.level')}
-                  </dt>
+                  <dt className="text-xs font-bold uppercase tracking-wide text-carbon-60">{t('map.column.level')}</dt>
                   <dd className="inline-flex items-center gap-1.5">
                     <span
                       aria-hidden="true"
@@ -166,9 +169,7 @@ export const DistrictAlertTable: React.FC<DistrictAlertTableProps> = ({
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-xs font-bold uppercase tracking-wide text-carbon-60">
-                    {t('map.column.hazard')}
-                  </dt>
+                  <dt className="text-xs font-bold uppercase tracking-wide text-carbon-60">{t('map.column.hazard')}</dt>
                   <dd className="text-carbon-70">{hazard || '—'}</dd>
                 </div>
                 <div>
@@ -188,19 +189,23 @@ export const DistrictAlertTable: React.FC<DistrictAlertTableProps> = ({
       <div className="hidden overflow-auto max-h-[70vh] border border-carbon-20 lg:block" tabIndex={0}>
         <table id={id} className="min-w-full border-collapse text-sm">
           <caption className="sr-only">
-            {t('map.listAlternative')} — {t('map.column.district')}, {t('map.column.division')},{' '}
-            {t('map.column.level')}, {t('map.column.hazard')}
+            {t('map.listAlternative')} — {t('map.column.district')}, {t('map.column.division')}, {t('map.column.level')}
+            , {t('map.column.hazard')}
           </caption>
           <thead className="sticky top-0 bg-carbon-05 text-left text-carbon-70">
             <tr>
               <th scope="col" className="px-3 py-3" aria-sort={ariaSort('district')}>
                 {sortButton('district', t('map.column.district'))}
               </th>
-              <th scope="col" className="px-3 py-3">{t('map.column.division')}</th>
+              <th scope="col" className="px-3 py-3">
+                {t('map.column.division')}
+              </th>
               <th scope="col" className="px-3 py-3" aria-sort={ariaSort('level')}>
                 {sortButton('level', t('map.column.level'))}
               </th>
-              <th scope="col" className="px-3 py-3">{t('map.column.hazard')}</th>
+              <th scope="col" className="px-3 py-3">
+                {t('map.column.hazard')}
+              </th>
               <th scope="col" className="px-3 py-3 text-right" aria-sort={ariaSort('severity')}>
                 {sortButton('severity', t('alerts.card.evidence'))}
               </th>
@@ -210,10 +215,7 @@ export const DistrictAlertTable: React.FC<DistrictAlertTableProps> = ({
             {sorted.map((row) => {
               const { level, hazard, severity } = renderRowMeta(row);
               return (
-                <tr
-                  key={row.district}
-                  className="border-t border-carbon-20"
-                >
+                <tr key={row.district} className="border-t border-carbon-20">
                   <th scope="row" className="px-3 py-3 text-left font-semibold text-carbon-90">
                     {onSelectDistrict ? (
                       <button
@@ -223,7 +225,9 @@ export const DistrictAlertTable: React.FC<DistrictAlertTableProps> = ({
                       >
                         {row.district}
                       </button>
-                    ) : row.district}
+                    ) : (
+                      row.district
+                    )}
                     {row.baselineOnly && (
                       <span className="ml-1.5 rounded-control border border-carbon-20 bg-carbon-10 px-1.5 py-0.5 text-xs font-bold uppercase text-carbon-60">
                         {t('coverage.baselineBadge')}

@@ -6,12 +6,7 @@ import toast from 'react-hot-toast';
 import MaterialIcon from '../../components/MaterialIcon';
 import Breadcrumbs from '../../components/Breadcrumbs';
 import { useAuth } from '../../context/AuthContext';
-import {
-  BlogArticle,
-  deleteArticle,
-  listArticles,
-  updateArticle,
-} from '../../lib/blogArticles';
+import { BlogArticle, deleteArticle, listArticles, updateArticle } from '../../lib/blogArticles';
 import { InfinityLoader } from '../../components/brand';
 
 /**
@@ -62,7 +57,11 @@ export const BlogStudioPage: React.FC = () => {
       toast.error(result.error);
       return;
     }
-    toast.success(nextStatus === 'published' ? `Published “${article.title}” at /blogs/${article.slug}` : `Unpublished “${article.title}”`);
+    toast.success(
+      nextStatus === 'published'
+        ? `Published “${article.title}” at /blogs/${article.slug}`
+        : `Unpublished “${article.title}”`,
+    );
     void reload();
   };
 
@@ -93,7 +92,7 @@ export const BlogStudioPage: React.FC = () => {
       <Breadcrumbs />
 
       {/* Header */}
-      <div className="bg-white border border-carbon-20/90 p-6 relative overflow-hidden space-y-4">
+      <div className="rounded-2xl bg-white border border-carbon-20/90 p-6 relative overflow-hidden space-y-4">
         <div aria-hidden="true" className="absolute top-0 left-0 w-full h-1 bg-primary" />
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
@@ -162,7 +161,10 @@ export const BlogStudioPage: React.FC = () => {
         ) : (
           <ul className="divide-y divide-carbon-10">
             {articles.map((article) => (
-              <li key={article.id} className="p-4 flex flex-col lg:flex-row lg:items-center gap-3 hover:bg-carbon-05/60 transition-colors">
+              <li
+                key={article.id}
+                className="p-4 flex flex-col lg:flex-row lg:items-center gap-3 hover:bg-carbon-05/60 transition-colors"
+              >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span
@@ -177,9 +179,7 @@ export const BlogStudioPage: React.FC = () => {
                     <span className="px-2 py-0.5 rounded-sm text-xs font-mono font-bold bg-carbon-10 border border-carbon-20 text-carbon-70">
                       {article.category}
                     </span>
-                    <span className="text-xs font-mono text-carbon-60">
-                      /blogs/{article.slug}
-                    </span>
+                    <span className="text-xs font-mono text-carbon-60">/blogs/{article.slug}</span>
                   </div>
                   <p className="mt-1 text-sm font-black text-carbon-90 truncate">{article.title}</p>
                   <p className="text-xs text-carbon-60 font-medium">

@@ -1,10 +1,5 @@
 import type { ForecastFetchReason, StoredPrediction } from '../lib/storedPrediction';
-import {
-  forecastViewStateFromLegacy,
-  type ForecastViewState,
-  type Horizon,
-  type Selection,
-} from '../lib/forecastView';
+import { forecastViewStateFromLegacy, type ForecastViewState, type Horizon, type Selection } from '../lib/forecastView';
 import { useI18n } from '../hooks/useI18n';
 
 export interface StoredForecastPanelProps {
@@ -37,7 +32,9 @@ function ErrorCopy({
   if (reason === 'rate-limited') {
     return (
       <>
-        <h2 className="text-ap-tagline font-bold tracking-tight text-carbon-90">{t('lookup.error.rateLimited.title')}</h2>
+        <h2 className="text-ap-tagline font-bold tracking-tight text-carbon-90">
+          {t('lookup.error.rateLimited.title')}
+        </h2>
         <p className="mt-3 text-base leading-[1.62] text-carbon-70">{t('lookup.error.rateLimited.body')}</p>
       </>
     );
@@ -88,7 +85,7 @@ function ReadyForecast({
   const scoreOptions: Intl.NumberFormatOptions = { minimumFractionDigits: 3, maximumFractionDigits: 3 };
 
   return (
-    <section className="border border-carbon-20 bg-white p-6" data-testid="stored-forecast-ready">
+    <section className="border border-carbon-20 rounded-2xl bg-white p-6" data-testid="stored-forecast-ready">
       <p className="text-xs font-bold uppercase tracking-[0.025em] text-carbon-60">{t('lookup.source.stored')}</p>
       <h2 className="mt-2 text-ap-tagline font-bold tracking-tight text-carbon-90">
         {t('lookup.ready.title', { hazard: prediction.hazard })}
@@ -125,7 +122,9 @@ function ReadyForecast({
         </summary>
         <dl className="mt-4 space-y-3">
           <div>
-            <dt className="text-xs font-bold uppercase tracking-[0.025em] text-carbon-60">{t('lookup.modelVersion')}</dt>
+            <dt className="text-xs font-bold uppercase tracking-[0.025em] text-carbon-60">
+              {t('lookup.modelVersion')}
+            </dt>
             <dd className="mt-1 font-mono text-base text-carbon-90">
               {inference.model_version ?? t('lookup.modelVersion.missing')}
             </dd>
@@ -133,7 +132,9 @@ function ReadyForecast({
         </dl>
         <p className="mt-4 text-base leading-[1.62] text-carbon-70">{t('lookup.evidence.missingDrivers')}</p>
       </details>
-      <p className="mt-6 border-t border-carbon-20 pt-4 text-base leading-[1.62] text-carbon-70">{t('lookup.disclaimer')}</p>
+      <p className="mt-6 border-t border-carbon-20 pt-4 text-base leading-[1.62] text-carbon-70">
+        {t('lookup.disclaimer')}
+      </p>
     </section>
   );
 }
@@ -151,7 +152,11 @@ export default function StoredForecastPanel({
 
   if (view.kind === 'idle') {
     return (
-      <section className="border border-carbon-20 bg-white p-6" role="status" data-testid="stored-forecast-idle">
+      <section
+        className="border border-carbon-20 rounded-2xl bg-white p-6"
+        role="status"
+        data-testid="stored-forecast-idle"
+      >
         <h2 className="text-ap-tagline font-bold tracking-tight text-carbon-90">{t('lookup.idle.title')}</h2>
         <p className="mt-3 text-base leading-[1.62] text-carbon-70">{t('lookup.idle.body')}</p>
       </section>
@@ -160,7 +165,12 @@ export default function StoredForecastPanel({
 
   if (view.kind === 'loading') {
     return (
-      <section className="border border-carbon-20 bg-white p-6" role="status" aria-live="polite" data-testid="stored-forecast-loading">
+      <section
+        className="border border-carbon-20 rounded-2xl bg-white p-6"
+        role="status"
+        aria-live="polite"
+        data-testid="stored-forecast-loading"
+      >
         <p className="text-base text-carbon-70">{t('lookup.loading')}</p>
         <div className="mt-4 space-y-3" aria-hidden="true">
           <div className="h-8 w-2/3 bg-carbon-10" />
@@ -174,7 +184,11 @@ export default function StoredForecastPanel({
   if (view.kind === 'uncovered') {
     const horizon = view.selection.horizon as Horizon;
     return (
-      <section className="border border-carbon-20 bg-white p-6" role="status" data-testid="stored-forecast-uncovered">
+      <section
+        className="border border-carbon-20 rounded-2xl bg-white p-6"
+        role="status"
+        data-testid="stored-forecast-uncovered"
+      >
         <h2 className="text-ap-tagline font-bold tracking-tight text-carbon-90">{t('lookup.uncovered.title')}</h2>
         <p className="mt-3 text-base leading-[1.62] text-carbon-70">
           {t('lookup.uncovered.body', {
@@ -188,7 +202,11 @@ export default function StoredForecastPanel({
 
   if (view.kind === 'error') {
     return (
-      <section className="border border-carbon-20 bg-white p-6" role="alert" data-testid="stored-forecast-error">
+      <section
+        className="border border-carbon-20 rounded-2xl bg-white p-6"
+        role="alert"
+        data-testid="stored-forecast-error"
+      >
         <ErrorCopy reason={view.reason} t={t} />
         {onRetry && (
           <button

@@ -19,7 +19,7 @@ export const About: React.FC = () => {
       <motion.div
         whileHover={{ y: -2 }}
         transition={{ duration: 0.2 }}
-        className="bg-white border border-carbon-20 p-6 md:p-8 space-y-4"
+        className="bg-white border border-carbon-20 rounded-2xl p-6 md:p-8 space-y-4"
       >
         <div className="flex items-center gap-2">
           <span className="px-2.5 py-0.5 rounded-sm text-xs font-mono font-bold uppercase tracking-wider bg-amber-50 text-amber-900 border border-amber-200">
@@ -28,12 +28,13 @@ export const About: React.FC = () => {
           <span className="text-carbon-60">•</span>
           <span className="text-xs text-carbon-60 font-medium">Active Deployment: 2026</span>
         </div>
-        
+
         <h1 className="text-ap-lead sm:text-ap-display-md font-brand font-bold leading-tight text-carbon-90 tracking-tight">
           Hazard<span className="text-ap-link">Net</span> Agro-Climatic Intelligence Platform
         </h1>
         <p className="text-base leading-[1.62] text-carbon-60 max-w-3xl">
-          Automated multi-hazard early warning, multi-band satellite feature classification, physical severity quantification, and offline-capable edge computing for agricultural extension across Bangladesh.
+          Automated multi-hazard early warning, multi-band satellite feature classification, physical severity
+          quantification, and offline-capable edge computing for agricultural extension across Bangladesh.
         </p>
 
         <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -74,7 +75,11 @@ export const About: React.FC = () => {
           { label: 'Spatial Coverage', val: '64 Districts', detail: 'All 8 Administrative Divisions' },
           { label: 'Hazard Categories', val: '8 Distinct Classes', detail: 'Flood, Cyclone, Drought & Storms' },
           { label: 'Severity Precision', val: '0.00 - 1.00', detail: 'Continuous Physical Index' },
-          { label: 'Inference Path', val: 'Stored reads', detail: 'Server-side batch pipeline; no in-browser model execution' },
+          {
+            label: 'Inference Path',
+            val: 'Stored reads',
+            detail: 'Server-side batch pipeline; no in-browser model execution',
+          },
         ].map((stat, i) => (
           <motion.div
             key={i}
@@ -82,7 +87,7 @@ export const About: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: i * 0.08 }}
             whileHover={{ y: -3, scale: 1.01 }}
-            className="bg-white border border-carbon-20 p-5 space-y-1 cursor-pointer"
+            className="bg-white border border-carbon-20 rounded-2xl p-5 space-y-1 cursor-pointer"
           >
             <span className="text-xs font-mono uppercase text-carbon-60 font-bold block">{stat.label}</span>
             <span className="text-xl font-extrabold text-carbon-90">{stat.val}</span>
@@ -97,11 +102,9 @@ export const About: React.FC = () => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.4 }}
-        className="bg-white border border-carbon-20 p-6 md:p-8 space-y-6"
+        className="bg-white border border-carbon-20 rounded-2xl p-6 md:p-8 space-y-6"
       >
-        <h2 className="text-lg font-bold text-carbon-90">
-          Academic Home &amp; Official Authorities
-        </h2>
+        <h2 className="text-lg font-bold text-carbon-90">Academic Home &amp; Official Authorities</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-base">
           {[
@@ -114,12 +117,12 @@ export const About: React.FC = () => {
               name: 'BMD · FFWC · DDM & local administration',
               role: 'Official warning authorities this platform defers to. Cited as sources only. HazardNet has no partnership, endorsement or data-sharing agreement with them.',
               location: 'Bangladesh',
-            }
+            },
           ].map((partner, i) => (
             <motion.div
               key={i}
               whileHover={{ y: -2 }}
-              className="p-4 bg-carbon-05 border border-carbon-20 space-y-1 transition-all"
+              className="p-4 bg-carbon-05 border border-carbon-20 rounded-2xl space-y-1 transition-all"
             >
               <h3 className="font-bold text-carbon-90">{partner.name}</h3>
               <p className="text-carbon-70 font-medium text-base leading-[1.62]">{partner.role}</p>
@@ -135,12 +138,10 @@ export const About: React.FC = () => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.4 }}
-        className="bg-white border border-carbon-20 p-6 md:p-8 space-y-4"
+        className="bg-white border border-carbon-20 rounded-2xl p-6 md:p-8 space-y-4"
       >
-        <h2 className="text-lg font-bold text-carbon-90">
-          Agro-Ecological Vulnerability Context in Bangladesh
-        </h2>
-        
+        <h2 className="text-lg font-bold text-carbon-90">Agro-Ecological Vulnerability Context in Bangladesh</h2>
+
         {/* Editorial split rather than a third three-across card row: the lead case reads full
             width at md+, the remaining three pair off below it. */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-base text-carbon-70">
@@ -149,38 +150,34 @@ export const About: React.FC = () => {
               title: 'Haor Basin & Pre-Monsoon Flash Floods',
               desc: 'Districts like Sunamganj and Habiganj face rapid upstream water surges in April/May, threatening 800,000+ hectares of ripe Boro paddy rice right before harvest.',
               link: '/use-cases?case=haor',
-              linkText: 'Read Haor Case Study'
+              linkText: 'Read Haor Case Study',
             },
             {
               title: 'Northern Cold Waves & Drought',
               desc: 'Kurigram, Rangpur, and Rajshahi experience severe seedling stunting during winter cold snaps and soil moisture deficits during summer Aus/Aman seasons.',
               link: '/use-cases?case=coldwave',
-              linkText: 'Read Cold Wave Case Study'
+              linkText: 'Read Cold Wave Case Study',
             },
             {
               title: 'Coastal Cyclones & Salinity Intrusion',
-              desc: 'Satkhira, Barguna, and Cox\'s Bazar suffer storm surges from Bay of Bengal cyclones (Remal, Amphan), causing long-term soil salinity elevation.',
+              desc: "Satkhira, Barguna, and Cox's Bazar suffer storm surges from Bay of Bengal cyclones (Remal, Amphan), causing long-term soil salinity elevation.",
               link: '/use-cases?case=cyclone',
-              linkText: 'Read Coastal Surge Case Study'
+              linkText: 'Read Coastal Surge Case Study',
             },
             {
-              title: 'Nor\'wester Convective Storms',
+              title: "Nor'wester Convective Storms",
               desc: 'Severe local storms bring high velocity winds and hail damage across central agricultural districts during spring planting windows.',
               link: '/docs',
-              linkText: 'Read Model Architecture'
-            }
+              linkText: 'Read Model Architecture',
+            },
           ].map((item, idx) => (
             <motion.div
               key={idx}
               whileHover={{ scale: 1.01 }}
-              className={`bg-carbon-05 border border-carbon-20 p-4 space-y-2 transition-all ${idx === 0 ? 'md:col-span-2' : ''}`}
+              className={`bg-carbon-05 border border-carbon-20 rounded-2xl p-4 space-y-2 transition-all ${idx === 0 ? 'md:col-span-2' : ''}`}
             >
-              <h3 className="font-bold text-carbon-90">
-                {item.title}
-              </h3>
-              <p className="leading-relaxed text-carbon-60">
-                {item.desc}
-              </p>
+              <h3 className="font-bold text-carbon-90">{item.title}</h3>
+              <p className="leading-relaxed text-carbon-60">{item.desc}</p>
               <Link to={item.link} className="text-ap-link font-bold underline inline-block pt-1 hover:text-amber-900">
                 <span className="inline-flex items-center gap-1.5">
                   {item.linkText}
@@ -198,15 +195,16 @@ export const About: React.FC = () => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.4 }}
-        className="bg-white border border-carbon-20 p-6 md:p-8 space-y-3"
+        className="bg-white border border-carbon-20 rounded-2xl p-6 md:p-8 space-y-3"
       >
-        <h2 className="text-lg font-bold text-carbon-90">
-          Open Source Code & License
-        </h2>
+        <h2 className="text-lg font-bold text-carbon-90">Open Source Code & License</h2>
         <p className="text-base leading-[1.62] text-carbon-60">
-          The HazardNet platform is licensed under the <strong>Creative Commons Attribution 4.0 International (CC BY 4.0)</strong> license. You are free to copy, redistribute, and build upon our model files and early warning algorithms, provided proper credit is given to the project.
+          The HazardNet platform is licensed under the{' '}
+          <strong>Creative Commons Attribution 4.0 International (CC BY 4.0)</strong> license. You are free to copy,
+          redistribute, and build upon our model files and early warning algorithms, provided proper credit is given to
+          the project.
         </p>
-        <div className="p-4 bg-carbon-90 text-carbon-10 font-mono text-xs select-all overflow-x-auto border border-carbon-80">
+        <div className="rounded-2xl p-4 bg-carbon-90 text-carbon-10 font-mono text-xs select-all overflow-x-auto border border-carbon-80">
           {`# Clone the HazardNet GitHub Repository
 git clone https://github.com/myself-aas/HazardNet.git
 cd HazardNet
@@ -216,7 +214,6 @@ npm install
 npm run dev`}
         </div>
       </motion.div>
-
     </motion.div>
   );
 };

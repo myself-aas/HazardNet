@@ -1,4 +1,4 @@
-import MaterialIcon from "../components/MaterialIcon";
+import MaterialIcon from '../components/MaterialIcon';
 import { CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -52,10 +52,9 @@ const ForgotPasswordPage: React.FC = () => {
         title="Reset your password"
         subtitle="Enter your registered email and we'll send you a secure reset link."
       >
-
         {!isSubmitted ? (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="border-l-2 border-severity-high bg-white p-4">
+            <div className="rounded-r-xl border-l-4 border-severity-high bg-white p-4">
               <p className="text-base leading-[1.62] text-carbon-70">
                 Enter your registered HazardNet email address and we'll send you instructions to reset your password.
               </p>
@@ -68,9 +67,11 @@ const ForgotPasswordPage: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -5 }}
                   role="alert"
-                  className="flex items-start gap-2 border-l-2 border-ap-primary bg-white p-4 text-sm font-medium text-ap-link"
+                  className="flex items-start gap-2 rounded-r-xl border-l-4 border-ap-primary bg-white p-4 text-sm font-medium text-ap-link"
                 >
-                  <span className="shrink-0"><MaterialIcon name="warning" className="w-4 h-4 inline-block mr-1" /></span>
+                  <span className="shrink-0">
+                    <MaterialIcon name="warning" className="w-4 h-4 inline-block mr-1" />
+                  </span>
                   <span>{error}</span>
                 </motion.div>
               )}
@@ -91,7 +92,7 @@ const ForgotPasswordPage: React.FC = () => {
                 }
                 placeholder="user@example.com"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 className="h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 placeholder-carbon-40 font-medium focus:border-ap-primary focus:outline-none focus:ring-2 focus:ring-ap-primary/40"
               />
             </div>
@@ -104,8 +105,20 @@ const ForgotPasswordPage: React.FC = () => {
             >
               {loading ? (
                 <>
-                  <svg className="animate-spin h-4 w-4 text-ap-action-fg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <svg
+                    className="animate-spin h-4 w-4 text-ap-action-fg"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                   </svg>
                   <span>Sending Reset Link...</span>
@@ -118,11 +131,15 @@ const ForgotPasswordPage: React.FC = () => {
             <div className="text-center text-xs text-carbon-60 pt-2 space-y-1.5 border-t border-carbon-20">
               <p>
                 Remembered your password?{' '}
-                <Link to="/login" className="text-ap-link hover:underline font-extrabold">Log In</Link>
+                <Link to="/login" className="text-ap-link hover:underline font-extrabold">
+                  Log In
+                </Link>
               </p>
               <p>
                 Need an account?{' '}
-                <Link to="/signup" className="text-ap-link hover:underline font-extrabold">Sign Up</Link>
+                <Link to="/signup" className="text-ap-link hover:underline font-extrabold">
+                  Sign Up
+                </Link>
               </p>
             </div>
           </form>
@@ -138,7 +155,7 @@ const ForgotPasswordPage: React.FC = () => {
               </p>
             </div>
 
-            <p className="text-xs text-carbon-60 bg-carbon-05 border border-carbon-20 p-3 text-left">
+            <p className="text-xs text-carbon-60 bg-carbon-05 border border-carbon-20 rounded-lg p-3 text-left">
               Please check your spam or junk folder if the email does not appear in your primary inbox within 2 minutes.
             </p>
 

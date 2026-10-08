@@ -30,12 +30,7 @@ export interface DataStateLoadingProps {
   loader?: boolean;
 }
 
-export const DataStateLoading: React.FC<DataStateLoadingProps> = ({
-  label,
-  detail,
-  className = '',
-  loader = true,
-}) => (
+export const DataStateLoading: React.FC<DataStateLoadingProps> = ({ label, detail, className = '', loader = true }) => (
   <div className={`flex items-center justify-center p-8 ${className}`} role="status" aria-live="polite">
     <div className="text-center">
       {loader && <InfinityLoader size={72} label={label} announce={false} className="mx-auto mb-3 block" />}
@@ -52,7 +47,7 @@ export interface DataStateEmptyProps {
 }
 
 export const DataStateEmpty: React.FC<DataStateEmptyProps> = ({ title, body, className = '' }) => (
-  <div className={`ap-enter border border-carbon-20 bg-white p-6 text-center ${className}`}>
+  <div className={`ap-enter border border-carbon-20 rounded-2xl bg-white p-6 text-center ${className}`}>
     <Inbox className="mx-auto mb-3 h-6 w-6 text-carbon-50" aria-hidden="true" />
     <h3 className="text-sm font-bold text-carbon-90">{title}</h3>
     {body && <p className="mx-auto mt-1 max-w-prose text-xs text-carbon-60">{body}</p>}
@@ -75,7 +70,7 @@ export const DataStateError: React.FC<DataStateErrorProps> = ({
   retryLabel = 'Try again',
   className = '',
 }) => (
-  <div className={`ap-enter border border-carbon-20 bg-white p-6 text-center ${className}`} role="alert">
+  <div className={`ap-enter border border-carbon-20 rounded-2xl bg-white p-6 text-center ${className}`} role="alert">
     <AlertTriangle className="mx-auto mb-3 h-6 w-6 text-ap-link" aria-hidden="true" />
     <h3 className="text-sm font-bold text-carbon-90">{title}</h3>
     <p className="mx-auto mt-1 max-w-prose text-xs text-carbon-60">

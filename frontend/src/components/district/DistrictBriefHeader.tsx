@@ -6,7 +6,6 @@ import { PrintQrCode } from '../PrintQrCode';
 
 import { useDistrictBrief } from './DistrictBriefContext';
 
-
 /** District h1, source/date, published-alert strip. */
 export const DistrictBriefHeader: React.FC = () => {
   const {
@@ -63,9 +62,8 @@ export const DistrictBriefHeader: React.FC = () => {
 
   return (
     <>
-
       {/* CONSOLIDATED OFFICIAL DISTRICT DISASTER INTELLIGENCE HEADER */}
-      <header className="district-brief-header mb-6 border-b-2 border-carbon-90 pb-4 bg-white p-4 sm:p-6 border border-carbon-20 space-y-4">
+      <header className="district-brief-header mb-6 border-b-2 border-carbon-90 pb-4 bg-white p-4 sm:p-6 border border-carbon-20 rounded-xl space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-carbon-20 pb-2 text-xs font-mono text-carbon-70 leading-tight min-w-0">
           <div className="flex items-center gap-1.5">
             <span className="font-bold text-carbon-90 uppercase tracking-wider">HazardNet</span>
@@ -73,9 +71,18 @@ export const DistrictBriefHeader: React.FC = () => {
             <span className="font-semibold text-carbon-60">MoDMR / NDMA Disaster Intelligence</span>
           </div>
           <div className="flex items-center gap-2">
-            <span>DISPATCH ID: <strong className="text-carbon-90 font-bold">HN-BD-2026-{data.districtId.toUpperCase().slice(0, 4)}-{new Date().toISOString().slice(5, 10).replace('-', '')}</strong></span>
+            <span>
+              DISPATCH ID:{' '}
+              <strong className="text-carbon-90 font-bold">
+                HN-BD-2026-{data.districtId.toUpperCase().slice(0, 4)}-
+                {new Date().toISOString().slice(5, 10).replace('-', '')}
+              </strong>
+            </span>
             <span className="text-carbon-60">•</span>
-            <span>DATE: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}, {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} BST</span>
+            <span>
+              DATE: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })},{' '}
+              {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} BST
+            </span>
           </div>
         </div>
 
@@ -92,15 +99,24 @@ export const DistrictBriefHeader: React.FC = () => {
 
           {/* Prominent Risk Badge */}
           <div className="shrink-0">
-            <span className={`inline-flex min-h-6 items-center gap-2 px-3 py-1 rounded-control text-xs font-mono font-bold ${
-              data.modelAssessment.riskCategory === 'High' ? 'bg-[#c01f1f] text-white' :
-              data.modelAssessment.riskCategory === 'Moderate' ? 'bg-[#8a5a00] text-carbon-black' :
-              'bg-[#1d7a3e] text-white'
-            }`}>
-              <span className={`w-2 h-2 rounded-full ${
-                data.modelAssessment.riskCategory === 'High' ? 'bg-white animate-pulse' :
-                data.modelAssessment.riskCategory === 'Moderate' ? 'bg-carbon-black' : 'bg-white'
-              }`} />
+            <span
+              className={`inline-flex min-h-6 items-center gap-2 px-3 py-1 rounded-control text-xs font-mono font-bold ${
+                data.modelAssessment.riskCategory === 'High'
+                  ? 'bg-[#c01f1f] text-white'
+                  : data.modelAssessment.riskCategory === 'Moderate'
+                    ? 'bg-[#8a5a00] text-carbon-black'
+                    : 'bg-[#1d7a3e] text-white'
+              }`}
+            >
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  data.modelAssessment.riskCategory === 'High'
+                    ? 'bg-white animate-pulse'
+                    : data.modelAssessment.riskCategory === 'Moderate'
+                      ? 'bg-carbon-black'
+                      : 'bg-white'
+                }`}
+              />
               Risk Level: {data.modelAssessment.riskCategory} ({Math.round(district.severity * 100)}% Severity)
             </span>
           </div>
@@ -133,7 +149,7 @@ export const DistrictBriefHeader: React.FC = () => {
             <ExternalLink className="w-3 h-3" />
           </Link>
           {climaticEventsData && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-carbon-10 text-carbon-70 border border-carbon-20">
+            <span className="rounded-full inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-carbon-10 text-carbon-70 border border-carbon-20">
               <History className="w-3.5 h-3.5 text-carbon-60" />
               <span>{climaticEventsData.totalEvents} Verified Historical Events (2000–2026)</span>
             </span>
@@ -147,7 +163,9 @@ export const DistrictBriefHeader: React.FC = () => {
               <Calendar className="w-5 h-5" />
             </span>
             <div>
-              <div className="text-carbon-60 font-semibold uppercase tracking-wider text-xs">Peak Severity Occurrence Date</div>
+              <div className="text-carbon-60 font-semibold uppercase tracking-wider text-xs">
+                Peak Severity Occurrence Date
+              </div>
               <div className="text-carbon-90 font-black text-sm sm:text-base flex items-center gap-2">
                 <span>{peakSeverityInfo.peakDate}</span>
                 <span className="px-2 py-0.5 rounded bg-red-600 text-ap-on-sev text-xs font-black">
@@ -163,13 +181,15 @@ export const DistrictBriefHeader: React.FC = () => {
             </div>
             <div>
               <div className="text-carbon-60 font-semibold uppercase tracking-wider text-xs">Model Confidence</div>
-              <div className="text-carbon-90 font-extrabold text-sm">{Math.round(peakSeverityInfo.confidence * 100)}%</div>
+              <div className="text-carbon-90 font-extrabold text-sm">
+                {Math.round(peakSeverityInfo.confidence * 100)}%
+              </div>
             </div>
           </div>
         </div>
 
         {/* Consolidated Metadata Block (Two-Column Layout) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-carbon-05 border border-carbon-20/90 p-4 text-sm">
+        <div className="rounded-xl grid grid-cols-1 sm:grid-cols-2 gap-4 bg-carbon-05 border border-carbon-20/90 p-4 text-sm">
           {/* Column 1: Hazard Sub-type & Regional Ingestion */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
@@ -186,7 +206,9 @@ export const DistrictBriefHeader: React.FC = () => {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-carbon-60 font-medium">Ingestion Telemetry Station:</span>
-              <strong className="font-mono font-bold text-carbon-90">{data.physicalSensorMetrics.sensorStationName}</strong>
+              <strong className="font-mono font-bold text-carbon-90">
+                {data.physicalSensorMetrics.sensorStationName}
+              </strong>
             </div>
           </div>
 
@@ -195,7 +217,9 @@ export const DistrictBriefHeader: React.FC = () => {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-carbon-60 font-medium">Geospatial Datum:</span>
-                <span className="font-mono font-bold text-carbon-90">{district.lat.toFixed(4)}°N, {district.lng.toFixed(4)}°E</span>
+                <span className="font-mono font-bold text-carbon-90">
+                  {district.lat.toFixed(4)}°N, {district.lng.toFixed(4)}°E
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-carbon-60 font-medium">Surface Elevation Datum:</span>

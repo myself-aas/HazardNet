@@ -1,4 +1,4 @@
-import MaterialIcon from "../components/MaterialIcon";
+import MaterialIcon from '../components/MaterialIcon';
 import { ArrowRight } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -40,7 +40,6 @@ export const Blogs: React.FC = () => {
 
   const showStudioButton = !loading && Boolean(user) && isPrimarySuperAdmin(user?.email);
 
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -50,7 +49,7 @@ export const Blogs: React.FC = () => {
     >
       <Breadcrumbs />
 
-      <div className="bg-white border border-carbon-20/90 p-6 md:p-8 relative overflow-hidden space-y-3">
+      <div className="rounded-2xl bg-white border border-carbon-20/90 p-6 md:p-8 relative overflow-hidden space-y-3">
         <div className="absolute top-0 left-0 w-full h-1 bg-primary"></div>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 rounded-sm text-xs font-mono font-extrabold bg-amber-50 text-amber-900 border border-amber-300 uppercase tracking-wider">
@@ -64,7 +63,9 @@ export const Blogs: React.FC = () => {
           HazardNet AI Blog & Field Deployment Studies
         </h1>
         <p className="text-carbon-60 text-base leading-[1.62] max-w-3xl">
-          Technical deep-dives, remote sensing methodologies, field deployment case studies, and low-bandwidth engineering notes written by the HazardNet research team. Every article opens on its own page with a unique URL.
+          Technical deep-dives, remote sensing methodologies, field deployment case studies, and low-bandwidth
+          engineering notes written by the HazardNet research team. Every article opens on its own page with a unique
+          URL.
         </p>
 
         {showStudioButton && (
@@ -105,14 +106,18 @@ export const Blogs: React.FC = () => {
               <Link
                 key={article.id}
                 to={`/blogs/${article.slug}`}
-                className="group bg-white border border-carbon-20/70 p-5 hover:border-amber-400/80 hover:transition-all flex flex-col justify-between gap-3"
+                className="rounded-2xl group bg-white border border-carbon-20/70 p-5 hover:border-amber-400/80 hover:transition-all flex flex-col justify-between gap-3"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs font-mono font-bold">
-                    <span className="px-2 py-0.5 rounded-sm bg-carbon-05 text-carbon-80 border border-carbon-20">{article.category}</span>
+                    <span className="px-2 py-0.5 rounded-sm bg-carbon-05 text-carbon-80 border border-carbon-20">
+                      {article.category}
+                    </span>
                     <span className="text-carbon-60">{readingTimeMinutes(article.contentHtml)} min read</span>
                   </div>
-                  <h3 className="text-sm font-black text-carbon-90 group-hover:text-ap-link leading-snug">{article.title}</h3>
+                  <h3 className="text-sm font-black text-carbon-90 group-hover:text-ap-link leading-snug">
+                    {article.title}
+                  </h3>
                   <p className="text-base leading-[1.62] text-carbon-60 line-clamp-2">{article.excerpt}</p>
                 </div>
                 <div className="text-xs font-mono text-carbon-60 flex items-center justify-between">
@@ -126,7 +131,6 @@ export const Blogs: React.FC = () => {
           </div>
         </section>
       )}
-
     </motion.div>
   );
 };

@@ -81,13 +81,7 @@ export const StatusVerdict: React.FC<StatusVerdictProps> = ({
 }) => {
   const { t, formatNumber, formatDate } = useI18n();
 
-  const display: VerdictDisplay = loading
-    ? 'reading'
-    : unread
-      ? 'unknown'
-      : published > 0
-        ? 'active'
-        : 'quiet';
+  const display: VerdictDisplay = loading ? 'reading' : unread ? 'unknown' : published > 0 ? 'active' : 'quiet';
 
   const asOf = generatedAt ? formatDate(generatedAt) : null;
   const body =
@@ -132,11 +126,7 @@ export const StatusVerdict: React.FC<StatusVerdictProps> = ({
       } ${className}`}
     >
       <div className="flex flex-wrap items-center gap-3">
-        <MaterialIcon
-          name={ICONS[display]}
-          className="text-xl text-carbon-70"
-          aria-hidden="true"
-        />
+        <MaterialIcon name={ICONS[display]} className="text-xl text-carbon-70" aria-hidden="true" />
         <p className="ap-body-strong flex-1 min-w-[16rem]" data-testid="verdict-body">
           {display === 'unknown' ? (
             <span className="text-carbon-90">
@@ -144,7 +134,12 @@ export const StatusVerdict: React.FC<StatusVerdictProps> = ({
             </span>
           ) : (
             <>
-              <strong className="font-bold">{t(`verdict.${display}.lead`)}</strong> {body}
+              {/* `reading` has a single-line key (`verdict.reading`), not a lead/body pair —
+                  requesting `.lead` on it used to print the raw key into the strip. */}
+              <strong className="font-bold">
+                {display === 'reading' ? t('verdict.reading') : t(`verdict.${display}.lead`)}
+              </strong>{' '}
+              {display === 'reading' ? null : body}
             </>
           )}
         </p>

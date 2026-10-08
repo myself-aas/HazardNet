@@ -84,7 +84,7 @@ const LoginPage: React.FC = () => {
               exit={{ opacity: 0, y: -5 }}
               role="alert"
               aria-live="polite"
-              className="flex items-start gap-2 border-l-2 border-ap-primary bg-white p-4 text-sm font-medium text-ap-link"
+              className="flex items-start gap-2 rounded-r-xl border-l-4 border-ap-primary bg-white p-4 text-sm font-medium text-ap-link"
             >
               <span className="shrink-0 mt-0.5">
                 <MaterialIcon name="warning" className="w-4 h-4" />

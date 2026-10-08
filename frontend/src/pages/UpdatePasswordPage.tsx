@@ -1,46 +1,46 @@
-import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { AuthLayout } from '../components/auth/AuthLayout'
-import { useAuth } from '../context/AuthContext'
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthLayout } from '../components/auth/AuthLayout';
+import { useAuth } from '../context/AuthContext';
 
 /**
  * Dedicated password-update page — unique URL: /update-password
  * Users land here from the password-reset email link.
  */
 export default function UpdatePasswordPage() {
-  const { updatePassword } = useAuth()
-  const navigate = useNavigate()
-  const [password, setPassword] = useState('')
-  const [confirmation, setConfirmation] = useState('')
-  const [ready, setReady] = useState(false)
-  const [status, setStatus] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [saving, setSaving] = useState(false)
+  const { updatePassword } = useAuth();
+  const navigate = useNavigate();
+  const [password, setPassword] = useState('');
+  const [confirmation, setConfirmation] = useState('');
+  const [ready, setReady] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setReady(true), 300)
-    return () => window.clearTimeout(timer)
-  }, [])
+    const timer = window.setTimeout(() => setReady(true), 300);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const submit = async (event: React.FormEvent) => {
-    event.preventDefault()
-    setError(null)
-    if (password.length < 8) return setError('Your password must contain at least 8 characters.')
-    if (password !== confirmation) return setError('The passwords do not match.')
-    setSaving(true)
+    event.preventDefault();
+    setError(null);
+    if (password.length < 8) return setError('Your password must contain at least 8 characters.');
+    if (password !== confirmation) return setError('The passwords do not match.');
+    setSaving(true);
     try {
-      await updatePassword(password)
-      setStatus('Your password has been updated. You can now sign in with it.')
-      window.setTimeout(() => navigate('/login'), 1400)
+      await updatePassword(password);
+      setStatus('Your password has been updated. You can now sign in with it.');
+      window.setTimeout(() => navigate('/login'), 1400);
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Unable to update your password.')
+      setError(reason instanceof Error ? reason.message : 'Unable to update your password.');
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   const inputClass =
-    'mt-1.5 h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 outline-none focus:border-ap-primary focus:ring-2 focus:ring-ap-primary/40'
+    'mt-1.5 h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 outline-none focus:border-ap-primary focus:ring-2 focus:ring-ap-primary/40';
 
   return (
     <AuthLayout
@@ -50,9 +50,7 @@ export default function UpdatePasswordPage() {
     >
       {status ? (
         <div role="status" className="space-y-4 text-center">
-          <p className="border-l-2 border-ap-primary bg-white p-4 text-sm font-medium text-carbon-80">
-            {status}
-          </p>
+          <p className="border-l-2 border-ap-primary bg-white p-4 text-sm font-medium text-carbon-80">{status}</p>
           <Link to="/login" className="font-bold text-ap-link hover:underline">
             Return to sign in
           </Link>
@@ -60,7 +58,10 @@ export default function UpdatePasswordPage() {
       ) : (
         <form onSubmit={submit} className="space-y-4">
           {error && (
-            <p role="alert" className="border-l-2 border-ap-primary bg-white p-4 text-sm font-medium text-ap-link">
+            <p
+              role="alert"
+              className="rounded-r-xl border-l-4 border-ap-primary bg-white p-4 text-sm font-medium text-ap-link"
+            >
               {error}
             </p>
           )}
@@ -100,5 +101,5 @@ export default function UpdatePasswordPage() {
         </form>
       )}
     </AuthLayout>
-  )
+  );
 }

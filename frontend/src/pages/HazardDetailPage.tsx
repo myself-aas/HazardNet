@@ -56,66 +56,85 @@ const ALL_HAZARD_PILLS = [
   { slug: 'fire', name: 'Fire', icon: Flame },
 ];
 
-const HAZARD_METADATA: Record<string, { definition: string; vulnerableZones: string; triggers: string; season: string; color: string }> = {
-  'cyclone': {
-    definition: 'Intense tropical cyclonic storms originating in the southern Bay of Bengal producing destructive cyclonic winds and 3–9 meter coastal storm surges.',
-    vulnerableZones: 'Coastal belt including Barguna, Patuakhali, Bhola, Noakhali, Chattogram, Cox\'s Bazar, and Khulna coastal polders.',
+const HAZARD_METADATA: Record<
+  string,
+  { definition: string; vulnerableZones: string; triggers: string; season: string; color: string }
+> = {
+  cyclone: {
+    definition:
+      'Intense tropical cyclonic storms originating in the southern Bay of Bengal producing destructive cyclonic winds and 3–9 meter coastal storm surges.',
+    vulnerableZones:
+      "Coastal belt including Barguna, Patuakhali, Bhola, Noakhali, Chattogram, Cox's Bazar, and Khulna coastal polders.",
     triggers: 'Sea surface temperatures > 28°C, low vertical wind shear, and Coriolis vorticity amplification.',
     season: 'Pre-monsoon (April–May) and Post-monsoon (October–November)',
     color: getHazardColor('cyclone'),
   },
-  'flood': {
-    definition: 'Extensive riverine overbanking and widespread flood inundation driven by monsoon precipitation across transboundary upstream catchments in India, Nepal, and Bhutan.',
-    vulnerableZones: 'Brahmaputra-Jamuna floodplains (Kurigram, Gaibandha, Sirajganj), Ganges basin (Rajbari, Faridpur), and Meghna confluence.',
-    triggers: 'Excessive Himalayan precipitation, synchronized river crests, and high downstream sea levels retarding drainage.',
+  flood: {
+    definition:
+      'Extensive riverine overbanking and widespread flood inundation driven by monsoon precipitation across transboundary upstream catchments in India, Nepal, and Bhutan.',
+    vulnerableZones:
+      'Brahmaputra-Jamuna floodplains (Kurigram, Gaibandha, Sirajganj), Ganges basin (Rajbari, Faridpur), and Meghna confluence.',
+    triggers:
+      'Excessive Himalayan precipitation, synchronized river crests, and high downstream sea levels retarding drainage.',
     season: 'June through September (South-West Monsoon)',
     color: getHazardColor('flood'),
   },
   'flash-flood': {
-    definition: 'Rapidly rising, high-velocity flood flows occurring within 3 to 6 hours of localized high-intensity rainfall in adjacent upstream Meghalaya and Tripura hills.',
-    vulnerableZones: 'North-eastern Haor wetland basin covering Sunamganj, Sylhet, Netrokona, Kishoreganj, and Habiganj.',
+    definition:
+      'Rapidly rising, high-velocity flood flows occurring within 3 to 6 hours of localized high-intensity rainfall in adjacent upstream Meghalaya and Tripura hills.',
+    vulnerableZones:
+      'North-eastern Haor wetland basin covering Sunamganj, Sylhet, Netrokona, Kishoreganj, and Habiganj.',
     triggers: 'Pre-monsoon convective thunderstorms and steep catchment gradients across the Meghalaya plateau border.',
     season: 'April through June (Pre-Monsoon Boro harvest window)',
     color: getHazardColor('flash-flood'),
   },
   'severe-local-storm': {
-    definition: 'Meso-scale convective systems manifesting as violent squall lines (Norwesters / Kalbaishakhi), localized tornado funnels, severe hail, and intense cloud-to-ground lightning.',
-    vulnerableZones: 'Central and south-western plains including Brahmanbaria, Cumilla, Tangail, Manikganj, and Faridpur.',
+    definition:
+      'Meso-scale convective systems manifesting as violent squall lines (Norwesters / Kalbaishakhi), localized tornado funnels, severe hail, and intense cloud-to-ground lightning.',
+    vulnerableZones:
+      'Central and south-western plains including Brahmanbaria, Cumilla, Tangail, Manikganj, and Faridpur.',
     triggers: 'Interaction between warm moist Bay of Bengal air and dry cool north-westerly continental air masses.',
     season: 'March through May (Spring / Hot Weather Period)',
     color: getHazardColor('severe-local-storm'),
   },
   'cold-wave': {
-    definition: 'Sustained sub-normal ambient temperature anomalies (<10°C minimum temperatures) accompanied by persistent high-pressure radiative fog blankets.',
+    definition:
+      'Sustained sub-normal ambient temperature anomalies (<10°C minimum temperatures) accompanied by persistent high-pressure radiative fog blankets.',
     vulnerableZones: 'North-western frontier districts: Panchagarh, Dinajpur, Thakurgaon, Kurigram, and Nilphamari.',
     triggers: 'Continental cold air outflow from the sub-Himalayan plains during stable winter anticyclonic regimes.',
     season: 'December through January (Winter)',
     color: getHazardColor('cold-wave'),
   },
-  'drought': {
-    definition: 'Prolonged deficit in meteorological rainfall and depleted root-zone soil moisture leading to hydrological drought and agricultural crop failure.',
+  drought: {
+    definition:
+      'Prolonged deficit in meteorological rainfall and depleted root-zone soil moisture leading to hydrological drought and agricultural crop failure.',
     vulnerableZones: 'High Barind Tract in Rajshahi, Chapainawabganj, Naogaon, and Kushtia.',
     triggers: 'Delayed monsoon onset, break-monsoon spells, and declining regional groundwater tables.',
     season: 'February through May (Rabi and Pre-Kharif seasons)',
     color: getHazardColor('drought'),
   },
   'heat-wave': {
-    definition: 'Consecutive days of extreme thermal heat index with maximum ambient temperatures exceeding 36°C (mild), 38°C (moderate), or 40°C (severe).',
+    definition:
+      'Consecutive days of extreme thermal heat index with maximum ambient temperatures exceeding 36°C (mild), 38°C (moderate), or 40°C (severe).',
     vulnerableZones: 'Western and central districts including Chuadanga, Rajshahi, Jashore, Dhaka, and Pabna.',
     triggers: 'Dry westerly continental advection, clear insolation skies, and urban heat island amplification.',
     season: 'April through June',
     color: getHazardColor('heat-wave'),
   },
-  'earthquake': {
-    definition: 'Tectonic ground shaking generated by brittle fault rupture along active tectonic boundaries bordering Bangladesh.',
-    vulnerableZones: 'Dauki Fault zone (Sylhet, Mymensingh) and Chittagong-Tripura folded belt (Chattogram, Rangamati, Bandarban).',
+  earthquake: {
+    definition:
+      'Tectonic ground shaking generated by brittle fault rupture along active tectonic boundaries bordering Bangladesh.',
+    vulnerableZones:
+      'Dauki Fault zone (Sylhet, Mymensingh) and Chittagong-Tripura folded belt (Chattogram, Rangamati, Bandarban).',
     triggers: 'Active subduction and oblique collision of the Indian Plate beneath the Eurasian and Burma plates.',
     season: 'Aseasonal / Geological risk',
     color: getHazardColor('earthquake'),
   },
-  'fire': {
-    definition: 'Uncontrolled structural and open agricultural fires spreading through dry combustible vegetation or dense rural settlements.',
-    vulnerableZones: 'Dry rural settlements, harvest crop fields, and dense informal commercial clusters across all divisions.',
+  fire: {
+    definition:
+      'Uncontrolled structural and open agricultural fires spreading through dry combustible vegetation or dense rural settlements.',
+    vulnerableZones:
+      'Dry rural settlements, harvest crop fields, and dense informal commercial clusters across all divisions.',
     triggers: 'Low relative humidity (<30%), elevated ambient temperature, and strong gusty surface winds.',
     season: 'March through May (Dry Summer Period)',
     color: getHazardColor('fire'),
@@ -172,28 +191,32 @@ export const HazardDetailPage: React.FC = () => {
       }
     }
     loadHazard();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [currentSlug, reloadNonce]);
 
   // Unique divisions and districts for filters
   const availableDivisions = useMemo(() => {
     if (!data) return [];
-    return Array.from(new Set(data.allEvents.map(e => e.division))).sort();
+    return Array.from(new Set(data.allEvents.map((e) => e.division))).sort();
   }, [data]);
 
   const availableDistricts = useMemo(() => {
     if (!data) return [];
-    const list = selectedDivision === 'all'
-      ? data.allEvents.map(e => e.district)
-      : data.allEvents.filter(e => e.division === selectedDivision).map(e => e.district);
+    const list =
+      selectedDivision === 'all'
+        ? data.allEvents.map((e) => e.district)
+        : data.allEvents.filter((e) => e.division === selectedDivision).map((e) => e.district);
     return Array.from(new Set(list)).sort();
   }, [data, selectedDivision]);
 
   // Filtered historical events
   const filteredEvents = useMemo(() => {
     if (!data) return [];
-    return data.allEvents.filter(e => {
-      const matchesSearch = searchQuery === '' ||
+    return data.allEvents.filter((e) => {
+      const matchesSearch =
+        searchQuery === '' ||
         e.district.toLowerCase().includes(searchQuery.toLowerCase()) ||
         e.division.toLowerCase().includes(searchQuery.toLowerCase()) ||
         e.glide.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -209,7 +232,7 @@ export const HazardDetailPage: React.FC = () => {
   // Top 15 districts chart data
   const top15Districts = useMemo(() => {
     if (!data || !data.topDistricts) return [];
-    return data.topDistricts.slice(0, 15).map(d => ({
+    return data.topDistricts.slice(0, 15).map((d) => ({
       district: d.district,
       division: d.division,
       count: d.count,
@@ -231,7 +254,7 @@ export const HazardDetailPage: React.FC = () => {
   if (error || !data) {
     return (
       <div className="min-h-dvh bg-carbon-05 flex items-center justify-center p-6">
-        <div className="bg-white border border-carbon-20 p-8 max-w-md text-center">
+        <div className="bg-white border border-carbon-20 rounded-2xl p-8 max-w-md text-center">
           <AlertTriangle className="w-10 h-10 text-ap-link mx-auto mb-3" aria-hidden="true" />
           <h2 className="text-lg font-bold text-carbon-90">Failed to Load Hazard Data</h2>
           <p className="text-xs text-carbon-60 mt-2">{error || 'Hazard data not found.'}</p>
@@ -260,16 +283,20 @@ export const HazardDetailPage: React.FC = () => {
     <div className="min-h-dvh bg-carbon-05 text-carbon-80 pb-8 pt-6 px-4 sm:px-6 lg:px-8 max-w-[1200px] mx-auto">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-carbon-60 mb-4">
-        <Link to="/" className="hover:text-ap-link transition-colors">Home</Link>
+        <Link to="/" className="hover:text-ap-link transition-colors">
+          Home
+        </Link>
         <span>/</span>
-        <Link to="/hazards" className="hover:text-ap-link transition-colors">Hazards</Link>
+        <Link to="/hazards" className="hover:text-ap-link transition-colors">
+          Hazards
+        </Link>
         <span>/</span>
         <span className="text-carbon-80 font-medium">{data.hazard}</span>
       </div>
 
       {/* Hazard Switcher Pills */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-3 mb-6 scrollbar-none">
-        {ALL_HAZARD_PILLS.map(h => {
+        {ALL_HAZARD_PILLS.map((h) => {
           const isActive = h.slug === currentSlug;
           const Icon = h.icon;
           return (
@@ -290,41 +317,46 @@ export const HazardDetailPage: React.FC = () => {
       </div>
 
       {/* Hazard Profile Header */}
-      <div className="bg-white border border-carbon-20 p-6 sm:p-8 mb-8">
+      <div className="bg-white border border-carbon-20 rounded-2xl p-6 sm:p-8 mb-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold mb-3" style={{
-              backgroundColor: getHazardSurface(currentSlug),
-              color: 'var(--ap-label)',
-              borderColor: getHazardBorder(currentSlug),
-              borderWidth: 1,
-              borderStyle: 'solid',
-            }}>
+            <div
+              className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold mb-3"
+              style={{
+                backgroundColor: getHazardSurface(currentSlug),
+                color: 'var(--ap-label)',
+                borderColor: getHazardBorder(currentSlug),
+                borderWidth: 1,
+                borderStyle: 'solid',
+              }}
+            >
               <ShieldAlert className="w-3.5 h-3.5" />
               <span>National Peril Profile</span>
             </div>
             <h1 className="text-ap-lead font-bold sm:text-ap-display-md text-carbon-90 tracking-tight">
               {data.hazard}
             </h1>
-            <p className="mt-2 text-base leading-[1.62] text-carbon-70 max-w-2xl">
-              {meta.definition}
-            </p>
+            <p className="mt-2 text-base leading-[1.62] text-carbon-70 max-w-2xl">{meta.definition}</p>
             <div className="mt-3 flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-carbon-60">
-              <div><strong className="text-carbon-70">Peak Season:</strong> {meta.season}</div>
-              <div><strong className="text-carbon-70">Key Triggers:</strong> {meta.triggers}</div>
+              <div>
+                <strong className="text-carbon-70">Peak Season:</strong> {meta.season}
+              </div>
+              <div>
+                <strong className="text-carbon-70">Key Triggers:</strong> {meta.triggers}
+              </div>
             </div>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full md:w-auto">
-            <div className="bg-carbon-05 border border-carbon-20/80 p-3 text-center">
+            <div className="rounded-xl bg-carbon-05 border border-carbon-20/80 p-3 text-center">
               <div className="text-xl font-bold text-ap-link">{data.totalEvents.toLocaleString()}</div>
               <div className="text-xs text-carbon-60 font-medium">Historical Records</div>
             </div>
-            <div className="bg-carbon-05 border border-carbon-20/80 p-3 text-center">
+            <div className="rounded-xl bg-carbon-05 border border-carbon-20/80 p-3 text-center">
               <div className="text-xl font-bold text-amber-700">{data.forecasts.length}</div>
               <div className="text-xs text-carbon-60 font-medium">Active Forecasts</div>
             </div>
-            <div className="bg-carbon-05 border border-carbon-20/80 p-3 text-center col-span-2 sm:col-span-1">
+            <div className="rounded-xl bg-carbon-05 border border-carbon-20/80 p-3 text-center col-span-2 sm:col-span-1">
               <div className="text-xl font-bold text-carbon-90">{data.forecastDistrictsCount}</div>
               <div className="text-xs text-carbon-60 font-medium">Districts Under Alert</div>
             </div>
@@ -334,16 +366,14 @@ export const HazardDetailPage: React.FC = () => {
 
       {/* Active Forecast Alert Matrix for this Hazard */}
       {data.forecasts.length > 0 && (
-        <div className="bg-white border border-carbon-20 p-6 mb-8">
+        <div className="bg-white border border-carbon-20 rounded-2xl p-6 mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-carbon-20 gap-2">
             <div>
               <h2 className="text-base font-semibold text-carbon-90 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-amber-600" />
                 Active Forecast Warnings for {data.hazard} Across Bangladesh
               </h2>
-              <p className="text-xs text-carbon-60">
-                Identified in latest run from hazardnet_forecasts_latest.csv
-              </p>
+              <p className="text-xs text-carbon-60">Identified in latest run from hazardnet_forecasts_latest.csv</p>
             </div>
             <span className="text-xs font-semibold px-2.5 py-1 bg-amber-50 text-amber-800 rounded-md border border-amber-200">
               {data.forecasts.length} Active Warnings
@@ -358,11 +388,14 @@ export const HazardDetailPage: React.FC = () => {
               key: `${fc.districtName}-${fc.horizon}-${idx}`,
               heading: `${fc.districtName} (${fc.horizon === '7_days' ? '7-Day' : '15-Day'})`,
               fields: [
-                { label: 'Division', value: (
-                  <Link to={`/divisions/${fc.division.toLowerCase()}`} className="text-ap-link">
-                    {fc.division}
-                  </Link>
-                ) },
+                {
+                  label: 'Division',
+                  value: (
+                    <Link to={`/divisions/${fc.division.toLowerCase()}`} className="text-ap-link">
+                      {fc.division}
+                    </Link>
+                  ),
+                },
                 { label: 'Target Date', value: fc.targetDate },
                 { label: 'Model Severity', value: fc.modelSeverity.toFixed(2) },
                 { label: 'Physics Severity', value: fc.physicsSeverity.toFixed(2) },
@@ -401,7 +434,10 @@ export const HazardDetailPage: React.FC = () => {
                 {data.forecasts.map((fc, idx) => {
                   const districtSlug = fc.districtName.toLowerCase().replace(/[^a-z0-9]/g, '');
                   return (
-                    <tr key={`${fc.districtName}-${fc.horizon}-${idx}`} className="hover:bg-carbon-05/80 transition-colors">
+                    <tr
+                      key={`${fc.districtName}-${fc.horizon}-${idx}`}
+                      className="hover:bg-carbon-05/80 transition-colors"
+                    >
                       <td className="p-3 font-semibold text-carbon-90">{fc.districtName}</td>
                       <td className="p-3 text-carbon-60">
                         <Link to={`/divisions/${fc.division.toLowerCase()}`} className="hover:text-ap-link">
@@ -440,7 +476,7 @@ export const HazardDetailPage: React.FC = () => {
       {/* Interactive Recharts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Chart 1: 26-Year Historical Disaster Trend */}
-        <div className="bg-white border border-carbon-20 p-6">
+        <div className="bg-white border border-carbon-20 rounded-2xl p-6">
           <div className="flex items-center justify-between pb-3 border-b border-carbon-20">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
@@ -460,7 +496,12 @@ export const HazardDetailPage: React.FC = () => {
                 <XAxis dataKey="year" tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
                 <YAxis tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: 'var(--ap-bg-canvas)', borderColor: 'var(--ap-separator-opaque)', borderRadius: 'var(--ap-radius-md)', boxShadow: 'var(--ap-elev-flat)' }}
+                  contentStyle={{
+                    backgroundColor: 'var(--ap-bg-canvas)',
+                    borderColor: 'var(--ap-separator-opaque)',
+                    borderRadius: 'var(--ap-radius-md)',
+                    boxShadow: 'var(--ap-elev-flat)',
+                  }}
                 />
                 <Bar dataKey="count" name="Recorded Events" fill={meta.color} radius={[4, 4, 0, 0]} />
               </BarChart>
@@ -469,7 +510,7 @@ export const HazardDetailPage: React.FC = () => {
         </div>
 
         {/* Chart 2: Top 15 Most Impacted Districts */}
-        <div className="bg-white border border-carbon-20 p-6">
+        <div className="bg-white border border-carbon-20 rounded-2xl p-6">
           <div className="flex items-center justify-between pb-3 border-b border-carbon-20">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
@@ -484,9 +525,19 @@ export const HazardDetailPage: React.FC = () => {
               <BarChart data={top15Districts} layout="vertical" margin={{ top: 10, right: 20, left: 30, bottom: 10 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--ap-separator)" horizontal={false} />
                 <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
-                <YAxis dataKey="district" type="category" tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} width={80} />
+                <YAxis
+                  dataKey="district"
+                  type="category"
+                  tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }}
+                  width={80}
+                />
                 <Tooltip
-                  contentStyle={{ backgroundColor: 'var(--ap-bg-canvas)', borderColor: 'var(--ap-separator-opaque)', borderRadius: 'var(--ap-radius-md)', boxShadow: 'var(--ap-elev-flat)' }}
+                  contentStyle={{
+                    backgroundColor: 'var(--ap-bg-canvas)',
+                    borderColor: 'var(--ap-separator-opaque)',
+                    borderRadius: 'var(--ap-radius-md)',
+                    boxShadow: 'var(--ap-elev-flat)',
+                  }}
                 />
                 <Bar dataKey="count" name="Disaster Events" fill="var(--ap-primary)" radius={[0, 4, 4, 0]} />
               </BarChart>
@@ -495,7 +546,7 @@ export const HazardDetailPage: React.FC = () => {
         </div>
 
         {/* Chart 3: Monthly Seasonality Curve */}
-        <div className="bg-white border border-carbon-20 p-6">
+        <div className="bg-white border border-carbon-20 rounded-2xl p-6">
           <div className="flex items-center justify-between pb-3 border-b border-carbon-20">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
@@ -518,16 +569,29 @@ export const HazardDetailPage: React.FC = () => {
                 <XAxis dataKey="monthName" tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
                 <YAxis tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: 'var(--ap-bg-canvas)', borderColor: 'var(--ap-separator-opaque)', borderRadius: 'var(--ap-radius-md)', boxShadow: 'var(--ap-elev-flat)' }}
+                  contentStyle={{
+                    backgroundColor: 'var(--ap-bg-canvas)',
+                    borderColor: 'var(--ap-separator-opaque)',
+                    borderRadius: 'var(--ap-radius-md)',
+                    boxShadow: 'var(--ap-elev-flat)',
+                  }}
                 />
-                <Area type="monotone" dataKey="count" name="Events" stroke={meta.color} strokeWidth={2.5} fillOpacity={1} fill="url(#hazardSeasonGrad)" />
+                <Area
+                  type="monotone"
+                  dataKey="count"
+                  name="Events"
+                  stroke={meta.color}
+                  strokeWidth={2.5}
+                  fillOpacity={1}
+                  fill="url(#hazardSeasonGrad)"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Chart 4: Division Exposure Breakdown */}
-        <div className="bg-white border border-carbon-20 p-6">
+        <div className="bg-white border border-carbon-20 rounded-2xl p-6">
           <div className="flex items-center justify-between pb-3 border-b border-carbon-20">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
@@ -544,7 +608,12 @@ export const HazardDetailPage: React.FC = () => {
                 <XAxis dataKey="division" tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
                 <YAxis tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: 'var(--ap-bg-canvas)', borderColor: 'var(--ap-separator-opaque)', borderRadius: 'var(--ap-radius-md)', boxShadow: 'var(--ap-elev-flat)' }}
+                  contentStyle={{
+                    backgroundColor: 'var(--ap-bg-canvas)',
+                    borderColor: 'var(--ap-separator-opaque)',
+                    borderRadius: 'var(--ap-radius-md)',
+                    boxShadow: 'var(--ap-elev-flat)',
+                  }}
                 />
                 <Bar dataKey="count" name="Events" fill="var(--ap-sev-low)" radius={[4, 4, 0, 0]} />
               </BarChart>
@@ -554,7 +623,7 @@ export const HazardDetailPage: React.FC = () => {
       </div>
 
       {/* Historical Disaster Events Archive Table for this Hazard */}
-      <div className="bg-white border border-carbon-20 p-6">
+      <div className="bg-white border border-carbon-20 rounded-2xl p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-carbon-20 gap-4">
           <div>
             <h3 className="text-base font-bold text-carbon-90 flex items-center gap-2">
@@ -562,7 +631,8 @@ export const HazardDetailPage: React.FC = () => {
               Verified Event Log ({data.hazard})
             </h3>
             <p className="text-xs text-carbon-60">
-              Showing {filteredEvents.length} of {data.totalEvents} recorded incidents from BGD_climatic_hazards_dataset_2000_2026.csv
+              Showing {filteredEvents.length} of {data.totalEvents} recorded incidents from
+              BGD_climatic_hazards_dataset_2000_2026.csv
             </p>
           </div>
 
@@ -581,12 +651,17 @@ export const HazardDetailPage: React.FC = () => {
 
             <select
               value={selectedDivision}
-              onChange={(e) => { setSelectedDivision(e.target.value); setSelectedDistrict('all'); }}
+              onChange={(e) => {
+                setSelectedDivision(e.target.value);
+                setSelectedDistrict('all');
+              }}
               className="h-11 min-h-[44px] py-1.5 px-2.5 text-base border border-carbon-20 bg-carbon-05 text-carbon-70 focus:outline-none focus-visible:outline focus-visible:outline-offset-1"
             >
               <option value="all">All Divisions</option>
-              {availableDivisions.map(d => (
-                <option key={d} value={d}>{d}</option>
+              {availableDivisions.map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
               ))}
             </select>
 
@@ -596,8 +671,10 @@ export const HazardDetailPage: React.FC = () => {
               className="h-11 min-h-[44px] py-1.5 px-2.5 text-base border border-carbon-20 bg-carbon-05 text-carbon-70 focus:outline-none focus-visible:outline focus-visible:outline-offset-1"
             >
               <option value="all">All Districts</option>
-              {availableDistricts.map(d => (
-                <option key={d} value={d}>{d}</option>
+              {availableDistricts.map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
               ))}
             </select>
           </div>
@@ -612,11 +689,14 @@ export const HazardDetailPage: React.FC = () => {
               key: event.id,
               heading: event.date,
               fields: [
-                { label: 'District', value: (
-                  <Link to={`/forecast/district/${districtSlug}`} className="font-semibold text-ap-link">
-                    {event.district}
-                  </Link>
-                ) },
+                {
+                  label: 'District',
+                  value: (
+                    <Link to={`/forecast/district/${districtSlug}`} className="font-semibold text-ap-link">
+                      {event.district}
+                    </Link>
+                  ),
+                },
                 { label: 'Division', value: event.division },
                 { label: 'GLIDE', value: event.glide || '-' },
                 { label: 'Severity', value: event.severity ? event.severity.toFixed(2) : '1.00' },
@@ -666,11 +746,15 @@ export const HazardDetailPage: React.FC = () => {
                       <td className="p-3 text-carbon-60">{event.division}</td>
                       <td className="p-3 font-mono text-carbon-60 whitespace-nowrap">{event.glide || '—'}</td>
                       <td className="p-3 font-bold text-carbon-70">
-                        <span className={`px-2 py-0.5 rounded text-xs ${
-                          event.severity >= 3.0 ? 'bg-carbon-05 text-ap-link border border-carbon-20' :
-                          event.severity >= 2.0 ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                          'bg-carbon-10 text-carbon-70'
-                        }`}>
+                        <span
+                          className={`px-2 py-0.5 rounded text-xs ${
+                            event.severity >= 3.0
+                              ? 'bg-carbon-05 text-ap-link border border-carbon-20'
+                              : event.severity >= 2.0
+                                ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                : 'bg-carbon-10 text-carbon-70'
+                          }`}
+                        >
                           {event.severity ? event.severity.toFixed(2) : '1.00'}
                         </span>
                       </td>
@@ -690,14 +774,21 @@ export const HazardDetailPage: React.FC = () => {
                     {isExpanded && (
                       <tr className="bg-carbon-05/30">
                         <td colSpan={7} className="p-4 border-b border-carbon-20">
-                          <div className="bg-white border border-carbon-20 p-4 text-xs space-y-2">
+                          <div className="bg-white border border-carbon-20 rounded-2xl p-4 text-xs space-y-2">
                             <div className="flex items-center justify-between text-carbon-60 pb-2 border-b border-carbon-20">
-                              <span><strong>Event ID:</strong> {event.id}</span>
-                              <span><strong>Coordinates:</strong> {event.lat.toFixed(4)}, {event.lng.toFixed(4)}</span>
-                              <span><strong>GLIDE:</strong> {event.glide || 'None assigned'}</span>
+                              <span>
+                                <strong>Event ID:</strong> {event.id}
+                              </span>
+                              <span>
+                                <strong>Coordinates:</strong> {event.lat.toFixed(4)}, {event.lng.toFixed(4)}
+                              </span>
+                              <span>
+                                <strong>GLIDE:</strong> {event.glide || 'None assigned'}
+                              </span>
                             </div>
                             <p className="text-carbon-70 leading-relaxed pt-1">
-                              <strong>Report Summary:</strong> {event.desc || 'No detailed narrative logged for this event.'}
+                              <strong>Report Summary:</strong>{' '}
+                              {event.desc || 'No detailed narrative logged for this event.'}
                             </p>
                             <div className="pt-2 flex justify-end">
                               <Link

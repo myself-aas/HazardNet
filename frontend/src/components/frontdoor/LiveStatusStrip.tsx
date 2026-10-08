@@ -146,7 +146,7 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
       role="status"
       aria-live="polite"
       aria-label={t('frontdoor.strip.label')}
-      className="border border-carbon-20 bg-carbon-05"
+      className="overflow-hidden rounded-2xl border border-carbon-20 bg-carbon-05"
       data-testid="front-door-status-strip"
     >
       {/* The answer first: one sentence, before the counts that support it. The counts are not
@@ -177,7 +177,7 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
                 <button
                   type="button"
                   onClick={onRetry}
-                  className="inline-flex min-h-[32px] items-center gap-1 border border-carbon-20 bg-white px-3 py-1 text-xs font-semibold text-carbon-80 hover:bg-carbon-05"
+                  className="inline-flex min-h-[32px] items-center gap-1 rounded-full border border-carbon-20 bg-white px-3 py-1 text-xs font-semibold text-carbon-80 hover:bg-carbon-05"
                 >
                   {t('common.retry')}
                 </button>
@@ -224,9 +224,7 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
             <dd className="font-mono font-bold text-carbon-90">{assessed != null ? formatNumber(assessed) : '—'}</dd>
           </div>
           <div className="flex items-center gap-1.5">
-            <dt className="font-mono text-xs uppercase tracking-wide text-carbon-60">
-              {t('frontdoor.strip.updated')}
-            </dt>
+            <dt className="font-mono text-xs uppercase tracking-wide text-carbon-60">{t('frontdoor.strip.updated')}</dt>
             <dd className="font-mono text-carbon-80">
               {ageHours != null ? describeAge(ageHours) : '—'}
               {generatedAt ? ` · ${generatedAt.slice(0, 16).replace('T', ' ')} UTC` : ''}
@@ -238,12 +236,18 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
             `<nav>` (its table of contents). See the same decision in `pages/FrontDoor.tsx`. */}
         <ul aria-label={t('frontdoor.strip.navLabel')} className="ml-auto flex flex-wrap gap-x-4 gap-y-1">
           <li>
-            <Link to="/alerts" className="inline-flex min-h-[44px] items-center text-base font-bold text-ap-link underline underline-offset-4">
+            <Link
+              to="/alerts"
+              className="inline-flex min-h-[44px] items-center text-base font-bold text-ap-link underline underline-offset-4"
+            >
               {t('frontdoor.strip.allAlerts')}
             </Link>
           </li>
           <li>
-            <Link to="/live" className="inline-flex min-h-[44px] items-center text-base font-bold text-ap-link underline underline-offset-4">
+            <Link
+              to="/live"
+              className="inline-flex min-h-[44px] items-center text-base font-bold text-ap-link underline underline-offset-4"
+            >
               {t('frontdoor.strip.liveMap')}
             </Link>
           </li>

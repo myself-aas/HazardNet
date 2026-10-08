@@ -40,8 +40,10 @@ export const AdvisorySignalCard: React.FC<AdvisorySignalCardProps> = ({ rows, ho
   if (!rows || rows.length === 0) return null;
 
   // The most recent target date wins: the card describes the advisory that is current.
-  const row = rows.reduce((latest, candidate) =>
-    candidate.target_date > latest.target_date ? candidate : latest, rows[0]);
+  const row = rows.reduce(
+    (latest, candidate) => (candidate.target_date > latest.target_date ? candidate : latest),
+    rows[0],
+  );
 
   const tier = advisoryTierOf(row);
   const signal = advisorySignalOf(row);
@@ -58,7 +60,7 @@ export const AdvisorySignalCard: React.FC<AdvisorySignalCardProps> = ({ rows, ho
     <section
       aria-label="Advisory signal"
       data-testid="advisory-signal-card"
-      className="bg-carbon-05 border border-carbon-20/80 p-4 sm:p-5 space-y-4"
+      className="rounded-xl bg-carbon-05 border border-carbon-20/80 p-4 sm:p-5 space-y-4"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
@@ -97,19 +99,14 @@ export const AdvisorySignalCard: React.FC<AdvisorySignalCardProps> = ({ rows, ho
               {t(track.key)}
             </span>
             <div className="flex-1 h-2.5 bg-carbon-10 overflow-hidden">
-              <div
-                className={`h-full ${track.tone}`}
-                style={{ width: `${Math.round((track.value ?? 0) * 100)}%` }}
-              />
+              <div className={`h-full ${track.tone}`} style={{ width: `${Math.round((track.value ?? 0) * 100)}%` }} />
             </div>
             <span className="w-10 shrink-0 text-right text-xs font-mono font-bold text-carbon-90">
               {pct(track.value ?? 0)}
             </span>
           </div>
         ))}
-        {tracks.length === 0 && (
-          <p className="text-xs text-carbon-60">{t('advisory.noSignal')}</p>
-        )}
+        {tracks.length === 0 && <p className="text-xs text-carbon-60">{t('advisory.noSignal')}</p>}
       </div>
 
       {signal.override && (
@@ -131,7 +128,9 @@ export const AdvisorySignalCard: React.FC<AdvisorySignalCardProps> = ({ rows, ho
               <span key={probability.label} className="text-xs font-mono text-carbon-80">
                 {probability.label.replace('Top-', `${t('advisory.rank')} `)}
                 {' · '}
-                <strong className="text-carbon-90">{formatNumber(probability.value, { style: 'percent', maximumFractionDigits: 1 })}</strong>
+                <strong className="text-carbon-90">
+                  {formatNumber(probability.value, { style: 'percent', maximumFractionDigits: 1 })}
+                </strong>
               </span>
             ))}
           </div>
@@ -141,8 +140,16 @@ export const AdvisorySignalCard: React.FC<AdvisorySignalCardProps> = ({ rows, ho
       {/* Provenance — which pipeline run produced this row, and where. */}
       {(row.data_source || row.model_version || (row.latitude !== undefined && row.longitude !== undefined)) && (
         <div className="border-t border-carbon-20 pt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-mono text-carbon-60">
-          {row.data_source && <span>{t('advisory.source')}: {row.data_source}</span>}
-          {row.model_version && <span>{t('advisory.modelVersion')}: {row.model_version}</span>}
+          {row.data_source && (
+            <span>
+              {t('advisory.source')}: {row.data_source}
+            </span>
+          )}
+          {row.model_version && (
+            <span>
+              {t('advisory.modelVersion')}: {row.model_version}
+            </span>
+          )}
           {row.latitude !== undefined && row.longitude !== undefined && (
             <span className="inline-flex items-center gap-1">
               <Crosshair className="w-3 h-3" aria-hidden="true" />

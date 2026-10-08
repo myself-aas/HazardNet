@@ -57,7 +57,14 @@ import { ExternalLink } from 'lucide-react';
 import { Interactive } from '../components/interactive/Interactive';
 
 import MaterialIcon from '../components/MaterialIcon';
-import { ButtonLink, Card, PillTabs, ProvenanceNote, SectionHeading, SeverityBadge } from '../components/apple/primitives';
+import {
+  ButtonLink,
+  Card,
+  PillTabs,
+  ProvenanceNote,
+  SectionHeading,
+  SeverityBadge,
+} from '../components/apple/primitives';
 import { useReveal } from '../components/apple/motion';
 import { AlertLevelBadge } from '../components/alerts/AlertLevelBadge';
 import { LanguageToggle } from '../components/alerts/LanguageToggle';
@@ -176,9 +183,13 @@ const Eyebrow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
  * (horizons/episodes) use a muted tint at 28px so the strip has a scan
  * hierarchy and does not mis-signify as four equal CTAs (audit #5).
  */
-const Figure: React.FC<{ value: string; label: string; tone?: 'default' | 'muted' }> = ({ value, label, tone = 'default' }) => (
+const Figure: React.FC<{ value: string; label: string; tone?: 'default' | 'muted' }> = ({
+  value,
+  label,
+  tone = 'default',
+}) => (
   <div
-    className={`flex flex-col gap-2 p-5 transition-shadow duration-[var(--ap-duration-base)] ${
+    className={`flex flex-col gap-2 rounded-2xl border border-carbon-20 p-5 transition-shadow duration-[var(--ap-duration-base)] ${
       tone === 'muted'
         ? 'bg-[color:var(--ap-bg-grouped)]'
         : 'bg-[color:var(--ap-bg-raised)] shadow-[var(--ap-elev-flat)]'
@@ -223,13 +234,13 @@ const SectionBody: React.FC<{ section: Section }> = ({ section }) => {
           columns={section.table.columns}
           rows={section.table.rows}
           caption={section.table.caption}
-          className="border border-carbon-20 md:border-0"
+          className="overflow-hidden rounded-xl border border-carbon-20 md:rounded-none md:border-0"
         />
       )}
       {section.callout?.text && (
         <p
           role={section.callout.tone === 'warning' ? 'note' : undefined}
-          className="border-l-2 border-severity-high bg-white p-4 text-base leading-[1.62] text-carbon-80"
+          className="rounded-xl border border-carbon-20 border-l-4 border-l-severity-high bg-white p-4 text-base leading-[1.62] text-carbon-80"
         >
           {section.callout.text}
         </p>
@@ -298,7 +309,16 @@ export const FrontDoor: React.FC = () => {
   // The evidence pointer under the action reads the same artifact the proof card does: one fact
   // from the run, pointing at the page that carries the card (/last-run).
   const coverageArtifact = freshness?.coverage ?? null;
-  const { alerts, assessed, counts, notPublished, generatedAt, loading: alertsLoading, error, refresh: refreshAlerts } = useAlertsData();
+  const {
+    alerts,
+    assessed,
+    counts,
+    notPublished,
+    generatedAt,
+    loading: alertsLoading,
+    error,
+    refresh: refreshAlerts,
+  } = useAlertsData();
   const hazardLabel = useHazardLabel();
   const { t, language, formatNumber, formatDate } = useI18n();
   const [searchParams] = useSearchParams();
@@ -386,10 +406,7 @@ export const FrontDoor: React.FC = () => {
      `.ap-enter`'s `both` fill leaves the page at its final state, so it still arrives — without
      the fade. */
   return (
-    <Interactive.Div
-      name="FrontDoor page — editorial front door"
-      className="w-full ap-enter"
-    >
+    <Interactive.Div name="FrontDoor page — editorial front door" className="w-full ap-enter">
       {/* ── Hero: one photograph, one claim, one action ──
           The backdrop was a five-layer motion build with a decorative telemetry HUD and a film
           grain; it is four layers now (see HeroCinematicBackground). Keeping the composition
@@ -411,7 +428,7 @@ export const FrontDoor: React.FC = () => {
           onClick={() => setHeroPaused((v) => !v)}
           aria-pressed={heroPaused}
           aria-label={heroPaused ? t('frontdoor.hero.resumeMotion') : t('frontdoor.hero.pauseMotion')}
-          className="absolute bottom-4 right-4 z-10 inline-flex min-h-[44px] items-center gap-1.5 bg-carbon-black/60 px-3 py-2 text-xs font-semibold text-white border border-white/20 backdrop-blur-sm hover:bg-carbon-black/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+          className="absolute bottom-4 right-4 z-10 inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-carbon-black/60 px-3 py-2 text-xs font-semibold text-white border border-white/20 backdrop-blur-sm hover:bg-carbon-black/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
         >
           <MaterialIcon name={heroPaused ? 'play_arrow' : 'pause'} className="text-sm" />
           <span>{heroPaused ? t('frontdoor.hero.resumeMotion') : t('frontdoor.hero.pauseMotion')}</span>
@@ -437,12 +454,22 @@ export const FrontDoor: React.FC = () => {
                 `to-black/60` 6.40:1. A single `bg-carbon-black/65` clears that everywhere on the
                 card instead of only at the bottom of it, and `carbon-black` is pinned dark in
                 both themes (it is a scrim, see dark.css §1) so this holds in dark mode too. */}
-            <div className="min-w-0 rounded-sm border border-white/15 bg-carbon-black/65 p-4 sm:p-5" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
+            <div
+              className="min-w-0 rounded-xl border border-white/15 bg-carbon-black/65 p-4 sm:p-5"
+              style={{
+                backdropFilter: 'blur(var(--hero-glass-blur))',
+                WebkitBackdropFilter: 'blur(var(--hero-glass-blur))',
+              }}
+            >
               <h1 className="ap-hero max-w-3xl text-balance text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                 {localised.h1 ?? localised.title}
               </h1>
               {language === 'bn' && (
-                <p role="status" aria-live="polite" className="mt-3 inline-flex items-center gap-1.5 bg-warning-surface px-2 py-1 text-xs font-bold text-carbon-90 border border-warning-border">
+                <p
+                  role="status"
+                  aria-live="polite"
+                  className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-warning-surface px-2 py-1 text-xs font-bold text-carbon-90 border border-warning-border"
+                >
                   <MaterialIcon name="translate" className="text-xs" />
                   {t('frontdoor.bengaliDraft')}
                 </p>
@@ -545,7 +572,6 @@ export const FrontDoor: React.FC = () => {
                   {t('frontdoor.hero.authorityMap')}
                 </Link>
               </p>
-
             </div>
           </div>
         </div>
@@ -553,185 +579,181 @@ export const FrontDoor: React.FC = () => {
 
       {/* ── Main Content Container: Live status strip, Outlook, and Methodology ── */}
       <div className="mx-auto w-full max-w-[1200px] px-4 xl:px-8 space-y-8 lg:space-y-12 mt-8 lg:mt-12">
+        {/* ── The live strip: what is published at the moment of this read ──────────────── */}
+        <LiveStatusStrip
+          counts={counts}
+          assessed={assessed}
+          withheld={withheld}
+          alerts={topAlerts}
+          generatedAt={generatedAt}
+          loading={alertsLoading}
+          error={error}
+          coverage={coverage}
+          onRetry={refreshAlerts}
+        />
 
-      {/* ── The live strip: what is published at the moment of this read ──────────────── */}
-      <LiveStatusStrip
-        counts={counts}
-        assessed={assessed}
-        withheld={withheld}
-        alerts={topAlerts}
-        generatedAt={generatedAt}
-        loading={alertsLoading}
-        error={error}
-        coverage={coverage}
-        onRetry={refreshAlerts}
-      />
-
-      {/* ── Trust strip: every figure carries the artifact it was read from ── */}
-      <section aria-labelledby="trust-heading" className="space-y-3">
+        {/* ── Trust strip: every figure carries the artifact it was read from ── */}
+        <section aria-labelledby="trust-heading" className="space-y-3">
           <h2 id="trust-heading" className="text-ap-tagline font-bold tracking-tight text-carbon-90">
-          {t('frontdoor.covers.h2')}
-        </h2>
-        <div className="grid grid-cols-1 gap-px bg-carbon-20 sm:grid-cols-2 lg:grid-cols-4">
-          <Figure
-            value={formatNumber(hazards.length)}
-            label={t('frontdoor.covers.hazards')}
-          />
-          <Figure
-            value={formatNumber(ALL_64_DISTRICTS.length)}
-            label={t('frontdoor.covers.districts')}
-          />
-          <Figure
-            value="7 & 15 days"
-            label={t('frontdoor.covers.horizons')}
-            tone="muted"
-          />
-          <Figure
-            value={scorecard.episodes != null ? formatNumber(scorecard.episodes) : '—'}
-            label={t('frontdoor.covers.episodes')}
-            tone="muted"
-          />
-        </div>
-        <p className="text-sm leading-[1.62] text-carbon-70">
-          {t('frontdoor.covers.noteLead')}{' '}
-          <strong className="font-bold text-carbon-80">{loading ? '…' : coverageLine}</strong>
-          {coverage?.produced_units != null
-            ? ` ${t('frontdoor.covers.noteUnits', { units: formatNumber(coverage.produced_units) })}`
-            : ''}
-          .{' '}
-          <Link to="/status" className="font-bold text-ap-link underline underline-offset-2">
-            {t('frontdoor.covers.statusLink')}
-          </Link>{' '}
-          {t('frontdoor.covers.noteTail')}
-        </p>
-      </section>
-
-      {/* ── The published alerts in full: the strip is the glance, this is the record ── */}
-      <section aria-labelledby="run-heading" className="space-y-3">
-        <div className="flex flex-wrap items-end justify-between gap-2">
-          <h2 id="run-heading" className="text-lg font-bold text-carbon-90">
-            {t('frontdoor.run.h2')}
+            {t('frontdoor.covers.h2')}
           </h2>
-          <p className="font-mono text-xs uppercase tracking-wider text-carbon-60">{t('frontdoor.run.aside')}</p>
-        </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <Figure value={formatNumber(hazards.length)} label={t('frontdoor.covers.hazards')} />
+            <Figure value={formatNumber(ALL_64_DISTRICTS.length)} label={t('frontdoor.covers.districts')} />
+            <Figure value="7 & 15 days" label={t('frontdoor.covers.horizons')} tone="muted" />
+            <Figure
+              value={scorecard.episodes != null ? formatNumber(scorecard.episodes) : '—'}
+              label={t('frontdoor.covers.episodes')}
+              tone="muted"
+            />
+          </div>
+          <p className="text-sm leading-[1.62] text-carbon-70">
+            {t('frontdoor.covers.noteLead')}{' '}
+            <strong className="font-bold text-carbon-80">{loading ? '…' : coverageLine}</strong>
+            {coverage?.produced_units != null
+              ? ` ${t('frontdoor.covers.noteUnits', { units: formatNumber(coverage.produced_units) })}`
+              : ''}
+            .{' '}
+            <Link to="/status" className="font-bold text-ap-link underline underline-offset-2">
+              {t('frontdoor.covers.statusLink')}
+            </Link>{' '}
+            {t('frontdoor.covers.noteTail')}
+          </p>
+        </section>
 
-        <div className="border border-carbon-20 bg-white p-5">
-          <Eyebrow>{t('frontdoor.run.publishedEyebrow')}</Eyebrow>
-          {alertsLoading && <p className="mt-3 text-sm text-carbon-60">{t('frontdoor.run.reading')}</p>}
+        {/* ── The published alerts in full: the strip is the glance, this is the record ── */}
+        <section aria-labelledby="run-heading" className="space-y-3">
+          <div className="flex flex-wrap items-end justify-between gap-2">
+            <h2 id="run-heading" className="text-lg font-bold text-carbon-90">
+              {t('frontdoor.run.h2')}
+            </h2>
+            <p className="font-mono text-xs uppercase tracking-wider text-carbon-60">{t('frontdoor.run.aside')}</p>
+          </div>
 
-          {!alertsLoading && topAlerts.length > 0 && (
-            <ul className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
-              {topAlerts.map((alert) => (
-                <li key={alert.id} className="border-b border-carbon-20 pb-3 md:border-b-0 md:pb-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <AlertLevelBadge
-                      level={alert.level}
-                      label={t(`alerts.level.${alert.level}`)}
-                      description={t(`alerts.level.${alert.level}.desc`)}
-                      size="sm"
-                      srPrefix={t('alerts.levelLabel')}
-                    />
-                    <Link
-                      to={`/alerts/${encodeURIComponent(alert.id)}`}
-                      className="min-w-0 break-words text-sm font-bold text-ap-link underline underline-offset-2"
-                    >
-                      {alert.district_name ?? t('frontdoor.strip.districtUnnamed')}
-                    </Link>
-                    <span className="text-xs text-carbon-60">{hazardLabel(alert.hazard_type)}</span>
-                  </div>
-                  <p className="mt-1 font-mono text-xs text-carbon-60">
-                    {alert.horizon ? `${t('frontdoor.run.horizon', { horizon: alert.horizon })} · ` : ''}
-                    {alert.target_date ? `${t('frontdoor.run.valid', { date: alert.target_date })} · ` : ''}
-                    {alert.published?.at
-                      ? t('frontdoor.run.published', { at: alert.published.at })
-                      : t('frontdoor.run.publishedUnknown')}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          )}
+          <div className="rounded-2xl border border-carbon-20 bg-white p-5">
+            <Eyebrow>{t('frontdoor.run.publishedEyebrow')}</Eyebrow>
+            {alertsLoading && <p className="mt-3 text-sm text-carbon-60">{t('frontdoor.run.reading')}</p>}
 
-          {!alertsLoading && topAlerts.length === 0 && (
-            <div className="mt-3 space-y-2 text-sm leading-relaxed text-carbon-70">
-              <p className="text-carbon-90">
-                <strong className="font-bold">{t('frontdoor.run.noneTitle')}</strong>
-              </p>
-              <p>
-                {t('frontdoor.run.noneLead')}{' '}
-                {assessed != null
-                  ? t('frontdoor.run.noneAssessed', { assessed: formatNumber(assessed) })
-                  : t('frontdoor.run.noneAssessedUnknown')}
-                {notPublished != null
-                  ? ` ${t('frontdoor.run.noneHeld', { held: formatNumber(notPublished) })}`
-                  : counts
-                    ? ` ${t('frontdoor.run.nonePublishedNone')}${
-                        counts.dropped_unpublished
-                          ? t('frontdoor.run.noneDropped', { dropped: formatNumber(counts.dropped_unpublished) })
-                          : ''
-                      }`
-                    : ''}
-                {generatedAt ? t('frontdoor.run.noneGenerated', { at: generatedAt }) : '.'}
-              </p>
-              {error && <p className="text-ap-link">{t('frontdoor.run.errorPrefix', { error })}</p>}
-              <p>
-                {t('frontdoor.run.noneSilence')}{' '}
-                <strong className="font-bold text-carbon-90">{t('frontdoor.run.distinction')}</strong>.{' '}
-                {t('frontdoor.run.noneRead')}{' '}
-                <Link to="/live" className="font-bold text-ap-link underline underline-offset-2">
-                  {t('frontdoor.run.noneLiveLink')}
-                </Link>{' '}
-                {t('frontdoor.run.noneFor')}{' '}
-                <Link to="/status" className="font-bold text-ap-link underline underline-offset-2">
-                  {t('frontdoor.run.noneStatusLink')}
-                </Link>{' '}
-                {t('frontdoor.run.noneTail')}
-              </p>
-            </div>
-          )}
+            {!alertsLoading && topAlerts.length > 0 && (
+              <ul className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+                {topAlerts.map((alert) => (
+                  <li key={alert.id} className="border-b border-carbon-20 pb-3 md:border-b-0 md:pb-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <AlertLevelBadge
+                        level={alert.level}
+                        label={t(`alerts.level.${alert.level}`)}
+                        description={t(`alerts.level.${alert.level}.desc`)}
+                        size="sm"
+                        srPrefix={t('alerts.levelLabel')}
+                      />
+                      <Link
+                        to={`/alerts/${encodeURIComponent(alert.id)}`}
+                        className="min-w-0 break-words text-sm font-bold text-ap-link underline underline-offset-2"
+                      >
+                        {alert.district_name ?? t('frontdoor.strip.districtUnnamed')}
+                      </Link>
+                      <span className="text-xs text-carbon-60">{hazardLabel(alert.hazard_type)}</span>
+                    </div>
+                    <p className="mt-1 font-mono text-xs text-carbon-60">
+                      {alert.horizon ? `${t('frontdoor.run.horizon', { horizon: alert.horizon })} · ` : ''}
+                      {alert.target_date ? `${t('frontdoor.run.valid', { date: alert.target_date })} · ` : ''}
+                      {alert.published?.at
+                        ? t('frontdoor.run.published', { at: alert.published.at })
+                        : t('frontdoor.run.publishedUnknown')}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
 
-          {/* A list, not a `<nav>`: this page already carries its one navigation landmark (the
+            {!alertsLoading && topAlerts.length === 0 && (
+              <div className="mt-3 space-y-2 text-sm leading-relaxed text-carbon-70">
+                <p className="text-carbon-90">
+                  <strong className="font-bold">{t('frontdoor.run.noneTitle')}</strong>
+                </p>
+                <p>
+                  {t('frontdoor.run.noneLead')}{' '}
+                  {assessed != null
+                    ? t('frontdoor.run.noneAssessed', { assessed: formatNumber(assessed) })
+                    : t('frontdoor.run.noneAssessedUnknown')}
+                  {notPublished != null
+                    ? ` ${t('frontdoor.run.noneHeld', { held: formatNumber(notPublished) })}`
+                    : counts
+                      ? ` ${t('frontdoor.run.nonePublishedNone')}${
+                          counts.dropped_unpublished
+                            ? t('frontdoor.run.noneDropped', { dropped: formatNumber(counts.dropped_unpublished) })
+                            : ''
+                        }`
+                      : ''}
+                  {generatedAt ? t('frontdoor.run.noneGenerated', { at: generatedAt }) : '.'}
+                </p>
+                {error && <p className="text-ap-link">{t('frontdoor.run.errorPrefix', { error })}</p>}
+                <p>
+                  {t('frontdoor.run.noneSilence')}{' '}
+                  <strong className="font-bold text-carbon-90">{t('frontdoor.run.distinction')}</strong>.{' '}
+                  {t('frontdoor.run.noneRead')}{' '}
+                  <Link to="/live" className="font-bold text-ap-link underline underline-offset-2">
+                    {t('frontdoor.run.noneLiveLink')}
+                  </Link>{' '}
+                  {t('frontdoor.run.noneFor')}{' '}
+                  <Link to="/status" className="font-bold text-ap-link underline underline-offset-2">
+                    {t('frontdoor.run.noneStatusLink')}
+                  </Link>{' '}
+                  {t('frontdoor.run.noneTail')}
+                </p>
+              </div>
+            )}
+
+            {/* A list, not a `<nav>`: this page already carries its one navigation landmark (the
 "On this page" table of contents). Extra named navigation regions do not help a
               reader - VoiceOver's rotor fills with near-identical "Navigation" entries and
               TalkBack does not expose the role at all, so the aria-label is inert there - and
               the links are just as reachable as a labelled list. */}
-          <ul
-            aria-label={t('frontdoor.run.alertNav')}
-            className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-carbon-20 pt-3"
-          >
-            <li>
-              <Link to="/alerts" className="text-xs font-bold text-ap-link underline underline-offset-2">
-                {t('frontdoor.strip.allAlerts')}
-              </Link>
-            </li>
-            <li>
-              <Link to="/status" className="text-xs font-bold text-ap-link underline underline-offset-2">
-                {t('frontdoor.strip.whyHeld')}
-              </Link>
-            </li>
-          </ul>
-        </div>
-
-        {failed && (
-          <div role="alert" aria-live="polite" className="border-l-2 border-severity-high bg-white p-4 space-y-3">
-            <p className="text-sm leading-[1.62] text-carbon-70">{t('frontdoor.run.failed')}</p>
-            <div className="flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={retryLiveFacts}
-                className="inline-flex min-h-[44px] items-center gap-1.5 bg-primary px-4 py-2 text-sm font-semibold text-ap-action-fg hover:bg-primary-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
-              >
-                <MaterialIcon name="refresh" className="text-base" />
-                {t('common.retry')}
-              </button>
-              <Link to="/status" className="inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 bg-white px-4 py-2 text-sm font-semibold text-carbon-80 hover:bg-carbon-05">
-                {t('frontdoor.covers.statusLink')}
-              </Link>
-            </div>
+            <ul
+              aria-label={t('frontdoor.run.alertNav')}
+              className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-carbon-20 pt-3"
+            >
+              <li>
+                <Link to="/alerts" className="text-xs font-bold text-ap-link underline underline-offset-2">
+                  {t('frontdoor.strip.allAlerts')}
+                </Link>
+              </li>
+              <li>
+                <Link to="/status" className="text-xs font-bold text-ap-link underline underline-offset-2">
+                  {t('frontdoor.strip.whyHeld')}
+                </Link>
+              </li>
+            </ul>
           </div>
-        )}
-      </section>
 
-      {/* ── Hazards: the eight hazard classes and the two forecast horizons ──
+          {failed && (
+            <div
+              role="alert"
+              aria-live="polite"
+              className="rounded-xl border border-carbon-20 border-l-4 border-l-severity-high bg-white p-4 space-y-3"
+            >
+              <p className="text-sm leading-[1.62] text-carbon-70">{t('frontdoor.run.failed')}</p>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={retryLiveFacts}
+                  className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-ap-action-fg hover:bg-primary-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
+                >
+                  <MaterialIcon name="refresh" className="text-base" />
+                  {t('common.retry')}
+                </button>
+                <Link
+                  to="/status"
+                  className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-carbon-20 bg-white px-4 py-2 text-sm font-semibold text-carbon-80 hover:bg-carbon-05"
+                >
+                  {t('frontdoor.covers.statusLink')}
+                </Link>
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* ── Hazards: the eight hazard classes and the two forecast horizons ──
           The section was called "Products" until 2026-10-07. That word is the vendor's, not the
           reader's: nothing here is for sale, and HazardNet's own vocabulary for these is the
           hazard classes and the outlooks. The heading is now the word the nav uses for the same
@@ -744,230 +766,258 @@ export const FrontDoor: React.FC = () => {
           a caption on the heading, and a paragraph that exists to be read after another paragraph
           is not what the DOM should say. It also drops `tracking-wider`, which at 12px uppercase
           mono was the widest text in the section. */}
-      <section aria-labelledby="hazards-heading" className="space-y-4">
-        <div className="flex flex-wrap items-end justify-between gap-x-3 gap-y-1">
-          <h2 id="hazards-heading" className="text-lg font-bold tracking-tight text-carbon-90 sm:text-xl lg:text-2xl">
-            {t('frontdoor.products.h2')}
-          </h2>
-          <span className="min-w-0 font-mono text-xs uppercase tracking-wide text-carbon-60">{t('frontdoor.products.aside')}</span>
-        </div>
-
-        <div>
-          <AppleHazardsBento hazards={hazards as any} />
-        </div>
-
-        <div>
-          <Eyebrow>{t('frontdoor.products.horizonsEyebrow')}</Eyebrow>
-          <div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-2">
-            <Link
-              to="/docs/forecasts"
-              className="group flex items-start gap-3 border border-carbon-20 bg-white p-4 transition-colors hover:border-ap-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
-            >
-              <MaterialIcon name="date_range" className="mt-0.5 text-xl text-ap-link" />
-              <span className="space-y-1">
-                <span className="block text-sm font-bold text-carbon-90">{t('frontdoor.products.horizon7')}</span>
-                <span className="block text-xs leading-relaxed text-carbon-60">{t('frontdoor.products.horizon7desc')}</span>
-              </span>
-            </Link>
-            <Link
-              to="/docs/forecasts"
-              className="group flex items-start gap-3 border border-carbon-20 bg-white p-4 transition-colors hover:border-ap-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
-            >
-              <MaterialIcon name="calendar_month" className="mt-0.5 text-xl text-ap-link" />
-              <span className="space-y-1">
-                <span className="block text-sm font-bold text-carbon-90">{t('frontdoor.products.horizon15')}</span>
-                <span className="block text-xs leading-relaxed text-carbon-60">{t('frontdoor.products.horizon15desc')}</span>
-              </span>
-            </Link>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <Link to="/hazards" className="inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 bg-white px-4 py-2 text-sm font-semibold text-carbon-80 hover:bg-carbon-05">
-            {t('frontdoor.products.methodologyLink')}
-          </Link>
-          <Link to="/docs/forecasts" className="inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 bg-white px-4 py-2 text-sm font-semibold text-carbon-80 hover:bg-carbon-05">
-            {t('frontdoor.products.forecastDocs')}
-          </Link>
-        </div>
-      </section>
-
-      {/* ── On this page — anchor nav for the 7 editorial sections (audit #7: recognition/efficiency) ── */}
-      {sections.length > 1 && (
-        <nav aria-label={t('frontdoor.toc')} className="border border-carbon-20 bg-carbon-05 p-4">
-          <p className="font-mono text-xs font-bold uppercase tracking-wide text-carbon-60">{t('frontdoor.toc')}</p>
-          <ul className="mt-2 grid grid-cols-1 gap-1 sm:grid-cols-2">
-            {sections.map((section, index) => (
-              <li key={`toc-${index}`}>
-                <a href={`#section-${index}`} className="inline-flex min-h-[44px] items-center text-sm font-semibold text-ap-link underline underline-offset-4 hover:decoration-ap-primary">
-                  {section.h2 ?? `${t('frontdoor.tocSection')} ${index + 1}`}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      )}
-
-      {/* ── The editorial half, from site-routes.json ─────────────────────── */}
-      {sections.map((section, index) => (
-        <section
-          key={section.h2 ?? index}
-          aria-labelledby={section.h2 ? `section-${index}` : undefined}
-          className="space-y-4 border-t border-carbon-20 pt-6"
-        >
-          {section.h2 && (
-            <h2 id={`section-${index}`} className="text-ap-tagline font-bold tracking-tight text-carbon-90 lg:text-2xl">
-              {section.h2}
+        <section aria-labelledby="hazards-heading" className="space-y-4">
+          <div className="flex flex-wrap items-end justify-between gap-x-3 gap-y-1">
+            <h2 id="hazards-heading" className="text-lg font-bold tracking-tight text-carbon-90 sm:text-xl lg:text-2xl">
+              {t('frontdoor.products.h2')}
             </h2>
-          )}
-          <SectionBody section={section} />
-        </section>
-      ))}
-
-      {/* ── Newest from the blog: freshness the published record cannot show ── */}
-      <section aria-labelledby="blogs-heading" className="space-y-3 border-t border-carbon-20 pt-6">
-        <div className="flex flex-wrap items-end justify-between gap-2">
-          <h2 id="blogs-heading" className="text-ap-tagline font-bold tracking-tight text-carbon-90 lg:text-2xl">
-            {t('frontdoor.blogs.h2')}
-          </h2>
-          <p className="font-mono text-xs uppercase tracking-wider text-carbon-60">{t('frontdoor.blogs.aside')}</p>
-        </div>
-
-        {blogsLoading && <p className="text-sm text-carbon-60">{t('frontdoor.blogs.loading')}</p>}
-
-        {!blogsLoading && blogsError && (
-          <div className="flex flex-wrap items-center gap-3 border border-carbon-20 bg-white p-4 text-sm text-carbon-70">
-            <span>{t('frontdoor.blogs.error', { error: blogsError })}</span>
-            <button
-              type="button"
-              onClick={() => setBlogsReload((n) => n + 1)}
-              className="inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 bg-carbon-05 px-3 py-1.5 text-xs font-bold text-carbon-80 hover:bg-carbon-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
-            >
-              <MaterialIcon name="refresh" className="text-sm" />
-              {t('frontdoor.blogs.retry')}
-            </button>
+            <span className="min-w-0 font-mono text-xs uppercase tracking-wide text-carbon-60">
+              {t('frontdoor.products.aside')}
+            </span>
           </div>
-        )}
 
-        {!blogsLoading && !blogsError && blogPosts !== null && blogPosts.length === 0 && (
-          <p className="text-sm text-carbon-60">{t('frontdoor.blogs.empty')}</p>
-        )}
+          <div>
+            <AppleHazardsBento hazards={hazards as any} />
+          </div>
 
-        {!blogsLoading && !blogsError && blogPosts !== null && blogPosts.length > 0 && (
-          <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            {blogPosts.slice(0, 4).map((article, index) => (
-              <li key={article.id}>
-                <Link
-                  to={`/blogs/${encodeURIComponent(article.slug)}`}
-                  className="flex h-full flex-col gap-2 border border-carbon-20 bg-white p-4 transition-colors hover:border-ap-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
-                >
-                  <span className="flex flex-wrap items-center gap-2">
-                    <span className="border border-carbon-20 bg-carbon-05 px-2 py-0.5 text-xs font-semibold text-carbon-70">
-                      {article.category || t('frontdoor.blogs.aside')}
-                    </span>
-                    {index === 0 && (
-                      <span className="border border-ap-primary/20 bg-ap-primary/10 px-2 py-0.5 text-xs font-bold text-ap-link">
-                        {t('frontdoor.blogs.newest')}
-                      </span>
-                    )}
+          <div>
+            <Eyebrow>{t('frontdoor.products.horizonsEyebrow')}</Eyebrow>
+            <div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-2">
+              <Link
+                to="/docs/forecasts"
+                className="group flex items-start gap-3 rounded-2xl border border-carbon-20 bg-white p-4 transition-colors hover:border-ap-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
+              >
+                <MaterialIcon name="date_range" className="mt-0.5 text-xl text-ap-link" />
+                <span className="space-y-1">
+                  <span className="block text-sm font-bold text-carbon-90">{t('frontdoor.products.horizon7')}</span>
+                  <span className="block text-xs leading-relaxed text-carbon-60">
+                    {t('frontdoor.products.horizon7desc')}
                   </span>
-                  <span className="text-base font-bold leading-snug text-carbon-90">{article.title}</span>
-                  <span className="line-clamp-2 text-sm leading-[1.62] text-carbon-60">{article.excerpt}</span>
-                  <span className="mt-auto pt-1 font-mono text-xs text-carbon-60">
-                    {formatDate(article.publishedAt ?? article.createdAt)}
-                    {` · ${t('frontdoor.blogs.minRead', { min: readingTimeMinutes(article.contentHtml) })}`}
-                    {article.authorName ? ` · ${article.authorName}` : ''}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        <Link to="/blogs" className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-bold text-ap-link underline underline-offset-4 hover:decoration-ap-primary">
-          {t('frontdoor.blogs.allPosts')}
-          <MaterialIcon name="arrow_forward" className="text-sm" />
-        </Link>
-      </section>
-
-      {/* ── Questions the front door should answer ────────────────────────── */}
-      {faqs.length > 0 && (
-        <section aria-labelledby="faq-heading" className="space-y-3 border-t border-carbon-20 pt-6">
-          <h2 id="faq-heading" className="text-ap-tagline font-bold tracking-tight text-carbon-90 lg:text-2xl">
-            {t('frontdoor.faq.h2')}
-          </h2>
-          {faqs.map((faq) => (
-            <details key={faq.question} className="group border-b border-carbon-20 py-1 last:border-b-0">
-              <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 text-base font-bold text-carbon-90 marker:hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2">
-                <span className="inline-flex items-start gap-2 py-2">
-                  <MaterialIcon name="help" className="mt-0.5 text-base text-ap-link" />
-                  <span>{faq.question}</span>
                 </span>
-                <MaterialIcon name="chevron_right" className="shrink-0 text-carbon-60 transition-transform duration-150 group-open:rotate-90" aria-hidden="true" />
-              </summary>
-              <p className="mt-1 pl-6 pr-4 pb-3 text-base leading-[1.62] text-carbon-70">{faq.answer}</p>
-            </details>
-          ))}
-        </section>
-      )}
+              </Link>
+              <Link
+                to="/docs/forecasts"
+                className="group flex items-start gap-3 rounded-2xl border border-carbon-20 bg-white p-4 transition-colors hover:border-ap-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
+              >
+                <MaterialIcon name="calendar_month" className="mt-0.5 text-xl text-ap-link" />
+                <span className="space-y-1">
+                  <span className="block text-sm font-bold text-carbon-90">{t('frontdoor.products.horizon15')}</span>
+                  <span className="block text-xs leading-relaxed text-carbon-60">
+                    {t('frontdoor.products.horizon15desc')}
+                  </span>
+                </span>
+              </Link>
+            </div>
+          </div>
 
-      {/* ── Attribution: the exact block, from the committed data ─────────── */}
-      <section aria-labelledby="attribution-heading" className="border border-carbon-20 bg-white p-6 lg:p-8">
-        <Eyebrow>{t('frontdoor.attribution.eyebrow')}</Eyebrow>
-        <h2 id="attribution-heading" className="mt-3 text-ap-tagline font-bold tracking-tight text-carbon-90">
-          {t('frontdoor.attribution.h2')}
-        </h2>
-        <p className="mt-3 max-w-3xl text-base leading-[1.62] text-carbon-70">
-          {t('frontdoor.attribution.body', {
-            author: attribution.author.name,
-            role: attribution.author.role,
-            work: attribution.work.name,
-            type: attribution.work.type,
-            department: attribution.department.name,
-            university: attribution.department.university,
-            supervisor: attribution.supervisor.name,
-            supervisorRole: attribution.supervisor.role,
-            coSupervision: attribution.coSupervisor?.role ? t('frontdoor.attribution.coSupervised') : '',
-          })}{' '}
-          <a
-            href={attribution.author.orcidUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-bold text-ap-link underline underline-offset-2"
+          <div className="flex flex-wrap gap-2">
+            <Link
+              to="/hazards"
+              className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-carbon-20 bg-white px-4 py-2 text-sm font-semibold text-carbon-80 hover:bg-carbon-05"
+            >
+              {t('frontdoor.products.methodologyLink')}
+            </Link>
+            <Link
+              to="/docs/forecasts"
+              className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-carbon-20 bg-white px-4 py-2 text-sm font-semibold text-carbon-80 hover:bg-carbon-05"
+            >
+              {t('frontdoor.products.forecastDocs')}
+            </Link>
+          </div>
+        </section>
+
+        {/* ── On this page — anchor nav for the 7 editorial sections (audit #7: recognition/efficiency) ── */}
+        {sections.length > 1 && (
+          <nav aria-label={t('frontdoor.toc')} className="rounded-2xl border border-carbon-20 bg-carbon-05 p-4">
+            <p className="font-mono text-xs font-bold uppercase tracking-wide text-carbon-60">{t('frontdoor.toc')}</p>
+            <ul className="mt-2 grid grid-cols-1 gap-1 sm:grid-cols-2">
+              {sections.map((section, index) => (
+                <li key={`toc-${index}`}>
+                  <a
+                    href={`#section-${index}`}
+                    className="inline-flex min-h-[44px] items-center text-sm font-semibold text-ap-link underline underline-offset-4 hover:decoration-ap-primary"
+                  >
+                    {section.h2 ?? `${t('frontdoor.tocSection')} ${index + 1}`}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
+
+        {/* ── The editorial half, from site-routes.json ─────────────────────── */}
+        {sections.map((section, index) => (
+          <section
+            key={section.h2 ?? index}
+            aria-labelledby={section.h2 ? `section-${index}` : undefined}
+            className="space-y-4 border-t border-carbon-20 pt-6"
           >
-            {t('frontdoor.attribution.orcid', { id: attribution.author.orcid })}
-          </a>
-        </p>
-        {/* The citation is a literal string the repository publishes in three places
+            {section.h2 && (
+              <h2
+                id={`section-${index}`}
+                className="text-ap-tagline font-bold tracking-tight text-carbon-90 lg:text-2xl"
+              >
+                {section.h2}
+              </h2>
+            )}
+            <SectionBody section={section} />
+          </section>
+        ))}
+
+        {/* ── Newest from the blog: freshness the published record cannot show ── */}
+        <section aria-labelledby="blogs-heading" className="space-y-3 border-t border-carbon-20 pt-6">
+          <div className="flex flex-wrap items-end justify-between gap-2">
+            <h2 id="blogs-heading" className="text-ap-tagline font-bold tracking-tight text-carbon-90 lg:text-2xl">
+              {t('frontdoor.blogs.h2')}
+            </h2>
+            <p className="font-mono text-xs uppercase tracking-wider text-carbon-60">{t('frontdoor.blogs.aside')}</p>
+          </div>
+
+          {blogsLoading && <p className="text-sm text-carbon-60">{t('frontdoor.blogs.loading')}</p>}
+
+          {!blogsLoading && blogsError && (
+            <div className="flex flex-wrap items-center gap-3 rounded-xl border border-carbon-20 bg-white p-4 text-sm text-carbon-70">
+              <span>{t('frontdoor.blogs.error', { error: blogsError })}</span>
+              <button
+                type="button"
+                onClick={() => setBlogsReload((n) => n + 1)}
+                className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-carbon-20 bg-carbon-05 px-3 py-1.5 text-xs font-bold text-carbon-80 hover:bg-carbon-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
+              >
+                <MaterialIcon name="refresh" className="text-sm" />
+                {t('frontdoor.blogs.retry')}
+              </button>
+            </div>
+          )}
+
+          {!blogsLoading && !blogsError && blogPosts !== null && blogPosts.length === 0 && (
+            <p className="text-sm text-carbon-60">{t('frontdoor.blogs.empty')}</p>
+          )}
+
+          {!blogsLoading && !blogsError && blogPosts !== null && blogPosts.length > 0 && (
+            <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              {blogPosts.slice(0, 4).map((article, index) => (
+                <li key={article.id}>
+                  <Link
+                    to={`/blogs/${encodeURIComponent(article.slug)}`}
+                    className="flex h-full flex-col gap-2 rounded-2xl border border-carbon-20 bg-white p-4 transition-colors hover:border-ap-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
+                  >
+                    <span className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-full border border-carbon-20 bg-carbon-05 px-2 py-0.5 text-xs font-semibold text-carbon-70">
+                        {article.category || t('frontdoor.blogs.aside')}
+                      </span>
+                      {index === 0 && (
+                        <span className="rounded-full border border-ap-primary/20 bg-ap-primary/10 px-2 py-0.5 text-xs font-bold text-ap-link">
+                          {t('frontdoor.blogs.newest')}
+                        </span>
+                      )}
+                    </span>
+                    <span className="text-base font-bold leading-snug text-carbon-90">{article.title}</span>
+                    <span className="line-clamp-2 text-sm leading-[1.62] text-carbon-60">{article.excerpt}</span>
+                    <span className="mt-auto pt-1 font-mono text-xs text-carbon-60">
+                      {formatDate(article.publishedAt ?? article.createdAt)}
+                      {` · ${t('frontdoor.blogs.minRead', { min: readingTimeMinutes(article.contentHtml) })}`}
+                      {article.authorName ? ` · ${article.authorName}` : ''}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <Link
+            to="/blogs"
+            className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-bold text-ap-link underline underline-offset-4 hover:decoration-ap-primary"
+          >
+            {t('frontdoor.blogs.allPosts')}
+            <MaterialIcon name="arrow_forward" className="text-sm" />
+          </Link>
+        </section>
+
+        {/* ── Questions the front door should answer ────────────────────────── */}
+        {faqs.length > 0 && (
+          <section aria-labelledby="faq-heading" className="space-y-3 border-t border-carbon-20 pt-6">
+            <h2 id="faq-heading" className="text-ap-tagline font-bold tracking-tight text-carbon-90 lg:text-2xl">
+              {t('frontdoor.faq.h2')}
+            </h2>
+            {faqs.map((faq) => (
+              <details key={faq.question} className="group border-b border-carbon-20 py-1 last:border-b-0">
+                <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 text-base font-bold text-carbon-90 marker:hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2">
+                  <span className="inline-flex items-start gap-2 py-2">
+                    <MaterialIcon name="help" className="mt-0.5 text-base text-ap-link" />
+                    <span>{faq.question}</span>
+                  </span>
+                  <MaterialIcon
+                    name="chevron_right"
+                    className="shrink-0 text-carbon-60 transition-transform duration-150 group-open:rotate-90"
+                    aria-hidden="true"
+                  />
+                </summary>
+                <p className="mt-1 pl-6 pr-4 pb-3 text-base leading-[1.62] text-carbon-70">{faq.answer}</p>
+              </details>
+            ))}
+          </section>
+        )}
+
+        {/* ── Attribution: the exact block, from the committed data ─────────── */}
+        <section
+          aria-labelledby="attribution-heading"
+          className="rounded-2xl border border-carbon-20 bg-white p-6 lg:p-8"
+        >
+          <Eyebrow>{t('frontdoor.attribution.eyebrow')}</Eyebrow>
+          <h2 id="attribution-heading" className="mt-3 text-ap-tagline font-bold tracking-tight text-carbon-90">
+            {t('frontdoor.attribution.h2')}
+          </h2>
+          <p className="mt-3 max-w-3xl text-base leading-[1.62] text-carbon-70">
+            {t('frontdoor.attribution.body', {
+              author: attribution.author.name,
+              role: attribution.author.role,
+              work: attribution.work.name,
+              type: attribution.work.type,
+              department: attribution.department.name,
+              university: attribution.department.university,
+              supervisor: attribution.supervisor.name,
+              supervisorRole: attribution.supervisor.role,
+              coSupervision: attribution.coSupervisor?.role ? t('frontdoor.attribution.coSupervised') : '',
+            })}{' '}
+            <a
+              href={attribution.author.orcidUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-bold text-ap-link underline underline-offset-2"
+            >
+              {t('frontdoor.attribution.orcid', { id: attribution.author.orcid })}
+            </a>
+          </p>
+          {/* The citation is a literal string the repository publishes in three places
             (JSON-LD, CITATION.cff, this block). It is deliberately not translated and is
             marked `translate="no"` so a browser's own translation does not either: a
             citation a reader cannot paste back into a reference manager is not a citation. */}
-        <p className="mt-4 font-mono text-xs font-bold uppercase tracking-[0.025em] text-carbon-60">
-          {t('frontdoor.attribution.citationLabel')}
-        </p>
-        <p
-          lang="en"
-          translate="no"
-          className="mt-1 max-w-3xl break-words border-l-2 border-carbon-20 bg-carbon-05 p-3 font-mono text-xs leading-[1.62] text-carbon-70"
-        >
-          {attribution.work.citationText}
-        </p>
-        {/* Same rule as the alert row above: a labelled list, not a fourth navigation landmark. */}
-        <ul aria-label={t('frontdoor.attribution.links')} className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
-          {[
-            { label: t('frontdoor.attribution.repository'), href: attribution.work.repository },
-            { label: t('frontdoor.attribution.institution'), href: attribution.department.url },
-            { label: t('frontdoor.attribution.supervisor'), href: attribution.supervisor.url },
-            ...(attribution.coSupervisor?.url
-              ? [{ label: t('frontdoor.attribution.coSupervisor'), href: attribution.coSupervisor.url }]
-              : []),
-          ].map((link) => (
-            <li key={link.href}>
-              <ExternalOrInternalLink href={link.href} label={link.label} />
-            </li>
-          ))}
-        </ul>
-      </section>
+          <p className="mt-4 font-mono text-xs font-bold uppercase tracking-[0.025em] text-carbon-60">
+            {t('frontdoor.attribution.citationLabel')}
+          </p>
+          <p
+            lang="en"
+            translate="no"
+            className="mt-1 max-w-3xl break-words rounded-lg bg-carbon-05 p-3 font-mono text-xs leading-[1.62] text-carbon-70"
+          >
+            {attribution.work.citationText}
+          </p>
+          {/* Same rule as the alert row above: a labelled list, not a fourth navigation landmark. */}
+          <ul aria-label={t('frontdoor.attribution.links')} className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
+            {[
+              { label: t('frontdoor.attribution.repository'), href: attribution.work.repository },
+              { label: t('frontdoor.attribution.institution'), href: attribution.department.url },
+              { label: t('frontdoor.attribution.supervisor'), href: attribution.supervisor.url },
+              ...(attribution.coSupervisor?.url
+                ? [{ label: t('frontdoor.attribution.coSupervisor'), href: attribution.coSupervisor.url }]
+                : []),
+            ].map((link) => (
+              <li key={link.href}>
+                <ExternalOrInternalLink href={link.href} label={link.label} />
+              </li>
+            ))}
+          </ul>
+        </section>
       </div>
     </Interactive.Div>
   );

@@ -14,15 +14,9 @@ import { isPrimarySuperAdmin } from '../lib/superadmins';
 import { InfinityLoader } from '../components/brand';
 
 const escapeHtml = (value: string): string =>
-  value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+  value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /** Lift a shipped editorial post onto the same article shape the studio uses. */
-;
-
 /** Neutral head applied while the article loads (replaced once it resolves). */
 const LOADING_HEAD = {
   title: 'HazardNet',
@@ -116,18 +110,28 @@ export const BlogArticlePage: React.FC = () => {
 
   if (notFound || !article) {
     return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-3xl mx-auto min-h-[55vh] flex flex-col items-center justify-center gap-4 text-center px-4">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="max-w-3xl mx-auto min-h-[55vh] flex flex-col items-center justify-center gap-4 text-center px-4"
+      >
         <Compass className="h-10 w-10 text-carbon-50" aria-hidden="true" />
         <h1 className="text-xl font-black text-carbon-90">Article not found</h1>
         <p className="text-sm text-carbon-60 max-w-md leading-relaxed">
           This URL does not match a published HazardNet article. It may be a draft, renamed, or removed.
         </p>
         <div className="flex items-center gap-2">
-          <Link to="/blogs" className="bg-primary px-4 py-2.5 text-xs font-black text-ap-action-fg hover:bg-primary-strong">
+          <Link
+            to="/blogs"
+            className="bg-primary px-4 py-2.5 text-xs font-black text-ap-action-fg hover:bg-primary-strong"
+          >
             Browse all articles
           </Link>
           {isPrimarySuperAdmin(user?.email) && (
-            <Link to="/dashboard/blog" className="border border-carbon-20 bg-white px-4 py-2.5 text-xs font-black text-carbon-70 hover:bg-carbon-05">
+            <Link
+              to="/dashboard/blog"
+              className="border border-carbon-20 rounded-full bg-white px-4 py-2.5 text-xs font-black text-carbon-70 hover:bg-carbon-05"
+            >
               Open Blog Studio
             </Link>
           )}
@@ -155,10 +159,19 @@ export const BlogArticlePage: React.FC = () => {
   const bodyHtml = sanitizeBlogHtml(article.contentHtml);
   // A published post with no body text is this page's empty state: the reader gets the title,
   // excerpt and byline, and is told the record is empty rather than shown a blank column.
-  const bodyHasText = bodyHtml.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').trim().length > 0;
+  const bodyHasText =
+    bodyHtml
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .trim().length > 0;
 
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="max-w-3xl mx-auto space-y-6 pb-10">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="max-w-3xl mx-auto space-y-6 pb-10"
+    >
       <Breadcrumbs />
 
       <article className="bg-white border border-carbon-20/90 overflow-hidden">
@@ -167,19 +180,27 @@ export const BlogArticlePage: React.FC = () => {
         )}
         <div className="p-6 sm:p-9 space-y-5">
           <div className="flex items-center gap-2 flex-wrap text-xs font-mono font-bold uppercase tracking-wider">
-            <span className="px-2.5 py-1 rounded-sm bg-amber-50 border border-amber-200 text-amber-900">{article.category}</span>
+            <span className="px-2.5 py-1 rounded-sm bg-amber-50 border border-amber-200 text-amber-900">
+              {article.category}
+            </span>
             <span className="text-carbon-60">{date}</span>
             <span className="text-carbon-60">•</span>
             <span className="text-carbon-60">{readingTimeMinutes(article.contentHtml)} min read</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-carbon-90 tracking-tight leading-tight">{article.title}</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-carbon-90 tracking-tight leading-tight">
+            {article.title}
+          </h1>
           <p className="text-sm text-carbon-60 leading-relaxed">{article.excerpt}</p>
 
           <div className="flex items-center justify-between gap-3 border-y border-carbon-20 py-3">
             <div className="flex items-center gap-2.5 min-w-0">
               {article.authorAvatarUrl ? (
-                <img src={article.authorAvatarUrl} alt="" className="h-10 w-10 rounded-full border border-carbon-20 object-cover shrink-0" />
+                <img
+                  src={article.authorAvatarUrl}
+                  alt=""
+                  className="h-10 w-10 rounded-full border border-carbon-20 object-cover shrink-0"
+                />
               ) : (
                 <span className="h-8 w-8 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 text-carbon-90 font-black text-xs flex items-center justify-center shrink-0">
                   {(article.authorName || 'H')[0].toUpperCase()}
@@ -187,13 +208,15 @@ export const BlogArticlePage: React.FC = () => {
               )}
               <div className="min-w-0">
                 <p className="text-xs font-black text-carbon-90 truncate">{article.authorName}</p>
-                <p className="text-xs font-mono text-carbon-60 truncate">{article.authorTitle || 'HazardNet Research Team'}</p>
+                <p className="text-xs font-mono text-carbon-60 truncate">
+                  {article.authorTitle || 'HazardNet Research Team'}
+                </p>
               </div>
             </div>
             <button
               type="button"
               onClick={copyLink}
-              className="shrink-0 inline-flex items-center gap-1.5 border border-carbon-20 px-3 py-1.5 text-xs font-black text-carbon-60 hover:bg-carbon-10 cursor-pointer"
+              className="shrink-0 inline-flex items-center gap-1.5 border border-carbon-20 rounded-full px-3 py-1.5 text-xs font-black text-carbon-60 hover:bg-carbon-10 cursor-pointer"
               title="Copy article link"
             >
               <MaterialIcon name="share" className="w-3.5 h-3.5" /> Copy link
@@ -217,7 +240,10 @@ export const BlogArticlePage: React.FC = () => {
           {article.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 pt-2 border-t border-carbon-20">
               {article.tags.map((tag) => (
-                <span key={tag} className="px-2 py-1 rounded-sm bg-carbon-10 border border-carbon-20 text-xs font-bold text-carbon-60">
+                <span
+                  key={tag}
+                  className="px-2 py-1 rounded-sm bg-carbon-10 border border-carbon-20 text-xs font-bold text-carbon-60"
+                >
                   #{tag}
                 </span>
               ))}
@@ -226,9 +252,13 @@ export const BlogArticlePage: React.FC = () => {
 
           {/* Author bio box (E-E-A-T) */}
           {(article.authorBio || article.authorWebsite) && (
-            <div className="flex items-start gap-3 bg-carbon-05 border border-carbon-20 p-4">
+            <div className="flex items-start gap-3 bg-carbon-05 border border-carbon-20 rounded-2xl p-4">
               {article.authorAvatarUrl ? (
-                <img src={article.authorAvatarUrl} alt="" className="h-12 w-12 rounded-full border border-carbon-20 object-cover shrink-0" />
+                <img
+                  src={article.authorAvatarUrl}
+                  alt=""
+                  className="h-12 w-12 rounded-full border border-carbon-20 object-cover shrink-0"
+                />
               ) : (
                 <span className="h-12 w-12 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 text-carbon-90 font-black text-sm flex items-center justify-center shrink-0">
                   {(article.authorName || 'H')[0].toUpperCase()}
@@ -237,12 +267,20 @@ export const BlogArticlePage: React.FC = () => {
               <div className="min-w-0">
                 <p className="text-xs font-black text-carbon-90">
                   {article.authorName}
-                  {article.authorTitle && <span className="ml-1.5 font-mono text-xs font-bold text-carbon-60">{article.authorTitle}</span>}
+                  {article.authorTitle && (
+                    <span className="ml-1.5 font-mono text-xs font-bold text-carbon-60">{article.authorTitle}</span>
+                  )}
                 </p>
-                {article.authorBio && <p className="mt-1 text-xs leading-relaxed text-carbon-60">{article.authorBio}</p>}
+                {article.authorBio && (
+                  <p className="mt-1 text-xs leading-relaxed text-carbon-60">{article.authorBio}</p>
+                )}
                 {article.authorWebsite && (
                   <a
-                    href={article.authorWebsite.startsWith('http') ? article.authorWebsite : `https://${article.authorWebsite}`}
+                    href={
+                      article.authorWebsite.startsWith('http')
+                        ? article.authorWebsite
+                        : `https://${article.authorWebsite}`
+                    }
                     target="_blank"
                     rel="noopener nofollow"
                     className="mt-1 inline-block text-xs font-black text-amber-700 hover:underline"
@@ -256,16 +294,21 @@ export const BlogArticlePage: React.FC = () => {
               </div>
             </div>
           )}
-
         </div>
       </article>
 
       <div className="flex items-center justify-between gap-3">
-        <Link to="/blogs" className="inline-flex items-center gap-1.5 text-xs font-black text-amber-800 hover:underline">
+        <Link
+          to="/blogs"
+          className="inline-flex items-center gap-1.5 text-xs font-black text-amber-800 hover:underline"
+        >
           <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" /> All articles
         </Link>
         {isPrimarySuperAdmin(user?.email) && (
-          <Link to={`/dashboard/blog`} className="text-xs font-black text-carbon-60 hover:text-carbon-90 hover:underline">
+          <Link
+            to={`/dashboard/blog`}
+            className="text-xs font-black text-carbon-60 hover:text-carbon-90 hover:underline"
+          >
             <span className="inline-flex items-center gap-1.5">
               Manage in Blog Studio <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
             </span>
