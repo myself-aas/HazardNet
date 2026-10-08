@@ -1,0 +1,68 @@
+{
+  "$schema": "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
+  "skills": [
+    {
+      "name": "a2a-agent-card",
+      "type": "skill-md",
+      "description": "Publish an A2A Agent Card at /.well-known/agent-card.json for agent-to-agent discovery.",
+      "url": "/.well-known/agent-skills/a2a-agent-card/SKILL.md",
+      "digest": "sha256:735413015be8e5e6419f0d496e70b798d5c56b1082d821456445d481ce79b010"
+    },
+    {
+      "name": "agent-skills",
+      "type": "skill-md",
+      "description": "Publish an agent skills discovery index at /.well-known/agent-skills/index.json.",
+      "url": "/.well-known/agent-skills/agent-skills/SKILL.md",
+      "digest": "sha256:202677a4b877c710c9e947f2c3847cdd555c729361f523adb889ed1c43a0e419"
+    },
+    {
+      "name": "api-catalog",
+      "type": "skill-md",
+      "description": "Publish an API catalog per RFC 9727 for automated API discovery.",
+      "url": "/.well-known/agent-skills/api-catalog/SKILL.md",
+      "digest": "sha256:e7e9d56e83d8daf4816072425c20b712a5484780cd16048bb0dad6b371d82f6f"
+    },
+    {
+      "name": "auth-md",
+      "type": "skill-md",
+      "description": "Publish Auth.md agent registration discovery metadata.",
+      "url": "/.well-known/agent-skills/auth-md/SKILL.md",
+      "digest": "sha256:bdebff9aa594a4f0adfd4c8a9cae16b448ac2cb3022aa1a5fdc18a6d3804f28b"
+    },
+    {
+      "name": "content-signals",
+      "type": "skill-md",
+      "description": "Declare AI content usage preferences with Content Signals in robots.txt.",
+      "url": "/.well-known/agent-skills/content-signals/SKILL.md",
+      "digest": "sha256:706e4ed022e315341e8503642f6230f52a4ac743d3f4d599f8a132b82b5fe1e6"
+    },
+    {
+      "name": "dns-aid",
+      "type": "skill-md",
+      "description": "Publish DNS for AI Discovery (DNS-AID) SVCB/HTTPS records for DNS-based agent discovery.",
+      "url": "/.well-known/agent-skills/dns-aid/SKILL.md",
+      "digest": "sha256:5bef706f8e237eb5d812bb7138096c108f0875f94325d8be52a8aac9b575fd54"
+    },
+    {
+      "name": "markdown-negotiation",
+      "type": "skill-md",
+      "description": "Support Accept: text/markdown content negotiation for machine-readable content.",
+      "url": "/.well-known/agent-skills/markdown-negotiation/SKILL.md",
+      "digest": "sha256:37b45373ba804961d87166db261b00350372178f5a0ef152485bb85ee4d465b4"
+    },
+    {
+      "name": "oauth-discovery",
+      "type": "skill-md",
+      "description": "Publish OAuth/OIDC discovery metadata for agent authentication.",
+      "url": "/.well-known/agent-skills/oauth-discovery/SKILL.md",
+      "digest": "sha256:1757d2792652702e96e4cc2f19762fda77e7dca35018690ee30c0f5f46f04944"
+    },
+    {
+      "name": "oauth-protected-resource",
+      "type": "skill-md",
+      "description": "Publish OAuth Protected Resource Metadata per RFC 9728.",
+      "url": "/.well-known/agent-skills/oauth-protected-resource/SKILL.md",
+      "digest": "sha256:ef295ec8c648b8c8e02d64718c44bab5628ff83b920559af3f8d5a9aaa3a35b8"
+    }
+  ]
+}

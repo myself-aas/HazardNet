@@ -1,0 +1,130 @@
+{
+  "name": "HazardNet",
+  "description": "Multi-Hazard Early Warning AI agent for Bangladesh agriculture. Publishes 7- and 15-day outlooks for 8 climate hazards (flood, flash flood, tropical cyclone, drought, heat wave, cold wave, fire, severe local storm) across 64 districts with dual-track severity scoring, independent physics cross-checks, and full provenance for every number.",
+  "url": "https://www.hazardnet.live",
+  "version": "3.2.0",
+  "documentationUrl": "https://www.hazardnet.live/docs",
+  "iconUrl": "https://www.hazardnet.live/hazardnet-mark.svg",
+  "provider": {
+    "organization": "HazardNet",
+    "url": "https://www.hazardnet.live/about"
+  },
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": true,
+    "extensions": []
+  },
+  "defaultInputModes": ["text/plain", "application/json"],
+  "defaultOutputModes": ["text/plain", "application/json"],
+  "supportedInterfaces": [
+    {
+      "url": "https://www.hazardnet.live/api",
+      "protocolBinding": "HTTP+JSON",
+      "protocolVersion": "1.0"
+    }
+  ],
+  "securitySchemes": {
+    "bearerAuth": {
+      "httpAuthSecurityScheme": {
+        "scheme": "Bearer",
+        "bearerFormat": "JWT",
+        "description": "Firebase ID token (JWT) for authenticated endpoints. Obtain via Firebase Auth sign-in."
+      }
+    },
+    "apiKeyAuth": {
+      "apiKeySecurityScheme": {
+        "name": "X-API-Key",
+        "location": "header",
+        "description": "Pre-shared API key for server-to-server write endpoints (forecast ingest, push broadcast). Contact contact@hazardnet.live."
+      }
+    },
+    "anonymous": {
+      "httpAuthSecurityScheme": {
+        "scheme": "none",
+        "description": "No authentication required for public read endpoints (forecasts, alerts, weather, historical, predictions, conversions)."
+      }
+    }
+  },
+  "securityRequirements": [
+    {},
+    { "bearerAuth": [] },
+    { "apiKeyAuth": [] }
+  ],
+  "skills": [
+    {
+      "id": "hazard-forecast",
+      "name": "Multi-Hazard Forecast",
+      "description": "Retrieve 7- and 15-day hazard outlooks for Bangladesh's 64 districts across 8 hazard classes (flood, flash flood, tropical cyclone, drought, heat wave, cold wave, fire, severe local storm). Each forecast includes hazard class, severity index (0-1), confidence bin, and independent physics cross-check with full provenance.",
+      "tags": ["forecast", "hazard", "bangladesh", "agriculture", "early-warning", "flood", "cyclone", "drought", "heat-wave", "cold-wave"],
+      "examples": [
+        "What is the flood outlook for Dhaka district for the next 7 days?",
+        "Show me all hazard forecasts for Rangpur division",
+        "Which districts have cyclone warnings this fortnight?"
+      ],
+      "inputModes": ["text/plain", "application/json"],
+      "outputModes": ["application/json"]
+    },
+    {
+      "id": "weather-observations",
+      "name": "Weather Observations",
+      "description": "Fetch current weather observations (temperature, precipitation, wind, humidity, radiation, evapotranspiration) for any latitude/longitude in Bangladesh from Open-Meteo.",
+      "tags": ["weather", "observations", "temperature", "precipitation", "wind"],
+      "examples": [
+        "What is the current weather at coordinates 23.8103, 90.4125?",
+        "Get weather observations for Chattogram"
+      ],
+      "inputModes": ["text/plain", "application/json"],
+      "outputModes": ["application/json"]
+    },
+    {
+      "id": "alert-monitoring",
+      "name": "Hazard Alert Monitoring",
+      "description": "Monitor published hazard alerts with their evidence, drivers, policy version, and review status. Alerts carry their own provenance including the drivers behind the level and whether a duty officer reviewed them.",
+      "tags": ["alerts", "monitoring", "hazard", "emergency", "warning-levels"],
+      "examples": [
+        "What alerts are currently published?",
+        "Show me all active flood alerts",
+        "Are there any cyclone warnings for coastal districts?"
+      ],
+      "inputModes": ["text/plain"],
+      "outputModes": ["application/json"]
+    },
+    {
+      "id": "historical-catalog",
+      "name": "Historical Hazard Catalog",
+      "description": "Query the historical climatic hazard catalog for Bangladesh, covering past events across all eight hazard classes with episode data.",
+      "tags": ["historical", "catalog", "archive", "past-events", "climatic"],
+      "examples": [
+        "Show me the historical flood events for Kurigram district",
+        "What drought events have been recorded in Rajshahi?"
+      ],
+      "inputModes": ["text/plain"],
+      "outputModes": ["application/json"]
+    },
+    {
+      "id": "ai-advisory-chat",
+      "name": "AI Advisory Chat",
+      "description": "Conversational AI advisory for Bangladesh hazard assessment. Ask natural-language questions about hazards, forecasts, districts, and severity — receive grounded responses with references to committed artifacts. Requires Firebase authentication for higher rate limits.",
+      "tags": ["chat", "ai", "advisory", "conversational", "natural-language"],
+      "examples": [
+        "What should farmers in Bogra do given the current flood outlook?",
+        "Explain the severity score of 0.85 for heat wave in Jessore",
+        "Compare the model severity track with the physics track for flood in Sunamganj"
+      ],
+      "inputModes": ["text/plain"],
+      "outputModes": ["text/plain", "application/json"]
+    },
+    {
+      "id": "unit-conversions",
+      "name": "Hazard Unit Conversions",
+      "description": "Convert between measurement units relevant to hazard assessment including temperature (Celsius/Fahrenheit/Kelvin), precipitation (mm/inches), wind speed (km/h/mph/knots/m/s), and pressure (hPa/inHg/mmHg).",
+      "tags": ["conversions", "units", "temperature", "precipitation", "wind-speed"],
+      "examples": [
+        "Convert 300mm precipitation to inches",
+        "Convert 45°C to Fahrenheit"
+      ],
+      "inputModes": ["text/plain", "application/json"],
+      "outputModes": ["application/json"]
+    }
+  ]
+}

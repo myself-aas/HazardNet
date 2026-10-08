@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node ../scripts/build_climatic_hazards_summary.mjs && vite build && node scripts/prerender.mjs",
+    "build": "node ../scripts/build_climatic_hazards_summary.mjs && vite build && node scripts/prerender.mjs && node ../scripts/build_markdown.mjs",
     "blog-index": "node scripts/export-blog-index.mjs",
     "preview": "vite preview",
     "test": "jest --config ../jest.config.cjs --rootDir .. frontend/src",

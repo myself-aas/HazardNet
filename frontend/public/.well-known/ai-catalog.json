@@ -1,0 +1,102 @@
+{
+  "$schema": "https://schemas.agentskills.io/ai-catalog/v1.json",
+  "name": "HazardNet",
+  "description": "Multi-Hazard Early Warning AI agent for Bangladesh agriculture",
+  "version": "3.2.0",
+  "origin": "https://www.hazardnet.live",
+  "agents": [
+    {
+      "protocol": "a2a",
+      "name": "HazardNet A2A Agent",
+      "description": "Agent-to-Agent protocol endpoint for multi-hazard forecasting and advisory",
+      "card_url": "https://www.hazardnet.live/.well-known/agent-card.json",
+      "endpoint": "https://www.hazardnet.live/mcp",
+      "dns": "_a2a._agents.hazardnet.live",
+      "transport": "streamable-http",
+      "authentication": ["bearer", "api-key", "anonymous"]
+    },
+    {
+      "protocol": "mcp",
+      "name": "HazardNet MCP Server",
+      "description": "Model Context Protocol server with hazard forecast, alert, and weather tools",
+      "card_url": "https://www.hazardnet.live/.well-known/mcp/server-card.json",
+      "endpoint": "https://www.hazardnet.live/mcp",
+      "dns": "_mcp._agents.hazardnet.live",
+      "transport": "streamable-http",
+      "authentication": ["bearer", "api-key", "anonymous"]
+    },
+    {
+      "protocol": "webmcp",
+      "name": "HazardNet WebMCP Tools",
+      "description": "Browser-based tools exposed via document.modelContext.registerTool()",
+      "endpoint": "https://www.hazardnet.live",
+      "dns": "_webmcp._agents.hazardnet.live",
+      "transport": "browser-javascript",
+      "authentication": []
+    },
+    {
+      "protocol": "rest",
+      "name": "HazardNet REST API",
+      "description": "RFC 9727 API catalog with forecasts, alerts, weather, and historical data",
+      "card_url": "https://www.hazardnet.live/.well-known/api-catalog",
+      "endpoint": "https://www.hazardnet.live/api",
+      "dns": "_api._agents.hazardnet.live",
+      "transport": "http+json",
+      "spec_url": "https://www.hazardnet.live/api/openapi.yaml",
+      "authentication": ["bearer", "api-key", "anonymous"]
+    }
+  ],
+  "dns_aid": {
+    "zone": "_agents.hazardnet.live",
+    "records": [
+      {
+        "name": "_index._agents.hazardnet.live",
+        "type": "HTTPS",
+        "target": "www.hazardnet.live",
+        "alpn": "https",
+        "description": "Master agent discovery index"
+      },
+      {
+        "name": "_a2a._agents.hazardnet.live",
+        "type": "HTTPS",
+        "target": "www.hazardnet.live",
+        "alpn": "a2a",
+        "description": "A2A Agent-to-Agent protocol"
+      },
+      {
+        "name": "_mcp._agents.hazardnet.live",
+        "type": "HTTPS",
+        "target": "www.hazardnet.live",
+        "alpn": "mcp",
+        "description": "Model Context Protocol"
+      },
+      {
+        "name": "_api._agents.hazardnet.live",
+        "type": "HTTPS",
+        "target": "www.hazardnet.live",
+        "alpn": "https",
+        "description": "REST API (RFC 9727)"
+      },
+      {
+        "name": "_webmcp._agents.hazardnet.live",
+        "type": "HTTPS",
+        "target": "www.hazardnet.live",
+        "alpn": "webmcp",
+        "description": "WebMCP browser tools"
+      }
+    ],
+    "dnssec": true,
+    "publish_script": "node scripts/publish-dns-aid.mjs"
+  },
+  "discovery": {
+    "agent_card": "https://www.hazardnet.live/.well-known/agent-card.json",
+    "mcp_server_card": "https://www.hazardnet.live/.well-known/mcp/server-card.json",
+    "api_catalog": "https://www.hazardnet.live/.well-known/api-catalog",
+    "oauth_protected_resource": "https://www.hazardnet.live/.well-known/oauth-protected-resource",
+    "openid_configuration": "https://www.hazardnet.live/.well-known/openid-configuration",
+    "oauth_authorization_server": "https://www.hazardnet.live/.well-known/oauth-authorization-server",
+    "auth_md": "https://www.hazardnet.live/auth.md",
+    "agent_skills": "https://www.hazardnet.live/.well-known/agent-skills/index.json",
+    "security_txt": "https://www.hazardnet.live/.well-known/security.txt"
+  }
+}

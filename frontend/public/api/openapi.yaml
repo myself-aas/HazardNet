@@ -1,0 +1,266 @@
+openapi: 3.1.0
+info:
+  title: HazardNet API
+  version: "3.2.0"
+  description: |
+    HazardNet publishes 7- and 15-day multi-hazard outlooks for Bangladesh's
+    64 districts: 8 hazards, dual-track severity, and the provenance to check
+    every number. This API exposes forecast records, alerts, historical data,
+    weather observations, AI advisory chat, and grounding search.
+  contact:
+    name: HazardNet
+    url: https://www.hazardnet.live
+    email: contact@hazardnet.live
+  license:
+    name: MIT
+    url: https://github.com/myself-aas/HazardNet/blob/main/LICENSE
+servers:
+  - url: https://www.hazardnet.live
+    description: Production
+paths:
+  /health:
+    get:
+      summary: Health check
+      description: Returns service health status.
+      operationId: getHealth
+      tags: [System]
+      responses:
+        "200":
+          description: Service is healthy.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  service:
+                    type: string
+                    example: HazardNet Backend
+                  timestamp:
+                    type: string
+                    format: date-time
+  /api/v1/forecasts:
+    get:
+      summary: List forecast records
+      description: |
+        Returns the latest committed forecast snapshot for all districts,
+        hazards and horizons. Each record carries hazard class, severity
+        index, confidence bin and the independent physics cross-check.
+      operationId: listForecasts
+      tags: [Forecasts]
+      responses:
+        "200":
+          description: Forecast snapshot.
+          content:
+            application/json:
+              schema:
+                type: object
+    post:
+      summary: Ingest forecast CSV
+      description: |
+        Authenticated endpoint to ingest a new forecast snapshot from a
+        CSV upload. Requires the BACKEND_API_KEY.
+      operationId: ingestForecasts
+      tags: [Forecasts]
+      security:
+        - ApiKeyAuth: []
+      responses:
+        "200":
+          description: Forecasts ingested successfully.
+        "401":
+          description: Unauthorized — invalid or missing API key.
+  /api/v1/weather:
+    get:
+      summary: Weather observations
+      description: |
+        Fetches current weather observations from Open-Meteo for a given
+        latitude and longitude.
+      operationId: getWeather
+      tags: [Weather]
+      parameters:
+        - name: latitude
+          in: query
+          required: true
+          schema:
+            type: number
+            format: float
+        - name: longitude
+          in: query
+          required: true
+          schema:
+            type: number
+            format: float
+      responses:
+        "200":
+          description: Weather observation data.
+          content:
+            application/json:
+              schema:
+                type: object
+  /api/v1/alerts:
+    get:
+      summary: List published alerts
+      description: |
+        Returns the current set of published hazard alerts with their
+        evidence, drivers, policy version and review status. Published
+        alerts are public — no authentication required.
+      operationId: listAlerts
+      tags: [Alerts]
+      responses:
+        "200":
+          description: Published alerts.
+          content:
+            application/json:
+              schema:
+                type: object
+  /api/v1/historical:
+    get:
+      summary: Historical hazard catalog
+      description: |
+        Returns the historical climatic hazard catalog for Bangladesh,
+        covering past events across the eight hazard classes.
+      operationId: listHistorical
+      tags: [Historical]
+      responses:
+        "200":
+          description: Historical hazard data.
+          content:
+            application/json:
+              schema:
+                type: object
+  /api/chat:
+    post:
+      summary: AI advisory chat
+      description: |
+        Send a natural-language query about Bangladesh hazards and receive
+        a grounded advisory response. May require Firebase authentication
+        depending on deployment configuration.
+      operationId: chatQuery
+      tags: [AI]
+      security:
+        - FirebaseToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+      responses:
+        "200":
+          description: Advisory response.
+          content:
+            application/json:
+              schema:
+                type: object
+  /api/grounding:
+    post:
+      summary: Maps and search grounding
+      description: |
+        Execute maps-based or search-based grounding queries using
+        Gemini, returning structured location and context data.
+      operationId: groundingQuery
+      tags: [AI]
+      security:
+        - FirebaseToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Grounding result.
+          content:
+            application/json:
+              schema:
+                type: object
+  /api/predict:
+    post:
+      summary: Stored prediction retrieval
+      description: |
+        Returns a stored prediction record for a given district and
+        hazard combination from the committed forecast snapshot.
+      operationId: getPrediction
+      tags: [Predictions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Prediction record.
+          content:
+            application/json:
+              schema:
+                type: object
+  /api/push:
+    post:
+      summary: Web push broadcast
+      description: |
+        Authenticated endpoint to broadcast a web push notification to
+        all subscribers. Requires the BACKEND_API_KEY.
+      operationId: broadcastPush
+      tags: [Push]
+      security:
+        - ApiKeyAuth: []
+      responses:
+        "200":
+          description: Notification broadcast.
+        "401":
+          description: Unauthorized.
+  /api/conversions:
+    post:
+      summary: Unit conversions
+      description: |
+        Convert between measurement units relevant to hazard assessment
+        (temperature, precipitation, wind speed, etc.).
+      operationId: convertUnits
+      tags: [Utilities]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Conversion result.
+          content:
+            application/json:
+              schema:
+                type: object
+  /metrics:
+    get:
+      summary: Prometheus metrics
+      description: |
+        Returns Prometheus-format metrics for monitoring, including
+        forecast freshness gauges and request counters.
+      operationId: getMetrics
+      tags: [System]
+      responses:
+        "200":
+          description: Prometheus metrics.
+          content:
+            text/plain:
+              schema:
+                type: string
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Backend API key for authenticated write endpoints.
+    FirebaseToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Firebase Authentication ID token.

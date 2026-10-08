@@ -1,0 +1,214 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://www.hazardnet.live/api/v1/forecasts",
+      "service-desc": [
+        {
+          "href": "https://www.hazardnet.live/api/openapi.yaml",
+          "type": "application/yaml"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://www.hazardnet.live/docs/data-and-api",
+          "type": "text/html"
+        }
+      ],
+      "status": [
+        {
+          "href": "https://www.hazardnet.live/health",
+          "type": "application/json"
+        }
+      ]
+    },
+    {
+      "anchor": "https://www.hazardnet.live/api/v1/alerts",
+      "service-desc": [
+        {
+          "href": "https://www.hazardnet.live/api/openapi.yaml",
+          "type": "application/yaml"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://www.hazardnet.live/docs/alerts-and-advisories",
+          "type": "text/html"
+        }
+      ],
+      "status": [
+        {
+          "href": "https://www.hazardnet.live/health",
+          "type": "application/json"
+        }
+      ]
+    },
+    {
+      "anchor": "https://www.hazardnet.live/api/v1/weather",
+      "service-desc": [
+        {
+          "href": "https://www.hazardnet.live/api/openapi.yaml",
+          "type": "application/yaml"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://www.hazardnet.live/docs/data-and-api",
+          "type": "text/html"
+        }
+      ],
+      "status": [
+        {
+          "href": "https://www.hazardnet.live/health",
+          "type": "application/json"
+        }
+      ]
+    },
+    {
+      "anchor": "https://www.hazardnet.live/api/v1/historical",
+      "service-desc": [
+        {
+          "href": "https://www.hazardnet.live/api/openapi.yaml",
+          "type": "application/yaml"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://www.hazardnet.live/docs/archive",
+          "type": "text/html"
+        }
+      ],
+      "status": [
+        {
+          "href": "https://www.hazardnet.live/health",
+          "type": "application/json"
+        }
+      ]
+    },
+    {
+      "anchor": "https://www.hazardnet.live/api/chat",
+      "service-desc": [
+        {
+          "href": "https://www.hazardnet.live/api/openapi.yaml",
+          "type": "application/yaml"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://www.hazardnet.live/docs/data-and-api",
+          "type": "text/html"
+        }
+      ],
+      "status": [
+        {
+          "href": "https://www.hazardnet.live/health",
+          "type": "application/json"
+        }
+      ]
+    },
+    {
+      "anchor": "https://www.hazardnet.live/api/grounding",
+      "service-desc": [
+        {
+          "href": "https://www.hazardnet.live/api/openapi.yaml",
+          "type": "application/yaml"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://www.hazardnet.live/docs/data-and-api",
+          "type": "text/html"
+        }
+      ],
+      "status": [
+        {
+          "href": "https://www.hazardnet.live/health",
+          "type": "application/json"
+        }
+      ]
+    },
+    {
+      "anchor": "https://www.hazardnet.live/api/predict",
+      "service-desc": [
+        {
+          "href": "https://www.hazardnet.live/api/openapi.yaml",
+          "type": "application/yaml"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://www.hazardnet.live/docs/forecasts",
+          "type": "text/html"
+        }
+      ],
+      "status": [
+        {
+          "href": "https://www.hazardnet.live/health",
+          "type": "application/json"
+        }
+      ]
+    },
+    {
+      "anchor": "https://www.hazardnet.live/api/push",
+      "service-desc": [
+        {
+          "href": "https://www.hazardnet.live/api/openapi.yaml",
+          "type": "application/yaml"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://www.hazardnet.live/docs/data-and-api",
+          "type": "text/html"
+        }
+      ],
+      "status": [
+        {
+          "href": "https://www.hazardnet.live/health",
+          "type": "application/json"
+        }
+      ]
+    },
+    {
+      "anchor": "https://www.hazardnet.live/api/conversions",
+      "service-desc": [
+        {
+          "href": "https://www.hazardnet.live/api/openapi.yaml",
+          "type": "application/yaml"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://www.hazardnet.live/docs/data-and-api",
+          "type": "text/html"
+        }
+      ],
+      "status": [
+        {
+          "href": "https://www.hazardnet.live/health",
+          "type": "application/json"
+        }
+      ]
+    },
+    {
+      "anchor": "https://www.hazardnet.live/api/live-voice",
+      "service-desc": [
+        {
+          "href": "https://www.hazardnet.live/api/openapi.yaml",
+          "type": "application/yaml"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://www.hazardnet.live/docs/data-and-api",
+          "type": "text/html"
+        }
+      ],
+      "status": [
+        {
+          "href": "https://www.hazardnet.live/health",
+          "type": "application/json"
+        }
+      ]
+    }
+  ]
+}
