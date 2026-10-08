@@ -1,6 +1,6 @@
 # HazardNet design-system implementation guide
 
-> **Current system:** Apple — one system, everywhere. This file is the short contributor guide, not a second token specification. The specification is [`DESIGN.md`](../DESIGN.md) at the repository root (installed with `npx getdesign@latest add apple`, and not edited by us); HazardNet's four documented extensions are in [`docs/design-system/APPLE.md`](../docs/design-system/APPLE.md); the tokens are `packages/design-system/src/apple.ts`.
+> **Current system:** Cupertino Precision (DESIGN.md, 2026-10-08). It replaces the earlier Apple system; sections that name SF Pro or the old type scale are historical. This file is the short contributor guide, not a second token specification. The specification is [`DESIGN.md`](../DESIGN.md) at the repository root (installed with `npx getdesign@latest add apple`, and not edited by us); HazardNet's four documented extensions are in [`docs/design-system/APPLE.md`](../docs/design-system/APPLE.md); the tokens are `packages/design-system/src/apple.ts`.
 >
 > **Latest audit:** [`docs/audits/2026-10-05-frontend-design-system-audit.md`](../docs/audits/2026-10-05-frontend-design-system-audit.md).
 
