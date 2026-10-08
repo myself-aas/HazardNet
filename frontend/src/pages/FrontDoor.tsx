@@ -67,7 +67,7 @@ import CardStackTable from '../components/ui/CardStackTable';
 import HeroCinematicBackground from '../components/HeroCinematicBackground';
 import { localiseRoute, usePageSeo } from '../hooks/usePageSeo';
 import { useAlertsData } from '../hooks/useAlertsData';
-import { hazardIcon, useHazardLabel } from '../hooks/useHazardLabel';
+import { useHazardLabel } from '../hooks/useHazardLabel';
 import { useI18n } from '../hooks/useI18n';
 import { FRESHNESS_URL, parseFreshness, type FreshnessArtifact } from '../lib/freshness';
 import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
@@ -295,7 +295,6 @@ export const FrontDoor: React.FC = () => {
   // used to sit in is gone), clamped to two lines at every width with this disclosure — claim,
   // tagline and action come first, and the reader asks for the rest.
   const [standfirstOpen, setStandfirstOpen] = useState(false);
-  const [pipelineAuditOpen, setPipelineAuditOpen] = useState(false);
   // The evidence pointer under the action reads the same artifact the proof card does: one fact
   // from the run, pointing at the page that carries the card (/last-run).
   const coverageArtifact = freshness?.coverage ?? null;
