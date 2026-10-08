@@ -1,76 +1,29 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { firebaseConfig as firebaseClientConfig, firestoreDatabaseId } from '../lib/config';
-import { getAnalytics, isSupported as isAnalyticsSupported, Analytics } from "firebase/analytics";
-import { 
-  getAuth, 
-  GoogleAuthProvider, 
-  GithubAuthProvider, 
-  signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
-  setPersistence,
-  browserLocalPersistence,
-  signOut, 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  updateProfile, 
-  sendPasswordResetEmail 
-} from 'firebase/auth';
-import { getFirestore, setLogLevel } from 'firebase/firestore';
-import { getDatabase, Database } from 'firebase/database';
+// import { initializeApp, getApps, getApp } from "firebase/app";
+// import { firebaseConfig as firebaseClientConfig, firestoreDatabaseId } from '../lib/config';
+// import { getAnalytics, isSupported as isAnalyticsSupported, Analytics } from "firebase/analytics";
+// import { 
+//   getAuth, 
+//   GoogleAuthProvider, 
+//   GithubAuthProvider, 
+//   signInWithPopup,
+//   signInWithRedirect,
+//   getRedirectResult,
+//   setPersistence,
+//   browserLocalPersistence,
+//   signOut, 
+//   createUserWithEmailAndPassword, 
+//   signInWithEmailAndPassword, 
+//   updateProfile, 
+//   sendPasswordResetEmail 
+// } from 'firebase/auth';
+// import { getFirestore, setLogLevel } from 'firebase/firestore';
+// import { getDatabase, Database } from 'firebase/database';
 
-// Suppress internal gRPC stream retry logs for unprovisioned or offline databases
-try {
-  setLogLevel('silent');
-} catch {
-  // setLogLevel is unavailable in some test stubs.
-}
-// Production Firebase client SDK initialized with Auth, Firestore, Realtime Database, and Analytics.
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-// NOTE: firestoreDatabaseId is NOT part of FirebaseOptions — it is handled separately
-// for getFirestore(). Passing it to initializeApp would be ignored but we keep the
-// config clean.
-const firebaseConfig = { ...firebaseClientConfig };
-void (firebaseConfig as any).measurementId;
-
-// Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-
-export let analytics: Analytics | null = null;
-if (typeof window !== 'undefined') {
-  isAnalyticsSupported().then((supported) => {
-    if (supported) {
-      analytics = getAnalytics(app);
-    }
-  }).catch(() => {
-    // Analytics ignored if unsupported in iframe or context
-  });
-}
-
-/**
- * Resolve Firestore instance.
- * - If firestoreDatabaseId is null (meaning `(default)` or `default` or unset),
- *   use the default database via getFirestore(app).
- * - Otherwise use the named database.
- * This fixes the bug where `getFirestore(app, 'default')` would look for a
- * database literally named `default` which does not exist.
- */
-function resolveFirestore() {
-  const raw = firestoreDatabaseId;
-  if (!raw) return getFirestore(app);
-  const trimmed = String(raw).trim();
-  if (!trimmed || trimmed === 'default' || trimmed === '(default)') {
-    return getFirestore(app);
-  }
-  return getFirestore(app, trimmed);
-}
-
-export const db = resolveFirestore();
-export const rtdb: Database = getDatabase(app, (firebaseConfig as any).databaseURL);
-export const auth = getAuth(app);
+export const db = {};
+export const rtdb = {};
+export const auth = { currentUser: null };
+export const app = {};
 
 // Ensure local persistence so sign-in survives page reloads and works in
 // environments where session persistence might be cleared.

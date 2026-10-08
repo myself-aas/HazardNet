@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { AP_SPRING } from '../apple/motion';
+import { triggerHaptic } from '../../lib/haptics';
 
 export interface ControlChip {
   id: string;
@@ -69,7 +70,10 @@ export const FloatingControlBar: React.FC<FloatingControlBarProps> = ({
           {chips.map((chip) => (
             <button
               key={chip.id}
-              onClick={() => onSelectChip?.(chip.id)}
+              onClick={() => {
+                triggerHaptic('light');
+                onSelectChip?.(chip.id);
+              }}
               aria-pressed={chip.active}
               className={`tap-target px-3 py-1.5 rounded-full text-xs font-sans font-semibold flex items-center gap-1.5 whitespace-nowrap transition-all ${
                 chip.active

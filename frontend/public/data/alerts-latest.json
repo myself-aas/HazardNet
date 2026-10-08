@@ -1,7 +1,7 @@
 {
   "schema": "hazardnet-alerts/v1",
-  "generated_at": "2026-10-06T12:34:02.134Z",
-  "built_at": "2026-10-06T12:34:09.167Z",
+  "generated_at": "2026-10-08T13:53:09.936Z",
+  "built_at": "2026-10-08T13:53:10.145Z",
   "source": "alert engine replay over hazardnet-forecast-snapshot/v2 (prediction_date 2026-09-16)",
   "policy_version": "alert-policy/1.0.0",
   "assessed": 74,

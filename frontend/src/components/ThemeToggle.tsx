@@ -18,6 +18,7 @@
 import React from 'react';
 import { useI18n } from '../hooks/useI18n';
 import type { AppleThemeName } from './apple/motion';
+import { triggerHaptic } from '../lib/haptics';
 
 export interface ThemeToggleProps {
   /** The current preference, including `system`. */
@@ -49,7 +50,10 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ theme, onChange, class
           <button
             key={option.value}
             type="button"
-            onClick={() => onChange(option.value)}
+            onClick={() => {
+              triggerHaptic('medium');
+              onChange(option.value);
+            }}
             aria-pressed={active}
             data-theme-option={option.value}
             className={`inline-flex min-h-[44px] min-w-[44px] flex-1 items-center justify-center rounded-lg px-3 py-2 transition-colors touch-manipulation ${

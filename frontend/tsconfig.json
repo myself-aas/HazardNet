@@ -17,7 +17,11 @@
       "@hazardnet/design-system": ["../packages/design-system/src/index.ts"],
       "@hazardnet/design-system/*": ["../packages/design-system/src/*"],
       "@hazardnet/core": ["../packages/core/src/index.ts"],
-      "@hazardnet/core/*": ["../packages/core/src/*"]
+      "@hazardnet/core/*": ["../packages/core/src/*"],
+      "@hazardnet/analytics": ["../packages/analytics/src/index.ts"],
+      "@hazardnet/analytics/*": ["../packages/analytics/src/*"],
+      "@hazardnet/api": ["../packages/api/src/index.ts"],
+      "@hazardnet/api/*": ["../packages/api/src/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/vite-env.d.ts"],

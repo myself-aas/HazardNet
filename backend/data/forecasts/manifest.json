@@ -3,7 +3,7 @@
   "generated_at": "2026-09-16T03:14:42Z",
   "prediction_date": "2026-09-16",
   "row_count": 74,
-  "csv_sha256": "3d18c281df9bc00f5f81edc93b2ce35dd1a114cf31b43beff5531ae36400870c",
+  "csv_sha256": "d84af80900f34743252774bc58a8d520b43a0508a12e7ac855e4e0cc0e1268ce",
   "csv_path": "backend/data/forecasts/hazardnet_forecasts_latest.csv",
   "json_path": "backend/data/forecasts/hazardnet_forecasts_latest.json"
 }

@@ -2,6 +2,7 @@ import React from 'react';
 import MaterialIcon from '../MaterialIcon';
 import { FORECAST_HORIZONS, formatHorizonLabel, type ForecastHorizon } from '../../lib/forecasts';
 import type { HazardLayerDef } from './mapPrimitives';
+import { triggerHaptic } from '../../lib/haptics';
 
 export type MapViewMode = 'map' | 'table';
 
@@ -47,7 +48,10 @@ const ViewModeToggle: React.FC<{
     <button
       type="button"
       aria-pressed={viewMode === 'map'}
-      onClick={() => onViewModeChange('map')}
+      onClick={() => {
+        triggerHaptic('light');
+        onViewModeChange('map');
+      }}
       className={chip(viewMode === 'map')}
     >
       Map
@@ -55,7 +59,10 @@ const ViewModeToggle: React.FC<{
     <button
       type="button"
       aria-pressed={viewMode === 'table'}
-      onClick={() => onViewModeChange('table')}
+      onClick={() => {
+        triggerHaptic('light');
+        onViewModeChange('table');
+      }}
       className={chip(viewMode === 'table')}
     >
       Table
@@ -114,7 +121,10 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
           <ViewModeToggle viewMode={viewMode} onViewModeChange={onViewModeChange} />
           <button
             type="button"
-            onClick={() => onCollapsedChange(false)}
+            onClick={() => {
+              triggerHaptic('medium');
+              onCollapsedChange(false);
+            }}
             className="min-h-[44px] px-4 py-2 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 text-xs font-semibold touch-manipulation rounded-full transition-colors"
             title="Expand map controls and filters"
           >
@@ -146,7 +156,10 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
 
           <button
             type="button"
-            onClick={() => onHighContrastChange(!highContrast)}
+            onClick={() => {
+              triggerHaptic('medium');
+              onHighContrastChange(!highContrast);
+            }}
             aria-pressed={highContrast}
             className={`${chip(highContrast)} flex items-center gap-2`}
             title="Toggle high-contrast tiles"
@@ -157,7 +170,10 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
 
           <button
             type="button"
-            onClick={onExport}
+            onClick={() => {
+              triggerHaptic('heavy');
+              onExport();
+            }}
             disabled={exporting}
             className="min-h-[44px] px-4 py-2 bg-primary hover:bg-primary-strong text-ap-action-fg text-xs font-semibold flex items-center gap-2 touch-manipulation disabled:opacity-50 rounded-full transition-colors"
             title="Export visible map as an image"
@@ -168,7 +184,10 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
 
           <button
             type="button"
-            onClick={() => onCollapsedChange(true)}
+            onClick={() => {
+              triggerHaptic('medium');
+              onCollapsedChange(true);
+            }}
             className="min-h-[44px] px-4 py-2 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 text-xs font-semibold touch-manipulation rounded-full transition-colors"
             title="Collapse map controls"
           >
@@ -201,7 +220,10 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
             <button
               key={horizon}
               type="button"
-              onClick={() => onForecastHorizonChange(horizon)}
+              onClick={() => {
+                triggerHaptic('light');
+                onForecastHorizonChange(horizon);
+              }}
               aria-pressed={forecastHorizon === horizon}
               className={chip(forecastHorizon === horizon)}
             >
@@ -223,7 +245,10 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
         <div className="flex items-center gap-2 overflow-x-auto py-1 custom-scrollbar">
           <button
             type="button"
-            onClick={() => (allHazardsOn ? onClearHazards() : onSelectAllHazards())}
+            onClick={() => {
+              triggerHaptic('medium');
+              allHazardsOn ? onClearHazards() : onSelectAllHazards();
+            }}
             className={`min-h-[44px] px-3.5 py-2 rounded-full border text-xs font-semibold whitespace-nowrap touch-manipulation transition-colors ${
               allHazardsOn
                 ? 'bg-carbon-90 text-ap-on-inverse border-carbon-90'
@@ -238,7 +263,10 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
               <button
                 key={hazard.id}
                 type="button"
-                onClick={() => onToggleHazard(hazard.id)}
+                onClick={() => {
+                  triggerHaptic('light');
+                  onToggleHazard(hazard.id);
+                }}
                 aria-pressed={active}
                 className={`${chip(active)} flex items-center gap-2`}
               >

@@ -141,6 +141,8 @@ export default defineConfig(({ mode }) => {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       '@hazardnet/design-system': fileURLToPath(new URL('../packages/design-system/src/index.ts', import.meta.url)),
       '@hazardnet/core': fileURLToPath(new URL('../packages/core/src/index.ts', import.meta.url)),
+      '@hazardnet/analytics': fileURLToPath(new URL('../packages/analytics/src/index.ts', import.meta.url)),
+      '@hazardnet/api': fileURLToPath(new URL('../packages/api/src/index.ts', import.meta.url)),
     },
   },
   server: {

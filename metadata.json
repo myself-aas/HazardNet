@@ -1,0 +1,8 @@
+{
+  "name": "HazardNet",
+  "description": "Multi-Hazard AI Classification & Early Warning System for Bangladesh Agricultural Disaster Risk",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

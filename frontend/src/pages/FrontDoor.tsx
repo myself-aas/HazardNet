@@ -62,6 +62,7 @@ import { useReveal } from '../components/apple/motion';
 import { AlertLevelBadge } from '../components/alerts/AlertLevelBadge';
 import { LanguageToggle } from '../components/alerts/LanguageToggle';
 import LiveStatusStrip from '../components/frontdoor/LiveStatusStrip';
+import { AppleHazardsBento } from '../components/frontdoor/AppleHazardsBento';
 import CardStackTable from '../components/ui/CardStackTable';
 import HeroCinematicBackground from '../components/HeroCinematicBackground';
 import { localiseRoute, usePageSeo } from '../hooks/usePageSeo';
@@ -294,6 +295,7 @@ export const FrontDoor: React.FC = () => {
   // used to sit in is gone), clamped to two lines at every width with this disclosure — claim,
   // tagline and action come first, and the reader asks for the rest.
   const [standfirstOpen, setStandfirstOpen] = useState(false);
+  const [pipelineAuditOpen, setPipelineAuditOpen] = useState(false);
   // The evidence pointer under the action reads the same artifact the proof card does: one fact
   // from the run, pointing at the page that carries the card (/last-run).
   const coverageArtifact = freshness?.coverage ?? null;
@@ -752,24 +754,7 @@ export const FrontDoor: React.FC = () => {
         </div>
 
         <div>
-          <Eyebrow>{t('frontdoor.products.hazardsEyebrow')}</Eyebrow>
-          <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {(hazards as { slug: string; class: string; season: string }[]).map((hazard) => (
-              <Link
-                key={hazard.slug}
-                to={`/hazards/${hazard.slug}`}
-                className="group flex flex-col gap-1.5 border border-carbon-20 bg-white p-4 transition-colors hover:border-ap-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
-              >
-                <span className="flex items-center justify-between">
-                  <MaterialIcon name={hazardIcon(hazard.class)} className="text-xl text-ap-link" />
-                  <MaterialIcon name="arrow_forward" className="text-sm text-carbon-60 transition-colors group-hover:text-ap-link" />
-                </span>
-                <span className="text-sm font-bold text-carbon-90">{hazard.class}</span>
-                <span className="text-xs leading-relaxed text-carbon-60">{hazard.season}</span>
-              </Link>
-            ))}
-          </div>
-          <p className="mt-2 text-sm leading-[1.62] text-carbon-70">{t('frontdoor.products.hazardsNote')}</p>
+          <AppleHazardsBento hazards={hazards as any} />
         </div>
 
         <div>
