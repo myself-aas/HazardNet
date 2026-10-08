@@ -514,7 +514,7 @@ jobs:
 
       - name: Upload the probe result
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v6
         with:
           name: site-health-result
           path: |
