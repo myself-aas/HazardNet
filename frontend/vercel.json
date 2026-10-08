@@ -22,7 +22,7 @@
   ],
   "rewrites": [
     {
-      "source": "/((?!$|api/|assets/|_vercel/|data/|.*\\.[a-zA-Z0-9]+$).*)",
+      "source": "/((?!$|api/|assets/|_vercel/|data/|.well-known/|.*\\.[a-zA-Z0-9]+$).*)",
       "destination": "/404.html"
     }
   ],
@@ -90,6 +90,28 @@
     {
       "source": "/.well-known/(.*)",
       "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
+    },
+    {
+      "source": "/.well-known/api-catalog",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/linkset+json; profile=\"https://www.rfc-editor.org/info/rfc9727\""
+        }
+      ]
+    },
+    {
+      "source": "/api/openapi.yaml",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/yaml"
+        },
         {
           "key": "Cache-Control",
           "value": "public, max-age=86400"

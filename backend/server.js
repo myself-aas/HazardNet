@@ -109,6 +109,14 @@ app.use((req, res, next) => {
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self), payment=(), usb=()');
+  // RFC 9727: advertise the API catalog on every response so crawlers
+  // can discover it via the Link header without probing well-known paths.
+  if (!res.getHeader('Link')) {
+    res.setHeader(
+      'Link',
+      '<https://www.hazardnet.live/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"'
+    );
+  }
   next();
 });
 
@@ -125,6 +133,237 @@ app.get(['/.well-known/security.txt', '/security.txt'], (req, res) => {
     }
   }
   res.status(404).send('Not found');
+});
+
+// RFC 9727 API catalog — machine-readable discovery of the site's APIs.
+// Served at /.well-known/api-catalog as application/linkset+json.
+// Each linkset entry carries an anchor (the API's base URL) and link
+// relations: service-desc (OpenAPI spec), service-doc (human docs),
+// and status (health endpoint).
+const SITE_ORIGIN = 'https://www.hazardnet.live';
+
+app.get('/.well-known/api-catalog', (req, res) => {
+  const catalog = {
+    linkset: [
+      {
+        anchor: `${SITE_ORIGIN}/api/v1/forecasts`,
+        'service-desc': [
+          {
+            href: `${SITE_ORIGIN}/api/openapi.yaml`,
+            type: 'application/yaml',
+          },
+        ],
+        'service-doc': [
+          {
+            href: `${SITE_ORIGIN}/docs/data-and-api`,
+            type: 'text/html',
+          },
+        ],
+        status: [
+          {
+            href: `${SITE_ORIGIN}/health`,
+            type: 'application/json',
+          },
+        ],
+      },
+      {
+        anchor: `${SITE_ORIGIN}/api/v1/alerts`,
+        'service-desc': [
+          {
+            href: `${SITE_ORIGIN}/api/openapi.yaml`,
+            type: 'application/yaml',
+          },
+        ],
+        'service-doc': [
+          {
+            href: `${SITE_ORIGIN}/docs/alerts-and-advisories`,
+            type: 'text/html',
+          },
+        ],
+        status: [
+          {
+            href: `${SITE_ORIGIN}/health`,
+            type: 'application/json',
+          },
+        ],
+      },
+      {
+        anchor: `${SITE_ORIGIN}/api/v1/weather`,
+        'service-desc': [
+          {
+            href: `${SITE_ORIGIN}/api/openapi.yaml`,
+            type: 'application/yaml',
+          },
+        ],
+        'service-doc': [
+          {
+            href: `${SITE_ORIGIN}/docs/data-and-api`,
+            type: 'text/html',
+          },
+        ],
+        status: [
+          {
+            href: `${SITE_ORIGIN}/health`,
+            type: 'application/json',
+          },
+        ],
+      },
+      {
+        anchor: `${SITE_ORIGIN}/api/v1/historical`,
+        'service-desc': [
+          {
+            href: `${SITE_ORIGIN}/api/openapi.yaml`,
+            type: 'application/yaml',
+          },
+        ],
+        'service-doc': [
+          {
+            href: `${SITE_ORIGIN}/docs/archive`,
+            type: 'text/html',
+          },
+        ],
+        status: [
+          {
+            href: `${SITE_ORIGIN}/health`,
+            type: 'application/json',
+          },
+        ],
+      },
+      {
+        anchor: `${SITE_ORIGIN}/api/chat`,
+        'service-desc': [
+          {
+            href: `${SITE_ORIGIN}/api/openapi.yaml`,
+            type: 'application/yaml',
+          },
+        ],
+        'service-doc': [
+          {
+            href: `${SITE_ORIGIN}/docs/data-and-api`,
+            type: 'text/html',
+          },
+        ],
+        status: [
+          {
+            href: `${SITE_ORIGIN}/health`,
+            type: 'application/json',
+          },
+        ],
+      },
+      {
+        anchor: `${SITE_ORIGIN}/api/grounding`,
+        'service-desc': [
+          {
+            href: `${SITE_ORIGIN}/api/openapi.yaml`,
+            type: 'application/yaml',
+          },
+        ],
+        'service-doc': [
+          {
+            href: `${SITE_ORIGIN}/docs/data-and-api`,
+            type: 'text/html',
+          },
+        ],
+        status: [
+          {
+            href: `${SITE_ORIGIN}/health`,
+            type: 'application/json',
+          },
+        ],
+      },
+      {
+        anchor: `${SITE_ORIGIN}/api/predict`,
+        'service-desc': [
+          {
+            href: `${SITE_ORIGIN}/api/openapi.yaml`,
+            type: 'application/yaml',
+          },
+        ],
+        'service-doc': [
+          {
+            href: `${SITE_ORIGIN}/docs/forecasts`,
+            type: 'text/html',
+          },
+        ],
+        status: [
+          {
+            href: `${SITE_ORIGIN}/health`,
+            type: 'application/json',
+          },
+        ],
+      },
+      {
+        anchor: `${SITE_ORIGIN}/api/push`,
+        'service-desc': [
+          {
+            href: `${SITE_ORIGIN}/api/openapi.yaml`,
+            type: 'application/yaml',
+          },
+        ],
+        'service-doc': [
+          {
+            href: `${SITE_ORIGIN}/docs/data-and-api`,
+            type: 'text/html',
+          },
+        ],
+        status: [
+          {
+            href: `${SITE_ORIGIN}/health`,
+            type: 'application/json',
+          },
+        ],
+      },
+      {
+        anchor: `${SITE_ORIGIN}/api/conversions`,
+        'service-desc': [
+          {
+            href: `${SITE_ORIGIN}/api/openapi.yaml`,
+            type: 'application/yaml',
+          },
+        ],
+        'service-doc': [
+          {
+            href: `${SITE_ORIGIN}/docs/data-and-api`,
+            type: 'text/html',
+          },
+        ],
+        status: [
+          {
+            href: `${SITE_ORIGIN}/health`,
+            type: 'application/json',
+          },
+        ],
+      },
+      {
+        anchor: `${SITE_ORIGIN}/api/live-voice`,
+        'service-desc': [
+          {
+            href: `${SITE_ORIGIN}/api/openapi.yaml`,
+            type: 'application/yaml',
+          },
+        ],
+        'service-doc': [
+          {
+            href: `${SITE_ORIGIN}/docs/data-and-api`,
+            type: 'text/html',
+          },
+        ],
+        status: [
+          {
+            href: `${SITE_ORIGIN}/health`,
+            type: 'application/json',
+          },
+        ],
+      },
+    ],
+  };
+
+  res.setHeader(
+    'Content-Type',
+    'application/linkset+json; profile="https://www.rfc-editor.org/info/rfc9727"'
+  );
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  res.status(200).json(catalog);
 });
 
 // Health Check
