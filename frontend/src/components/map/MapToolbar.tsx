@@ -247,7 +247,8 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
             type="button"
             onClick={() => {
               triggerHaptic('medium');
-              allHazardsOn ? onClearHazards() : onSelectAllHazards();
+              if (allHazardsOn) onClearHazards();
+              else onSelectAllHazards();
             }}
             className={`min-h-[44px] px-3.5 py-2 rounded-full border text-xs font-semibold whitespace-nowrap touch-manipulation transition-colors ${
               allHazardsOn
