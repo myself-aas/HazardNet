@@ -259,6 +259,126 @@ app.get('/.well-known/openid-configuration', (req, res) => {
   });
 });
 
+// A2A Protocol Agent Card — machine-readable discovery of agent capabilities.
+// Served at /.well-known/agent-card.json per the A2A specification.
+// https://a2a-protocol.org/latest/specification/
+app.get('/.well-known/agent-card.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  res.status(200).json({
+    name: 'HazardNet',
+    description: 'Multi-Hazard Early Warning AI agent for Bangladesh agriculture. Publishes 7- and 15-day outlooks for 8 climate hazards across 64 districts with dual-track severity scoring, independent physics cross-checks, and full provenance for every number.',
+    url: SITE_ORIGIN,
+    version: '3.2.0',
+    documentationUrl: `${SITE_ORIGIN}/docs`,
+    iconUrl: `${SITE_ORIGIN}/hazardnet-mark.svg`,
+    provider: {
+      organization: 'HazardNet',
+      url: `${SITE_ORIGIN}/about`,
+    },
+    capabilities: {
+      streaming: false,
+      pushNotifications: true,
+      extensions: [],
+    },
+    defaultInputModes: ['text/plain', 'application/json'],
+    defaultOutputModes: ['text/plain', 'application/json'],
+    supportedInterfaces: [
+      {
+        url: `${SITE_ORIGIN}/api`,
+        protocolBinding: 'HTTP+JSON',
+        protocolVersion: '1.0',
+      },
+    ],
+    securitySchemes: {
+      bearerAuth: {
+        httpAuthSecurityScheme: {
+          scheme: 'Bearer',
+          bearerFormat: 'JWT',
+          description: 'Firebase ID token (JWT) for authenticated endpoints. Obtain via Firebase Auth sign-in.',
+        },
+      },
+      apiKeyAuth: {
+        apiKeySecurityScheme: {
+          name: 'X-API-Key',
+          location: 'header',
+          description: 'Pre-shared API key for server-to-server write endpoints. Contact contact@hazardnet.live.',
+        },
+      },
+      anonymous: {
+        httpAuthSecurityScheme: {
+          scheme: 'none',
+          description: 'No authentication required for public read endpoints.',
+        },
+      },
+    },
+    securityRequirements: [
+      {},
+      { bearerAuth: [] },
+      { apiKeyAuth: [] },
+    ],
+    skills: [
+      {
+        id: 'hazard-forecast',
+        name: 'Multi-Hazard Forecast',
+        description: 'Retrieve 7- and 15-day hazard outlooks for Bangladesh\'s 64 districts across 8 hazard classes with severity index, confidence bin, and physics cross-check.',
+        tags: ['forecast', 'hazard', 'bangladesh', 'agriculture', 'early-warning'],
+        examples: [
+          'What is the flood outlook for Dhaka district for the next 7 days?',
+          'Which districts have cyclone warnings this fortnight?',
+        ],
+        inputModes: ['text/plain', 'application/json'],
+        outputModes: ['application/json'],
+      },
+      {
+        id: 'weather-observations',
+        name: 'Weather Observations',
+        description: 'Fetch current weather observations for any location in Bangladesh from Open-Meteo.',
+        tags: ['weather', 'observations', 'temperature', 'precipitation'],
+        examples: ['What is the current weather at coordinates 23.8103, 90.4125?'],
+        inputModes: ['text/plain', 'application/json'],
+        outputModes: ['application/json'],
+      },
+      {
+        id: 'alert-monitoring',
+        name: 'Hazard Alert Monitoring',
+        description: 'Monitor published hazard alerts with evidence, drivers, policy version, and review status.',
+        tags: ['alerts', 'monitoring', 'hazard', 'emergency'],
+        examples: ['What alerts are currently published?', 'Show me all active flood alerts'],
+        inputModes: ['text/plain'],
+        outputModes: ['application/json'],
+      },
+      {
+        id: 'historical-catalog',
+        name: 'Historical Hazard Catalog',
+        description: 'Query the historical climatic hazard catalog for Bangladesh across all eight hazard classes.',
+        tags: ['historical', 'catalog', 'archive', 'past-events'],
+        examples: ['Show me the historical flood events for Kurigram district'],
+        inputModes: ['text/plain'],
+        outputModes: ['application/json'],
+      },
+      {
+        id: 'ai-advisory-chat',
+        name: 'AI Advisory Chat',
+        description: 'Conversational AI advisory for Bangladesh hazard assessment with grounded responses and artifact references.',
+        tags: ['chat', 'ai', 'advisory', 'conversational'],
+        examples: ['What should farmers in Bogra do given the current flood outlook?'],
+        inputModes: ['text/plain'],
+        outputModes: ['text/plain', 'application/json'],
+      },
+      {
+        id: 'unit-conversions',
+        name: 'Hazard Unit Conversions',
+        description: 'Convert between measurement units relevant to hazard assessment (temperature, precipitation, wind speed, pressure).',
+        tags: ['conversions', 'units', 'temperature', 'precipitation'],
+        examples: ['Convert 300mm precipitation to inches'],
+        inputModes: ['text/plain', 'application/json'],
+        outputModes: ['application/json'],
+      },
+    ],
+  });
+});
+
 app.get('/.well-known/api-catalog', (req, res) => {
   const catalog = {
     linkset: [
