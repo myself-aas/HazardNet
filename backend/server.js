@@ -142,6 +142,67 @@ app.get(['/.well-known/security.txt', '/security.txt'], (req, res) => {
 // and status (health endpoint).
 const SITE_ORIGIN = 'https://www.hazardnet.live';
 
+// RFC 9727: OAuth Protected Resource Metadata.
+// Advertises the resource server and its authorization servers.
+app.get('/.well-known/oauth-protected-resource', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  res.status(200).json({
+    resource: SITE_ORIGIN,
+    authorization_servers: [SITE_ORIGIN],
+    scopes_supported: [
+      'read:forecasts', 'read:alerts', 'read:weather', 'read:historical',
+      'read:predictions', 'write:forecasts', 'write:push', 'chat', 'grounding',
+    ],
+    bearer_methods_supported: ['header'],
+    resource_documentation: `${SITE_ORIGIN}/docs`,
+    resource_policy_uri: `${SITE_ORIGIN}/terms`,
+    resource_tos_uri: `${SITE_ORIGIN}/terms`,
+  });
+});
+
+// OAuth Authorization Server Metadata (RFC 8414).
+// Advertises the authorization capabilities of this resource server.
+// The issuer matches the authorization_servers URL in the PRM.
+app.get('/.well-known/oauth-authorization-server', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  res.status(200).json({
+    issuer: SITE_ORIGIN,
+    authorization_endpoint: `${SITE_ORIGIN}/signup`,
+    token_endpoint: 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBwyxWm0MIQlTmjJ-NKPKjl72AYLS7oDqQ',
+    registration_endpoint: 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBwyxWm0MIQlTmjJ-NKPKjl72AYLS7oDqQ',
+    jwks_uri: 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com',
+    scopes_supported: [
+      'read:forecasts', 'read:alerts', 'read:weather', 'read:historical',
+      'read:predictions', 'write:forecasts', 'write:push', 'chat', 'grounding',
+    ],
+    response_types_supported: ['id_token'],
+    grant_types_supported: ['password', 'refresh_token'],
+    token_endpoint_auth_methods_supported: ['client_secret_post', 'none'],
+    bearer_methods_supported: ['header'],
+    identity_types_supported: ['identity_assertion', 'anonymous'],
+    identity_assertion: {
+      assertion_types_supported: [
+        'urn:ietf:params:oauth:token-type:id-jag',
+        'verified_email',
+      ],
+      credential_types_supported: ['jwt'],
+    },
+    anonymous: {
+      credential_types_supported: ['none'],
+      claim_uri: `${SITE_ORIGIN}/api`,
+    },
+    revocation_uri: 'https://identitytoolkit.googleapis.com/v1/accounts:delete?key=AIzaSyBwyxWm0MIQlTmjJ-NKPKjl72AYLS7oDqQ',
+    events_supported: [
+      'https://schemas.openid.net/secevent/risc/event-type/account-purged',
+      'https://schemas.openid.net/secevent/risc/event-type/account-disabled',
+    ],
+    service_documentation: `${SITE_ORIGIN}/docs`,
+    ui_locales_supported: ['en', 'bn'],
+  });
+});
+
 app.get('/.well-known/api-catalog', (req, res) => {
   const catalog = {
     linkset: [

@@ -1,0 +1,61 @@
+{
+  "issuer": "https://www.hazardnet.live",
+  "authorization_endpoint": "https://www.hazardnet.live/signup",
+  "token_endpoint": "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyBwyxWm0MIQlTmjJ-NKPKjl72AYLS7oDqQ",
+  "registration_endpoint": "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBwyxWm0MIQlTmjJ-NKPKjl72AYLS7oDqQ",
+  "jwks_uri": "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com",
+  "scopes_supported": [
+    "read:forecasts",
+    "read:alerts",
+    "read:weather",
+    "read:historical",
+    "read:predictions",
+    "write:forecasts",
+    "write:push",
+    "chat",
+    "grounding"
+  ],
+  "response_types_supported": [
+    "id_token"
+  ],
+  "grant_types_supported": [
+    "password",
+    "refresh_token"
+  ],
+  "token_endpoint_auth_methods_supported": [
+    "client_secret_post",
+    "none"
+  ],
+  "bearer_methods_supported": [
+    "header"
+  ],
+  "identity_types_supported": [
+    "identity_assertion",
+    "anonymous"
+  ],
+  "identity_assertion": {
+    "assertion_types_supported": [
+      "urn:ietf:params:oauth:token-type:id-jag",
+      "verified_email"
+    ],
+    "credential_types_supported": [
+      "jwt"
+    ]
+  },
+  "anonymous": {
+    "credential_types_supported": [
+      "none"
+    ],
+    "claim_uri": "https://www.hazardnet.live/api"
+  },
+  "revocation_uri": "https://identitytoolkit.googleapis.com/v1/accounts:delete?key=AIzaSyBwyxWm0MIQlTmjJ-NKPKjl72AYLS7oDqQ",
+  "events_supported": [
+    "https://schemas.openid.net/secevent/risc/event-type/account-purged",
+    "https://schemas.openid.net/secevent/risc/event-type/account-disabled"
+  ],
+  "service_documentation": "https://www.hazardnet.live/docs",
+  "ui_locales_supported": [
+    "en",
+    "bn"
+  ]
+}
