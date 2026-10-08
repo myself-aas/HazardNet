@@ -292,9 +292,9 @@ describe('the theme reaches every colour in the product', () => {
   });
 
   test('apple.css is imported by index.css, before anything that consumes its tokens', () => {
-    const appleAt = indexCss.indexOf('@import "./styles/apple.css"');
+    const appleAt = indexCss.search(/@import\s+['"]\.\/styles\/apple\.css['"]/);
     expect(appleAt).toBeGreaterThan(-1);
-    const heroAt = indexCss.indexOf('@import "./styles/hero-media.css"');
+    const heroAt = indexCss.search(/@import\s+['"]\.\/styles\/hero-media\.css['"]/);
     expect(appleAt).toBeLessThan(heroAt);
   });
 
