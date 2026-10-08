@@ -94,37 +94,37 @@ function nativeRole(name: keyof typeof APPLE_NATIVE_TYPE.scale, sizeOverride?: n
 
 /** Native role names mapped onto the canonical Apple scale. */
 export const NATIVE_TYPE_ROLE_MAP = {
-  displayLarge: 'displayMd',
-  displaySmall: 'lead',
-  title1: 'lead',
-  title2: 'tagline',
-  title3: 'bodyStrong',
-  body: 'body',
-  bodyBold: 'bodyStrong',
-  callout: 'body',
-  subhead: 'captionStrong',
-  caption: 'caption',
-  metadata: 'finePrint',
+  displayLarge: 'headlineXlMobile',
+  displaySmall: 'headlineLg',
+  title1: 'headlineLg',
+  title2: 'headlineMd',
+  title3: 'headlineSm',
+  body: 'bodyMd',
+  bodyBold: 'headlineSm',
+  callout: 'bodyMd',
+  subhead: 'labelMd',
+  caption: 'bodySm',
+  metadata: 'labelSm',
   /** The mono readout is caption-sized; only the family differs. */
-  mono: 'caption',
+  mono: 'bodySm',
 } as const;
 
 export const TYPE_ROLES = {
-  displayLarge: nativeRole('displayMd'),
-  displaySmall: nativeRole('lead'),
-  title1: nativeRole('lead'),
-  title2: nativeRole('tagline'),
-  title3: nativeRole('bodyStrong'),
-  body: nativeRole('body'),
-  bodyBold: nativeRole('bodyStrong'),
-  callout: nativeRole('body'),
-  subhead: nativeRole('captionStrong'),
-  caption: nativeRole('caption'),
-  metadata: nativeRole('finePrint'),
+  displayLarge: nativeRole('headlineXlMobile'),
+  displaySmall: nativeRole('headlineLg'),
+  title1: nativeRole('headlineLg'),
+  title2: nativeRole('headlineMd'),
+  title3: nativeRole('headlineSm'),
+  body: nativeRole('bodyMd'),
+  bodyBold: nativeRole('headlineSm'),
+  callout: nativeRole('bodyMd'),
+  subhead: nativeRole('labelMd'),
+  caption: nativeRole('bodySm'),
+  metadata: nativeRole('labelSm'),
   // Resolved from the Apple scale like every other role — the mono *family* is
   // applied by the Text component; the metrics stay on-scale so a mono figure
   // and the caption beside it sit on the same baseline.
-  mono: nativeRole('caption'),
+  mono: nativeRole('bodySm'),
 } as const;
 
 export const SEVERITY_EDGE_WIDTH = 3;

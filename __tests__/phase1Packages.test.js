@@ -26,23 +26,23 @@ describe('Phase 1 Workspace Decoupling — @hazardnet/design-system', () => {
     expect(APPLE.colors.primary).toBe('#0066cc');
     expect(APPLE.colors.primaryOnDark).toBe('#2997ff');
     // Body copy is 17px in this system, not 16.
-    expect(APPLE.type.body.size).toBe(17);
-    // The weight ladder omits 500 on purpose.
-    expect(Object.values(APPLE.weights)).toEqual([300, 400, 600, 700]);
+    expect(APPLE.type.bodyMd.size).toBe(17);
+    // The spec's ladder: 400 body, 500 labels, 600 headlines, 700 display.
+    expect(Object.values(APPLE.weights)).toEqual([400, 500, 600, 700]);
     // Exactly one shadow, and it is not for UI.
     expect(APPLE.elevation.flat).toBe('none');
     expect(APPLE.elevation.product).toContain('30px');
     // Full-bleed tiles have no corner radius; the colour change is the divider.
     expect(APPLE.radii.none).toBe(0);
-    expect(APPLE.space.section).toBe(80);
+    expect(APPLE.space.section).toBe(96);
   });
 
   it('exports the dark theme, built from Apple\'s own dark tiles', () => {
-    // DESIGN.md lists dark mode under Known Gaps, so the theme is derived rather than
-    // invented: tile-3 is the canvas, tile-1 grouped, tile-2 raised.
-    expect(APPLE.dark.canvas).toBe('#252527');
-    expect(APPLE.dark.grouped).toBe('#272729');
-    expect(APPLE.dark.raised).toBe('#2a2a2c');
+    // The spec's dark canvas is OLED black; cards step up through Apple's tiles:
+    // tile-1 grouped, tile-2 raised.
+    expect(APPLE.dark.canvas).toBe('#000000');
+    expect(APPLE.dark.grouped).toBe('#161617');
+    expect(APPLE.dark.raised).toBe('#1c1c1e');
     // Action Blue measures 2.68:1 on tile-1 and must never be the dark-surface accent.
     expect(APPLE.dark.action).toBe('#2997ff');
   });
@@ -60,12 +60,12 @@ describe('Phase 1 Workspace Decoupling — @hazardnet/design-system', () => {
   });
 
   it('exports two density tracks cut from the same scale', () => {
-    // Same system at two volumes: the editorial surfaces keep the 80px tile rhythm,
-    // the operational console takes a tighter step off the same spacing scale.
-    expect(APPLE.track.editorial.sectionBlock).toBe(80);
-    expect(APPLE.track.console.sectionBlock).toBe(32);
+    // Same system at two volumes: the editorial surfaces keep the 96px section rhythm,
+    // the operational console takes the 40px xl step off the same spacing scale.
+    expect(APPLE.track.editorial.sectionBlock).toBe(96);
+    expect(APPLE.track.console.sectionBlock).toBe(40);
     expect(APPLE.track.editorial.maxWidth).toBe(980);
-    expect(APPLE.track.console.maxWidth).toBe(1440);
+    expect(APPLE.track.console.maxWidth).toBe(1280);
   });
 
   it('resolves the same system into React Native units for mobile and Windows', () => {
@@ -75,8 +75,8 @@ describe('Phase 1 Workspace Decoupling — @hazardnet/design-system', () => {
     // control takes the stricter number.
     expect(APPLE_NATIVE_TOUCH.min).toBe(48);
     expect(APPLE_NATIVE_TOUCH.appleMin).toBe(44);
-    // The sheet corner is Apple's 18, not Material 3's 28.
-    expect(APPLE_NATIVE_RADIUS.sheet).toBe(18);
+    // The sheet corner is the spec's xl radius (24), the same on web and native, not Material 3's 28.
+    expect(APPLE_NATIVE_RADIUS.sheet).toBe(24);
   });
 
   it('maps severity scores onto the Apple severity set', () => {

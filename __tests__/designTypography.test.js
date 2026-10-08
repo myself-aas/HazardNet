@@ -258,7 +258,8 @@ describe('leading on type we author', () => {
  * of scope (they are measured in points and printed on paper).
  */
 describe('typography floor', () => {
-  const TYPE_FLOOR_PX = 12;
+  // Cupertino Precision's caption role is 11px (DESIGN.md §Typography), so the floor is 11.
+  const TYPE_FLOOR_PX = 11;
   const EXCLUDED_DIRS = new Set(['__tests__', 'node_modules']);
 
   const walk = (dir) => {

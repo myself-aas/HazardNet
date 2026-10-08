@@ -72,8 +72,8 @@
   box-shadow: var(--ap-elev-hairline);
   color: var(--ap-label);
   font-family: var(--ap-font-text);
-  font-size: var(--ap-text-caption);
-  line-height: var(--ap-leading-caption);
+  font-size: var(--ap-type-body-sm-size);
+  line-height: var(--ap-type-body-sm-line);
   padding: 4px 8px;
 }
 .leaflet-tooltip-top::before { border-top-color: var(--ap-separator-opaque); }

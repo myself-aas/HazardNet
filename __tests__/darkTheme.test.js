@@ -133,8 +133,9 @@ describe('the dark theme is declared, and declared twice', () => {
   });
 
   test('the dark surfaces are Apple tiles, not an invented grey', () => {
-    // The whole point: dark mode is Apple's own documented dark palette.
-    expect(explicitDecls.get('--ap-bg-canvas')).toBe('var(--ap-tile-3)');
+    // The whole point: dark mode is Apple's own documented dark palette. The spec's canvas
+    // is OLED black; cards step up through the tiles.
+    expect(explicitDecls.get('--ap-bg-canvas')).toBe('var(--ap-black)');
     expect(explicitDecls.get('--ap-bg-grouped')).toBe('var(--ap-tile-1)');
     expect(explicitDecls.get('--ap-bg-raised')).toBe('var(--ap-tile-2)');
   });
@@ -157,11 +158,15 @@ describe('the single-accent rule survives the theme switch', () => {
   });
 
   test('the dark theme introduces no second accent', () => {
-    // Every colour the dark scope sets is either a var() reference, a neutral/tile value,
-    // a severity value, or a transparency. A new saturated hue here would be a second accent.
+    // Every colour the dark scope sets is either a var() reference, a spec neutral or tile,
+    // a spec status tint, a severity value, or a transparency. Any other hue would be a second accent.
     const ALLOWED_LITERALS = new Set([
       '#ffffff', '#cccccc', '#9a9a9f', '#6e6e73', '#3a3a3c', '#48484a',
-      '#252527', '#272729', '#2a2a2c', '#000000', '#e4e4e6', '#f2f2f4',
+      '#000000', '#e4e4e6', '#f2f2f4',
+      // spec dark neutral ramp: labels, separators, the segment fill, and the n-* steps
+      '#f5f5f7', '#a1a1a6', '#86868b', '#424245', '#2c2c2e', '#1c1c1e', '#242426',
+      // spec dark status tints (Apple's dark variants of the light tints). Semantic states, not chrome.
+      '#30d158', '#ff9f0a', '#ff453a', '#bf5af2',
       // severity, on dark
       '#4ad66d', '#f5b73d', '#ff8a5b', '#ff6b60', '#ff7eb6',
       '#10301c', '#33260a', '#3a1d10', '#3a1512', '#351022',

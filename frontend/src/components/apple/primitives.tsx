@@ -341,7 +341,7 @@ export interface PillTabsProps {
  * A segmented control. Arrow-key navigable and wired as a real tablist, because a row of buttons
  * that behaves like tabs but does not announce like tabs fails every keyboard user.
  *
- * Selection is a 2px Action Blue border, not a fill: DESIGN.md's own chip pattern.
+ * Spec §Segmented Controls: a pill track with one elevated thumb that slides to the selected segment.
  */
 export function PillTabs({ tabs, value, onChange, ariaLabel, className }: PillTabsProps) {
   const activeIndex = Math.max(
@@ -362,7 +362,14 @@ export function PillTabs({ tabs, value, onChange, ariaLabel, className }: PillTa
   };
 
   return (
-    <div role="tablist" aria-label={ariaLabel} className={cx('flex flex-wrap gap-2', className)} onKeyDown={onKeyDown}>
+    <div
+      role="tablist"
+      aria-label={ariaLabel}
+      className={cx('ap-segmented max-w-full overflow-x-auto', className)}
+      style={{ '--ap-segments': Math.max(1, tabs.length), '--ap-segment-index': activeIndex } as React.CSSProperties}
+      onKeyDown={onKeyDown}
+    >
+      <span aria-hidden="true" className="ap-segment-thumb" />
       {tabs.map((tab) => {
         const selected = tab.id === value;
         return (
@@ -373,7 +380,7 @@ export function PillTabs({ tabs, value, onChange, ariaLabel, className }: PillTa
             aria-selected={selected}
             tabIndex={selected ? 0 : -1}
             onClick={() => onChange(tab.id)}
-            className="ap-chip"
+            className="ap-segment"
             data-selected={selected ? 'true' : 'false'}
           >
             {tab.label}

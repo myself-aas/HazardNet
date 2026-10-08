@@ -513,7 +513,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.92, y: 15 }}
               transition={AP_SPRING}
-              className="bg-white border border-carbon-20 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden relative text-carbon-90"
+              className="bg-ap-elevated border border-carbon-20 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden relative text-carbon-90"
               onClick={(e) => e.stopPropagation()}
             >
           {/* Top Header & Close Button */}
@@ -626,7 +626,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           role="dialog"
           aria-modal="true"
           aria-labelledby="disaster-detail-modal-title-mobile"
-          className={`w-full bg-white border-t border-carbon-20 rounded-t-xl shadow-2xl flex flex-col pointer-events-auto transition-all duration-300 relative z-10 text-carbon-80 overflow-hidden ${
+          className={`w-full bg-ap-elevated border-t border-carbon-20 rounded-t-xl shadow-2xl flex flex-col pointer-events-auto transition-all duration-300 relative z-10 text-carbon-80 overflow-hidden ${
             sheetMode === 'peek'
               ? 'max-h-[160px]'
               : sheetMode === 'half'

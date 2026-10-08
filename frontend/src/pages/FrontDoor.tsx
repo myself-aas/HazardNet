@@ -189,8 +189,8 @@ const Figure: React.FC<{ value: string; label: string; tone?: 'default' | 'muted
     <p
       className={`ap-display-md ap-mono ${
         tone === 'muted'
-          ? 'text-[length:var(--ap-text-tagline)] text-[color:var(--ap-label-secondary)]'
-          : 'text-[length:var(--ap-text-display-lg)] text-[color:var(--ap-label)]'
+          ? 'text-[length:var(--ap-type-headline-md-size)] text-[color:var(--ap-label-secondary)]'
+          : 'text-[length:var(--ap-type-headline-xl-size)] text-[color:var(--ap-label)]'
       }`}
     >
       {value}

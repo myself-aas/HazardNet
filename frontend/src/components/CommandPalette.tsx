@@ -429,7 +429,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.94, y: -12 }}
                 transition={AP_SPRING}
-                className="max-w-2xl w-full bg-white border border-carbon-20 rounded-3xl shadow-2xl overflow-hidden text-carbon-90 flex flex-col max-h-[85vh]"
+                className="max-w-2xl w-full bg-ap-elevated border border-carbon-20 rounded-3xl shadow-2xl overflow-hidden text-carbon-90 flex flex-col max-h-[85vh]"
               >
                 {/* Header / Search Input */}
                 <div className="relative flex items-center px-4 py-3 border-b border-carbon-20 bg-carbon-05">

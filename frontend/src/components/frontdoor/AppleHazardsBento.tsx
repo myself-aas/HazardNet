@@ -421,7 +421,7 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
           className="group flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-ap-canvas border border-black/[0.08] dark:border-white/[0.1] shadow-2xs hover:shadow-md hover:border-black/20 dark:hover:border-white/25 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 min-h-[56px]"
         >
           <div className="flex items-center gap-3 min-w-0">
-            <div className="relative w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-amber-500/10 text-amber-600 dark:text-amber-400 group-hover:scale-105 transition-transform">
+            <div className="relative w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-ap-link/10 text-ap-label group-hover:scale-105 transition-transform">
               <MaterialIcon name="notifications_active" className="text-xl" />
             </div>
             <div className="min-w-0">
@@ -444,7 +444,7 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
           className="group flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-ap-canvas border border-black/[0.08] dark:border-white/[0.1] shadow-2xs hover:shadow-md hover:border-black/20 dark:hover:border-white/25 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 min-h-[56px]"
         >
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-red-500/10 text-red-600 dark:text-red-400 group-hover:scale-105 transition-transform">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-ap-link/10 text-ap-label group-hover:scale-105 transition-transform">
               <MaterialIcon name="campaign" className="text-xl" />
             </div>
             <div className="min-w-0">
@@ -467,7 +467,7 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
           className="group flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-ap-canvas border border-black/[0.08] dark:border-white/[0.1] shadow-2xs hover:shadow-md hover:border-black/20 dark:hover:border-white/25 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 min-h-[56px]"
         >
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-sky-500/10 text-sky-600 dark:text-sky-400 group-hover:scale-105 transition-transform">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-ap-link/10 text-ap-label group-hover:scale-105 transition-transform">
               <MaterialIcon name="dashboard_customize" className="text-xl" />
             </div>
             <div className="min-w-0">
@@ -490,7 +490,7 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
           className="group flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-ap-canvas border border-black/[0.08] dark:border-white/[0.1] shadow-2xs hover:shadow-md hover:border-black/20 dark:hover:border-white/25 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 min-h-[56px]"
         >
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:scale-105 transition-transform">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-ap-link/10 text-ap-label group-hover:scale-105 transition-transform">
               <MaterialIcon name="satellite_alt" className="text-xl" />
             </div>
             <div className="min-w-0">
@@ -521,8 +521,8 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
             const pal = hazardPalette(hazard.class);
             // Accent per theme: light cards read `text` in light mode and `onDark` in dark mode.
             const hazardVars = {
-              '--hz': config.isDark ? pal.onDark : pal.text,
-              '--hz-dark': pal.onDark,
+              '--ap-hazard-accent': config.isDark ? pal.onDark : pal.text,
+              '--ap-hazard-accent-dark': pal.onDark,
             } as React.CSSProperties;
             const kicker = language === 'bn' ? config.kickerBn : config.kickerEn;
             const tagline = language === 'bn' ? config.taglineBn : (hazard.summary || config.taglineEn);
@@ -543,13 +543,13 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
               >
                 {/* Background ambient radial glow */}
                 <div
-                  className="absolute -top-12 -right-12 w-48 h-48 rounded-full blur-3xl pointer-events-none opacity-40 transition-opacity group-hover:opacity-60 bg-[color:var(--hz)] dark:bg-[color:var(--hz-dark)]"
+                  className="absolute -top-12 -right-12 w-48 h-48 rounded-full blur-3xl pointer-events-none opacity-40 transition-opacity group-hover:opacity-60 bg-[color:var(--ap-hazard-accent)] dark:bg-[color:var(--ap-hazard-accent-dark)]"
                 />
 
                 {/* Top Section: Kicker, Title, Description */}
                 <div className="relative z-10">
                   <span
-                    className="text-xs font-semibold uppercase tracking-wider block mb-1.5 text-[color:var(--hz)] dark:text-[color:var(--hz-dark)]"
+                    className="text-xs font-semibold uppercase tracking-wider block mb-1.5 text-[color:var(--ap-hazard-accent)] dark:text-[color:var(--ap-hazard-accent-dark)]"
                   >
                     {kicker}
                   </span>
@@ -558,7 +558,7 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
                       {hazard.class}
                     </h3>
                     <span
-                      className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-[color:var(--hz)] dark:text-[color:var(--hz-dark)]"
+                      className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-[color:var(--ap-hazard-accent)] dark:text-[color:var(--ap-hazard-accent-dark)]"
                       style={{
                         backgroundColor: config.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
                       }}
@@ -579,7 +579,7 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
                 </div>
 
                 {/* Middle: Signature Hero Visual Motif */}
-                <div className="my-auto py-2 flex items-center justify-center relative z-10 text-[color:var(--hz)] dark:text-[color:var(--hz-dark)]">
+                <div className="my-auto py-2 flex items-center justify-center relative z-10 text-[color:var(--ap-hazard-accent)] dark:text-[color:var(--ap-hazard-accent-dark)]">
                   {config.renderVisual()}
                 </div>
 
@@ -621,8 +621,8 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
             const pal = hazardPalette(hazard.class);
             // Accent per theme: light cards read `text` in light mode and `onDark` in dark mode.
             const hazardVars = {
-              '--hz': config.isDark ? pal.onDark : pal.text,
-              '--hz-dark': pal.onDark,
+              '--ap-hazard-accent': config.isDark ? pal.onDark : pal.text,
+              '--ap-hazard-accent-dark': pal.onDark,
             } as React.CSSProperties;
             const kicker = language === 'bn' ? config.kickerBn : config.kickerEn;
             const tagline = language === 'bn' ? config.taglineBn : (hazard.summary || config.taglineEn);
@@ -646,13 +646,13 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
               >
                 {/* Background ambient radial glow */}
                 <div
-                  className="absolute -top-12 -right-12 w-48 h-48 rounded-full blur-3xl pointer-events-none opacity-40 transition-opacity group-hover:opacity-60 bg-[color:var(--hz)] dark:bg-[color:var(--hz-dark)]"
+                  className="absolute -top-12 -right-12 w-48 h-48 rounded-full blur-3xl pointer-events-none opacity-40 transition-opacity group-hover:opacity-60 bg-[color:var(--ap-hazard-accent)] dark:bg-[color:var(--ap-hazard-accent-dark)]"
                 />
 
                 {/* Top Section */}
                 <div className="relative z-10">
                   <span
-                    className="text-xs font-semibold uppercase tracking-wider block mb-1.5 text-[color:var(--hz)] dark:text-[color:var(--hz-dark)]"
+                    className="text-xs font-semibold uppercase tracking-wider block mb-1.5 text-[color:var(--ap-hazard-accent)] dark:text-[color:var(--ap-hazard-accent-dark)]"
                   >
                     {kicker}
                   </span>
@@ -661,7 +661,7 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
                       {hazard.class}
                     </h3>
                     <span
-                      className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-[color:var(--hz)] dark:text-[color:var(--hz-dark)]"
+                      className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-[color:var(--ap-hazard-accent)] dark:text-[color:var(--ap-hazard-accent-dark)]"
                       style={{
                         backgroundColor: config.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
                       }}
@@ -682,7 +682,7 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
                 </div>
 
                 {/* Middle: Signature Hero Visual Motif */}
-                <div className="my-auto py-2 flex items-center justify-center relative z-10 text-[color:var(--hz)] dark:text-[color:var(--hz-dark)]">
+                <div className="my-auto py-2 flex items-center justify-center relative z-10 text-[color:var(--ap-hazard-accent)] dark:text-[color:var(--ap-hazard-accent-dark)]">
                   {config.renderVisual()}
                 </div>
 
