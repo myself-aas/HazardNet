@@ -212,9 +212,9 @@ function announceTheme(theme: ResolvedTheme) {
  * Apple's system colours adapt automatically; on the web that adaptation is this hook.
  * 'system' follows the OS and follows it live if the OS changes.
  *
- * DESIGN.md leaves dark mode under Known Gaps, so `styles/apple.css` §5 builds it from Apple's
- * own dark tiles (#252527 canvas / #272729 grouped / #2a2a2c raised) and switches links to Sky
- * Link Blue — one Apple language at two luminances, not a second design system.
+ * DESIGN.md (Cupertino Precision) defines the dark appearance: an OLED canvas, cards and inner
+ * containers stepping up from it, and the blue tint lifted to Sky Link Blue. `styles/apple.css` §5
+ * builds those tiers; this hook only chooses which appearance applies.
  *
  * The default is 'system' - the answer the migration always wanted, and the
  * one P0-1 of the 2026-10-03 audit said could not be shipped until dark was complete. It was

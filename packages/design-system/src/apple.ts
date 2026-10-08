@@ -1,23 +1,19 @@
 /**
- * HazardNet — Apple design system (canonical token source).
+ * HazardNet — Cupertino Precision (canonical token source).
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * PROVENANCE
  * ─────────────────────────────────────────────────────────────────────────────
- * Generated from `DESIGN.md` (getdesign `apple` profile, `npx getdesign@latest
- * add apple`, v0.6.25). Every value in the PRIMITIVES, TYPE, RADII, SPACE and
- * ELEVATION blocks below is transcribed verbatim from that document's YAML
- * front-matter. Where this file adds something the document does not define,
- * the block is marked `EXTENSION` and carries the reason.
+ * Generated from `DESIGN.md` (Cupertino Precision). The PRIMITIVES, TYPE, RADII,
+ * SPACE, ELEVATION and MOTION blocks below mirror frontend/src/styles/apple.css,
+ * and __tests__/appleParity.test.js fails if the two drift. Where this file adds
+ * something the document does not define, the block is marked `EXTENSION`.
  *
- * No Apple font file, artwork or CSS is shipped. `SF Pro Display` / `SF Pro
- * Text` are NAMED in the font stacks only — per DESIGN.md §"Note on Font
- * Substitutes", naming them first resolves to the real face on macOS/iOS via
- * the locally installed system font, and falls through to `system-ui` on every
- * other platform. Nothing is downloaded; the repo's no-remote-font-URL contract
- * and 50 KiB font budget are both preserved.
+ * Inter is named first in every text stack and is NOT shipped: the 50 KiB local
+ * web-font budget is spent on the Bengali face. The stacks fall through to the
+ * platform UI face. Nothing is downloaded.
  *
- * This file supersedes `meridian.ts`, `tokens.ts` and `material3Expressive.ts`.
+ * The hazard and severity layers are data encodings. They are unchanged here.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -36,68 +32,80 @@ export function contrastRatio(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   PRIMITIVES — verbatim from DESIGN.md `colors:`
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ═════════════════════════════════════════════════════════════════════════════
+   PRIMITIVES — spec §Colors, light appearance. Mirrors apple.css §1.
+   ═════════════════════════════════════════════════════════════════════════════ */
 
 export const APPLE_COLORS = {
-  /** Action Blue. The single brand-level interactive colour. 5.60:1 on white. */
+  /** Text and link accent. The spec's blue tint is #0071e3, but it measures 4.3:1 on parchment; this one measures 5.1:1. */
   primary: '#0066cc',
-  /** Focus Blue. Keyboard focus ring only — `outline: 2px solid`. */
+  /** Spec Blue Tint. Filled actions and the focus ring. */
   primaryFocus: '#0071e3',
-  /** Sky Link Blue. Dark surfaces only; Action Blue disappears on tile-1. */
+  /** Spec dark Blue Tint. Dark surfaces only. */
   primaryOnDark: '#2997ff',
 
-  /** Near-Black Ink. Every headline and paragraph on a light surface. 16.68:1 on white. */
+  /** Spec light-label-primary. 16.8:1 on white. */
   ink: '#1d1d1f',
   body: '#1d1d1f',
   bodyOnDark: '#ffffff',
-  /** Secondary copy on dark tiles where pure white is too loud. */
+  /** Secondary copy on always-dark photography and tiles. */
   bodyMuted: '#cccccc',
-  /** Body text on the Pearl Button surface. 12.63:1 on white. */
   inkMuted80: '#333333',
-  /** Disabled button text and legal fine-print. 4.66:1 on white. */
   inkMuted48: '#7a7a7a',
 
-  /** Border tone on secondary buttons — a ring, not a hard line. */
   dividerSoft: '#f0f0f0',
-  /** 1px hairline on store utility cards and configurator chips. */
   hairline: '#e0e0e0',
 
+  /** Spec light-bg-primary. */
   canvas: '#ffffff',
-  /** The signature Apple off-white. Alternating light tiles, footer. */
+  /** Spec light-bg-secondary. */
   canvasParchment: '#f5f5f7',
-  /** Secondary "ghost" button fill — lighter than parchment so it still reads. */
+  /** Spec light-bg-tertiary: inset tracks. */
+  inset: '#eeedf3',
   surfacePearl: '#fafafc',
 
-  /** Primary dark-tile surface. */
-  surfaceTile1: '#272729',
-  /** Micro-step lighter — faintest separation between adjacent dark tiles. */
-  surfaceTile2: '#2a2a2c',
-  /** Micro-step darker — bottom of stack, embedded video frames. */
-  surfaceTile3: '#252527',
-  /** True void — video backgrounds, the global nav bar. */
+  /** Dark cards (spec dark-bg-secondary). The name keeps its role. */
+  surfaceTile1: '#161617',
+  /** Dark elevated chrome (spec dark-bg-elevated). */
+  surfaceTile2: '#1c1c1e',
+  /** Dark inner containers (spec dark-bg-tertiary). */
+  surfaceTile3: '#242426',
+  /** Spec dark-bg-primary. The OLED canvas, and the global nav's void. */
   surfaceBlack: '#000000',
-  /** Translucent control chip over photography; ships at ~64% alpha. */
   surfaceChipTranslucent: '#d2d2d7',
+
+  /** Spec secondary dark button: fill, hover, and the hairline ring is in APPLE_DARK. */
+  btnDark: '#1d1d1f',
+  btnDarkHover: '#2d2d2f',
+  /** Spec helper text. 1.7:1 on white, so it is non-text decoration only. */
+  helper: '#c1c6d6',
 
   onPrimary: '#ffffff',
   onDark: '#ffffff',
 } as const;
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   TYPOGRAPHY — verbatim from DESIGN.md `typography:`
-   ═══════════════════════════════════════════════════════════════════════════ */
+/** Spec §Semantic Interactive Tints, light. Fills, dots and icons; text takes the severity layer. */
+export const APPLE_TINT = {
+  blue: '#0071e3',
+  green: '#34c759',
+  orange: '#ff9500',
+  red: '#ff3b30',
+  purple: '#af52de',
+} as const;
+
+/* ═════════════════════════════════════════════════════════════════════════════
+   TYPOGRAPHY — spec §Typography. Mirrors apple.css §2 and the role classes in §9.
+   ═════════════════════════════════════════════════════════════════════════════ */
 
 /**
- * Font stacks. SF Pro is NAMED, never shipped — see the provenance note above.
- * `bengali` is an EXTENSION: HazardNet is a Bengali-first product and the Apple
- * document does not cover non-Latin scripts. The bundled Noto Sans Bengali
- * WOFF2 (43.31 KiB, the repo's only shipped face) stays.
+ * Font stacks. Inter is named first and is NOT shipped (see the provenance note).
+ * `bengali` is an EXTENSION: HazardNet is a Bengali-first product and the spec does
+ * not cover non-Latin scripts. The bundled Noto Sans Bengali WOFF2 (43.31 KiB, the
+ * repo's only shipped face) stays.
  */
 export const APPLE_FONTS = {
-  display: "'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-  text: "'SF Pro Text', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  display: "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  text: "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   /** EXTENSION — tabular data (coordinates, timestamps, severity scores). */
   mono: "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, monospace",
   /** EXTENSION — Bengali script. Different metrics, matras, headline bar. */
@@ -105,103 +113,120 @@ export const APPLE_FONTS = {
 } as const;
 
 /**
- * The 16 named styles, exactly as the document defines them.
- * `size` is px, `tracking` is px (the document uses px, not em).
- * `face` selects display vs text per the document's unbreakable 20px boundary.
+ * The spec's type roles. `size` and `line` are px; `track` is em, as the spec writes it.
+ * The two `*Mobile` entries are the values the display roles step down to below 768px.
  */
 export const APPLE_TYPE = {
-  heroDisplay: { size: 56, weight: 600, line: 1.07, tracking: -0.28, face: 'display' },
-  displayLg: { size: 40, weight: 600, line: 1.1, tracking: 0, face: 'display' },
-  displayMd: { size: 34, weight: 600, line: 1.47, tracking: -0.374, face: 'text' },
-  lead: { size: 28, weight: 400, line: 1.14, tracking: 0.196, face: 'display' },
-  leadAiry: { size: 24, weight: 300, line: 1.5, tracking: 0, face: 'text' },
-  tagline: { size: 21, weight: 600, line: 1.19, tracking: 0.231, face: 'display' },
-  bodyStrong: { size: 17, weight: 600, line: 1.24, tracking: -0.374, face: 'text' },
-  body: { size: 17, weight: 400, line: 1.47, tracking: -0.374, face: 'text' },
-  denseLink: { size: 17, weight: 400, line: 2.41, tracking: 0, face: 'text' },
-  caption: { size: 14, weight: 400, line: 1.43, tracking: -0.224, face: 'text' },
-  captionStrong: { size: 14, weight: 600, line: 1.29, tracking: -0.224, face: 'text' },
-  buttonLarge: { size: 18, weight: 300, line: 1.0, tracking: 0, face: 'text' },
-  buttonUtility: { size: 14, weight: 400, line: 1.29, tracking: -0.224, face: 'text' },
-  finePrint: { size: 12, weight: 400, line: 1.0, tracking: -0.12, face: 'text' },
-  microLegal: { size: 10, weight: 400, line: 1.3, tracking: -0.08, face: 'text' },
-  navLink: { size: 12, weight: 400, line: 1.0, tracking: -0.12, face: 'text' },
-} as const satisfies Record<string, { size: number; weight: number; line: number; tracking: number; face: 'display' | 'text' }>;
+  displayHero: { size: 56, weight: 700, line: 60, track: -0.015, face: 'display' },
+  displayHeroMobile: { size: 40, weight: 700, line: 44, track: -0.012, face: 'display' },
+  headlineXl: { size: 44, weight: 600, line: 48, track: -0.012, face: 'display' },
+  headlineXlMobile: { size: 32, weight: 600, line: 36, track: -0.01, face: 'display' },
+  headlineLg: { size: 28, weight: 600, line: 32, track: -0.008, face: 'display' },
+  headlineMd: { size: 21, weight: 600, line: 26, track: -0.006, face: 'display' },
+  headlineSm: { size: 17, weight: 600, line: 22, track: -0.004, face: 'display' },
+  bodyLg: { size: 19, weight: 400, line: 26, track: -0.005, face: 'text' },
+  bodyMd: { size: 17, weight: 400, line: 24, track: -0.004, face: 'text' },
+  bodySm: { size: 14, weight: 400, line: 18, track: 0, face: 'text' },
+  labelMd: { size: 14, weight: 500, line: 18, track: -0.002, face: 'text' },
+  labelSm: { size: 12, weight: 500, line: 16, track: 0.01, face: 'text' },
+  caption: { size: 11, weight: 400, line: 14, track: 0.012, face: 'text' },
+} as const satisfies Record<
+  string,
+  { size: number; weight: number; line: number; track: number; face: 'display' | 'text' }
+>;
 
-/**
- * The weight ladder. DESIGN.md §Typography/Principles: "Weight 500 is
- * deliberately absent. The ladder is 300 / 400 / 600 / 700."
- */
-export const APPLE_WEIGHTS = [300, 400, 600, 700] as const;
+/** The weight ladder. Spec: 400 / 500 / 600 / 700. */
+export const APPLE_WEIGHTS = [400, 500, 600, 700] as const;
 
-/** The display/text face boundary, in px. Below this, SF Pro Text. */
+/** The display/text face boundary, in px. Kept from the previous system; no spec value. */
 export const APPLE_FACE_BOUNDARY = 20;
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   GEOMETRY — verbatim from DESIGN.md `rounded:`
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ═════════════════════════════════════════════════════════════════════════════
+   GEOMETRY — spec §Shapes. Mirrors apple.css §3.
+   ═════════════════════════════════════════════════════════════════════════════ */
 
 export const APPLE_RADII = {
-  /** Full-bleed product tiles — tiles touch edges, the colour change is the divider. */
   none: 0,
-  /** Inline links styled as subtle chips (rare). */
-  xs: 5,
-  /** Dark utility buttons (Sign In, Bag), inline card imagery. */
+  /** Spec `sm`. */
+  xs: 4,
+  /** Spec `DEFAULT`. */
   sm: 8,
-  /** White Pearl Button capsules. */
-  md: 11,
-  /** Store utility cards, accessories grid cards. */
-  lg: 18,
-  /** The signature Apple pill — primary CTAs, chips, search input. */
+  /** Spec `md`. */
+  md: 12,
+  /** Spec `lg`. */
+  lg: 16,
+  /** Spec `xl`: modals and sheets. */
+  xl: 24,
+  /** Spec: primary cards 18–22px. */
+  card: 20,
+  /** Spec: inputs 10–12px. */
+  input: 12,
   pill: 9999,
-  /** Circular control chips floating over photography. */
   full: 9999,
 } as const;
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   SPACING — verbatim from DESIGN.md `spacing:`
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ═════════════════════════════════════════════════════════════════════════════
+   SPACING — spec §Layout & Spacing. Mirrors apple.css §3.
+   ═════════════════════════════════════════════════════════════════════════════ */
 
 export const APPLE_SPACE = {
+  /** Legacy alias of `xs`. */
   xxs: 4,
-  xs: 8,
-  sm: 12,
-  /** 17px — the body line-height multiplier that recurs on every page. */
-  md: 17,
+  /** Spec `space-xs`. */
+  xs: 4,
+  /** Spec `space-sm`. */
+  sm: 8,
+  /** Spec `space-md`. */
+  md: 16,
+  /** Spec `space-lg`. */
   lg: 24,
-  xl: 32,
-  xxl: 48,
-  /** Vertical padding inside a product tile. */
-  section: 80,
+  /** Spec `space-xl`. */
+  xl: 40,
+  /** EXTENSION — the spec's "multiples thereof (64px, 96px)". */
+  xxl: 64,
+  section: 96,
 } as const;
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   ELEVATION — DESIGN.md §"Elevation & Depth"
-   "Apple uses exactly ONE drop-shadow, applied to photographic product
-   imagery — never to cards, never to buttons, never to text."
-   ═══════════════════════════════════════════════════════════════════════════ */
+/** Spec §Layout: gutters and outer margins. */
+export const APPLE_LAYOUT = {
+  gutter: 24,
+  gutterMobile: 16,
+  margin: 40,
+  marginMobile: 20,
+} as const;
+
+/* ═════════════════════════════════════════════════════════════════════════════
+   ELEVATION — spec §Elevation & Depth. Mirrors apple.css §3. Dark values are in APPLE_DARK.
+   ═════════════════════════════════════════════════════════════════════════════ */
 
 export const APPLE_ELEVATION = {
-  /** Full-bleed tiles, global nav, footer, body sections. */
+  /** Full-bleed tiles, body sections. */
   flat: 'none',
-  /** Utility cards, sub-nav separator. */
+  /** A 1px hairline, for light cards. */
   softHairline: '0 0 0 1px rgba(0, 0, 0, 0.08)',
-  /** The only true shadow in the system. Product renders resting on a surface. */
+  /** Product imagery only. */
   product: 'rgba(0, 0, 0, 0.22) 3px 5px 30px 0',
+  /** EXTENSION — the light analogue of the spec's level-2 shadow. */
+  popover: '0 24px 48px -12px rgba(0, 0, 0, 0.18)',
+  /** EXTENSION — the light analogue of the spec's segmented-control shadow. */
+  segment: '0 2px 6px rgba(0, 0, 0, 0.12)',
 } as const;
 
-/** Sub-nav and floating sticky bar. DESIGN.md §Known Gaps gives this baseline. */
+/** Spec §Optical Glassmorphism, light: floating chrome, sheets, pill docks. */
 export const APPLE_MATERIAL = {
-  frosted: { bg: 'rgba(245, 245, 247, 0.8)', blur: '20px', saturate: 1.8 },
+  frosted: { bg: 'rgba(255, 255, 255, 0.8)', blur: '20px', saturate: '180%', hairline: 'rgba(0, 0, 0, 0.08)' },
 } as const;
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   RESPONSIVE — verbatim from DESIGN.md §"Responsive Behavior"
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ═════════════════════════════════════════════════════════════════════════════
+   RESPONSIVE — spec §Layout & Spacing. Mirrors apple.css §10.
+   ═════════════════════════════════════════════════════════════════════════════ */
 
 export const APPLE_BREAKPOINTS = {
   smallPhone: 419,
   phone: 640,
+  /** Spec: the mobile flow is 4 columns below this. */
+  mobile: 767,
+  tablet: 768,
   largePhone: 735,
   tabletPortrait: 833,
   tabletLandscape: 1023,
@@ -210,60 +235,48 @@ export const APPLE_BREAKPOINTS = {
 } as const;
 
 export const APPLE_CONTAINER = {
-  /** Text-heavy sections (environment). */
+  /** Text-heavy sections. */
   text: 980,
-  /** Product grids (store, accessories) and the global content lock. */
-  wide: 1440,
+  /** Spec: the 1280px content shell on desktop. */
+  wide: 1280,
 } as const;
 
-/** DESIGN.md §Touch Targets — "Minimum 44 × 44px." */
+/** Spec §Components: 36px inline or 44px touch buttons; nav 44px mobile, 48px desktop. */
 export const APPLE_TOUCH = {
   min: 44,
-  /** `button-icon-circular` is exactly 44 × 44. */
   iconButton: 44,
-  /** `global-nav` height. */
   navHeight: 44,
-  /** `sub-nav-frosted` height. */
+  navHeightDesktop: 48,
   subNavHeight: 52,
-  /** `floating-sticky-bar` height. */
   stickyBarHeight: 64,
-  /** EXTENSION — bottom-sheet detents. Apple's sheet is not in DESIGN.md; the
-   *  snap points are derived from the 8-step spacing scale (×14 and ×8). */
+  /** EXTENSION — bottom-sheet detents, derived from the spacing scale. */
   bottomSheetSnapMin: 112,
   bottomSheetSnapMax: 640,
 } as const;
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   MOTION — EXTENSION.
-   DESIGN.md defines exactly one interaction: `transform: scale(0.95)` as the
-   system-wide active/press state, and instructs "Never document hover."
-   It defines no durations and no easing curves. The values below are the
-   minimum needed to animate that press state and honour reduced-motion; they
-   are deliberately few, and nothing here introduces a motion vocabulary the
-   document does not imply.
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ═════════════════════════════════════════════════════════════════════════════
+   MOTION — spec §Components (press, segmented spring). Mirrors apple.css §3 and §11.
+   ═════════════════════════════════════════════════════════════════════════════ */
 
 export const APPLE_MOTION = {
-  /** The system-wide micro-interaction. DESIGN.md §Do's. */
-  pressScale: 0.95,
-  /** EXTENSION — the softer dip for a cell-sized control (an option card, a chip-like
-   *  tile). A grid of cells pressing at the pill's 0.95 flickers; 0.97 stays perceptible
-   *  only on the cell under the finger. Mirrors `--ap-press-scale-soft` in apple.css. */
-  pressScaleSoft: 0.97,
+  /** Spec: scales down to 0.97 on active tap. */
+  pressScale: 0.97,
+  /** EXTENSION — the lighter dip for a cell-sized control. */
+  pressScaleSoft: 0.98,
   duration: {
-    /** Press/release feedback. */
     press: 120,
-    /** Surface and opacity changes. */
     base: 240,
+    /** The segmented thumb's transition. Uses `ease`: the spec's spring overshoots, the design gate does not allow it. */
+    segment: 360,
   },
-  /** Apple's standard decelerate. */
-  ease: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+  /** Spec: cubic-bezier(0.25, 1, 0.5, 1). */
+  ease: 'cubic-bezier(0.25, 1, 0.5, 1)',
   /** Only compositor-friendly properties animate. */
   animatableProps: ['opacity', 'transform'] as const,
   reducedMotionDuration: '0.01ms',
-  /** EXTENSION — spring for sheet drag, where a cubic-bezier cannot follow a
-   *  finger. Critically damped, so it settles without overshoot: Apple's sheets
-   *  never bounce. */
+  /** Spec: the segmented control's spring response. */
+  springSegmented: { stiffness: 320, damping: 26, mass: 1 },
+  /** EXTENSION — sheet drag. Critically damped, so sheets never bounce. */
   springStandard: { stiffness: 320, damping: 36, mass: 1 },
 } as const;
 
@@ -304,34 +317,71 @@ export const APPLE_NEUTRAL = {
   black: '#000000',
 } as const;
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   DARK THEME — EXTENSION.
-   DESIGN.md §Known Gaps: "Dark-mode counterparts ... were not surfaced; the
-   system documented is the daytime/light-dominant variant." Rather than invent
-   a second colour language, the dark theme is built ENTIRELY from Apple's own
-   dark-tile surfaces, which the document does define: tile-3 (#252527) is the
-   darkest and becomes the canvas, tile-1 (#272729) the grouped surface, tile-2
-   (#2a2a2c) the raised surface. Text uses the document's `body-on-dark` and
-   `body-muted`. Links use `primary-on-dark` (Sky Link Blue), exactly as the
-   document instructs for dark tiles.
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ═════════════════════════════════════════════════════════════════════════════
+   DARK THEME — spec §Colors (dark) and §Elevation (tonal stacking). Mirrors apple.css §5.
+   ═════════════════════════════════════════════════════════════════════════════ */
 
 export const APPLE_DARK = {
-  canvas: APPLE_COLORS.surfaceTile3,
+  /** Spec level 0: the OLED canvas. */
+  canvas: APPLE_COLORS.surfaceBlack,
+  /** Spec level 1: content cards and secondary tiers. */
   grouped: APPLE_COLORS.surfaceTile1,
+  card: APPLE_COLORS.surfaceTile1,
+  /** Spec: tertiary inner containers and inset tracks. */
+  inset: APPLE_COLORS.surfaceTile3,
+  /** Spec level 2: floating chrome, sheets and popovers. */
   raised: APPLE_COLORS.surfaceTile2,
-  /** True void — the nav bar stays black in both themes. */
+  elevated: APPLE_COLORS.surfaceTile2,
   black: APPLE_COLORS.surfaceBlack,
-  label: APPLE_COLORS.bodyOnDark,
-  labelSecondary: APPLE_COLORS.bodyMuted,
-  /** Derived: a muted tertiary that still clears AA on tile-3. */
-  labelTertiary: '#9a9a9f',
-  hairline: '#3a3a3c',
-  hairlineStrong: '#48484a',
-  /** Sky Link Blue. Action Blue measures 2.68:1 on tile-1 and must not be used. */
+
+  /** Spec: primary #F5F5F7; secondary #A1A1A6; tertiary #86868B; quaternary #424245. */
+  label: '#f5f5f7',
+  labelSecondary: '#a1a1a6',
+  labelTertiary: '#86868b',
+  labelQuaternary: '#424245',
+
+  /** Spec §Fills & Separators. */
+  separator: 'rgba(255, 255, 255, 0.12)',
+  separatorOpaque: '#424245',
+  cardBorder: 'rgba(255, 255, 255, 0.08)',
+  fill: {
+    thin: 'rgba(255, 255, 255, 0.06)',
+    regular: 'rgba(255, 255, 255, 0.12)',
+    strong: 'rgba(255, 255, 255, 0.2)',
+  },
+
+  /** Spec blue tint, with black as the action label (white measures 3.0:1 on it). */
   action: APPLE_COLORS.primaryOnDark,
   actionFocus: APPLE_COLORS.primaryOnDark,
   onAction: APPLE_COLORS.surfaceBlack,
+  focusHalo: 'rgba(41, 151, 255, 0.25)',
+
+  /** Spec §Optical Glassmorphism, dark. */
+  frostedBg: 'rgba(0, 0, 0, 0.8)',
+  glassHairline: 'rgba(255, 255, 255, 0.1)',
+  /** Spec level-2 shadow and segmented-control shadow. */
+  elevPopover: '0 24px 48px -12px rgba(0, 0, 0, 0.65)',
+  elevSegment: '0 2px 6px rgba(0, 0, 0, 0.3)',
+  sheetHighlight: 'rgba(255, 255, 255, 0.15)',
+  scrim: 'rgba(0, 0, 0, 0.7)',
+  grabber: 'rgba(255, 255, 255, 0.2)',
+
+  /** Spec §Input Fields. The stroke is #6E6E73, not the spec's translucent 0.12, to clear WCAG 1.4.11. */
+  inputFill: APPLE_COLORS.surfaceTile2,
+  inputStroke: '#6e6e73',
+  /** Spec §Segmented Controls. */
+  segmentTrack: 'rgba(255, 255, 255, 0.06)',
+  segmentThumb: '#2c2c2e',
+  segmentInactive: '#86868b',
+
+  /** Spec §Semantic Interactive Tints, dark. */
+  tint: {
+    blue: '#2997ff',
+    green: '#30d158',
+    orange: '#ff9f0a',
+    red: '#ff453a',
+    purple: '#bf5af2',
+  },
 } as const;
 
 /* ═══════════════════════════════════════════════════════════════════════════
