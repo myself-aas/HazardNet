@@ -110,7 +110,7 @@ export const AdvisorySignalCard: React.FC<AdvisorySignalCardProps> = ({ rows, ho
       </div>
 
       {signal.override && (
-        <div className="inline-flex items-center gap-1.5 border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800">
+        <div className="rounded-full inline-flex items-center gap-1.5 border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800">
           <ShieldCheck className="w-3.5 h-3.5" />
           <span>{t('advisory.physicsOverride')}</span>
         </div>

@@ -262,7 +262,7 @@ export const HazardDetailPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setReloadNonce((n) => n + 1)}
-              className="inline-flex min-h-[44px] items-center justify-center gap-2 border border-carbon-20 bg-carbon-05 px-4 text-sm font-semibold text-carbon-90 hover:bg-carbon-10 touch-manipulation"
+              className="inline-flex min-h-[44px] items-center justify-center gap-2 border border-carbon-20 rounded-full bg-carbon-05 px-4 text-sm font-semibold text-carbon-90 hover:bg-carbon-10 touch-manipulation"
             >
               <RefreshCw className="h-4 w-4" aria-hidden="true" />
               Try again
@@ -645,7 +645,7 @@ export const HazardDetailPage: React.FC = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search events, district, GLIDE..."
-                className="h-11 min-h-[44px] pl-8 pr-3 text-base border border-carbon-20 bg-carbon-05 text-carbon-80 placeholder-carbon-40 focus:outline-none focus-visible:outline focus-visible:outline-offset-1"
+                className="h-11 min-h-[44px] pl-8 pr-3 text-base border border-carbon-20 rounded-md bg-carbon-05 text-carbon-80 placeholder-carbon-40 focus:outline-none focus-visible:outline focus-visible:outline-offset-1"
               />
             </div>
 
@@ -655,7 +655,7 @@ export const HazardDetailPage: React.FC = () => {
                 setSelectedDivision(e.target.value);
                 setSelectedDistrict('all');
               }}
-              className="h-11 min-h-[44px] py-1.5 px-2.5 text-base border border-carbon-20 bg-carbon-05 text-carbon-70 focus:outline-none focus-visible:outline focus-visible:outline-offset-1"
+              className="h-11 min-h-[44px] py-1.5 px-2.5 text-base border border-carbon-20 rounded-2xl bg-carbon-05 text-carbon-70 focus:outline-none focus-visible:outline focus-visible:outline-offset-1"
             >
               <option value="all">All Divisions</option>
               {availableDivisions.map((d) => (
@@ -668,7 +668,7 @@ export const HazardDetailPage: React.FC = () => {
             <select
               value={selectedDistrict}
               onChange={(e) => setSelectedDistrict(e.target.value)}
-              className="h-11 min-h-[44px] py-1.5 px-2.5 text-base border border-carbon-20 bg-carbon-05 text-carbon-70 focus:outline-none focus-visible:outline focus-visible:outline-offset-1"
+              className="h-11 min-h-[44px] py-1.5 px-2.5 text-base border border-carbon-20 rounded-2xl bg-carbon-05 text-carbon-70 focus:outline-none focus-visible:outline focus-visible:outline-offset-1"
             >
               <option value="all">All Districts</option>
               {availableDistricts.map((d) => (

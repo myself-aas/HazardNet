@@ -22,9 +22,9 @@
   src: url('@fontsource/noto-sans-bengali/files/noto-sans-bengali-bengali-400-normal.woff2') format('woff2');
 }
 
-@import 'tailwindcss';
-@import './styles/apple.css';
-@import './styles/hero-media.css';
+@import "tailwindcss";
+@import "./styles/apple.css";
+@import "./styles/hero-media.css";
 @import 'leaflet/dist/leaflet.css' layer(base);
 @import 'leaflet.markercluster/dist/MarkerCluster.css' layer(base);
 @import 'leaflet.markercluster/dist/MarkerCluster.Default.css' layer(base);
@@ -38,22 +38,14 @@
    Cupertino Precision (DESIGN.md §Typography). Inter is named first and not shipped:
    the 50 KiB local font budget is spent, so the stack resolves to the platform UI face.
    No remote font URL is permitted. */
-html,
-body,
-button,
-input,
-select,
-textarea {
+html, body, button, input, select, textarea {
   font-family: var(--ap-font-text);
-  font-feature-settings:
-    'tnum' 1,
-    'lnum' 1;
+  font-feature-settings: "tnum" 1, "lnum" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-html,
-body {
+html, body {
   max-width: 100vw;
   overflow-x: clip;
   background: var(--ap-bg-canvas);
@@ -66,12 +58,7 @@ body {
   letter-spacing: var(--ap-type-body-md-track);
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+h1, h2, h3, h4, h5, h6 {
   font-family: var(--ap-font-display);
   font-weight: var(--ap-weight-semibold);
   color: var(--ap-label);
@@ -82,12 +69,7 @@ h6 {
   color: var(--ap-label);
 }
 
-.metric-value,
-.confidence-badge,
-.tensor-log,
-.hn-tabular-nums,
-code,
-pre {
+.metric-value, .confidence-badge, .tensor-log, .hn-tabular-nums, code, pre {
   font-family: var(--ap-font-mono);
   font-variant-numeric: tabular-nums;
 }
@@ -116,50 +98,51 @@ html {
   overflow-x: clip;
 }
 
-body {
-  margin: 0;
-  /* Body copy is the platform UI face. Size, leading and tracking come from the
+  body {
+    margin: 0;
+    /* Body copy is the platform UI face. Size, leading and tracking come from the
        Cupertino body-md role (17px/24px) — this rule is LAST in the cascade, so the old
        hardcoded 16px/1.62 silently overrode the scale app-wide. No webfont is
        fetched for Latin (see the typography note in the @theme block). */
-  font-family: var(--ap-font-text);
-  font-size: var(--ap-type-body-md-size);
-  line-height: var(--ap-type-body-md-line);
-  letter-spacing: var(--ap-type-body-md-track);
-  color: var(--ap-label);
-  background: var(--ap-bg-canvas);
-  overflow-x: clip;
-  min-width: 0;
-}
-
-/* Keep media and flex/grid children from creating a wider-than-viewport page
-     on narrow devices. Components can opt into intentional scrolling for tables
-     and tab bars with their existing overflow containers. */
-img,
-svg,
-video,
-canvas {
-  max-width: 100%;
-}
-
-button,
-a,
-input,
-select,
-textarea {
-  touch-action: manipulation;
-}
-
-@media (max-width: 639px) {
-  main,
-  [role='main'] {
+    font-family: var(--ap-font-text);
+    font-size: var(--ap-type-body-md-size);
+    line-height: var(--ap-type-body-md-line);
+    letter-spacing: var(--ap-type-body-md-track);
+    color: var(--ap-label);
+    background: var(--ap-bg-canvas);
+    overflow-x: clip;
     min-width: 0;
   }
 
-  .safe-area-bottom {
-    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  /* Keep media and flex/grid children from creating a wider-than-viewport page
+     on narrow devices. Components can opt into intentional scrolling for tables
+     and tab bars with their existing overflow containers. */
+  img,
+  svg,
+  video,
+  canvas {
+    max-width: 100%;
   }
-}
+
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    touch-action: manipulation;
+  }
+
+  @media (max-width: 639px) {
+    main,
+    [role='main'] {
+      min-width: 0;
+    }
+
+    .safe-area-bottom {
+      padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+  }
+
 
 /* The "Global Mono system" lived here: `*, *::before, *::after { font-family:
    var(--ap-font-mono) }`, one technical voice for the whole product. It is a
@@ -190,8 +173,7 @@ textarea {
   border: 1px solid var(--ap-separator-opaque);
   box-shadow: var(--ap-elev-hairline);
   border-radius: var(--ap-radius-lg);
-  transition:
-    border-color var(--ap-duration-base) var(--ap-ease),
+  transition: border-color var(--ap-duration-base) var(--ap-ease),
     box-shadow var(--ap-duration-base) var(--ap-ease);
 }
 
@@ -239,10 +221,7 @@ textarea {
   border: 1px solid var(--ap-separator);
   box-shadow: var(--ap-elev-hairline);
   color: var(--ap-label);
-  transition:
-    background-color 160ms ease,
-    box-shadow 160ms ease,
-    transform 160ms ease;
+  transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
 .glass-rail-button:hover {
@@ -429,6 +408,7 @@ html[data-map-debug-fx='true'] .cluster-pulse-ring {
   transform: scale(1.12);
 }
 
+
 .custom-modern-leaflet-popup .leaflet-popup-content-wrapper,
 .leaflet-popup-content-wrapper {
   background: var(--ap-bg-canvas) !important;
@@ -526,7 +506,7 @@ html[data-map-debug-fx='true'] .cluster-pulse-ring {
 @keyframes userDistrictDashPulse {
   0% {
     stroke-dashoffset: 0;
-    stroke-opacity: 0.8;
+    stroke-opacity: 0.80;
     filter: drop-shadow(0 0 3px currentColor);
   }
 
@@ -538,7 +518,7 @@ html[data-map-debug-fx='true'] .cluster-pulse-ring {
 
   100% {
     stroke-dashoffset: 64;
-    stroke-opacity: 0.8;
+    stroke-opacity: 0.80;
     filter: drop-shadow(0 0 3px currentColor);
   }
 }
@@ -546,7 +526,7 @@ html[data-map-debug-fx='true'] .cluster-pulse-ring {
 @keyframes userDistrictGlowPulse {
   0% {
     stroke-width: 8px;
-    stroke-opacity: 0.4;
+    stroke-opacity: 0.40;
     filter: drop-shadow(0 0 4px currentColor);
   }
 
@@ -558,7 +538,7 @@ html[data-map-debug-fx='true'] .cluster-pulse-ring {
 
   100% {
     stroke-width: 8px;
-    stroke-opacity: 0.4;
+    stroke-opacity: 0.40;
     filter: drop-shadow(0 0 4px currentColor);
   }
 }
@@ -1137,6 +1117,7 @@ html[data-map-debug-fx='true'] .marker-high-risk {
   --color-warning-surface: var(--ap-sev-moderate-surface);
   --color-warning-border: color-mix(in srgb, var(--ap-warning) 35%, transparent);
   --color-surface-page: var(--ap-bg-canvas);
+
 }
 
 @layer base {
@@ -1197,9 +1178,7 @@ html[data-map-debug-fx='true'] .marker-high-risk {
     text-transform: uppercase;
     color: var(--ap-label-secondary);
     border-bottom: 2px solid transparent;
-    transition:
-      color 150ms var(--ap-ease),
-      border-color 150ms var(--ap-ease);
+    transition: color 150ms var(--ap-ease), border-color 150ms var(--ap-ease);
   }
 
   .hn-nav-link:hover {
@@ -1228,6 +1207,7 @@ html[data-map-debug-fx='true'] .marker-high-risk {
   samp {
     overflow-wrap: anywhere;
   }
+
 
   /* Visible keyboard focus everywhere — focus rings must never be removed.
      This read `solid var[--ring]`, and that token was declared in exactly one
@@ -1261,7 +1241,7 @@ html[data-map-debug-fx='true'] .marker-high-risk {
     transition-duration: 0.01ms !important;
   }
 
-  [role='progressbar'],
+  [role="progressbar"],
   [data-keep-reduced-motion],
   .hn-spinner {
     animation-iteration-count: infinite !important;
@@ -1298,19 +1278,19 @@ html[data-low-bandwidth='true'] {
    data readouts = the platform mono. The two utilities that used to live here - `.font-inter`
    and `.font-montserrat` - were named after fonts the bundle does not contain and are gone;
    `font-inter` had exactly one caller (FirebaseRealtimeStatus) and `font-montserrat` none. */
-.font-brand,
-.font-heading {
-  font-family: var(--ap-font-display);
-}
+  .font-brand,
+  .font-heading {
+    font-family: var(--ap-font-display);
+  }
 
-.font-mono,
-.metric-value,
-.confidence-badge,
-.tensor-log,
-code,
-pre {
-  font-family: var(--ap-font-mono);
-}
+  .font-mono,
+  .metric-value,
+  .confidence-badge,
+  .tensor-log,
+  code,
+  pre {
+    font-family: var(--ap-font-mono);
+  }
 
 .font-brand {
   font-family: var(--ap-font-display);
@@ -1346,10 +1326,10 @@ pre {
 }
 
 button,
-[role='button'],
-input[type='button'],
-input[type='submit'],
-input[type='reset'] {
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
   touch-action: manipulation;
 }
 
@@ -1377,7 +1357,7 @@ input[type='reset'] {
 }
 
 .hn-nav-item.active,
-.hn-nav-item[data-active='true'] {
+.hn-nav-item[data-active="true"] {
   font-weight: 600;
   color: var(--ap-primary);
   border-bottom: 2px solid var(--ap-primary);
@@ -1393,6 +1373,7 @@ input[type='reset'] {
 }
 
 @media (min-width: 640px) {
+
   .hn-dropdown-item,
   .hn-sidebar-item {
     font-size: 14px;
@@ -1425,6 +1406,7 @@ h1 {
 }
 
 @media (min-width: 640px) {
+
   .hn-h1,
   h1 {
     font-size: 32px;
@@ -1449,6 +1431,7 @@ h3 {
 }
 
 @media (min-width: 640px) {
+
   .hn-h3,
   h3 {
     font-size: 18px;
@@ -1482,7 +1465,7 @@ p {
 /* 9. Buttons & Interactive Triggers: sans, 600 (Semibold), line-height 1.3, -0.01em tracking */
 .hn-btn,
 button,
-[role='button'],
+[role="button"],
 .hn-btn-primary,
 .hn-btn-secondary,
 .hn-btn-outline,
@@ -1549,9 +1532,7 @@ button,
   font-weight: 600;
   border: 1px solid var(--ap-separator);
   border-radius: var(--ap-radius-sm);
-  transition:
-    background-color 150ms var(--ap-ease),
-    border-color 150ms var(--ap-ease);
+  transition: background-color 150ms var(--ap-ease), border-color 150ms var(--ap-ease);
   touch-action: manipulation;
 }
 
@@ -1572,9 +1553,7 @@ button,
   font-size: 14px;
   font-weight: 600;
   border-radius: var(--ap-radius-sm);
-  transition:
-    background-color 150ms var(--ap-ease),
-    color 150ms var(--ap-ease);
+  transition: background-color 150ms var(--ap-ease), color 150ms var(--ap-ease);
   touch-action: manipulation;
 }
 
@@ -1595,9 +1574,7 @@ button,
   border-radius: var(--ap-radius-sm);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   color: var(--ap-label);
-  transition:
-    transform 150ms var(--ap-ease),
-    box-shadow 150ms var(--ap-ease);
+  transition: transform 150ms var(--ap-ease), box-shadow 150ms var(--ap-ease);
 }
 
 /* 10. Data readouts (severity score, confidence, dates); the mono stack, 13–16 px, 600, tabular figures */
@@ -1606,7 +1583,7 @@ button,
   font-size: 13px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  font-feature-settings: 'tnum';
+  font-feature-settings: "tnum";
 }
 
 @media (min-width: 640px) {
@@ -1633,6 +1610,9 @@ caption {
   font-weight: 400;
   line-height: 1.4;
 }
+
+
+
 
 /* Mobile & Touch UX Optimization Utilities */
 .scrollbar-none {
@@ -1696,12 +1676,13 @@ caption {
 
 /* Prevent iOS Mobile Safari auto-zoom on input focus */
 @media (max-width: 768px) {
-  input[type='text'],
-  input[type='email'],
-  input[type='password'],
-  input[type='number'],
-  input[type='search'],
-  input[type='tel'],
+
+  input[type=text],
+  input[type=email],
+  input[type=password],
+  input[type=number],
+  input[type=search],
+  input[type=tel],
   select,
   textarea {
     font-size: 16px !important;
@@ -1729,21 +1710,21 @@ caption {
     size: A4 portrait;
     margin: 20mm 15mm; /* Top/Bottom: 20mm, Left/Right; 15mm (A4 Standard) */
     @bottom-left {
-      content: 'HazardNet Bangladesh • Emergency Directive Handout';
-      font-family: 'Times New Roman', Times, serif;
+      content: "HazardNet Bangladesh • Emergency Directive Handout";
+      font-family: "Times New Roman", Times, serif;
       font-size: 8.5pt;
       font-weight: 600;
       color: var(--ap-n-60);
     }
     @bottom-center {
-      content: 'SOD 2019 Disaster Management Compliance';
-      font-family: 'Times New Roman', Times, serif;
+      content: "SOD 2019 Disaster Management Compliance";
+      font-family: "Times New Roman", Times, serif;
       font-size: 8pt;
       color: var(--ap-n-40);
     }
     @bottom-right {
-      content: 'Page ' counter(page) ' of ' counter(pages);
-      font-family: 'Times New Roman', Times, serif;
+      content: "Page " counter(page) " of " counter(pages);
+      font-family: "Times New Roman", Times, serif;
       font-size: 9pt;
       font-weight: 800;
       color: var(--ap-n-90);
@@ -1772,7 +1753,7 @@ caption {
     background-color: #ffffff !important;
     background: #ffffff !important;
     color: var(--ap-n-90) !important;
-    font-family: 'Times New Roman', Times, serif !important;
+    font-family: "Times New Roman", Times, serif !important;
     font-size: 12pt !important;
     line-height: 1.5 !important;
     margin: 0 !important;
@@ -1787,12 +1768,12 @@ caption {
 
   /* 4. HazardNet Official Emergency Handout Watermark */
   body::before {
-    content: 'HAZARDNET BANGLADESH • OFFICIAL EMERGENCY ADVISORY • OPERATIONAL DIRECTIVE';
+    content: "HAZARDNET BANGLADESH • OFFICIAL EMERGENCY ADVISORY • OPERATIONAL DIRECTIVE";
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) rotate(-32deg);
-    font-family: 'Times New Roman', Times, serif;
+    font-family: "Times New Roman", Times, serif;
     font-size: 20pt;
     font-weight: 900;
     letter-spacing: 0.14em;
@@ -1817,8 +1798,8 @@ caption {
   input,
   select,
   textarea,
-  [role='dialog']:not(.print-preview-modal-root):not(#print-preview-modal-root),
-  [role='tablist'],
+  [role="dialog"]:not(.print-preview-modal-root):not(#print-preview-modal-root),
+  [role="tablist"],
   .no-print,
   .leaflet-control-container,
   .chat-widget,
@@ -1867,7 +1848,7 @@ caption {
     display: block !important;
   }
 
-  .print-preview-modal-root div[style*='transform'] {
+  .print-preview-modal-root div[style*="transform"] {
     transform: none !important;
     max-width: 100% !important;
     width: 100% !important;
@@ -1907,8 +1888,8 @@ caption {
   .bg-carbon-90,
   .bg-carbon-black,
   .ap-frosted-panel,
-  [class*='rounded-3xl'],
-  [class*='rounded-2xl'] {
+  [class*="rounded-3xl"],
+  [class*="rounded-2xl"] {
     background-color: #ffffff !important;
     background: #ffffff !important;
     color: var(--ap-n-90) !important;
@@ -1920,47 +1901,18 @@ caption {
   }
 
   /* 8. Text Color & Contrast Overrides (H1; 18pt, H2; 16pt, H3; 14pt) */
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
+  h1, h2, h3, h4, h5, h6 {
     color: var(--ap-n-90) !important;
     font-weight: 800 !important;
     page-break-after: avoid !important;
     break-after: avoid !important;
   }
 
-  h1 {
-    font-size: 18pt !important;
-    font-weight: bold !important;
-    line-height: 1.3 !important;
-    margin: 0 0 10pt 0 !important;
-  }
-  h2 {
-    font-size: 16pt !important;
-    font-weight: bold !important;
-    line-height: 1.35 !important;
-    margin: 15pt 0 8pt 0 !important;
-  }
-  h3 {
-    font-size: 14pt !important;
-    font-weight: bold !important;
-    line-height: 1.4 !important;
-    margin: 12pt 0 6pt 0 !important;
-  }
-  h4 {
-    font-size: 12pt !important;
-    font-weight: bold !important;
-    line-height: 1.45 !important;
-    margin: 8pt 0 4pt 0 !important;
-  }
-  p,
-  span,
-  li,
-  td,
-  th {
+  h1 { font-size: 18pt !important; font-weight: bold !important; line-height: 1.3 !important; margin: 0 0 10pt 0 !important; }
+  h2 { font-size: 16pt !important; font-weight: bold !important; line-height: 1.35 !important; margin: 15pt 0 8pt 0 !important; }
+  h3 { font-size: 14pt !important; font-weight: bold !important; line-height: 1.4 !important; margin: 12pt 0 6pt 0 !important; }
+  h4 { font-size: 12pt !important; font-weight: bold !important; line-height: 1.45 !important; margin: 8pt 0 4pt 0 !important; }
+  p, span, li, td, th {
     font-size: 12pt !important;
     line-height: 1.5 !important;
     color: var(--ap-n-80) !important;
@@ -1981,9 +1933,9 @@ caption {
   }
 
   /* Automatically append clean destination URLs to external portals & documentation links */
-  a[href^='http://']:after,
-  a[href^='https://']:after {
-    content: ' [' attr(href) ']';
+  a[href^="http://"]:after,
+  a[href^="https://"]:after {
+    content: " [" attr(href) "]";
     font-size: 7pt !important;
     font-family: var(--ap-font-mono) !important;
     font-weight: 500 !important;
@@ -1992,9 +1944,9 @@ caption {
   }
 
   /* Internal route links, anchors, and scripts should NOT append URLs */
-  a[href^='/']:after,
-  a[href^='#']:after,
-  a[href^='javascript:']:after,
+  a[href^="/"]:after,
+  a[href^="#"]:after,
+  a[href^="javascript:"]:after,
   .no-print-url:after,
   .no-print-url a:after,
   .hn-topbar-wordmark:after {
@@ -2002,22 +1954,22 @@ caption {
   }
 
   /* Format telephone & mailto links with clear emergency callout */
-  a[href^='tel:']:after {
-    content: ' (Hotline: ' attr(href) ')';
+  a[href^="tel:"]:after {
+    content: " (Hotline: " attr(href) ")";
     font-size: 7.5pt !important;
     font-family: var(--ap-font-mono) !important;
     font-weight: 700 !important;
     color: var(--ap-n-90) !important;
   }
 
-  a[href^='mailto:']:after {
-    content: ' [' attr(href) ']';
+  a[href^="mailto:"]:after {
+    content: " [" attr(href) "]";
     font-size: 7pt !important;
     font-family: var(--ap-font-mono) !important;
     color: var(--ap-n-70) !important;
   }
 
-  a[href^='tel:'] {
+  a[href^="tel:"] {
     font-weight: 800 !important;
     font-family: var(--ap-font-mono) !important;
     color: var(--ap-n-90) !important;
@@ -2025,7 +1977,7 @@ caption {
 
   /* 10. Emergency Contacts & Directory Cards Formatting */
   .emergency-contact-card,
-  [class*='border-carbon-20'] > div,
+  [class*="border-carbon-20"] > div,
   .space-y-4 > div {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
@@ -2083,15 +2035,15 @@ caption {
   #sec-hazard-trend .chart-card,
   #sec-telemetry,
   #sec-hazard-trend,
-  div[class*='chart-card'],
-  div[class*='chart'],
+  div[class*="chart-card"],
+  div[class*="chart"],
   [data-chart-container],
   .phased-step-card,
   .sop-step,
   .metric-card,
   .impact-metric-pill,
   .pagination-protected,
-  div[class*='rounded-3xl'] > div,
+  div[class*="rounded-3xl"] > div,
   article,
   section {
     break-inside: avoid !important;
@@ -2109,8 +2061,8 @@ caption {
   .recharts-yAxis,
   #sec-telemetry .chart-card,
   #sec-hazard-trend .chart-card,
-  div[class*='chart-card'],
-  div[class*='chart'],
+  div[class*="chart-card"],
+  div[class*="chart"],
   [data-chart-container] {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
@@ -2125,8 +2077,8 @@ caption {
   .recharts-surface,
   #sec-telemetry .chart-card,
   #sec-hazard-trend .chart-card,
-  div[class*='chart-card'],
-  div[class*='chart'],
+  div[class*="chart-card"],
+  div[class*="chart"],
   [data-chart-container] {
     transform: scale(0.9) !important;
     transform-origin: top left !important;
@@ -2169,7 +2121,7 @@ caption {
 
   #sec-upazilas .grid,
   #sec-upazilas .upazila-grid,
-  #sec-upazilas [class*='grid'],
+  #sec-upazilas [class*="grid"],
   .upazila-grid {
     display: grid !important;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
@@ -2203,11 +2155,11 @@ caption {
   }
 
   /* Operational Trigger Threshold Box */
-  [class*='bg-amber-50'],
-  [class*='bg-rose-50'],
-  [class*='bg-emerald-50'],
-  [class*='bg-blue-50'],
-  [class*='bg-carbon-05'] {
+  [class*="bg-amber-50"],
+  [class*="bg-rose-50"],
+  [class*="bg-emerald-50"],
+  [class*="bg-blue-50"],
+  [class*="bg-carbon-05"] {
     background-color: var(--ap-n-05) !important;
     border: 1pt solid var(--ap-n-40) !important;
     border-radius: 4pt !important;
@@ -2215,9 +2167,9 @@ caption {
   }
 
   /* Badges & Severity Chips */
-  [class*='rounded-full'],
-  [class*='rounded-lg'],
-  [class*='rounded-md'] {
+  [class*="rounded-full"],
+  [class*="rounded-lg"],
+  [class*="rounded-md"] {
     border: 0.75pt solid var(--ap-n-50) !important;
     background-color: var(--ap-n-10) !important;
     color: var(--ap-n-90) !important;
@@ -2372,20 +2324,20 @@ caption {
 
   .print-page-number::after {
     counter-increment: page;
-    content: 'Page ' counter(page);
+    content: "Page " counter(page);
     font-weight: 800 !important;
     color: var(--ap-n-90) !important;
   }
 
   /* 16. Structured Advisory Renderer: Uncollapse all sections */
   .StructuredAdvisoryRenderer,
-  [class*='StructuredAdvisoryRenderer'] {
+  [class*="StructuredAdvisoryRenderer"] {
     display: block !important;
   }
 
   /* Ensure collapsible vulnerability content is always fully visible in print */
   .animate-in,
-  [class*='slide-in-from-top'] {
+  [class*="slide-in-from-top"] {
     display: block !important;
     opacity: 1 !important;
     height: auto !important;
@@ -2437,8 +2389,8 @@ body.pdf-exporting .no-print,
 }
 
 /* Base Flattening for html2canvas & Preview */
-.pdf-capture-mode *,
-.pdf-capture-mode *::before,
+.pdf-capture-mode *, 
+.pdf-capture-mode *::before, 
 .pdf-capture-mode *::after,
 .print-preview-rendered-body *,
 .print-preview-rendered-body *::before,
@@ -2456,16 +2408,16 @@ body.pdf-exporting .no-print,
 .pdf-capture-mode .bg-carbon-90,
 .pdf-capture-mode .bg-carbon-black,
 .pdf-capture-mode .ap-frosted-panel,
-.pdf-capture-mode [class*='rounded-3xl'],
-.pdf-capture-mode [class*='rounded-2xl'],
+.pdf-capture-mode [class*="rounded-3xl"],
+.pdf-capture-mode [class*="rounded-2xl"],
 .print-preview-rendered-body .bg-white,
 .print-preview-rendered-body .bg-carbon-05,
 .print-preview-rendered-body .bg-carbon-10,
 .print-preview-rendered-body .bg-carbon-90,
 .print-preview-rendered-body .bg-carbon-black,
 .print-preview-rendered-body .ap-frosted-panel,
-.print-preview-rendered-body [class*='rounded-3xl'],
-.print-preview-rendered-body [class*='rounded-2xl'] {
+.print-preview-rendered-body [class*="rounded-3xl"],
+.print-preview-rendered-body [class*="rounded-2xl"] {
   background-color: #ffffff !important;
   background: #ffffff !important;
   color: var(--ap-n-90) !important;
@@ -2626,103 +2578,24 @@ body.pdf-exporting .no-print,
 }
 
 /* ─── Blog article typography (prose-blog) ─────────────────────────────── */
-.prose-blog h1 {
-  font-size: 1.6rem;
-  font-weight: 900;
-  color: var(--ap-n-90);
-  margin: 1.4rem 0 0.6rem;
-  letter-spacing: -0.01em;
-}
-.prose-blog h2 {
-  font-size: 1.3rem;
-  font-weight: 900;
-  color: var(--ap-n-90);
-  margin: 1.3rem 0 0.5rem;
-}
-.prose-blog h3 {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--ap-n-80);
-  margin: 1.1rem 0 0.4rem;
-}
-.prose-blog p {
-  margin: 0.75rem 0;
-  line-height: 1.75;
-}
-.prose-blog ul,
-.prose-blog ol {
-  margin: 0.75rem 0 0.75rem 1.4rem;
-  line-height: 1.7;
-}
-.prose-blog ul {
-  list-style: disc;
-}
-.prose-blog ol {
-  list-style: decimal;
-}
-.prose-blog li {
-  margin: 0.3rem 0;
-}
-.prose-blog a {
-  color: #b45309;
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-.prose-blog a:hover {
-  color: #92400e;
-}
-.prose-blog blockquote {
-  margin: 1rem 0;
-  padding: 0.6rem 1rem;
-  border: 1px solid var(--ap-n-20);
-  background: #fffbeb;
-  color: #78350f;
-  font-style: italic;
-}
-.prose-blog pre {
-  margin: 1rem 0;
-  padding: 0.9rem 1rem;
-  background: var(--ap-n-90);
-  color: var(--ap-n-20);
-  border-radius: 0.75rem;
-  overflow-x: auto;
-  font-size: 0.78rem;
-  line-height: 1.6;
-}
-.prose-blog code {
-  font-family: var(--ap-font-mono);
-  font-size: 0.82em;
-  background: var(--ap-n-10);
-  padding: 0.1rem 0.35rem;
-  border-radius: 0.35rem;
-  color: #b91c1c;
-}
-.prose-blog pre code {
-  background: transparent;
-  color: inherit;
-  padding: 0;
-}
-.prose-blog img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 0.75rem;
-  margin: 1rem 0;
-  border: 1px solid var(--ap-n-20);
-}
-.prose-blog hr {
-  margin: 1.5rem 0;
-  border: none;
-  border-top: 1px solid var(--ap-n-20);
-}
-.prose-blog [style*='text-align: center'],
-.prose-blog [style*='text-align:center'] {
-  text-align: center;
-}
-.prose-blog [style*='text-align: right'],
-.prose-blog [style*='text-align:right'] {
-  text-align: right;
-}
+.prose-blog h1 { font-size: 1.6rem; font-weight: 900; color: var(--ap-n-90); margin: 1.4rem 0 0.6rem; letter-spacing: -0.01em; }
+.prose-blog h2 { font-size: 1.3rem; font-weight: 900; color: var(--ap-n-90); margin: 1.3rem 0 0.5rem; }
+.prose-blog h3 { font-size: 1.1rem; font-weight: 800; color: var(--ap-n-80); margin: 1.1rem 0 0.4rem; }
+.prose-blog p  { margin: 0.75rem 0; line-height: 1.75; }
+.prose-blog ul, .prose-blog ol { margin: 0.75rem 0 0.75rem 1.4rem; line-height: 1.7; }
+.prose-blog ul { list-style: disc; }
+.prose-blog ol { list-style: decimal; }
+.prose-blog li { margin: 0.3rem 0; }
+.prose-blog a  { color: #b45309; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+.prose-blog a:hover { color: #92400e; }
+.prose-blog blockquote { margin: 1rem 0; padding: 0.6rem 1rem; border: 1px solid var(--ap-n-20); background: #fffbeb; color: #78350f; font-style: italic; }
+.prose-blog pre { margin: 1rem 0; padding: 0.9rem 1rem; background: var(--ap-n-90); color: var(--ap-n-20); border-radius: 0.75rem; overflow-x: auto; font-size: 0.78rem; line-height: 1.6; }
+.prose-blog code { font-family: var(--ap-font-mono); font-size: 0.82em; background: var(--ap-n-10); padding: 0.1rem 0.35rem; border-radius: 0.35rem; color: #b91c1c; }
+.prose-blog pre code { background: transparent; color: inherit; padding: 0; }
+.prose-blog img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 1rem 0; border: 1px solid var(--ap-n-20); }
+.prose-blog hr { margin: 1.5rem 0; border: none; border-top: 1px solid var(--ap-n-20); }
+.prose-blog [style*="text-align: center"], .prose-blog [style*="text-align:center"] { text-align: center; }
+.prose-blog [style*="text-align: right"], .prose-blog [style*="text-align:right"] { text-align: right; }
 
 /* Editor empty placeholder */
 [contenteditable][data-placeholder]:empty::before {
@@ -2733,17 +2606,17 @@ body.pdf-exporting .no-print,
 
 @layer base {
   button,
-  [role='button'],
-  input[type='submit'],
-  input[type='button'],
-  input[type='reset'] {
+  [role="button"],
+  input[type="submit"],
+  input[type="button"],
+  input[type="reset"] {
     @apply min-h-[44px] min-w-[44px] touch-manipulation;
     border-radius: var(--ap-radius-sm);
   }
 
   /* Global 150ms Smooth Transitions for all interactive components */
   button,
-  [role='button'],
+  [role="button"],
   a,
   input,
   select,
@@ -2755,8 +2628,7 @@ body.pdf-exporting .no-print,
   .hn-btn-ghost,
   .hn-card-elevated,
   .hn-nav-link {
-    transition-property:
-      color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform;
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform;
     transition-timing-function: var(--ap-ease);
     transition-duration: 150ms;
   }
@@ -2764,7 +2636,7 @@ body.pdf-exporting .no-print,
 
 @media (prefers-reduced-motion: reduce) {
   button,
-  [role='button'],
+  [role="button"],
   a,
   input,
   select,
@@ -2806,20 +2678,16 @@ footer a,
    (--ap-n-50, 5.07:1 — passes AA but sits close to the floor on tinted grounds) to carbon-60
    (--ap-n-60, 6.87:1) unless inside an explicit dark container. Ratios are against white and
    recomputed from the Apple neutrals; the older figures in this comment were NASA's. */
-:root:not(.dark):not([data-theme='dark'])
-  :not(.bg-carbon-90):not(.bg-carbon-80):not(.hn-surface-dark)
-  > .text-carbon-40,
-:root:not(.dark):not([data-theme='dark'])
-  :not(.bg-carbon-90):not(.bg-carbon-80):not(.hn-surface-dark)
-  > .text-carbon-50 {
+:root:not(.dark):not([data-theme="dark"]) :not(.bg-carbon-90):not(.bg-carbon-80):not(.hn-surface-dark) > .text-carbon-40,
+:root:not(.dark):not([data-theme="dark"]) :not(.bg-carbon-90):not(.bg-carbon-80):not(.hn-surface-dark) > .text-carbon-50 {
   color: var(--ap-n-60);
 }
 
 /* Phase 4 Touch Target Floor ([P1] RES-01):
    Enforce >= 44x44px minimum interactive hit area outside @layer base so utility
    heights (h-8, h-9, h-10) cannot shrink interactive buttons below WCAG 2.5.8 / Apple HIG. */
-button:not([data-compact-target='true']),
-[role='button']:not([data-compact-target='true']) {
+button:not([data-compact-target="true"]),
+[role="button"]:not([data-compact-target="true"]) {
   min-height: 44px;
   min-width: 44px;
 }
@@ -2827,9 +2695,7 @@ button:not([data-compact-target='true']),
 /* Phase 4 GPU/paint-scoped transition guard:
    Prevent legacy .transition-all from animating layout geometry (width, height, top, left, margin, padding). */
 .transition-all {
-  transition-property:
-    color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter,
-    backdrop-filter;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
   transition-timing-function: var(--ease-standard, cubic-bezier(0.22, 1, 0.36, 1));
   transition-duration: 150ms;
 }

@@ -86,7 +86,7 @@ export default function SetPasswordPage() {
   };
 
   const inputClass =
-    'mt-1.5 h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 outline-none focus:border-ap-primary focus:ring-2 focus:ring-ap-primary/40';
+    'mt-1.5 h-12 w-full rounded-full border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 outline-none focus:border-ap-primary focus:ring-2 focus:ring-ap-primary/40';
 
   if (phase === 'done') {
     return (

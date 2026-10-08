@@ -52,7 +52,7 @@ export const Blogs: React.FC = () => {
       <div className="rounded-2xl bg-white border border-carbon-20/90 p-6 md:p-8 relative overflow-hidden space-y-3">
         <div className="absolute top-0 left-0 w-full h-1 bg-primary"></div>
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-sm text-xs font-mono font-extrabold bg-amber-50 text-amber-900 border border-amber-300 uppercase tracking-wider">
+          <span className="px-3 py-1 rounded-full text-xs font-mono font-extrabold bg-amber-50 text-amber-900 border border-amber-300 uppercase tracking-wider">
             Research Insights & Field Reports
           </span>
           <span className="text-carbon-60">•</span>
@@ -110,7 +110,7 @@ export const Blogs: React.FC = () => {
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs font-mono font-bold">
-                    <span className="px-2 py-0.5 rounded-sm bg-carbon-05 text-carbon-80 border border-carbon-20">
+                    <span className="px-2 py-0.5 rounded-full bg-carbon-05 text-carbon-80 border border-carbon-20">
                       {article.category}
                     </span>
                     <span className="text-carbon-60">{readingTimeMinutes(article.contentHtml)} min read</span>

@@ -93,7 +93,7 @@ const ForgotPasswordPage: React.FC = () => {
                 placeholder="user@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 placeholder-carbon-40 font-medium focus:border-ap-primary focus:outline-none focus:ring-2 focus:ring-ap-primary/40"
+                className="h-12 w-full rounded-full border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 placeholder-carbon-40 font-medium focus:border-ap-primary focus:outline-none focus:ring-2 focus:ring-ap-primary/40"
               />
             </div>
 
@@ -170,7 +170,7 @@ const ForgotPasswordPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsSubmitted(false)}
-                className="min-h-[44px] w-full cursor-pointer border border-carbon-20 bg-carbon-05 px-6 py-3 text-base font-semibold text-carbon-70 hover:bg-carbon-10 touch-manipulation"
+                className="min-h-[44px] w-full cursor-pointer border border-carbon-20 rounded-full bg-carbon-05 px-6 py-3 text-base font-semibold text-carbon-70 hover:bg-carbon-10 touch-manipulation"
               >
                 Enter a different email
               </button>

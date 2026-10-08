@@ -612,14 +612,14 @@ export const DivisionDetailPage: React.FC = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search events, GLIDE, desc..."
-                className="h-11 min-h-[44px] pl-8 pr-3 text-base border border-carbon-20 bg-carbon-05 text-carbon-80 placeholder-carbon-40 focus:outline-none focus-visible:outline focus-visible:outline-offset-1"
+                className="h-11 min-h-[44px] pl-8 pr-3 text-base border border-carbon-20 rounded-md bg-carbon-05 text-carbon-80 placeholder-carbon-40 focus:outline-none focus-visible:outline focus-visible:outline-offset-1"
               />
             </div>
 
             <select
               value={selectedHazard}
               onChange={(e) => setSelectedHazard(e.target.value)}
-              className="h-11 min-h-[44px] py-1.5 px-2.5 text-base border border-carbon-20 bg-carbon-05 text-carbon-70 focus:outline-none focus-visible:outline focus-visible:outline-offset-1"
+              className="h-11 min-h-[44px] py-1.5 px-2.5 text-base border border-carbon-20 rounded-2xl bg-carbon-05 text-carbon-70 focus:outline-none focus-visible:outline focus-visible:outline-offset-1"
             >
               <option value="all">All Hazards</option>
               {availableHazards.map((h) => (
@@ -632,7 +632,7 @@ export const DivisionDetailPage: React.FC = () => {
             <select
               value={selectedDistrict}
               onChange={(e) => setSelectedDistrict(e.target.value)}
-              className="h-11 min-h-[44px] py-1.5 px-2.5 text-base border border-carbon-20 bg-carbon-05 text-carbon-70 focus:outline-none focus-visible:outline focus-visible:outline-offset-1"
+              className="h-11 min-h-[44px] py-1.5 px-2.5 text-base border border-carbon-20 rounded-2xl bg-carbon-05 text-carbon-70 focus:outline-none focus-visible:outline focus-visible:outline-offset-1"
             >
               <option value="all">All Districts</option>
               {availableDistricts.map((d) => (

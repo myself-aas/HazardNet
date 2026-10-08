@@ -15,9 +15,10 @@ export const Privacy: React.FC = () => {
       <Breadcrumbs />
 
       <div className="max-w-[65ch] space-y-6 border border-carbon-20 rounded-2xl bg-white p-6 text-base leading-[1.62] text-carbon-70 lg:p-8">
+        
         <div className="border-b border-carbon-20 pb-4 space-y-2">
           <div className="flex items-center gap-2">
-            <span className="rounded-sm border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-mono font-bold uppercase text-amber-900">
+            <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-mono font-bold uppercase text-amber-900">
               Privacy Policy
             </span>
             <span className="text-carbon-60">•</span>
@@ -32,9 +33,7 @@ export const Privacy: React.FC = () => {
         <section className="space-y-2">
           <h2 className="text-sm font-bold text-carbon-90">1. Commitment to Open Privacy</h2>
           <p>
-            HazardNet AI is committed to protecting user privacy while delivering decision-support for disaster
-            preparedness. Forecasts are computed in a scheduled server-side pipeline and served as committed snapshots:
-            no neural-network inference runs in your browser, and no model weights are downloaded to your device.
+            HazardNet AI is committed to protecting user privacy while delivering decision-support for disaster preparedness. Forecasts are computed in a scheduled server-side pipeline and served as committed snapshots: no neural-network inference runs in your browser, and no model weights are downloaded to your device.
           </p>
         </section>
 
@@ -42,42 +41,30 @@ export const Privacy: React.FC = () => {
           <h2 className="text-sm font-bold text-carbon-90">2. Information We Process</h2>
           <ul className="list-disc pl-5 space-y-1.5 text-carbon-70">
             <li>
-              <strong>Geolocation Data:</strong> If you grant location permission, your browser latitude and longitude
-              are used exclusively in volatile memory to identify your local Bangladesh district and calculate distance
-              to active flood or cyclone hazard zones. Location coordinates are never sold or logged to external
-              servers.
+              <strong>Geolocation Data:</strong> If you grant location permission, your browser latitude and longitude are used exclusively in volatile memory to identify your local Bangladesh district and calculate distance to active flood or cyclone hazard zones. Location coordinates are never sold or logged to external servers.
             </li>
             <li>
-              <strong>Offline Caching:</strong> Map tiles may be cached locally for navigation. HazardNet model weights
-              and preprocessing assets remain server-side and are not downloaded or stored in your browser.
+              <strong>Offline Caching:</strong> Map tiles may be cached locally for navigation. HazardNet model weights and preprocessing assets remain server-side and are not downloaded or stored in your browser.
             </li>
           </ul>
         </section>
 
         <section className="space-y-2">
           <h2 className="text-sm font-bold text-carbon-90">3. Zero Third-Party Tracker Guarantee</h2>
-          <p className="p-3 bg-amber-50 border border-amber-200 text-amber-900 font-medium">
-            HazardNet contains <strong>no third-party advertising trackers</strong>, no social media tracking scripts,
-            and no commercial data brokers. All telemetry is limited to anonymous error logs required for system uptime
-            maintenance.
+          <p className="rounded-lg p-3 bg-amber-50 border border-amber-200 text-amber-900 font-medium">
+            HazardNet contains <strong>no third-party advertising trackers</strong>, no social media tracking scripts, and no commercial data brokers. All telemetry is limited to anonymous error logs required for system uptime maintenance.
           </p>
         </section>
 
         <section className="space-y-2">
           <h2 className="text-sm font-bold text-carbon-90">4. Contact Our Privacy Lead</h2>
           <p>
-            If you have questions regarding data privacy or wish to request data removal, contact us via our{' '}
-            <Link to="/contact" className="font-bold text-ap-link underline underline-offset-4">
-              Contact Page
-            </Link>{' '}
-            or view our{' '}
-            <Link to="/terms" className="font-bold text-ap-link underline underline-offset-4">
-              Terms of Service
-            </Link>
-            .
+            If you have questions regarding data privacy or wish to request data removal, contact us via our <Link to="/contact" className="font-bold text-ap-link underline underline-offset-4">Contact Page</Link> or view our <Link to="/terms" className="font-bold text-ap-link underline underline-offset-4">Terms of Service</Link>.
           </p>
         </section>
+
       </div>
+
     </motion.div>
   );
 };

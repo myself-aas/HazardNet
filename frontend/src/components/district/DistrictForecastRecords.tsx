@@ -239,7 +239,7 @@ export const DistrictForecastRecords: React.FC = () => {
                 }))}
               />
             )}
-            <div className="hidden overflow-x-auto border border-carbon-20/90 md:block">
+            <div className="rounded-xl hidden overflow-x-auto border border-carbon-20/90 md:block">
               <table className="w-full text-left border-collapse text-xs font-sans">
                 <thead>
                   <tr className="bg-carbon-90 text-carbon-05 font-bold text-xs uppercase tracking-wider font-mono">

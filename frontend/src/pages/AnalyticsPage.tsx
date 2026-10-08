@@ -222,7 +222,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             )}
 
             {!snapshotLoading && !snapshotError && provenance.length > 0 && (
-              <dl className="divide-y divide-carbon-10 border border-carbon-20 bg-white">
+              <dl className="divide-y divide-carbon-10 border border-carbon-20 rounded-xl bg-white">
                 {provenance.map((row) => (
                   <div key={row.label} className="flex flex-col gap-1 p-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
                     <dt className="text-xs font-semibold text-carbon-60">{row.label}</dt>

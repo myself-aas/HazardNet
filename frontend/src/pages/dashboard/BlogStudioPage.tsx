@@ -6,7 +6,12 @@ import toast from 'react-hot-toast';
 import MaterialIcon from '../../components/MaterialIcon';
 import Breadcrumbs from '../../components/Breadcrumbs';
 import { useAuth } from '../../context/AuthContext';
-import { BlogArticle, deleteArticle, listArticles, updateArticle } from '../../lib/blogArticles';
+import {
+  BlogArticle,
+  deleteArticle,
+  listArticles,
+  updateArticle,
+} from '../../lib/blogArticles';
 import { InfinityLoader } from '../../components/brand';
 
 /**
@@ -57,11 +62,7 @@ export const BlogStudioPage: React.FC = () => {
       toast.error(result.error);
       return;
     }
-    toast.success(
-      nextStatus === 'published'
-        ? `Published “${article.title}” at /blogs/${article.slug}`
-        : `Unpublished “${article.title}”`,
-    );
+    toast.success(nextStatus === 'published' ? `Published “${article.title}” at /blogs/${article.slug}` : `Unpublished “${article.title}”`);
     void reload();
   };
 
@@ -92,7 +93,7 @@ export const BlogStudioPage: React.FC = () => {
       <Breadcrumbs />
 
       {/* Header */}
-      <div className="rounded-2xl bg-white border border-carbon-20/90 p-6 relative overflow-hidden space-y-4">
+      <div className="rounded-xl bg-white border border-carbon-20/90 p-6 relative overflow-hidden space-y-4">
         <div aria-hidden="true" className="absolute top-0 left-0 w-full h-1 bg-primary" />
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
@@ -120,7 +121,7 @@ export const BlogStudioPage: React.FC = () => {
             { label: 'Published', value: published },
             { label: 'Drafts', value: drafts },
           ].map((stat) => (
-            <div key={stat.label} className="border border-carbon-20 bg-carbon-05 px-3.5 py-2.5">
+            <div key={stat.label} className="border border-carbon-20 rounded-2xl bg-carbon-05 px-3.5 py-2.5">
               <p className="font-mono text-lg font-black text-carbon-90">{stat.value}</p>
               <p className="text-xs font-bold uppercase tracking-wide text-carbon-60">{stat.label}</p>
             </div>
@@ -128,20 +129,20 @@ export const BlogStudioPage: React.FC = () => {
         </div>
 
         {localDemo && (
-          <p className="border border-amber-200 bg-amber-50 p-3 text-xs font-semibold text-amber-900">
+          <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs font-semibold text-amber-900">
             Local demo mode. Firestore is not configured, so articles persist in this browser only. Configure Firestore
             for production storage.
           </p>
         )}
         {error && (
-          <p role="alert" className="border border-ap-primary bg-white p-3 text-xs font-semibold text-ap-link">
+          <p role="alert" className="rounded-lg border border-ap-primary bg-white p-3 text-xs font-semibold text-ap-link">
             {error}: verify the blog_articles table exists.
           </p>
         )}
       </div>
 
       {/* Article table */}
-      <div className="bg-white border border-carbon-20/90 overflow-hidden">
+      <div className="rounded-xl bg-white border border-carbon-20/90 overflow-hidden">
         {loading ? (
           <div className="p-10 flex justify-center" role="status">
             <InfinityLoader size={88} label="Loading" announce={false} />
@@ -161,10 +162,7 @@ export const BlogStudioPage: React.FC = () => {
         ) : (
           <ul className="divide-y divide-carbon-10">
             {articles.map((article) => (
-              <li
-                key={article.id}
-                className="p-4 flex flex-col lg:flex-row lg:items-center gap-3 hover:bg-carbon-05/60 transition-colors"
-              >
+              <li key={article.id} className="p-4 flex flex-col lg:flex-row lg:items-center gap-3 hover:bg-carbon-05/60 transition-colors">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span
@@ -176,10 +174,12 @@ export const BlogStudioPage: React.FC = () => {
                     >
                       {article.status}
                     </span>
-                    <span className="px-2 py-0.5 rounded-sm text-xs font-mono font-bold bg-carbon-10 border border-carbon-20 text-carbon-70">
+                    <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-carbon-10 border border-carbon-20 text-carbon-70">
                       {article.category}
                     </span>
-                    <span className="text-xs font-mono text-carbon-60">/blogs/{article.slug}</span>
+                    <span className="text-xs font-mono text-carbon-60">
+                      /blogs/{article.slug}
+                    </span>
                   </div>
                   <p className="mt-1 text-sm font-black text-carbon-90 truncate">{article.title}</p>
                   <p className="text-xs text-carbon-60 font-medium">
@@ -191,7 +191,7 @@ export const BlogStudioPage: React.FC = () => {
                   {article.status === 'published' && (
                     <Link
                       to={`/blogs/${article.slug}`}
-                      className="px-2.5 py-1.5 rounded-sm border border-carbon-20 bg-white text-xs font-black text-carbon-70 hover:bg-carbon-10"
+                      className="px-2.5 py-1.5 rounded-full border border-carbon-20 bg-white text-xs font-black text-carbon-70 hover:bg-carbon-10"
                       title={`Open /blogs/${article.slug}`}
                     >
                       View
@@ -201,14 +201,14 @@ export const BlogStudioPage: React.FC = () => {
                     type="button"
                     onClick={() => togglePublish(article)}
                     disabled={busyId === article.id}
-                    className="px-2.5 py-1.5 rounded-sm border border-amber-200 bg-amber-50 text-xs font-black text-amber-900 hover:bg-amber-100 disabled:opacity-50 cursor-pointer"
+                    className="px-2.5 py-1.5 rounded-full border border-amber-200 bg-amber-50 text-xs font-black text-amber-900 hover:bg-amber-100 disabled:opacity-50 cursor-pointer"
                   >
                     {busyId === article.id ? '…' : article.status === 'published' ? 'Unpublish' : 'Publish'}
                   </button>
                   <button
                     type="button"
                     onClick={() => navigate(`/dashboard/blog/edit/${article.id}`)}
-                    className="px-2.5 py-1.5 rounded-sm border border-carbon-20 bg-white text-xs font-black text-carbon-70 hover:bg-carbon-10 cursor-pointer"
+                    className="px-2.5 py-1.5 rounded-full border border-carbon-20 bg-white text-xs font-black text-carbon-70 hover:bg-carbon-10 cursor-pointer"
                   >
                     Edit
                   </button>
@@ -218,14 +218,14 @@ export const BlogStudioPage: React.FC = () => {
                         type="button"
                         onClick={() => handleDelete(article)}
                         disabled={busyId === article.id}
-                        className="px-2.5 py-1.5 rounded-sm bg-rose-600 text-ap-on-sev text-xs font-black hover:bg-rose-700 disabled:opacity-50 cursor-pointer"
+                        className="px-2.5 py-1.5 rounded-full bg-rose-600 text-ap-on-sev text-xs font-black hover:bg-rose-700 disabled:opacity-50 cursor-pointer"
                       >
                         {busyId === article.id ? 'Deleting…' : 'Confirm delete'}
                       </button>
                       <button
                         type="button"
                         onClick={() => setConfirmingId(null)}
-                        className="px-2 py-1.5 rounded-sm border border-carbon-20 text-xs font-black text-carbon-60 hover:bg-carbon-10 cursor-pointer"
+                        className="px-2 py-1.5 rounded-full border border-carbon-20 text-xs font-black text-carbon-60 hover:bg-carbon-10 cursor-pointer"
                       >
                         Cancel
                       </button>
@@ -234,7 +234,7 @@ export const BlogStudioPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setConfirmingId(article.id)}
-                      className="px-2.5 py-1.5 rounded-sm border border-ap-primary bg-white text-xs font-black text-ap-link hover:bg-rose-100 cursor-pointer"
+                      className="px-2.5 py-1.5 rounded-full border border-ap-primary bg-white text-xs font-black text-ap-link hover:bg-rose-100 cursor-pointer"
                     >
                       Delete
                     </button>

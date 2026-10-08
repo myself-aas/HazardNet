@@ -52,9 +52,7 @@ const SeoCheckRow: React.FC<{ passed: boolean; label: string; advice: string }> 
         <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
       )}
     </span>
-    <span
-      className={`text-xs leading-relaxed ${passed ? 'text-carbon-60 line-through decoration-carbon-30' : 'font-semibold text-carbon-70'}`}
-    >
+    <span className={`text-xs leading-relaxed ${passed ? 'text-carbon-60 line-through decoration-carbon-30' : 'font-semibold text-carbon-70'}`}>
       {label}
     </span>
   </li>
@@ -92,6 +90,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
   const [authorBio, setAuthorBio] = useState('');
   const [authorAvatarUrl, setAuthorAvatarUrl] = useState('');
   const [authorWebsite, setAuthorWebsite] = useState('');
+
 
   const [loading, setLoading] = useState(mode === 'edit');
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -161,36 +160,16 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
 
   // Debounced autosave to localStorage (draft safety net)
   const autosavePayload = JSON.stringify({
-    title,
-    slug,
-    excerpt,
-    category,
-    tags,
-    coverImageUrl,
-    contentHtml,
-    status,
-    metaTitle,
-    metaDescription,
-    focusKeyword,
-    canonicalUrl,
-    ogImageUrl,
-    robotsNoIndex,
-    faqs,
-    authorName,
-    authorTitle,
-    authorBio,
-    authorAvatarUrl,
-    authorWebsite,
+    title, slug, excerpt, category, tags, coverImageUrl, contentHtml, status,
+    metaTitle, metaDescription, focusKeyword, canonicalUrl, ogImageUrl, robotsNoIndex, faqs,
+    authorName, authorTitle, authorBio, authorAvatarUrl, authorWebsite,
   });
   useEffect(() => {
     if (loading || !dirty || !title.trim()) return;
     if (autosaveTimer.current) window.clearTimeout(autosaveTimer.current);
     autosaveTimer.current = window.setTimeout(() => {
       try {
-        localStorage.setItem(
-          autosaveKey(articleId ?? 'new'),
-          JSON.stringify({ ...JSON.parse(autosavePayload), at: Date.now() }),
-        );
+        localStorage.setItem(autosaveKey(articleId ?? 'new'), JSON.stringify({ ...JSON.parse(autosavePayload), at: Date.now() }));
         setLastAutosavedAt(new Date().toLocaleTimeString());
         setDirty(false);
       } catch {
@@ -202,12 +181,10 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
     };
   }, [articleId, autosavePayload, dirty, loading, title]);
 
-  const markDirty =
-    <T,>(setter: (value: T) => void) =>
-    (value: T) => {
-      setter(value);
-      setDirty(true);
-    };
+  const markDirty = <T,>(setter: (value: T) => void) => (value: T) => {
+    setter(value);
+    setDirty(true);
+  };
 
   const buildDraft = async (): Promise<BlogArticleDraft | null> => {
     if (!title.trim()) {
@@ -225,20 +202,11 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
     return {
       slug: finalSlug,
       title: title.trim(),
-      excerpt:
-        excerpt.trim() ||
-        `${contentHtml
-          .replace(/<[^>]*>/g, ' ')
-          .replace(/\s+/g, ' ')
-          .trim()
-          .slice(0, 160)}…`,
+      excerpt: excerpt.trim() || `${contentHtml.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160)}…`,
       contentHtml,
       coverImageUrl: coverImageUrl.trim() || null,
       category,
-      tags: tags
-        .split(',')
-        .map((t) => t.trim())
-        .filter(Boolean),
+      tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
       status,
       authorId: signedInAuthor.id,
       // author_email is the security/permission identity (RLS-checked); the
@@ -287,9 +255,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
       setPublishedSlug(effectiveStatus === 'published' ? draft.slug : null);
       try {
         localStorage.removeItem(autosaveKey(articleId ?? 'new'));
-      } catch {
-        /* ignore */
-      }
+      } catch { /* ignore */ }
     } finally {
       setSaving(false);
     }
@@ -305,10 +271,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
         contentHtml,
         coverImageUrl: coverImageUrl || null,
         category,
-        tags: tags
-          .split(',')
-          .map((t) => t.trim())
-          .filter(Boolean),
+        tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
         status,
         authorId: null,
         authorEmail: '',
@@ -328,27 +291,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
         authorAvatarUrl: '',
         authorWebsite: '',
       }),
-    [
-      articleId,
-      slug,
-      title,
-      excerpt,
-      contentHtml,
-      coverImageUrl,
-      category,
-      tags,
-      status,
-      authorName,
-      metaTitle,
-      metaDescription,
-      focusKeyword,
-      canonicalUrl,
-      ogImageUrl,
-      robotsNoIndex,
-      faqs,
-      authorTitle,
-      authorBio,
-    ],
+    [articleId, slug, title, excerpt, contentHtml, coverImageUrl, category, tags, status, authorName, metaTitle, metaDescription, focusKeyword, canonicalUrl, ogImageUrl, robotsNoIndex, faqs, authorTitle, authorBio],
   );
 
   if (loading) {
@@ -365,10 +308,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
         <FileText className="h-8 w-8 text-carbon-50" aria-hidden="true" />
         <h1 className="text-lg font-black text-carbon-90">Article unavailable</h1>
         <p className="text-sm text-carbon-60">{loadError}</p>
-        <Link
-          to="/dashboard/blog"
-          className="bg-carbon-90 px-4 py-2.5 text-xs font-black text-carbon-05 hover:bg-carbon-70"
-        >
+        <Link to="/dashboard/blog" className="bg-carbon-90 px-4 py-2.5 text-xs font-black text-carbon-05 hover:bg-carbon-70">
           Back to Blog Studio
         </Link>
       </div>
@@ -380,16 +320,11 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
   const serpUrl = `hazardnet.live › blogs › ${slug || 'your-slug'}`;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="max-w-6xl mx-auto space-y-5 pb-10"
-    >
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="max-w-6xl mx-auto space-y-5 pb-10">
       <Breadcrumbs />
 
       {/* Editor header */}
-      <div className="rounded-2xl bg-white border border-carbon-20/90 p-5 relative overflow-hidden space-y-3">
+      <div className="rounded-xl bg-white border border-carbon-20/90 p-5 relative overflow-hidden space-y-3">
         <div aria-hidden="true" className="absolute top-0 left-0 w-full h-1 bg-primary" />
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
@@ -401,10 +336,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               {mode === 'new' ? 'Write a new article' : 'Edit article'}
             </h1>
             {publishedSlug && (
-              <Link
-                to={`/blogs/${publishedSlug}`}
-                className="text-xs font-bold font-mono text-amber-700 hover:underline"
-              >
+              <Link to={`/blogs/${publishedSlug}`} className="text-xs font-bold font-mono text-amber-700 hover:underline">
                 <span className="inline-flex items-center gap-1.5">
                   Live at /blogs/{publishedSlug} <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                 </span>
@@ -414,7 +346,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
           <div className="flex items-center gap-2">
             <Link
               to="/dashboard/blog"
-              className="px-3.5 py-2 border border-carbon-20 bg-white text-xs font-black text-carbon-70 hover:bg-carbon-10"
+              className="px-3.5 py-2 border border-carbon-20 rounded-full bg-white text-xs font-black text-carbon-70 hover:bg-carbon-10"
             >
               <span className="inline-flex items-center gap-1.5">
                 <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" /> All articles
@@ -424,7 +356,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               type="button"
               onClick={() => handleSave('draft')}
               disabled={saving}
-              className="px-3.5 py-2 border border-carbon-30 bg-white text-xs font-black text-carbon-80 hover:bg-carbon-10 disabled:opacity-50 cursor-pointer"
+              className="rounded-full px-3.5 py-2 border border-carbon-30 bg-white text-xs font-black text-carbon-80 hover:bg-carbon-10 disabled:opacity-50 cursor-pointer"
             >
               {saving ? 'Saving…' : 'Save draft'}
             </button>
@@ -439,11 +371,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
           </div>
         </div>
         <p className="text-xs font-mono text-carbon-60">
-          {dirty
-            ? 'Unsaved changes: autosaving locally…'
-            : lastAutosavedAt
-              ? `Local autosave ${lastAutosavedAt}`
-              : 'Changes autosave locally as you write.'}
+          {dirty ? 'Unsaved changes: autosaving locally…' : lastAutosavedAt ? `Local autosave ${lastAutosavedAt}` : 'Changes autosave locally as you write.'}
           {isLocalDemoMode() && ' · Local demo mode (browser storage only)'}
         </p>
       </div>
@@ -454,9 +382,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
           {/* Core content */}
           <div className="rounded-2xl bg-white border border-carbon-20/90 p-5 space-y-4">
             <div>
-              <label htmlFor="blog-title" className="block text-xs font-bold text-carbon-80 mb-1.5">
-                Title
-              </label>
+              <label htmlFor="blog-title" className="block text-xs font-bold text-carbon-80 mb-1.5">Title</label>
               <input
                 id="blog-title"
                 value={title}
@@ -487,7 +413,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                       setSlugEdited(false);
                       setSlug(slugify(title));
                     }}
-                    className="shrink-0 px-2.5 py-2 border border-carbon-20 text-xs font-black text-carbon-60 hover:bg-carbon-10 cursor-pointer"
+                    className="shrink-0 px-2.5 py-2 border border-carbon-20 rounded-full text-xs font-black text-carbon-60 hover:bg-carbon-10 cursor-pointer"
                     title="Re-generate from title"
                   >
                     Auto
@@ -496,9 +422,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               </div>
             </div>
             <div>
-              <label htmlFor="blog-excerpt" className="block text-xs font-bold text-carbon-80 mb-1.5">
-                Excerpt / summary
-              </label>
+              <label htmlFor="blog-excerpt" className="block text-xs font-bold text-carbon-80 mb-1.5">Excerpt / summary</label>
               <textarea
                 id="blog-excerpt"
                 value={excerpt}
@@ -520,11 +444,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               </h3>
               <span
                 className={`rounded-full px-2.5 py-1 text-xs font-black ${
-                  seo.score >= 80
-                    ? 'bg-carbon-05 text-carbon-80'
-                    : seo.score >= 50
-                      ? 'bg-amber-50 text-amber-700'
-                      : 'bg-white text-ap-link'
+                  seo.score >= 80 ? 'bg-carbon-05 text-carbon-80' : seo.score >= 50 ? 'bg-amber-50 text-amber-700' : 'bg-white text-ap-link'
                 }`}
                 data-testid="seo-score"
               >
@@ -534,26 +454,18 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
 
             {/* Google SERP preview */}
             <div className="border border-carbon-20 rounded-2xl bg-carbon-05 p-4" data-testid="serp-preview">
-              <p className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-carbon-60">
-                Google result preview
-              </p>
+              <p className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-carbon-60">Google result preview</p>
               <p className="truncate text-xs text-carbon-70 leading-none mb-1">{serpUrl}</p>
-              <p className="text-ap-caption leading-snug text-blue-800 font-medium truncate">
-                {serpTitle || 'Your SEO title appears here'}
-              </p>
+              <p className="text-ap-caption leading-snug text-blue-800 font-medium truncate">{serpTitle || 'Your SEO title appears here'}</p>
               <p className="mt-1 text-xs leading-relaxed text-carbon-70 line-clamp-2">
-                {serpDescription ||
-                  'Your meta description appears here. Write 120–160 characters that make searchers click.'}
+                {serpDescription || 'Your meta description appears here. Write 120–160 characters that make searchers click.'}
               </p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="blog-meta-title" className="block text-xs font-bold text-carbon-80 mb-1.5">
-                  SEO title{' '}
-                  <span className={metaTitle.length > 60 ? 'text-rose-600' : 'text-carbon-60 font-medium'}>
-                    ({metaTitle.length}/60)
-                  </span>
+                  SEO title <span className={metaTitle.length > 60 ? 'text-rose-600' : 'text-carbon-60 font-medium'}>({metaTitle.length}/60)</span>
                 </label>
                 <input
                   id="blog-meta-title"
@@ -565,9 +477,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                 />
               </div>
               <div>
-                <label htmlFor="blog-focus-keyword" className="block text-xs font-bold text-carbon-80 mb-1.5">
-                  Focus keyword
-                </label>
+                <label htmlFor="blog-focus-keyword" className="block text-xs font-bold text-carbon-80 mb-1.5">Focus keyword</label>
                 <input
                   id="blog-focus-keyword"
                   value={focusKeyword}
@@ -579,10 +489,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
             </div>
             <div>
               <label htmlFor="blog-meta-description" className="block text-xs font-bold text-carbon-80 mb-1.5">
-                Meta description{' '}
-                <span className={metaDescription.length > 160 ? 'text-rose-600' : 'text-carbon-60 font-medium'}>
-                  ({metaDescription.length}/160)
-                </span>
+                Meta description <span className={metaDescription.length > 160 ? 'text-rose-600' : 'text-carbon-60 font-medium'}>({metaDescription.length}/160)</span>
               </label>
               <textarea
                 id="blog-meta-description"
@@ -596,9 +503,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label htmlFor="blog-canonical" className="block text-xs font-bold text-carbon-80 mb-1.5">
-                  Canonical URL <span className="text-carbon-60 font-medium">(optional)</span>
-                </label>
+                <label htmlFor="blog-canonical" className="block text-xs font-bold text-carbon-80 mb-1.5">Canonical URL <span className="text-carbon-60 font-medium">(optional)</span></label>
                 <input
                   id="blog-canonical"
                   value={canonicalUrl}
@@ -608,9 +513,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                 />
               </div>
               <div>
-                <label htmlFor="blog-og-image" className="block text-xs font-bold text-carbon-80 mb-1.5">
-                  Social share image (og:image) <span className="text-carbon-60 font-medium">(optional)</span>
-                </label>
+                <label htmlFor="blog-og-image" className="block text-xs font-bold text-carbon-80 mb-1.5">Social share image (og:image) <span className="text-carbon-60 font-medium">(optional)</span></label>
                 <input
                   id="blog-og-image"
                   value={ogImageUrl}
@@ -630,8 +533,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                 className="h-4 w-4 rounded border-carbon-30 accent-ap-primary cursor-pointer"
               />
               <span className="text-xs font-semibold text-carbon-60">
-                Hide from search engines{' '}
-                <span className="font-mono text-xs text-carbon-60">(meta robots: noindex, follow)</span>
+                Hide from search engines <span className="font-mono text-xs text-carbon-60">(meta robots: noindex, follow)</span>
               </span>
             </label>
 
@@ -640,31 +542,25 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               <div className="flex items-center justify-between">
                 <p className="text-xs font-bold text-carbon-80 flex items-center gap-1.5">
                   <MaterialIcon name="faq" className="w-4 h-4 text-ap-link" /> FAQ section
-                  <span className="text-xs font-medium text-carbon-60">
-                    (emits FAQPage schema for Google rich results)
-                  </span>
+                  <span className="text-xs font-medium text-carbon-60">(emits FAQPage schema for Google rich results)</span>
                 </p>
                 <button
                   type="button"
                   onClick={() => markDirty(setFaqs)([...faqs, { question: '', answer: '' }])}
-                  className="border border-carbon-20 px-2.5 py-1.5 text-xs font-black text-carbon-70 hover:bg-carbon-10 cursor-pointer"
+                  className="border border-carbon-20 rounded-full px-2.5 py-1.5 text-xs font-black text-carbon-70 hover:bg-carbon-10 cursor-pointer"
                 >
                   + Add question
                 </button>
               </div>
               {faqs.length === 0 && (
-                <p className="text-xs text-carbon-60">
-                  3–5 concise Q&amp;As targeting “People also ask” queries works best.
-                </p>
+                <p className="text-xs text-carbon-60">3–5 concise Q&amp;As targeting “People also ask” queries works best.</p>
               )}
               {faqs.map((faq, index) => (
                 <div key={index} className="space-y-2 bg-carbon-05 p-3">
                   <div className="flex items-center gap-2">
                     <input
                       value={faq.question}
-                      onChange={(e) =>
-                        markDirty(setFaqs)(faqs.map((f, i) => (i === index ? { ...f, question: e.target.value } : f)))
-                      }
+                      onChange={(e) => markDirty(setFaqs)(faqs.map((f, i) => (i === index ? { ...f, question: e.target.value } : f)))}
                       placeholder={`Question ${index + 1}: e.g. How accurate is satellite flood forecasting?`}
                       className={inputClass}
                       aria-label={`FAQ question ${index + 1}`}
@@ -672,7 +568,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                     <button
                       type="button"
                       onClick={() => markDirty(setFaqs)(faqs.filter((_, i) => i !== index))}
-                      className="shrink-0 border border-ap-primary p-2 text-rose-500 hover:bg-white cursor-pointer"
+                      className="rounded-full shrink-0 border border-ap-primary p-2 text-rose-500 hover:bg-white cursor-pointer"
                       aria-label={`Remove FAQ ${index + 1}`}
                     >
                       <MaterialIcon name="delete" className="w-3.5 h-3.5" />
@@ -680,9 +576,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                   </div>
                   <textarea
                     value={faq.answer}
-                    onChange={(e) =>
-                      markDirty(setFaqs)(faqs.map((f, i) => (i === index ? { ...f, answer: e.target.value } : f)))
-                    }
+                    onChange={(e) => markDirty(setFaqs)(faqs.map((f, i) => (i === index ? { ...f, answer: e.target.value } : f)))}
                     rows={2}
                     placeholder="Concise answer (40–90 words is the sweet spot for featured snippets)."
                     className={`${inputClass} resize-y`}
@@ -700,9 +594,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                 aria-expanded={showSeoTips}
                 className="flex w-full items-center justify-between px-1 py-1.5 text-xs font-black text-carbon-60 hover:text-carbon-90 cursor-pointer"
               >
-                <span>
-                  SEO checklist ({seo.passedCount}/{seo.checks.length} passed · {seo.wordCount} words)
-                </span>
+                <span>SEO checklist ({seo.passedCount}/{seo.checks.length} passed · {seo.wordCount} words)</span>
                 <span aria-hidden="true">
                   {showSeoTips ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                 </span>
@@ -723,9 +615,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
           <div className="rounded-2xl bg-white border border-carbon-20/90 p-5 space-y-4">
             <h3 className="text-xs font-black uppercase tracking-wider text-carbon-90 font-mono">Publishing</h3>
             <div>
-              <label htmlFor="blog-status" className="block text-xs font-bold text-carbon-80 mb-1.5">
-                Status
-              </label>
+              <label htmlFor="blog-status" className="block text-xs font-bold text-carbon-80 mb-1.5">Status</label>
               <select
                 id="blog-status"
                 value={status}
@@ -737,9 +627,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               </select>
             </div>
             <div>
-              <label htmlFor="blog-category" className="block text-xs font-bold text-carbon-80 mb-1.5">
-                Category
-              </label>
+              <label htmlFor="blog-category" className="block text-xs font-bold text-carbon-80 mb-1.5">Category</label>
               <select
                 id="blog-category"
                 value={category}
@@ -747,9 +635,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                 className={`${inputClass} cursor-pointer`}
               >
                 {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
+                  <option key={c} value={c}>{c}</option>
                 ))}
               </select>
             </div>
@@ -766,9 +652,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               />
             </div>
             <div>
-              <label htmlFor="blog-cover" className="block text-xs font-bold text-carbon-80 mb-1.5">
-                Cover image URL
-              </label>
+              <label htmlFor="blog-cover" className="block text-xs font-bold text-carbon-80 mb-1.5">Cover image URL</label>
               <input
                 id="blog-cover"
                 value={coverImageUrl}
@@ -777,11 +661,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                 className={inputClass}
               />
               {coverImageUrl && (
-                <img
-                  src={coverImageUrl}
-                  alt="Cover preview"
-                  className="mt-2 border border-carbon-20 h-28 w-full object-cover"
-                />
+                <img src={coverImageUrl} alt="Cover preview" className="mt-2 border border-carbon-20 rounded-lg h-28 w-full object-cover" />
               )}
             </div>
           </div>
@@ -796,16 +676,14 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                   markDirty(setAuthorName)(signedInAuthor.name);
                   setDirty(true);
                 }}
-                className="rounded-sm px-2 py-1 text-xs font-black text-amber-700 hover:bg-amber-50 cursor-pointer"
+                className="rounded-full px-2 py-1 text-xs font-black text-amber-700 hover:bg-amber-50 cursor-pointer"
                 title="Reset display name to your account name"
               >
                 Use my profile
               </button>
             </div>
             <div>
-              <label htmlFor="blog-author-name" className="block text-xs font-bold text-carbon-80 mb-1">
-                Display name
-              </label>
+              <label htmlFor="blog-author-name" className="block text-xs font-bold text-carbon-80 mb-1">Display name</label>
               <input
                 id="blog-author-name"
                 value={authorName}
@@ -815,9 +693,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               />
             </div>
             <div>
-              <label htmlFor="blog-author-title" className="block text-xs font-bold text-carbon-80 mb-1">
-                Title / role
-              </label>
+              <label htmlFor="blog-author-title" className="block text-xs font-bold text-carbon-80 mb-1">Title / role</label>
               <input
                 id="blog-author-title"
                 value={authorTitle}
@@ -827,9 +703,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               />
             </div>
             <div>
-              <label htmlFor="blog-author-bio" className="block text-xs font-bold text-carbon-80 mb-1">
-                Short bio
-              </label>
+              <label htmlFor="blog-author-bio" className="block text-xs font-bold text-carbon-80 mb-1">Short bio</label>
               <textarea
                 id="blog-author-bio"
                 value={authorBio}
@@ -841,9 +715,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               />
             </div>
             <div>
-              <label htmlFor="blog-author-avatar" className="block text-xs font-bold text-carbon-80 mb-1">
-                Avatar URL
-              </label>
+              <label htmlFor="blog-author-avatar" className="block text-xs font-bold text-carbon-80 mb-1">Avatar URL</label>
               <input
                 id="blog-author-avatar"
                 value={authorAvatarUrl}
@@ -852,17 +724,11 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                 className={`${inputClass} font-mono`}
               />
               {authorAvatarUrl && (
-                <img
-                  src={authorAvatarUrl}
-                  alt="Author preview"
-                  className="mt-2 h-12 w-12 rounded-full border border-carbon-20 object-cover"
-                />
+                <img src={authorAvatarUrl} alt="Author preview" className="mt-2 h-12 w-12 rounded-full border border-carbon-20 object-cover" />
               )}
             </div>
             <div>
-              <label htmlFor="blog-author-website" className="block text-xs font-bold text-carbon-80 mb-1">
-                Website / profile link
-              </label>
+              <label htmlFor="blog-author-website" className="block text-xs font-bold text-carbon-80 mb-1">Website / profile link</label>
               <input
                 id="blog-author-website"
                 value={authorWebsite}
@@ -872,11 +738,11 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               />
             </div>
             <p className="bg-carbon-05 p-2.5 text-xs leading-relaxed text-carbon-60">
-              Publisher account (permissions):{' '}
-              <span className="font-mono font-bold text-carbon-60">{signedInAuthor.email || 'signed-out'}</span>, and
-              only primary superadmins can save; the public byline above is fully editable.
+              Publisher account (permissions): <span className="font-mono font-bold text-carbon-60">{signedInAuthor.email || 'signed-out'}</span>, and only
+              primary superadmins can save; the public byline above is fully editable.
             </p>
           </div>
+
         </aside>
       </div>
     </motion.div>

@@ -132,7 +132,7 @@ export const EmdatComparisonChart: React.FC<EmdatComparisonChartProps> = ({
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span
-            className="h-2.5 w-2.5 rotate-45 border border-severity-moderate bg-severity-moderate-surface"
+            className="rounded-2xl h-2.5 w-2.5 rotate-45 border border-severity-moderate bg-severity-moderate-surface"
             aria-hidden="true"
           />
           <span className="font-medium text-carbon-80">Benchmarked episode (detection only)</span>

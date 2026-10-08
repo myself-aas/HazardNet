@@ -928,7 +928,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                         setSelectedDistrict(dist);
                         setActiveView('saved');
                       }}
-                      className="w-full py-2.5 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 font-black text-xs transition-all cursor-pointer"
+                      className="w-full rounded-full py-2.5 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 font-black text-xs transition-all cursor-pointer"
                     >
                       <span className="inline-flex items-center justify-center gap-2">
                         Focus GIS Map Stage <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -971,7 +971,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
               <div className="lg:col-span-7 bg-white border border-carbon-20 rounded-xl p-6 sm:p-8 space-y-6">
                 <div className="flex items-center justify-between border-b border-carbon-20 pb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-ap-primary/15 border border-ap-primary/30 text-amber-700 flex items-center justify-center font-bold text-xl">
+                    <div className="rounded-full w-12 h-12 bg-ap-primary/15 border border-ap-primary/30 text-amber-700 flex items-center justify-center font-bold text-xl">
                       <MaterialIcon name="public" className="w-6 h-6" />
                     </div>
                     <div>
@@ -1004,7 +1004,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                   </div>
                 </div>
 
-                <div className="p-4 bg-carbon-05 border border-amber-200 text-xs text-amber-900 space-y-2">
+                <div className="rounded-2xl p-4 bg-carbon-05 border border-amber-200 text-xs text-amber-900 space-y-2">
                   <div className="flex items-center gap-2 font-bold">
                     <MaterialIcon name="lightbulb" className="w-4 h-4 inline-block mr-1" />
                     <span>Why tiles are not downloadable for offline use</span>
@@ -1020,7 +1020,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                   <button
                     onClick={handleClearAllCaches}
                     disabled={isClearingAllCache}
-                    className="px-5 py-3.5 bg-carbon-10 hover:bg-carbon-10 hover:text-ap-link hover:border-carbon-20 border border-carbon-20 text-carbon-70 font-bold text-xs transition-all cursor-pointer"
+                    className="px-5 py-3.5 bg-carbon-10 hover:bg-carbon-10 hover:text-ap-link hover:border-carbon-20 border border-carbon-20 rounded-full text-carbon-70 font-bold text-xs transition-all cursor-pointer"
                   >
                     {isClearingAllCache ? (
                       'Purging All Caches...'

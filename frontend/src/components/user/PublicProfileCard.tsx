@@ -67,7 +67,7 @@ export const PublicProfileCard: React.FC<PublicProfileCardProps> = ({
   ).filter(([, value]) => Boolean(value));
 
   return (
-    <article className={`overflow-hidden border border-carbon-20 bg-white ${className}`} data-testid="public-profile-card">
+    <article className={`overflow-hidden rounded-2xl border border-carbon-20 bg-white ${className}`} data-testid="public-profile-card">
       <div className="h-20 bg-carbon-05" aria-hidden="true" />
       <div className="px-6 pb-6 sm:px-8">
         <div className="-mt-12 mb-4">

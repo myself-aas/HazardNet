@@ -81,7 +81,7 @@ export const DataStateError: React.FC<DataStateErrorProps> = ({
       <button
         type="button"
         onClick={onRetry}
-        className="mt-4 inline-flex min-h-[44px] items-center gap-2 border border-carbon-20 bg-carbon-05 px-4 text-sm font-semibold text-carbon-90 hover:bg-carbon-10 touch-manipulation"
+        className="mt-4 inline-flex min-h-[44px] items-center gap-2 border border-carbon-20 rounded-full bg-carbon-05 px-4 text-sm font-semibold text-carbon-90 hover:bg-carbon-10 touch-manipulation"
       >
         <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
         {retryLabel}

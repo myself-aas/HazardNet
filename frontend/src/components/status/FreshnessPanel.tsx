@@ -90,7 +90,10 @@ export const FreshnessPanel: React.FC = () => {
 
   if (loading && !artifact) {
     return (
-      <section aria-labelledby="freshness-heading" className="border border-carbon-20 rounded-2xl bg-white p-6 md:p-7">
+      <section
+        aria-labelledby="freshness-heading"
+        className="border border-carbon-20 rounded-2xl bg-white p-6 md:p-7"
+      >
         <h2 id="freshness-heading" className="text-lg font-bold text-carbon-90">
           Right now
         </h2>
@@ -103,19 +106,23 @@ export const FreshnessPanel: React.FC = () => {
 
   if (!artifact) {
     return (
-      <section aria-labelledby="freshness-heading" className="border border-amber-300 bg-amber-50 p-6 md:p-7">
+      <section
+        aria-labelledby="freshness-heading"
+        className="rounded-2xl border border-amber-300 bg-amber-50 p-6 md:p-7"
+      >
         <h2 id="freshness-heading" className="text-lg font-bold text-amber-950">
           Right now
         </h2>
         <p className="mt-2 text-base leading-[1.62] text-amber-950" role="status">
-          The freshness artifact could not be loaded ({error ?? 'unknown error'}), so this page cannot state the age of
-          the data this deployment serves. That is not a statement that the data is fresh, and it is not a statement
-          that it is stale. It is unknown. The scheduled <em>Site Health Probe</em> workflow reports the live surface.
+          The freshness artifact could not be loaded ({error ?? 'unknown error'}), so this page
+          cannot state the age of the data this deployment serves. That is not a statement that
+          the data is fresh, and it is not a statement that it is stale. It is unknown. The
+          scheduled <em>Site Health Probe</em> workflow reports the live surface.
         </p>
         <button
           type="button"
           onClick={reload}
-          className="mt-3 inline-flex min-h-[44px] items-center gap-1 rounded-sm border border-amber-400 bg-white px-3 py-1.5 text-base font-semibold text-amber-900 hover:bg-amber-100 touch-manipulation"
+          className="mt-3 inline-flex min-h-[44px] items-center gap-1 rounded-full border border-amber-400 bg-white px-3 py-1.5 text-base font-semibold text-amber-900 hover:bg-amber-100 touch-manipulation"
         >
           <MaterialIcon name="refresh" className="text-sm" /> Retry
         </button>
@@ -126,14 +133,11 @@ export const FreshnessPanel: React.FC = () => {
   const { overall, sources, coverage, model } = artifact;
   const withinSlo = overall.counts.fresh ?? 0;
   const probe = sources.find((source) => source.id === 'site_probe');
-  const probeChecks =
-    probe?.detail && Array.isArray(probe.detail.checks)
-      ? (probe.detail.checks as {
-          id: string;
-          outcome: string;
-          detail: string | null;
-        }[])
-      : [];
+  const probeChecks = probe?.detail && Array.isArray(probe.detail.checks) ? (probe.detail.checks as {
+    id: string;
+    outcome: string;
+    detail: string | null;
+  }[]) : [];
 
   return (
     <section
@@ -148,11 +152,12 @@ export const FreshnessPanel: React.FC = () => {
           <StateBadge state={overall.state} />
         </div>
         <p className="text-base leading-[1.62] text-carbon-60">
-          {artifact.what_this_is ?? 'A derived statement about the committed data artifacts this deployment ships.'}
+          {artifact.what_this_is ??
+            'A derived statement about the committed data artifacts this deployment ships.'}
         </p>
         <p className="text-xs text-carbon-60">
-          Derived <time dateTime={artifact.built_at ?? undefined}>{describeStamp(artifact.built_at)}</time>. {withinSlo}{' '}
-          of {sources.length} sources within their SLO.
+          Derived <time dateTime={artifact.built_at ?? undefined}>{describeStamp(artifact.built_at)}</time>.{' '}
+          {withinSlo} of {sources.length} sources within their SLO.
         </p>
       </div>
 
@@ -168,43 +173,32 @@ export const FreshnessPanel: React.FC = () => {
             { label: 'State', value: <StateBadge state={source.state} /> },
             { label: 'Age', value: <span className="tabular-nums">{describeAge(source.age_hours)}</span> },
             { label: 'SLO', value: <span className="tabular-nums">{describeSlo(source.slo_hours)}</span> },
-            {
-              label: 'Latest data',
-              value: (
-                <time dateTime={source.prediction_date ?? source.generated_at ?? undefined}>
-                  {source.prediction_date ?? describeStamp(source.generated_at)}
-                </time>
-              ),
-            },
+            { label: 'Latest data', value: (
+              <time dateTime={source.prediction_date ?? source.generated_at ?? undefined}>
+                {source.prediction_date ?? describeStamp(source.generated_at)}
+              </time>
+            ) },
           ],
         }))}
       />
       <p id="freshness-sources-caption" className="sr-only">
-        Each data source this deployment ships, its state, its age and the SLO it is measured against.
+        Each data source this deployment ships, its state, its age and the SLO it is measured
+        against.
       </p>
 
       <div className="hidden overflow-x-auto md:block">
         <table className="w-full min-w-[36rem] border-collapse text-left text-xs md:text-sm">
           <caption className="sr-only">
-            Each data source this deployment ships, its state, its age and the SLO it is measured against.
+            Each data source this deployment ships, its state, its age and the SLO it is measured
+            against.
           </caption>
           <thead>
             <tr className="border-b border-carbon-20 text-xs uppercase tracking-wide text-carbon-60">
-              <th scope="col" className="py-2 pr-3 font-bold">
-                Source
-              </th>
-              <th scope="col" className="py-2 pr-3 font-bold">
-                State
-              </th>
-              <th scope="col" className="py-2 pr-3 font-bold">
-                Age
-              </th>
-              <th scope="col" className="py-2 pr-3 font-bold">
-                SLO
-              </th>
-              <th scope="col" className="py-2 font-bold">
-                Latest data
-              </th>
+              <th scope="col" className="py-2 pr-3 font-bold">Source</th>
+              <th scope="col" className="py-2 pr-3 font-bold">State</th>
+              <th scope="col" className="py-2 pr-3 font-bold">Age</th>
+              <th scope="col" className="py-2 pr-3 font-bold">SLO</th>
+              <th scope="col" className="py-2 font-bold">Latest data</th>
             </tr>
           </thead>
           <tbody>
@@ -238,37 +232,31 @@ export const FreshnessPanel: React.FC = () => {
         <div className="space-y-2">
           <h3 className="text-sm font-bold text-carbon-90">Coverage of the current run</h3>
           <p className="text-base leading-[1.62] text-carbon-60">
-            {coverage.districts_covered ?? 'unknown'} of {coverage.districts_expected ?? 'unknown'} districts have a row
-            for at least one horizon, from {coverage.produced_units ?? 'unknown'} produced district/horizon units:
-            coverage status <strong>{coverage.status ?? 'unreported'}</strong>.
+            {coverage.districts_covered ?? 'unknown'} of {coverage.districts_expected ?? 'unknown'} districts
+            have a row for at least one horizon, from {coverage.produced_units ?? 'unknown'} produced
+            district/horizon units: coverage status <strong>{coverage.status ?? 'unreported'}</strong>.
           </p>
           {coverage.horizons && coverage.units_per_horizon && (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[24rem] border-collapse text-left text-xs md:text-sm">
-                <caption className="sr-only">Units produced per forecast horizon</caption>
-                <thead>
-                  <tr className="border-b border-carbon-20 text-xs uppercase tracking-wide text-carbon-60">
-                    <th scope="col" className="py-1.5 pr-3 font-bold">
-                      Horizon
-                    </th>
-                    <th scope="col" className="py-1.5 font-bold">
-                      Units
-                    </th>
+            <table className="w-full min-w-[24rem] border-collapse text-left text-xs md:text-sm">
+              <caption className="sr-only">Units produced per forecast horizon</caption>
+              <thead>
+                <tr className="border-b border-carbon-20 text-xs uppercase tracking-wide text-carbon-60">
+                  <th scope="col" className="py-1.5 pr-3 font-bold">Horizon</th>
+                  <th scope="col" className="py-1.5 font-bold">Units</th>
+                </tr>
+              </thead>
+              <tbody>
+                {coverage.horizons.map((horizon) => (
+                  <tr key={horizon} className="border-b border-carbon-20">
+                    <th scope="row" className="py-1.5 pr-3 font-semibold text-carbon-80">{horizon}</th>
+                    <td className="py-1.5 tabular-nums text-carbon-70">
+                      {coverage.units_per_horizon?.[horizon] ?? '—'}
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {coverage.horizons.map((horizon) => (
-                    <tr key={horizon} className="border-b border-carbon-20">
-                      <th scope="row" className="py-1.5 pr-3 font-semibold text-carbon-80">
-                        {horizon}
-                      </th>
-                      <td className="py-1.5 tabular-nums text-carbon-70">
-                        {coverage.units_per_horizon?.[horizon] ?? '—'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                ))}
+              </tbody>
+            </table>
             </div>
           )}
         </div>
@@ -281,40 +269,29 @@ export const FreshnessPanel: React.FC = () => {
             {model.stamped ? (
               <>
                 This deployment&apos;s rows carry <code>{model.model_version}</code>
-                {model.run_id ? (
-                  <>
-                    {' '}
-                    from run <code>{model.run_id}</code>
-                  </>
-                ) : null}
-                .
+                {model.run_id ? <> from run <code>{model.run_id}</code></> : null}.
               </>
             ) : (
               <>
-                <strong>Not stamped.</strong> The ingest pipeline does not yet record a <code>model_version</code> on
-                the rows it produces, so no number on this site claims one, and §1.6 of the product spec blocks
-                automatic publication of anything above <code>WATCH</code> until one exists.
+                <strong>Not stamped.</strong> The ingest pipeline does not yet record a{' '}
+                <code>model_version</code> on the rows it produces, so no number on this site claims
+                one, and §1.6 of the product spec blocks automatic publication of anything above{' '}
+                <code>WATCH</code> until one exists.
               </>
             )}
           </p>
           <dl className="grid grid-cols-1 gap-x-6 gap-y-1 text-sm text-carbon-60 sm:grid-cols-2">
             <div>
               <dt className="font-bold">Record build</dt>
-              <dd>
-                <code>{model.tensor_build_id ?? '—'}</code>
-              </dd>
+              <dd><code>{model.tensor_build_id ?? '—'}</code></dd>
             </div>
             <div>
               <dt className="font-bold">Dataset version</dt>
-              <dd>
-                <code>{model.dataset_version ?? '—'}</code>
-              </dd>
+              <dd><code>{model.dataset_version ?? '—'}</code></dd>
             </div>
             <div>
               <dt className="font-bold">Pipeline version</dt>
-              <dd>
-                <code>{model.pipeline_version ?? '—'}</code>
-              </dd>
+              <dd><code>{model.pipeline_version ?? '—'}</code></dd>
             </div>
             <div>
               <dt className="font-bold">Soil channels fabricated</dt>
@@ -334,52 +311,40 @@ export const FreshnessPanel: React.FC = () => {
         <h3 className="text-sm font-bold text-carbon-90">Last site-health probe</h3>
         {probeChecks.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[32rem] border-collapse text-left text-xs md:text-sm">
-              <caption className="sr-only">Checks performed by the last published site-health probe run</caption>
-              <thead>
-                <tr className="border-b border-carbon-20 text-xs uppercase tracking-wide text-carbon-60">
-                  <th scope="col" className="py-1.5 pr-3 font-bold">
-                    Check
-                  </th>
-                  <th scope="col" className="py-1.5 pr-3 font-bold">
-                    Outcome
-                  </th>
-                  <th scope="col" className="py-1.5 font-bold">
-                    Detail
-                  </th>
+          <table className="w-full min-w-[32rem] border-collapse text-left text-xs md:text-sm">
+            <caption className="sr-only">
+              Checks performed by the last published site-health probe run
+            </caption>
+            <thead>
+              <tr className="border-b border-carbon-20 text-xs uppercase tracking-wide text-carbon-60">
+                <th scope="col" className="py-1.5 pr-3 font-bold">Check</th>
+                <th scope="col" className="py-1.5 pr-3 font-bold">Outcome</th>
+                <th scope="col" className="py-1.5 font-bold">Detail</th>
+              </tr>
+            </thead>
+            <tbody>
+              {probeChecks.map((check) => (
+                <tr key={check.id} className="border-b border-carbon-20">
+                  <th scope="row" className="py-1.5 pr-3 font-semibold text-carbon-80">{check.id}</th>
+                  <td className="py-1.5 pr-3">
+                    {check.outcome === 'success' ? (
+                      <span className="inline-flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-700" aria-hidden="true" />pass</span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1"><AlertCircle className="h-3.5 w-3.5 text-amber-700" aria-hidden="true" />{check.outcome}</span>
+                    )}
+                  </td>
+                  <td className="py-1.5 text-carbon-60">{check.detail ?? '—'}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {probeChecks.map((check) => (
-                  <tr key={check.id} className="border-b border-carbon-20">
-                    <th scope="row" className="py-1.5 pr-3 font-semibold text-carbon-80">
-                      {check.id}
-                    </th>
-                    <td className="py-1.5 pr-3">
-                      {check.outcome === 'success' ? (
-                        <span className="inline-flex items-center gap-1">
-                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700" aria-hidden="true" />
-                          pass
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1">
-                          <AlertCircle className="h-3.5 w-3.5 text-amber-700" aria-hidden="true" />
-                          {check.outcome}
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-1.5 text-carbon-60">{check.detail ?? '—'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+              ))}
+            </tbody>
+          </table>
           </div>
         ) : (
           <p className="text-base leading-[1.62] text-carbon-60">
             No probe result has been published to this checkout, so the live-surface checks are{' '}
-            <strong>unknown here</strong>, not passing. The probe runs every 30 minutes on the default branch and
-            commits its result; until that commit lands, this page cannot state whether the production surface satisfies
-            its own checks.
+            <strong>unknown here</strong>, not passing. The probe runs every 30 minutes on the
+            default branch and commits its result; until that commit lands, this page cannot state
+            whether the production surface satisfies its own checks.
           </p>
         )}
         {probe && detailEntries(probe.detail).length > 0 && (

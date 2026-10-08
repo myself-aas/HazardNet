@@ -167,7 +167,7 @@ export const Contact: React.FC = () => {
   };
 
   const inputClass =
-    'w-full p-2.5 border border-carbon-30 bg-carbon-05 text-carbon-90 font-medium outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-200';
+    'w-full rounded-md p-2.5 border border-carbon-30 bg-carbon-05 text-carbon-90 font-medium outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-200';
 
   return (
     <motion.div
@@ -193,7 +193,7 @@ export const Contact: React.FC = () => {
         </p>
         <p
           role="note"
-          className="border border-ap-primary bg-white p-3 text-xs font-semibold leading-relaxed text-ap-link"
+          className="rounded-lg border border-ap-primary bg-white p-3 text-xs font-semibold leading-relaxed text-ap-link"
         >
           This is not an emergency channel and it is not monitored around the clock. In an emergency call{' '}
           <strong>999</strong>, and follow BMD, FFWC, DDM and local administration instructions.
@@ -519,21 +519,21 @@ export const Contact: React.FC = () => {
             </h2>
 
             <div className="space-y-3 text-xs">
-              <div className="p-3 bg-white border border-ap-primary space-y-1">
+              <div className="rounded-2xl p-3 bg-white border border-ap-primary space-y-1">
                 <span className="font-bold text-ap-link block">National emergency service</span>
                 <p className="font-mono text-sm font-bold text-ap-link">
                   <PhoneCall className="mr-1 inline h-4 w-4" aria-hidden="true" />
                   999
                 </p>
               </div>
-              <div className="p-3 bg-amber-50 border border-amber-200 space-y-1">
+              <div className="rounded-2xl p-3 bg-amber-50 border border-amber-200 space-y-1">
                 <span className="font-bold text-amber-900 block">Department of Agricultural Extension (DAE)</span>
                 <p className="font-mono text-sm font-bold text-amber-800">
                   <PhoneCall className="mr-1 inline h-4 w-4" aria-hidden="true" />
                   16123
                 </p>
               </div>
-              <div className="p-3 bg-amber-50 border border-amber-200 space-y-1">
+              <div className="rounded-2xl p-3 bg-amber-50 border border-amber-200 space-y-1">
                 <span className="font-bold text-amber-900 block">Disaster management helpline</span>
                 <p className="font-mono text-sm font-bold text-amber-800">
                   <PhoneCall className="mr-1 inline h-4 w-4" aria-hidden="true" />

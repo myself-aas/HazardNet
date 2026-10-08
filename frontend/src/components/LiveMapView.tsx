@@ -1675,7 +1675,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             {pathAnalysis.hazardsDetected.map((h, idx) => (
                               <span
                                 key={idx}
-                                className="text-xs font-bold px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200"
+                                className="rounded-full text-xs font-bold px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200"
                               >
                                 <MaterialIcon name="warning" className="w-4 h-4 inline-block align-middle" /> {h}
                               </span>
@@ -1696,7 +1696,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   <div className="flex items-center gap-2 pt-1 border-t border-carbon-70/80">
                     <button
                       onClick={() => setMeasurePoints([])}
-                      className="flex-1 min-h-[44px] py-1.5 bg-carbon-80 hover:bg-carbon-70 text-carbon-20 font-bold text-xs transition-colors border border-carbon-70"
+                      className="rounded-2xl flex-1 min-h-[44px] py-1.5 bg-carbon-80 hover:bg-carbon-70 text-carbon-20 font-bold text-xs transition-colors border border-carbon-70"
                     >
                       Reset Points
                     </button>

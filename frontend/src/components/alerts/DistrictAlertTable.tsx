@@ -162,7 +162,7 @@ export const DistrictAlertTable: React.FC<DistrictAlertTableProps> = ({
                   <dd className="inline-flex items-center gap-1.5">
                     <span
                       aria-hidden="true"
-                      className="inline-block h-3 w-3 border border-carbon-20"
+                      className="rounded-2xl inline-block h-3 w-3 border border-carbon-20"
                       style={{ backgroundColor: LEVEL_COLOURS[level as AlertLevel] }}
                     />
                     <span className="font-semibold text-carbon-80">{t(levelLabelKey(level))}</span>
@@ -186,7 +186,7 @@ export const DistrictAlertTable: React.FC<DistrictAlertTableProps> = ({
         })}
       </ul>
 
-      <div className="hidden overflow-auto max-h-[70vh] border border-carbon-20 lg:block" tabIndex={0}>
+      <div className="hidden overflow-auto max-h-[70vh] border border-carbon-20 rounded-xl lg:block" tabIndex={0}>
         <table id={id} className="min-w-full border-collapse text-sm">
           <caption className="sr-only">
             {t('map.listAlternative')} — {t('map.column.district')}, {t('map.column.division')}, {t('map.column.level')}
@@ -239,7 +239,7 @@ export const DistrictAlertTable: React.FC<DistrictAlertTableProps> = ({
                     <span className="inline-flex items-center gap-1.5">
                       <span
                         aria-hidden="true"
-                        className="inline-block h-3 w-3 border border-carbon-20"
+                        className="rounded-2xl inline-block h-3 w-3 border border-carbon-20"
                         style={{ backgroundColor: LEVEL_COLOURS[level as AlertLevel] }}
                       />
                       <span className="font-semibold text-carbon-80">{t(levelLabelKey(level))}</span>

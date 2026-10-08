@@ -20,7 +20,7 @@ import { parseAuthError } from '../lib/authErrors';
  */
 
 const inputClass =
-  'h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 placeholder-carbon-40 font-medium focus:border-ap-primary focus:outline-none focus:ring-2 focus:ring-ap-primary/40';
+  'h-12 w-full rounded-full border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 placeholder-carbon-40 font-medium focus:border-ap-primary focus:outline-none focus:ring-2 focus:ring-ap-primary/40';
 
 const describeError = (err: unknown): string => {
   const parsed = parseAuthError(err);

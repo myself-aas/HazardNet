@@ -134,7 +134,7 @@ export const DistrictBriefHeader: React.FC = () => {
         <div className="flex flex-wrap items-center gap-2 pt-1">
           <Link
             to={`/divisions/${(climaticEventsData?.division || data.division).toLowerCase()}`}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 hover:text-blue-800 transition-colors cursor-pointer"
+            className="rounded-full inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 hover:text-blue-800 transition-colors cursor-pointer"
           >
             <MapPin className="w-3.5 h-3.5" />
             <span>{climaticEventsData?.division || data.division} Division Dashboard</span>
@@ -142,7 +142,7 @@ export const DistrictBriefHeader: React.FC = () => {
           </Link>
           <Link
             to={`/hazards/${(climaticEventsData?.primaryHazard || data.hazardType).toLowerCase().replace(/\s+/g, '-')}`}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 hover:text-amber-900 transition-colors cursor-pointer"
+            className="rounded-full inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 hover:text-amber-900 transition-colors cursor-pointer"
           >
             <AlertTriangle className="w-3.5 h-3.5" />
             <span>{climaticEventsData?.primaryHazard || data.hazardType} Peril Analytics</span>
@@ -157,7 +157,7 @@ export const DistrictBriefHeader: React.FC = () => {
         </div>
 
         {/* Highlighted Hazard & Peak Severity Occurrence Date Banner */}
-        <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-mono">
+        <div className="rounded-xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-mono">
           <div className="flex items-center gap-3">
             <span className="p-2.5 bg-amber-500 text-ap-on-sev font-black">
               <Calendar className="w-5 h-5" />

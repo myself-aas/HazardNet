@@ -1,4 +1,4 @@
-import MaterialIcon from '../components/MaterialIcon';
+import MaterialIcon from "../components/MaterialIcon";
 import React from 'react';
 import { Check } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -31,42 +31,40 @@ const USE_CASES: UseCaseData[] = [
     icon: 'water',
     bannerColor: 'border-cyan-300 bg-cyan-50/80 text-cyan-900',
     districtId: 'sunamganj',
-    summary:
-      'Rapid pre-monsoon water level surges in April-May overwhelm submersible embankments, threatening over 800,000 hectares of ripe Boro paddy rice right before harvest season.',
+    summary: 'Rapid pre-monsoon water level surges in April-May overwhelm submersible embankments, threatening over 800,000 hectares of ripe Boro paddy rice right before harvest season.',
     affectedCrops: ['Boro Paddy Rice (BRRI dhan28/29)', 'Freshwater Inland Fisheries', 'Haor Cattle Forage'],
     mitigationSteps: [
       'Trigger 72-hour early harvest advisory for Boro rice at 80% grain maturity.',
       'Deploy mobile water pumping units near vulnerable submersible dikes.',
-      'Dispatch livestock evacuation alerts to high-ground Kanda refuges.',
+      'Dispatch livestock evacuation alerts to high-ground Kanda refuges.'
     ],
     stats: [
       { label: 'Annual Crop Exposure', value: '$240M USD' },
       { label: 'Warning Lead Time', value: '72 Hours' },
-      { label: 'Model Accuracy', value: '94.8% F1-Score' },
-    ],
+      { label: 'Model Accuracy', value: '94.8% F1-Score' }
+    ]
   },
   {
     id: 'cyclone',
     title: 'Southern Coastal Belt Cyclone & Saline Surge Mitigation',
-    region: "Satkhira, Khulna, Bagerhat, Barguna & Cox's Bazar",
+    region: 'Satkhira, Khulna, Bagerhat, Barguna & Cox\'s Bazar',
     hazardType: 'Tropical Cyclone',
     impactLevel: 'Severe Coastal Inundation',
     icon: 'cyclone',
     bannerColor: 'border-carbon-30 bg-carbon-05 text-carbon-90',
     districtId: 'satkhira',
-    summary:
-      'Category 1-3 cyclones originating in the Bay of Bengal generate +2m to +4m storm surges that breach polders, flooding shrimp ghers and salinizing agricultural soils.',
+    summary: 'Category 1-3 cyclones originating in the Bay of Bengal generate +2m to +4m storm surges that breach polders, flooding shrimp ghers and salinizing agricultural soils.',
     affectedCrops: ['Aman Rice Seedbeds', 'Shrimp & Crab Aquaculture', 'Betel Leaf Farms', 'Salt Pans'],
     mitigationSteps: [
       'Activate automated coastal polder sluice gate lockdown before surge peak.',
       'Alert brackish aquaculture farmers to reinforce perimeter netting against fish escape.',
-      'Issue post-surge soil leaching recommendations with gypsum and organic mulch.',
+      'Issue post-surge soil leaching recommendations with gypsum and organic mulch.'
     ],
     stats: [
       { label: 'Polder Coverage', value: '123 Coastal Zones' },
       { label: 'Surge Prediction', value: '±0.25m Height' },
-      { label: 'Population Served', value: '14.2M People' },
-    ],
+      { label: 'Population Served', value: '14.2M People' }
+    ]
   },
   {
     id: 'barind',
@@ -77,19 +75,18 @@ const USE_CASES: UseCaseData[] = [
     icon: 'sunny',
     bannerColor: 'border-amber-300 bg-amber-50/80 text-amber-900',
     districtId: 'rajshahi',
-    summary:
-      'High terrace clay soils in Barind suffer prolonged rainfall deficits during pre-monsoon and post-monsoon windows, severely stressing Aus rice transplanting and mango orchards.',
+    summary: 'High terrace clay soils in Barind suffer prolonged rainfall deficits during pre-monsoon and post-monsoon windows, severely stressing Aus rice transplanting and mango orchards.',
     affectedCrops: ['Aus & Aman Rice', 'Fazli & Ashwina Mangoes', 'Maize & Winter Wheat'],
     mitigationSteps: [
       'Recommend Alternate Wetting & Drying (AWD) irrigation schedules to conserve 30% groundwater.',
       'Promote drought-tolerant crop diversification (Mustard, Chickpea, Sorghum).',
-      'Schedule deep tube well supplementary irrigation during critical flowering stages.',
+      'Schedule deep tube well supplementary irrigation during critical flowering stages.'
     ],
     stats: [
       { label: 'Irrigation Saved', value: '32% Water Volume' },
       { label: 'SPEI Index Tracked', value: '-2.5 to +2.5' },
-      { label: 'Farmers Reached', value: '450,000+' },
-    ],
+      { label: 'Farmers Reached', value: '450,000+' }
+    ]
   },
   {
     id: 'coldwave',
@@ -100,20 +97,19 @@ const USE_CASES: UseCaseData[] = [
     icon: 'ac_unit',
     bannerColor: 'border-blue-300 bg-blue-50/80 text-blue-900',
     districtId: 'panchagarh',
-    summary:
-      'Cold air advection from the Himalayan foothills drops winter minimum temperatures below 7°C accompanied by dense fog, causing yellowing and chilling injury in Boro rice seedbeds.',
+    summary: 'Cold air advection from the Himalayan foothills drops winter minimum temperatures below 7°C accompanied by dense fog, causing yellowing and chilling injury in Boro rice seedbeds.',
     affectedCrops: ['Boro Paddy Seedbeds', 'Potato Tubers (Late Blight)', 'Winter Vegetables & Mustard'],
     mitigationSteps: [
       'Advise farmers to cover seedling nurseries with transparent polythene sheets at night.',
       'Maintain 3-5cm standing water in seedbeds during cold nights to buffer soil temperature.',
-      'Issue preventive fungicide spraying advisories for potato late blight fungal disease.',
+      'Issue preventive fungicide spraying advisories for potato late blight fungal disease.'
     ],
     stats: [
       { label: 'Min Temp Tracked', value: '4.5°C Floor' },
       { label: 'Seedling Loss Cut', value: '68% Reduction' },
-      { label: 'Fog Warning Lead', value: '24 Hours' },
-    ],
-  },
+      { label: 'Fog Warning Lead', value: '24 Hours' }
+    ]
+  }
 ];
 
 export const UseCases: React.FC = () => {
@@ -136,10 +132,11 @@ export const UseCases: React.FC = () => {
       transition={{ duration: 0.35, ease: 'easeOut' }}
       className="space-y-8 max-w-6xl mx-auto"
     >
+      
       <Breadcrumbs />
 
       {/* Header Banner */}
-      <div className="rounded-2xl bg-white border border-carbon-20/90 p-6 md:p-8 relative overflow-hidden group space-y-3">
+      <div className="rounded-xl bg-white border border-carbon-20/90 p-6 md:p-8 relative overflow-hidden group space-y-3">
         <div className="absolute top-0 left-0 w-full h-1 bg-primary"></div>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 rounded-full text-xs font-mono font-extrabold bg-amber-50 text-amber-900 border border-amber-300 uppercase tracking-wider">
@@ -153,8 +150,7 @@ export const UseCases: React.FC = () => {
           Hazard<span className="text-ap-link">Net</span> Operational Use Cases & Field Impact
         </h1>
         <p className="text-carbon-60 text-xs md:text-sm leading-relaxed max-w-3xl">
-          Discover how HazardNet's multi-band multi-task neural network mitigates disaster risks across distinct
-          agro-ecological zones in Bangladesh, protecting food security and rural livelihoods.
+          Discover how HazardNet's multi-band multi-task neural network mitigates disaster risks across distinct agro-ecological zones in Bangladesh, protecting food security and rural livelihoods.
         </p>
       </div>
 
@@ -176,24 +172,16 @@ export const UseCases: React.FC = () => {
             >
               <div className="flex items-center justify-between">
                 <MaterialIcon name={item.icon} className="w-4 h-4" />
-                <span
-                  className={`px-2.5 py-1 rounded-full text-xs font-mono font-extrabold border ${
-                    isSelected
-                      ? 'bg-amber-200/90 text-amber-950 border-amber-300'
-                      : 'bg-carbon-10 text-carbon-70 border-carbon-20'
-                  }`}
-                >
+                <span className={`px-2.5 py-1 rounded-full text-xs font-mono font-extrabold border ${
+                  isSelected ? 'bg-amber-200/90 text-amber-950 border-amber-300' : 'bg-carbon-10 text-carbon-70 border-carbon-20'
+                }`}>
                   {item.hazardType}
                 </span>
               </div>
 
               <div>
-                <h3 className="font-extrabold text-xs sm:text-sm leading-snug line-clamp-2 text-carbon-90">
-                  {item.title}
-                </h3>
-                <p
-                  className={`text-xs mt-1 font-medium line-clamp-1 ${isSelected ? 'text-carbon-70' : 'text-carbon-60'}`}
-                >
+                <h3 className="font-extrabold text-xs sm:text-sm leading-snug line-clamp-2 text-carbon-90">{item.title}</h3>
+                <p className={`text-xs mt-1 font-medium line-clamp-1 ${isSelected ? 'text-carbon-70' : 'text-carbon-60'}`}>
                   {item.region}
                 </p>
               </div>
@@ -210,19 +198,16 @@ export const UseCases: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -12 }}
           transition={{ duration: 0.25 }}
-          className="rounded-2xl bg-white border border-carbon-20/90 p-6 md:p-8 space-y-6 relative overflow-hidden"
+          className="rounded-xl bg-white border border-carbon-20/90 p-6 md:p-8 space-y-6 relative overflow-hidden"
         >
+          
           {/* Case Banner */}
-          <div
-            className={`p-5 border flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${activeCase.bannerColor}`}
-          >
+          <div className={`p-5 border flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${activeCase.bannerColor}`}>
             <div className="flex items-center gap-3.5">
               <MaterialIcon name={activeCase.icon} className="w-4 h-4" />
               <div>
                 <h2 className="text-lg font-black text-carbon-90 tracking-tight">{activeCase.title}</h2>
-                <p className="text-xs font-semibold text-carbon-70 opacity-90 mt-0.5">
-                  {activeCase.region} • {activeCase.impactLevel}
-                </p>
+                <p className="text-xs font-semibold text-carbon-70 opacity-90 mt-0.5">{activeCase.region} • {activeCase.impactLevel}</p>
               </div>
             </div>
 
@@ -239,14 +224,8 @@ export const UseCases: React.FC = () => {
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {activeCase.stats.map((st, i) => (
-              <motion.div
-                whileHover={{ y: -3 }}
-                key={i}
-                className="rounded-2xl p-4 sm:p-5 bg-carbon-05/90 border border-carbon-20/80 hover:border-amber-300/80 hover:transition-all duration-300 space-y-1.5"
-              >
-                <span className="text-xs font-mono font-bold text-carbon-60 uppercase tracking-wider block">
-                  {st.label}
-                </span>
+              <motion.div whileHover={{ y: -3 }} key={i} className="rounded-2xl p-4 sm:p-5 bg-carbon-05/90 border border-carbon-20/80 hover:border-amber-300/80 hover:transition-all duration-300 space-y-1.5">
+                <span className="text-xs font-mono font-bold text-carbon-60 uppercase tracking-wider block">{st.label}</span>
                 <span className="text-xl sm:text-2xl font-black text-carbon-90">{st.value}</span>
               </motion.div>
             ))}
@@ -256,29 +235,25 @@ export const UseCases: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="rounded-2xl space-y-3 p-5 bg-carbon-05/80 border border-carbon-20/80 hover:border-carbon-30 transition-all">
               <h3 className="font-bold text-xs uppercase font-mono text-carbon-90 flex items-center gap-2">
-                <span className="p-1 rounded-sm bg-amber-100 text-amber-900">
-                  <MaterialIcon name="content_copy" className="w-4 h-4" />
-                </span>{' '}
-                Problem Statement & Threat
+                <span className="p-1 rounded-md bg-amber-100 text-amber-900"><MaterialIcon name="content_copy" className="w-4 h-4" /></span> Problem Statement & Threat
               </h3>
-              <p className="text-xs sm:text-sm text-carbon-60 leading-relaxed font-normal">{activeCase.summary}</p>
+              <p className="text-xs sm:text-sm text-carbon-60 leading-relaxed font-normal">
+                {activeCase.summary}
+              </p>
             </div>
+
           </div>
 
           {/* Crops Affected & Mitigation Protocols */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
             <div className="space-y-3">
               <h3 className="font-extrabold text-sm text-carbon-90 flex items-center gap-2">
-                <MaterialIcon name="agriculture" className="w-4 h-4 text-emerald-600" /> Vulnerable Crops & Local
-                Commodities
+                <MaterialIcon name="agriculture" className="w-4 h-4 text-emerald-600" /> Vulnerable Crops & Local Commodities
               </h3>
               <ul className="space-y-2 text-xs">
                 {activeCase.affectedCrops.map((crop, i) => (
-                  <motion.li
-                    whileHover={{ x: 3 }}
-                    key={i}
-                    className="rounded-xl p-3 bg-carbon-05/90 border border-carbon-20/80 text-carbon-70 flex items-center gap-2.5 font-semibold hover:border-emerald-300/80 transition-all"
-                  >
+                  <motion.li whileHover={{ x: 3 }} key={i} className="rounded-lg p-3 bg-carbon-05/90 border border-carbon-20/80 text-carbon-70 flex items-center gap-2.5 font-semibold hover:border-emerald-300/80 transition-all">
                     <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100/80 text-emerald-700">
                       <Check className="h-3.5 w-3.5" aria-hidden="true" />
                     </span>
@@ -294,32 +269,25 @@ export const UseCases: React.FC = () => {
               </h3>
               <ul className="space-y-2 text-xs">
                 {activeCase.mitigationSteps.map((step, i) => (
-                  <motion.li
-                    whileHover={{ x: 3 }}
-                    key={i}
-                    className="rounded-xl p-3 bg-carbon-05/90 border border-carbon-20/80 text-carbon-70 flex items-start gap-2.5 hover:border-amber-300/80 transition-all"
-                  >
-                    <span className="font-black text-amber-900 bg-amber-100/80 px-2 py-0.5 rounded-sm text-xs shrink-0">
-                      {i + 1}
-                    </span>
+                  <motion.li whileHover={{ x: 3 }} key={i} className="rounded-lg p-3 bg-carbon-05/90 border border-carbon-20/80 text-carbon-70 flex items-start gap-2.5 hover:border-amber-300/80 transition-all">
+                    <span className="font-black text-amber-900 bg-amber-100/80 px-2 py-0.5 rounded-full text-xs shrink-0">{i + 1}</span>
                     <span className="font-medium pt-0.5">{step}</span>
                   </motion.li>
                 ))}
               </ul>
             </div>
+
           </div>
+
         </motion.div>
       </AnimatePresence>
 
       {/* Cross-Link Quick Actions */}
-      <div className="bg-amber-50/80 border border-amber-200 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 text-carbon-90">
+      <div className="rounded-2xl bg-amber-50/80 border border-amber-200 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 text-carbon-90">
         <div className="space-y-1 text-center md:text-left">
-          <h3 className="text-lg font-black text-carbon-90 tracking-tight">
-            Ready to explore these scenarios with live data?
-          </h3>
+          <h3 className="text-lg font-black text-carbon-90 tracking-tight">Ready to explore these scenarios with live data?</h3>
           <p className="text-xs text-carbon-60 font-medium">
-            Every scenario plays out on published forecast records. Open the live outlook to see the current run for
-            these districts.
+            Every scenario plays out on published forecast records. Open the live outlook to see the current run for these districts.
           </p>
         </div>
 
@@ -335,13 +303,14 @@ export const UseCases: React.FC = () => {
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
               to="/docs"
-              className="px-5 py-2.5 bg-white text-carbon-90 font-bold text-xs hover:bg-carbon-10 transition-all border border-carbon-30 inline-block cursor-pointer"
+              className="rounded-full px-5 py-2.5 bg-white text-carbon-90 font-bold text-xs hover:bg-carbon-10 transition-all border border-carbon-30 inline-block cursor-pointer"
             >
               <MaterialIcon name="menu_book" className="w-4 h-4" /> Read Research Docs
             </Link>
           </motion.div>
         </div>
       </div>
+
     </motion.div>
   );
 };

@@ -136,7 +136,7 @@ export const CardStackTable: React.FC<CardStackTableProps> = ({ columns, rows, c
     <div className={`w-full min-w-0 ${className ?? ''}`}>
       <CardStackRows rows={cards} labelledBy={caption ? captionId : undefined} />
 
-      <div className="hidden w-full min-w-0 overflow-x-auto border border-carbon-20 md:block">
+      <div className="hidden w-full min-w-0 overflow-x-auto border border-carbon-20 rounded-xl md:block">
         <table className="w-full border-collapse text-left text-xs">
           {caption && (
             <caption id={captionId} className="bg-carbon-05 px-3 py-2 text-left text-xs text-carbon-60">

@@ -22,7 +22,7 @@ export const About: React.FC = () => {
         className="bg-white border border-carbon-20 rounded-2xl p-6 md:p-8 space-y-4"
       >
         <div className="flex items-center gap-2">
-          <span className="px-2.5 py-0.5 rounded-sm text-xs font-mono font-bold uppercase tracking-wider bg-amber-50 text-amber-900 border border-amber-200">
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-amber-50 text-amber-900 border border-amber-200">
             HazardNet Early Warning Initiative
           </span>
           <span className="text-carbon-60">•</span>
@@ -61,7 +61,7 @@ export const About: React.FC = () => {
               href="https://github.com/myself-aas/HazardNet"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-[44px] items-center px-6 py-2 bg-white text-carbon-70 text-base font-semibold border border-carbon-20 hover:text-carbon-90 hover:bg-carbon-05 touch-manipulation"
+              className="inline-flex min-h-[44px] items-center px-6 py-2 bg-white text-carbon-70 text-base font-semibold border border-carbon-20 rounded-full hover:text-carbon-90 hover:bg-carbon-05 touch-manipulation"
             >
               GitHub Repository
             </a>

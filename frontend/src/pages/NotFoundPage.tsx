@@ -36,7 +36,7 @@ export const NotFoundPage: React.FC = () => {
           </Link>
           <Link
             to="/live"
-            className="inline-flex min-h-[44px] flex-1 items-center justify-center border-2 border-ap-primary px-6 py-3 text-base font-semibold text-ap-link hover:bg-ap-primary/5 touch-manipulation"
+            className="rounded-full inline-flex min-h-[44px] flex-1 items-center justify-center border-2 border-ap-primary px-6 py-3 text-base font-semibold text-ap-link hover:bg-ap-primary/5 touch-manipulation"
           >
             Live map
           </Link>

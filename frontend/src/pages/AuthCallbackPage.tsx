@@ -162,7 +162,7 @@ export default function AuthCallbackPage() {
         <X className="h-6 w-6" aria-hidden="true" />
       </span>
       <p className="text-sm font-bold text-carbon-80">Sign-in could not complete</p>
-      <div className="max-w-md border border-ap-primary bg-white p-3 text-left">
+      <div className="rounded-lg max-w-md border border-ap-primary bg-white p-3 text-left">
         <p className="text-xs font-extrabold text-ap-link">{resolved.title}</p>
         <p className="mt-0.5 text-xs font-medium leading-relaxed text-ap-link">{resolved.hint}</p>
       </div>
