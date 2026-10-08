@@ -201,6 +201,19 @@ app.get('/.well-known/http-message-signatures-directory', (req, res) => {
   res.status(200).send(jwksBody);
 });
 
+// AI Catalog — machine-readable catalog of all agent endpoints and discovery URLs.
+// Serves at /.well-known/ai-catalog.json listing A2A agents, MCP servers, WebMCP tools,
+// REST APIs, their DNS-AID records, and all well-known discovery endpoints.
+app.get('/.well-known/ai-catalog.json', (req, res) => {
+  const catalogPath = path.resolve(process.cwd(), 'frontend', 'public', '.well-known', 'ai-catalog.json');
+  if (fs.existsSync(catalogPath)) {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.status(200).sendFile(catalogPath);
+  }
+  res.status(404).json({ error: 'Not found' });
+});
+
 // RFC 9727 API catalog — machine-readable discovery of the site's APIs.
 // Served at /.well-known/api-catalog as application/linkset+json.
 // Each linkset entry carries an anchor (the API's base URL) and link

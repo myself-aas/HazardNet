@@ -1,0 +1,71 @@
+; DNS for AI Discovery (DNS-AID) records for hazardnet.live
+; RFC: https://datatracker.ietf.org/doc/draft-ietf-dnsop-ai-discovery/
+; Reference: https://isitagentready.com/.well-known/agent-skills/dns-aid/SKILL.md
+;
+; These records enable AI agents to discover HazardNet's agent endpoints
+; through DNS using SVCB/HTTPS records under the _agents namespace.
+;
+; Deployment: Add these records to the hazardnet.live zone in Cloudflare.
+; Script: node scripts/publish-dns-aid.mjs (requires CLOUDFLARE_API_TOKEN env var)
+;
+; DNSSEC: Ensure DNSSEC is enabled for the hazardnet.live zone so validating
+; resolvers return authenticated data for these records.
+
+$ORIGIN _agents.hazardnet.live.
+$TTL 3600
+
+; ─────────────────────────────────────────────────────────────────────────────
+; _index — Master index pointing to the agent skills discovery and agent card
+; ─────────────────────────────────────────────────────────────────────────────
+; Agents querying _agents.hazardnet.live discover the full set of agent
+; capabilities. The index points to the HTTPS endpoint that serves the
+; A2A agent card and MCP server card.
+_index  IN HTTPS 1 www.hazardnet.live. alpn="https" port=443 mandatory=alpn,port
+
+; ─────────────────────────────────────────────────────────────────────────────
+; _a2a — Agent-to-Agent (A2A) protocol endpoint
+; ─────────────────────────────────────────────────────────────────────────────
+; Advertises the A2A Agent Card at /.well-known/agent-card.json
+; Protocol: A2A v1.0.0 over Streamable HTTP
+_a2a    IN HTTPS 1 www.hazardnet.live. alpn="a2a" port=443 mandatory=alpn,port
+
+; ─────────────────────────────────────────────────────────────────────────────
+; _mcp — Model Context Protocol (MCP) endpoint
+; ─────────────────────────────────────────────────────────────────────────────
+; Advertises the MCP Server Card at /.well-known/mcp/server-card.json
+; Protocol: MCP over Streamable HTTP (JSON-RPC 2.0)
+_mcp    IN HTTPS 1 www.hazardnet.live. alpn="mcp" port=443 mandatory=alpn,port
+
+; ─────────────────────────────────────────────────────────────────────────────
+; _api — REST API endpoint (RFC 9727 API Catalog)
+; ─────────────────────────────────────────────────────────────────────────────
+; Advertises the API catalog at /.well-known/api-catalog
+; Protocol: HTTP+JSON REST API
+_api    IN HTTPS 1 www.hazardnet.live. alpn="https" port=443 mandatory=alpn,port
+
+; ─────────────────────────────────────────────────────────────────────────────
+; _webmcp — WebMCP browser-based tool endpoint
+; ─────────────────────────────────────────────────────────────────────────────
+; Advertises the WebMCP tools exposed via document.modelContext.registerTool()
+; Protocol: WebMCP (browser JavaScript API)
+_webmcp IN HTTPS 1 www.hazardnet.live. alpn="webmcp" port=443 mandatory=alpn,port
+
+; ─────────────────────────────────────────────────────────────────────────────
+; Experimental DNS-AID parameters using numeric keyNNNNN SvcParamKeys
+; (until DNS-AID-specific SvcParamKeys are registered with IANA)
+; ─────────────────────────────────────────────────────────────────────────────
+;
+; key65xxx — Reserved for private/experimental use per RFC 9461 §14.3.2
+; These carry DNS-AID-specific metadata:
+;
+; key65000 — Agent card URL path (relative to the SVCB target)
+;   _a2a IN HTTPS 1 www.hazardnet.live. alpn="a2a" port=443 key65000="/.well-known/agent-card.json" mandatory=alpn,port
+;
+; key65001 — MCP server card URL path
+;   _mcp IN HTTPS 1 www.hazardnet.live. alpn="mcp" port=443 key65001="/.well-known/mcp/server-card.json" mandatory=alpn,port
+;
+; key65002 — Authentication requirement (bearer, api-key, none)
+;   _api IN HTTPS 1 www.hazardnet.live. alpn="https" port=443 key65002="bearer" mandatory=alpn,port
+;
+; key65003 — Supported content types (comma-separated MIME types)
+;   _api IN HTTPS 1 www.hazardnet.live. alpn="https" port=443 key65003="application/json,application/linkset+json" mandatory=alpn,port

@@ -37,6 +37,13 @@
       "digest": "sha256:706e4ed022e315341e8503642f6230f52a4ac743d3f4d599f8a132b82b5fe1e6"
     },
     {
+      "name": "dns-aid",
+      "type": "skill-md",
+      "description": "Publish DNS for AI Discovery (DNS-AID) SVCB/HTTPS records for DNS-based agent discovery.",
+      "url": "/.well-known/agent-skills/dns-aid/SKILL.md",
+      "digest": "sha256:5bef706f8e237eb5d812bb7138096c108f0875f94325d8be52a8aac9b575fd54"
+    },
+    {
       "name": "markdown-negotiation",
       "type": "skill-md",
       "description": "Support Accept: text/markdown content negotiation for machine-readable content.",
