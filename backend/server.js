@@ -174,12 +174,13 @@ app.get('/.well-known/oauth-authorization-server', (req, res) => {
     registration_endpoint: 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBwyxWm0MIQlTmjJ-NKPKjl72AYLS7oDqQ',
     jwks_uri: 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com',
     scopes_supported: [
+      'openid', 'email', 'profile',
       'read:forecasts', 'read:alerts', 'read:weather', 'read:historical',
       'read:predictions', 'write:forecasts', 'write:push', 'chat', 'grounding',
     ],
-    response_types_supported: ['id_token'],
-    grant_types_supported: ['password', 'refresh_token'],
-    token_endpoint_auth_methods_supported: ['client_secret_post', 'none'],
+    response_types_supported: ['id_token', 'token'],
+    grant_types_supported: ['authorization_code', 'implicit', 'refresh_token', 'password'],
+    token_endpoint_auth_methods_supported: ['client_secret_post', 'client_secret_basic', 'none'],
     bearer_methods_supported: ['header'],
     identity_types_supported: ['identity_assertion', 'anonymous'],
     identity_assertion: {
@@ -198,6 +199,46 @@ app.get('/.well-known/oauth-authorization-server', (req, res) => {
       'https://schemas.openid.net/secevent/risc/event-type/account-purged',
       'https://schemas.openid.net/secevent/risc/event-type/account-disabled',
     ],
+    service_documentation: `${SITE_ORIGIN}/docs`,
+    ui_locales_supported: ['en', 'bn'],
+  });
+});
+
+// OpenID Connect Discovery 1.0 metadata.
+// Points to Firebase Auth as the actual OIDC provider — the issuer matches
+// the `iss` claim in Firebase ID tokens, and the jwks_uri points to Google's
+// public keys for verifying those tokens.
+const FIREBASE_PROJECT_ID = 'hazardnet-aas48424';
+const FIREBASE_API_KEY = 'AIzaSyBwyxWm0MIQlTmjJ-NKPKjl72AYLS7oDqQ';
+
+app.get('/.well-known/openid-configuration', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  res.status(200).json({
+    issuer: `https://securetoken.google.com/${FIREBASE_PROJECT_ID}`,
+    authorization_endpoint: `${SITE_ORIGIN}/signup`,
+    token_endpoint: `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY}`,
+    userinfo_endpoint: `https://www.googleapis.com/identitytoolkit/v3/relyingparty/getAccountInfo?key=${FIREBASE_API_KEY}`,
+    jwks_uri: 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com',
+    registration_endpoint: `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_API_KEY}`,
+    scopes_supported: [
+      'openid', 'email', 'profile',
+      'read:forecasts', 'read:alerts', 'read:weather', 'read:historical',
+      'read:predictions', 'write:forecasts', 'write:push', 'chat', 'grounding',
+    ],
+    response_types_supported: ['id_token', 'token'],
+    response_modes_supported: ['query', 'fragment'],
+    grant_types_supported: ['authorization_code', 'implicit', 'refresh_token', 'password'],
+    subject_types_supported: ['public'],
+    id_token_signing_alg_values_supported: ['RS256'],
+    token_endpoint_auth_methods_supported: ['client_secret_post', 'client_secret_basic', 'none'],
+    claims_supported: [
+      'sub', 'iss', 'aud', 'exp', 'iat',
+      'email', 'email_verified', 'name', 'picture',
+      'firebase_identity_provider',
+    ],
+    code_challenge_methods_supported: ['plain', 'S256'],
+    revocation_endpoint: `https://identitytoolkit.googleapis.com/v1/accounts:delete?key=${FIREBASE_API_KEY}`,
     service_documentation: `${SITE_ORIGIN}/docs`,
     ui_locales_supported: ['en', 'bn'],
   });
