@@ -2719,3 +2719,20 @@ button:not([data-compact-target="true"]),
 @media (min-width: 640px) {
   .live-stage .leaflet-top.leaflet-left { left: 1.25rem; }
 }
+
+/* /live, phone: the map FAB column must stay reachable while the district forecast
+   sheet is open. The sheet is portalled to <body>, so the rule matches from there.
+   Peek and half lift the column just above the sheet's top edge; expanded leaves no
+   room above the sheet, so the column hides until the sheet is shrunk. Desktop is
+   unchanged: the sheet is centred and does not reach the column. */
+@media (max-width: 639px) {
+  body:has([data-testid='district-forecast-card'][data-sheet-stage='peek']) .live-fab-column {
+    bottom: calc(38vh + 12px);
+  }
+  body:has([data-testid='district-forecast-card'][data-sheet-stage='half']) .live-fab-column {
+    bottom: calc(62vh + 12px);
+  }
+  body:has([data-testid='district-forecast-card'][data-sheet-stage='expanded']) .live-fab-column {
+    visibility: hidden;
+  }
+}

@@ -2525,7 +2525,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               on 2026-10-05 it became these three controls plus Leaflet's native zoom.
               On phones they sit above the bottom-center clear pill so the two never
               overlap. Opaque white, visible focus, no glass. */}
-          <div className="absolute bottom-32 sm:bottom-14 right-3 sm:right-5 z-[var(--ap-z-sticky)] pointer-events-auto flex flex-col items-center gap-2.5">
+          <div className="live-fab-column absolute bottom-32 sm:bottom-14 right-3 sm:right-5 z-[var(--ap-z-sticky)] pointer-events-auto flex flex-col items-center gap-2.5">
             <button
               type="button"
               onClick={() => setIsFilterModalOpen(true)}
