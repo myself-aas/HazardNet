@@ -50,7 +50,7 @@ export default function UpdatePasswordPage() {
     >
       {status ? (
         <div role="status" className="space-y-4 text-center">
-          <p className="border-l-2 border-ap-primary bg-white p-4 text-sm font-medium text-carbon-80">{status}</p>
+          <p className="border-l-[2px] border-ap-primary bg-white p-4 text-sm font-medium text-carbon-80">{status}</p>
           <Link to="/login" className="font-bold text-ap-link hover:underline">
             Return to sign in
           </Link>
@@ -60,7 +60,7 @@ export default function UpdatePasswordPage() {
           {error && (
             <p
               role="alert"
-              className="rounded-r-xl border-l-4 border-ap-primary bg-white p-4 text-sm font-medium text-ap-link"
+              className="rounded-r-xl border-l-[2px] border-ap-primary bg-white p-4 text-sm font-medium text-ap-link"
             >
               {error}
             </p>

@@ -240,7 +240,7 @@ const SectionBody: React.FC<{ section: Section }> = ({ section }) => {
       {section.callout?.text && (
         <p
           role={section.callout.tone === 'warning' ? 'note' : undefined}
-          className="rounded-xl border border-carbon-20 border-l-4 border-l-severity-high bg-white p-4 text-base leading-[1.62] text-carbon-80"
+          className="rounded-xl border border-carbon-20 border-l-[2px] border-l-severity-high bg-white p-4 text-base leading-[1.62] text-carbon-80"
         >
           {section.callout.text}
         </p>
@@ -730,7 +730,7 @@ export const FrontDoor: React.FC = () => {
             <div
               role="alert"
               aria-live="polite"
-              className="rounded-xl border border-carbon-20 border-l-4 border-l-severity-high bg-white p-4 space-y-3"
+              className="rounded-xl border border-carbon-20 border-l-[2px] border-l-severity-high bg-white p-4 space-y-3"
             >
               <p className="text-sm leading-[1.62] text-carbon-70">{t('frontdoor.run.failed')}</p>
               <div className="flex flex-wrap gap-3">

@@ -125,7 +125,7 @@ export default function SetPasswordPage() {
           {!user && phase === 'ready' && (
             <p
               role="alert"
-              className="rounded-r-xl border-l-4 border-severity-high bg-white p-4 text-sm font-medium text-carbon-80"
+              className="rounded-r-xl border-l-[2px] border-severity-high bg-white p-4 text-sm font-medium text-carbon-80"
             >
               We couldn’t detect your verification session. Open the newest link we emailed you; it must be opened on
               this browser. Or{' '}
@@ -139,7 +139,7 @@ export default function SetPasswordPage() {
           {error && (
             <p
               role="alert"
-              className="rounded-r-xl border-l-4 border-ap-primary bg-white p-4 text-sm font-medium text-ap-link"
+              className="rounded-r-xl border-l-[2px] border-ap-primary bg-white p-4 text-sm font-medium text-ap-link"
             >
               {error}
             </p>

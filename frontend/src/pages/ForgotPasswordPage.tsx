@@ -54,7 +54,7 @@ const ForgotPasswordPage: React.FC = () => {
       >
         {!isSubmitted ? (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="rounded-r-xl border-l-4 border-severity-high bg-white p-4">
+            <div className="rounded-r-xl border-l-[2px] border-severity-high bg-white p-4">
               <p className="text-base leading-[1.62] text-carbon-70">
                 Enter your registered HazardNet email address and we'll send you instructions to reset your password.
               </p>
@@ -67,7 +67,7 @@ const ForgotPasswordPage: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -5 }}
                   role="alert"
-                  className="flex items-start gap-2 rounded-r-xl border-l-4 border-ap-primary bg-white p-4 text-sm font-medium text-ap-link"
+                  className="flex items-start gap-2 rounded-r-xl border-l-[2px] border-ap-primary bg-white p-4 text-sm font-medium text-ap-link"
                 >
                   <span className="shrink-0">
                     <MaterialIcon name="warning" className="w-4 h-4 inline-block mr-1" />
