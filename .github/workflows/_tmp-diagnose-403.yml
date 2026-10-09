@@ -17,7 +17,17 @@ name: Diagnose 403 (temporary)
 #   body snippet                                -> Cloudflare error page? which one?
 
 on:
-  workflow_dispatch:
+  # Push, not workflow_dispatch: the token available here cannot dispatch
+  # ("Resource not accessible by integration"), and ci.yml only fires for
+  # main/develop, so nothing runs on this branch by default.
+  #
+  # paths-ignore plus "[skip ci]" in the commit message below keep the workflow
+  # from re-triggering itself when it commits its own report.
+  push:
+    branches:
+      - arena/cfa12d91-hazardnet
+    paths-ignore:
+      - 'docs/ops/_tmp-403-probe.md'
 
 permissions:
   contents: write
@@ -146,5 +156,5 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs/ops/_tmp-403-probe.md
           if git diff --staged --quiet; then echo "no report produced"; exit 1; fi
-          git commit -m "chore(diag): temporary 403 origin probe $(date -u +%Y-%m-%dT%H:%MZ)"
+          git commit -m "chore(diag): temporary 403 origin probe $(date -u +%Y-%m-%dT%H:%MZ) [skip ci]"
           git push origin "HEAD:${{ github.ref_name }}"
