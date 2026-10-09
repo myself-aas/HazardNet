@@ -213,9 +213,14 @@ jobs:
         shell: bash
         run: |
           set -uo pipefail
-          curl -sSL --max-redirs 5 -A "$PROBE_USER_AGENT" -H 'Accept: application/xml,text/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.9' --max-time 30 "$SITE_URL/sitemap.xml" -o /tmp/sitemap.xml
+          # Capture the status, not just the body. "is not a sitemap" on its own
+          # names the symptom and not the cause: a 403 from the edge and a
+          # mis-generated file produce the same message, and only the status tells
+          # you which one you are looking at.
+          SITEMAP_CODE=$(curl -sSL --max-redirs 5 -A "$PROBE_USER_AGENT" -H 'Accept: application/xml,text/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.9' --max-time 30 -o /tmp/sitemap.xml -w '%{http_code}' "$SITE_URL/sitemap.xml" 2>/dev/null) || SITEMAP_CODE=000
+          echo "/sitemap.xml HTTP $SITEMAP_CODE"
           if ! grep -q '<urlset' /tmp/sitemap.xml; then
-            echo "::error::/sitemap.xml is not a sitemap"
+            echo "::error::/sitemap.xml is not a sitemap (HTTP $SITEMAP_CODE) — first 200 bytes: $(head -c 200 /tmp/sitemap.xml | tr -d '\r\n')"
             head -c 300 /tmp/sitemap.xml
             exit 1
           fi
@@ -499,10 +504,49 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/site-health/latest.json frontend/public/data/freshness.json
-          if git diff --staged --quiet; then
-            echo "Probe result unchanged since the last run — nothing to commit."
+
+          # Commit on a change of *state*, not on every run.
+          #
+          # `git diff --staged --quiet` was the original guard and it could never
+          # fire, because both files are rewritten with fresh timestamps on every
+          # run: `latest.json` carries `ran_at` and `run_url`, and
+          # `freshness.json` carries `built_at`, `age_hours` and per-source
+          # `reason` strings that quote those ages ("… is 549.6 h old (SLO 192 h)").
+          # So the probe committed to main every 30 minutes — 70 of the last 200
+          # commits on main when this was fixed, ~48 a day while the probe was red
+          # — and `git log` stopped carrying any signal.
+          #
+          # Comparing the state projection instead records the transitions that
+          # matter (a check flipping, forecast data moving) and nothing else.
+          #
+          # This does not make the /status page lie about a stuck-red probe:
+          # build_freshness_artifact.mjs derives the probe source's state as
+          #   outcome === 'fail' ? 'failing' : classify(age, SLO)
+          # so a probe that keeps failing keeps reporting `failing` however old the
+          # committed result gets. It never degrades to "the probe stopped running".
+          # The current result is still in this run's summary and artifact.
+          probe_signal() {
+            jq -c '{outcome, checks: [.checks[]? | {id, outcome}]}' "$1" 2>/dev/null || echo '{}'
+          }
+          freshness_signal() {
+            jq -c '{overall: {state: .overall.state, not_fresh: .overall.not_fresh},
+                    sources: [.sources[]? | {id, state, prediction_date}]}' "$1" 2>/dev/null || echo '{}'
+          }
+
+          git show HEAD:data/site-health/latest.json > /tmp/old-probe.json 2>/dev/null || : > /tmp/old-probe.json
+          git show HEAD:frontend/public/data/freshness.json > /tmp/old-fresh.json 2>/dev/null || : > /tmp/old-fresh.json
+
+          NEW_PROBE=$(probe_signal data/site-health/latest.json)
+          NEW_FRESH=$(freshness_signal frontend/public/data/freshness.json)
+
+          if [ -s /tmp/old-probe.json ] && [ -s /tmp/old-fresh.json ] \
+             && [ "$(probe_signal /tmp/old-probe.json)" = "$NEW_PROBE" ] \
+             && [ "$(freshness_signal /tmp/old-fresh.json)" = "$NEW_FRESH" ]; then
+            echo "Probe state unchanged since the last published run — nothing to commit."
+            echo "state: $NEW_PROBE"
             exit 0
           fi
+
           OUTCOME=$(jq -r '.outcome' data/site-health/latest.json)
           git pull --rebase --autostash origin main || true
           git commit -m "chore(ops): site-health probe ${OUTCOME} $(date -u +%Y-%m-%dT%H:%MZ)"
