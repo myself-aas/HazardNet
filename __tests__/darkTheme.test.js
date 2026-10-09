@@ -287,8 +287,15 @@ describe('the theme reaches every colour in the product', () => {
     // Most of the product needs no `dark:` twin — the token layer does the work. But the
     // variant must still exist for the handful of cases where a *different element* has to
     // show, not a different colour.
-    expect(indexCss).toMatch(/@custom-variant dark \(/);
+    //
+    // Block form, and that is load-bearing: the parenthesised argument form can carry only
+    // one branch, and Tailwind silently drops an at-rule written as a second comma-separated
+    // argument — which is how the OS arm went missing here while the comment above it
+    // described it as present. `__tests__/themeVariantParity.test.js` pins both arms against
+    // apple.css and asserts the built stylesheet really emits them.
+    expect(indexCss).toMatch(/@custom-variant dark\s*\{/);
     expect(indexCss).toContain('[data-theme="dark"]');
+    expect(indexCss).toContain('@media (prefers-color-scheme: dark)');
   });
 
   test('apple.css is imported by index.css, before anything that consumes its tokens', () => {

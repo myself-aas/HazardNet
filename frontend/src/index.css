@@ -31,8 +31,43 @@
 
 /* `dark:` utilities follow the explicit choice written by useAppleTheme(), and the OS when the
    visitor has not chosen. The media arm is what paints a system-dark visitor correctly on the
-   108 prerendered routes before React hydrates (audit F-01). */
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *));
+   108 prerendered routes before React hydrates (audit F-01).
+
+   The media arm had been documented here but never actually written, so the two halves of the
+   theme disagreed for a first-time system-dark visitor — the largest single audience, since
+   `useAppleTheme()` writes nothing until the visitor makes a choice and the theme-boot script
+   in index.html returns early when localStorage holds no stored theme. In that state
+   apple.css took its `@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) }`
+   branch and flipped every `--ap-*` token dark, while every `dark:` utility stayed off because
+   it keyed only on `.dark` / `[data-theme="dark"]`.
+
+   That mispairing is not cosmetic, because the two arms of a hazard colour are solved for
+   opposite grounds and fail hard on the wrong one: `APPLE_HAZARD[*].text` measures 1.6-3.6:1
+   on tile 1 and tile 3, and `.onDark` measures 1.76-2.97:1 on parchment and white. Whichever
+   way the two layers disagree, the accent lands around 2-3:1 against a 4.5:1 requirement.
+   A Lighthouse run against www.hazardnet.live on 2026-10-10 reported exactly six such
+   failures on the hazard cards, all in the `onDark` arm (#30b9cf, #b582ce, #cf9a30, #9bc1d4,
+   #c68580, #d199be) — so it caught a light ground under a dark-arm foreground. That build
+   predates this file's current bento, so the report is treated as evidence that the
+   divergence is reachable in production, not as a line-by-line match to HEAD.
+
+   Neither `check:contrast` nor `appleParity.test.js` could have caught it: both measure each
+   arm against the ground it was solved for, and neither measures an arm against the *other*
+   theme's ground, which is the only pairing a divergence like this produces.
+
+   The block below mirrors apple.css's own condition exactly — same attribute guard, same
+   negation of an explicit light choice — so a `dark:` utility and the token it sits on can no
+   longer be in different themes. Note that Tailwind silently drops an at-rule branch written
+   as a second comma-separated argument to `@custom-variant`; the `{ @slot; }` block form is
+   what emits both arms. `__tests__/themeVariantParity.test.js` pins the two selectors to each
+   other and asserts the built CSS really carries both arms, because a variant that parses but
+   emits nothing fails invisibly — which is also how this happened. */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *) { @slot; }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *) { @slot; }
+  }
+}
 
 /* ── Base typography ─────────────────────────────────────────────────────────
    Cupertino Precision (DESIGN.md §Typography). Inter is named first and not shipped:

@@ -2487,7 +2487,18 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   {showsForecastRecords ? (
                     <details className="mt-4">
                       <summary className="min-h-[44px] cursor-pointer text-sm font-semibold text-carbon-90">Cite the forecast dataset (BibTeX)</summary>
-                      <pre className="mt-2 overflow-x-auto whitespace-pre rounded-lg bg-carbon-05 p-3 font-mono text-[12px] leading-relaxed text-carbon-90 dark:bg-carbon-80 dark:text-white">{KAGGLE_BIBTEX}</pre>
+                      {/* No dark-mode override here, on purpose. `carbon-*` maps to the
+                          `--ap-n-*` neutral ramp, which apple.css already inverts per theme,
+                          so `bg-carbon-05` and `text-carbon-90` are correct in both arms on
+                          their own. This element used to add a dark-mode carbon-80 background
+                          plus white text, which re-inverted an already-inverting token and
+                          rendered white on near-white at 1.12:1 — the standing
+                          `check:contrast` failure (double-inversion + contrast-dark) that had
+                          this gate red at HEAD. Both `check:contrast` and
+                          `__tests__/mapPalette.test.js` text-scan this file, comments
+                          included, so the offending class names and colour values are
+                          described here rather than quoted. */}
+                      <pre className="mt-2 overflow-x-auto whitespace-pre rounded-lg bg-carbon-05 p-3 font-mono text-[12px] leading-relaxed text-carbon-90">{KAGGLE_BIBTEX}</pre>
                     </details>
                   ) : null}
                 </motion.div>
