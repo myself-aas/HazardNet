@@ -58,16 +58,20 @@ export const AdvisoriesPage: React.FC = () => {
   const [selectedDistrictForEmail, setSelectedDistrictForEmail] = useState<string>('Kurigram');
   const [affectedUpazilas, setAffectedUpazilas] = useState<string>('');
   const [customOfficerName, setCustomOfficerName] = useState<string>('');
-  const [customOfficerPhone, setCustomOfficerPhone] = useState<string>('+8801712-345678');
-  const [customDamageArea, setCustomDamageArea] = useState<string>('4,500');
+  const [customOfficerPhone, setCustomOfficerPhone] = useState<string>('');
+  const [customDamageArea, setCustomDamageArea] = useState<string>('');
 
   // Gemini Live AI Advisory Generator State
   const [showAiSynthesizer, setShowAiSynthesizer] = useState(false);
   const [aiDistrict, setAiDistrict] = useState<string>('Kurigram');
-  const [aiHazard, setAiHazard] = useState<string>('Monsoon Flood');
-  const [aiSeverity, setAiSeverity] = useState<number>(0.85);
-  const [aiConfidence, setAiConfidence] = useState<number>(0.92);
-  const [aiCropContext, setAiCropContext] = useState<string>('T. Aman Rice (Vegetative Tillering Stage)');
+  const recordFor = (name: string) => ALL_64_DISTRICTS.find((d) => d.name === name);
+  const [aiHazard, setAiHazard] = useState<string>(() => recordFor('Kurigram')?.hazardType ?? '');
+  const [aiSeverity, setAiSeverity] = useState<number | null>(() => {
+    const d = ALL_64_DISTRICTS.find((x) => x.name === 'Kurigram');
+    return d ? (d.finalSeverity ?? d.severity) : null;
+  });
+  const [aiConfidence, setAiConfidence] = useState<number | null>(() => ALL_64_DISTRICTS.find((x) => x.name === 'Kurigram')?.probTop1 ?? null);
+  const [aiCropContext, setAiCropContext] = useState<string>('');
   const [aiLoading, setAiLoading] = useState<boolean>(false);
   const [aiAdvisoryData, setAiAdvisoryData] = useState<any | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
@@ -163,14 +167,14 @@ export const AdvisoriesPage: React.FC = () => {
       <div className="print-only mb-6 border-b-2 border-carbon-90 pb-4">
         <div className="flex items-center justify-between border-b border-carbon-30 pb-2 mb-3 text-[9pt] font-mono font-bold text-carbon-70">
           <span>GOVERNMENT OF THE PEOPLE'S REPUBLIC OF BANGLADESH</span>
-          <span>SOD 2019 COMPLIANT DIRECTIVE</span>
+          <span>Advisory reference</span>
           <span>Advisories</span>
         </div>
         
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <h1 className="text-xl font-black text-carbon-90 tracking-tight">
-              HAZARDNET BANGLADESH • EMERGENCY OPERATIONAL DIRECTIVE
+              HAZARDNET BANGLADESH • ADVISORY REFERENCE • NOT AN OFFICIAL WARNING
             </h1>
             <p className="text-xs text-carbon-80 font-bold mt-0.5">
               Sector: {sector.name} ({sector.code}) • Standard Operating Procedures & Technical Action Matrix
@@ -200,7 +204,7 @@ export const AdvisoriesPage: React.FC = () => {
         </div>
 
         <div className="flex items-center justify-between mt-2 pt-2 border-t border-carbon-20 text-[8pt] font-mono text-carbon-60">
-          <div>Coordinating Authority: DAE / DLS / DoF / DGHS / MoDMR / FFWC</div>
+          <div>Agencies referenced: DAE / DLS / DoF / DGHS / MoDMR / FFWC</div>
           <div>Advisory Status: ACTIVE FIELD OPERATIONAL PROTOCOL</div>
         </div>
       </div>
@@ -425,7 +429,13 @@ export const AdvisoriesPage: React.FC = () => {
                   <label className="text-xs font-mono font-bold text-carbon-30">TARGET DISTRICT (64):</label>
                   <select
                     value={aiDistrict}
-                    onChange={(e) => setAiDistrict(e.target.value)}
+                    onChange={(e) => {
+                      const d = recordFor(e.target.value);
+                      setAiDistrict(e.target.value);
+                      setAiHazard(d?.hazardType ?? '');
+                      setAiSeverity(d ? (d.finalSeverity ?? d.severity) : null);
+                      setAiConfidence(d?.probTop1 ?? null);
+                    }}
                     className="w-full px-3 py-2 rounded-xl bg-carbon-80 border border-carbon-70 text-carbon-05 text-xs font-semibold focus:outline-none focus:border-amber-400"
                   >
                     {ALL_64_DISTRICTS.map((d) => (
@@ -453,33 +463,23 @@ export const AdvisoriesPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-mono font-bold text-carbon-30">SCENARIO SEVERITY, SET BY YOU ({aiSeverity}):</label>
-                  <input
-                    type="range"
-                    min="0.1"
-                    max="1.0"
-                    step="0.05"
-                    value={aiSeverity}
-                    onChange={(e) => setAiSeverity(parseFloat(e.target.value))}
-                    className="w-full accent-amber-400 cursor-pointer"
-                  />
-                  <div className="flex justify-between text-xs text-carbon-30 font-mono">
-                    <span>Watch (0.1)</span>
-                    <span>Warning (0.5)</span>
-                    <span className="text-rose-300 font-bold">Emergency (1.0)</span>
-                  </div>
+                  <span className="block text-xs font-mono font-bold text-carbon-30">SEVERITY (DISTRICT RECORD):</span>
+                  <p className="text-xs font-mono text-carbon-05">
+                    {aiSeverity == null ? 'Not available for this district' : aiSeverity.toFixed(2)}
+                  </p>
+                  <p className="text-xs text-carbon-30">Read from the district record. Not set by hand.</p>
                 </div>
 
                 <div className="space-y-1.5 flex flex-col justify-end">
                   <button
                     onClick={handleGenerateAiAdvisory}
-                    disabled={aiLoading}
+                    disabled={aiSeverity == null || aiLoading}
                     className="w-full py-2.5 px-4 rounded-xl bg-primary hover:bg-ap-primary-tint text-ap-action-fg font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
                   >
                     {aiLoading ? (
                       <>
                         <div className="w-4 h-4 border-2 border-carbon-black border-t-transparent rounded-full animate-spin"></div>
-                        <span>Inferencing...</span>
+                        <span>Drafting...</span>
                       </>
                     ) : (
                       <>
@@ -518,7 +518,7 @@ export const AdvisoriesPage: React.FC = () => {
                       </p>
                     </div>
                     <span className="px-3 py-1 rounded-full text-xs font-mono font-black bg-amber-100 text-amber-950 border border-amber-300">
-                      CONFIDENCE: {Math.round(aiConfidence * 100)}%
+                      CONFIDENCE: {aiConfidence == null ? 'NOT AVAILABLE' : `${Math.round(aiConfidence * 100)}%`}
                     </span>
                   </div>
                   <StructuredAdvisoryRenderer advisoryJson={aiAdvisoryData} />
@@ -716,7 +716,7 @@ export const AdvisoriesPage: React.FC = () => {
               <tr className="print-table-emergency-header">
                 <th colSpan={5} className="emergency-protocol-title">
                   <AlertTriangle className="mr-2 inline h-4 w-4 align-[-2px]" aria-hidden="true" />
-                  EMERGENCY PROTOCOL & TECHNICAL SPECIFICATION MATRIX (SOD 2019) • {sector.name.toUpperCase()} SECTOR
+                  PROTOCOL MATRIX • {sector.name.toUpperCase()} SECTOR
                 </th>
               </tr>
               <tr className="border-b border-carbon-20 text-carbon-60 font-mono text-xs">
@@ -910,15 +910,16 @@ export const AdvisoriesPage: React.FC = () => {
         <div className="grid grid-cols-2 gap-4 pb-2 border-b border-carbon-30">
           <div>
             <strong className="text-carbon-90 block mb-1">NATIONAL TOLL-FREE EMERGENCY HOTLINES:</strong>
-            <div>• Disaster Early Warning: 1090 (24/7 Toll-Free BMD/FFWC)</div>
+            <div>• Disaster Management (DDM): 1090</div>
             <div>• National Emergency Services: 999 (Police, Fire, Medical)</div>
-            <div>• Agriculture Call Center: 16123 (Krishi Desk DAE)</div>
-            <div>• Livestock & Veterinary: 16358 | Health Hotline: 16263</div>
-          </div>
+            <div>• Krishi Call Centre: 16123</div>
+                      </div>
           <div className="text-right">
             <strong className="text-carbon-90 block mb-1">Source</strong>
             <div>HazardNet Bangladesh. Not an official warning service.</div>
-            <div>Official warnings: BMD and FFWC. For emergencies, call 999.</div>
+            <div>BMD: +880 2 41025705, info@bmd.gov.bd</div>
+            <div>FFWC: +880 2 2222 30070, ffwc@bwdb.gov.bd</div>
+            <div>For emergencies, call 999.</div>
           </div>
         </div>
         <div className="text-center pt-2 text-[7.5pt] text-carbon-60">
@@ -928,7 +929,7 @@ export const AdvisoriesPage: React.FC = () => {
 
       {/* PRINT-ONLY FIXED RUNNING FOOTER WITH DYNAMIC CSS PAGE NUMBERING */}
       <div className="print-only print-page-footer">
-        <span>HAZARDNET BANGLADESH • SOD 2019 DIRECTIVE</span>
+        <span>HAZARDNET BANGLADESH • ADVISORY REFERENCE</span>
         <span>SECTOR: {sector.name.toUpperCase()} ({sector.code})</span>
         <span className="print-page-number"></span>
       </div>
@@ -954,7 +955,7 @@ export const AdvisoriesPage: React.FC = () => {
                       Emergency Assistance Email Requisition Generator
                     </h3>
                     <p className="text-xs text-carbon-60 font-mono break-words">
-                      Pre-formatted official communication aligned with SOD 2019 standards
+                      Pre-formatted email draft. Review before sending.
                     </p>
                   </div>
                 </div>

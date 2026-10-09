@@ -2568,7 +2568,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               over any ground. Every character stays visible (map attribution is
               not collapsible), it just stops pretending to be chrome. */}
           <div className="absolute bottom-1.5 left-2 z-[var(--ap-z-sticky)] font-sans text-xs leading-snug text-carbon-60 [text-shadow:0_1px_2px_rgba(255,255,255,0.7),0_0_6px_rgba(255,255,255,0.5)] dark:[text-shadow:0_1px_2px_rgba(0,0,0,0.8),0_0_6px_rgba(0,0,0,0.6)] pointer-events-auto max-w-[min(34rem,calc(100%-8rem))]">
-            <p className="leading-snug line-clamp-2">{attributionFor(activeLayer)}</p>
+            <p className="leading-snug">{attributionFor(activeLayer)}</p>
           </div>
 
           <div className="absolute bottom-2 right-16 z-[var(--ap-z-sticky)] glass-pill px-4 py-2 text-xs font-mono font-semibold text-carbon-70 pointer-events-auto hidden lg:flex items-center gap-3 tabular-nums">

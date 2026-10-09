@@ -265,8 +265,7 @@ export const PdfExportButton: React.FC<PdfExportButtonProps> = ({
             <div className="fixed inset-0 z-[9994]" onClick={() => setIsOpenMenu(false)} />
             <div className="absolute right-0 top-full mt-1.5 w-72 max-w-[calc(100vw-2rem)] bg-white border border-carbon-20 rounded-xl shadow-xl z-[9994] p-1.5 text-xs ap-enter-drop">
               <div className="px-2.5 py-1.5 text-xs font-mono font-bold text-carbon-60 uppercase tracking-wider border-b border-carbon-20 flex items-center justify-between">
-                <span>Official PDF & Print</span>
-                <span className="text-amber-600 font-bold">SOD 2019</span>
+                <span>PDF & Print</span>
               </div>
 
               {/* Configure Filename & Download */}
