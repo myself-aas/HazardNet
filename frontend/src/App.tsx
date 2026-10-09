@@ -308,7 +308,8 @@ const AppContent: React.FC = () => {
       <Toaster
         position="top-right"
         containerStyle={{
-          top: 'calc(8px + env(safe-area-inset-top, 0px))',
+          // Below the navbar, not over it: --navbar-height already carries the safe-area inset.
+          top: 'calc(var(--navbar-height) + 8px)',
           right: 'calc(8px + env(safe-area-inset-right, 0px))',
           zIndex: 70,
         }}

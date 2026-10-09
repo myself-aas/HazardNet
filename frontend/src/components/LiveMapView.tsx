@@ -6,8 +6,9 @@ import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet.heat';
 import toast from 'react-hot-toast';
-import { motion, AnimatePresence, useDragControls, type PanInfo } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { LocationMap } from './ui/expand-map';
+import { BottomSheet } from './ui/BottomSheet';
 import { ALL_64_DISTRICTS, ALL_8_DIVISIONS } from '../data/bangladeshDistricts';
 import {
   isValidLatLng,
@@ -196,18 +197,6 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   // zoom control. The fake "sync live telemetry" action and the field-report form that
   // persisted nothing went with it.
   const [isFilterModalOpen, setIsFilterModalOpen] = useState<boolean>(false);
-  // Phone filter sheet: small (56vh) or full (92vh). Only meaningful below `sm`.
-  const [filterSheetExpanded, setFilterSheetExpanded] = useState<boolean>(false);
-  const filterDragControls = useDragControls();
-  const [isPhoneViewport, setIsPhoneViewport] = useState<boolean>(() =>
-    typeof window !== 'undefined' ? window.matchMedia('(max-width: 639px)').matches : false,
-  );
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 639px)');
-    const onChange = () => setIsPhoneViewport(mq.matches);
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, []);
   const [isLayerModalOpen, setIsLayerModalOpen] = useState<boolean>(false);
 
   // Measure mode ref for Leaflet click callback
@@ -1600,7 +1589,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.2 }}
-                className="absolute top-4 left-4 right-4 lg:right-auto z-[var(--ap-z-sticky)] pointer-events-auto lg:max-w-[320px] w-auto"
+                className="absolute bottom-36 sm:bottom-16 left-4 right-20 sm:right-auto z-[var(--ap-z-sticky)] pointer-events-auto lg:max-w-[320px] w-auto"
               >
                 <div className="bg-white text-carbon-90 border border-carbon-20 rounded-2xl p-4 flex flex-col gap-2">
                   <div className="flex items-center justify-between border-b border-carbon-20 pb-2 text-xs font-bold">
@@ -1754,196 +1743,121 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             </div>
           )}
 
-          {/* District & hazard filters: 2026-10-05 restyle to the shared map
-              language. One rounded floating sheet (a bottom sheet on phones,
-              a centered card on desktop), a bold title with grey support text,
-              hairline dividers between the two pickers, round division pills,
-              hazard pills with coloured dots, and a sticky CTA row.
-              44px targets throughout, both themes. */}
-          <AnimatePresence>
-            {isFilterModalOpen && (
-              <div
-                className="fixed inset-0 z-[var(--ap-z-modal)] bg-carbon-black/30 flex items-end sm:items-center justify-center sm:p-4 pointer-events-auto"
-                onClick={(e) => {
-                  if (e.target === e.currentTarget) setIsFilterModalOpen(false);
-                }}
-              >
-                <motion.div
-                  key="district-filter-sheet"
-                  role="dialog"
-                  aria-modal="true"
-                  aria-label="Division and hazard filters"
-                  initial={{ opacity: 0, y: 24, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 24, scale: 0.98 }}
-                  transition={{ duration: 0.22, ease: 'easeOut' }}
-                  // Phone: drag up to open to full height, drag down to step back or dismiss.
-                  // Desktop keeps the centred card and does not drag.
-                  drag={isPhoneViewport ? 'y' : false}
-                  dragControls={filterDragControls}
-                  dragListener={false}
-                  dragConstraints={{ top: -48, bottom: 480 }}
-                  dragElastic={0.08}
-                  dragMomentum={false}
-                  onDragEnd={(_: unknown, info: PanInfo) => {
-                    if (!isPhoneViewport) return;
-                    if (info.offset.y > 120 || info.velocity.y > 600) {
-                      if (filterSheetExpanded) setFilterSheetExpanded(false);
-                      else setIsFilterModalOpen(false);
-                    } else if (info.offset.y < -50 || info.velocity.y < -600) {
-                      setFilterSheetExpanded(true);
-                    }
+          {/* Districts & hazards. Opened from the Filters control and rendered by the
+              shared BottomSheet, so it drags up to full and down to shrink or dismiss,
+              and its footer actions sit side by side. */}
+          <BottomSheet
+            isOpen={isFilterModalOpen}
+            onClose={() => setIsFilterModalOpen(false)}
+            title="Districts & hazards"
+            subtitle="Narrow the national situational map"
+            footerContent={
+              <>
+                <button
+                  type="button"
+                  aria-label="Reset division and hazard filters"
+                  onClick={() => {
+                    setSelectedDivision('All');
+                    selectAllHazards();
+                    setSearchQuery('');
                   }}
-                  className={`w-full sm:max-w-md flex flex-col sm:max-h-[80vh] overflow-hidden bg-white sm:rounded-xl rounded-t-xl shadow-map transition-[max-height] duration-300 ${
-                    filterSheetExpanded ? 'max-h-[92vh]' : 'max-h-[56vh]'
-                  }`}
+                  className="tap-target min-h-[44px] shrink-0 whitespace-nowrap rounded-full px-5 bg-carbon-05 hover:bg-carbon-10 dark:hover:bg-carbon-70 text-carbon-70 font-bold text-xs transition-colors"
                 >
-                  {/* grab + header. This strip is the only drag handle on phones. */}
-                  <div
-                    className="shrink-0 px-5 pt-3 pb-3 border-b border-carbon-20 touch-none"
-                    onPointerDown={(e) => {
-                      if (isPhoneViewport) filterDragControls.start(e);
-                    }}
+                  Reset
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsFilterModalOpen(false)}
+                  className="tap-target flex-1 min-h-[44px] whitespace-nowrap rounded-full bg-carbon-90 hover:bg-carbon-80 dark:hover:bg-carbon-10 text-carbon-05 font-black text-xs transition-all"
+                >
+                  Show {filteredDistricts.length} districts
+                </button>
+              </>
+            }
+          >
+            {/* Division */}
+            <section aria-labelledby="filter-division-heading" className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 id="filter-division-heading" className="text-xs font-bold uppercase tracking-[0.12em] text-carbon-60">
+                  Division
+                </h4>
+                {selectedDivision !== 'All' && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDivision('All')}
+                    className="tap-target text-xs font-semibold text-ap-link hover:underline"
                   >
-                    <button
-                      type="button"
-                      onClick={() => setFilterSheetExpanded((v) => !v)}
-                      aria-label={filterSheetExpanded ? 'Shrink filter sheet' : 'Expand filter sheet'}
-                      className="sm:hidden mx-auto mb-3 flex h-4 w-16 items-center justify-center"
-                    >
-                      <span className="h-1 w-10 rounded-full bg-carbon-20" aria-hidden="true" />
-                    </button>
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <h3 className="text-base font-bold tracking-tight text-carbon-90 dark:text-white">
-                          Districts & hazards
-                        </h3>
-                        <p className="text-xs text-carbon-60">Narrow the national situational map</p>
-                      </div>
-                      <button
-                        type="button"
-                        aria-label="Close filters"
-                        onClick={() => setIsFilterModalOpen(false)}
-                        className="tap-target shrink-0 w-11 h-11 grid place-items-center rounded-full bg-carbon-05 text-carbon-50 hover:text-carbon-90 dark:hover:text-white hover:bg-carbon-10 dark:hover:bg-carbon-70 transition-colors"
-                      >
-                        <MaterialIcon name="close" className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex-1 overflow-y-auto overscroll-contain min-h-0 px-5">
-                    {/* Divisions */}
-                    <div className="py-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-xs font-bold uppercase tracking-[0.12em] text-carbon-60">Division</span>
-                        {selectedDivision !== 'All' && (
-                          <button
-                            type="button"
-                            onClick={() => setSelectedDivision('All')}
-                            className="text-xs font-semibold text-ap-link hover:underline"
-                          >
-                            Clear
-                          </button>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {[{ id: 'all', name: 'All' }, ...ALL_8_DIVISIONS].map((div) => {
-                          const divName = div.id === 'all' ? 'All' : div.name.replace(' Division', '');
-                          const selected =
-                            div.id === 'all'
-                              ? selectedDivision === 'All'
-                              : selectedDivision.toLowerCase() === divName.toLowerCase();
-                          return (
-                            <button
-                              key={div.id}
-                              type="button"
-                              aria-pressed={selected}
-                              onClick={() => setSelectedDivision(divName)}
-                              className={`tap-target inline-flex min-h-[36px] items-center rounded-full px-3.5 text-xs font-bold transition-colors ${
-                                selected
-                                  ? 'bg-carbon-90 text-ap-on-inverse '
-                                  : 'bg-carbon-05 text-carbon-60 hover:bg-carbon-10 dark:hover:bg-carbon-70 hover:text-carbon-90 dark:hover:text-white'
-                              }`}
-                            >
-                              {divName}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Hazards */}
-                    <div className="py-4 border-t border-carbon-20">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-xs font-bold uppercase tracking-[0.12em] text-carbon-60">
-                          Hazards ({selectedHazards.length}/{HAZARD_LAYERS.length})
-                        </span>
-                        <div className="flex items-center gap-3 text-xs font-semibold">
-                          <button type="button" onClick={selectAllHazards} className="text-ap-link hover:underline">
-                            All
-                          </button>
-                          <button type="button" onClick={clearAllHazards} className="text-ap-link hover:underline">
-                            None
-                          </button>
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {HAZARD_LAYERS.map((hazard) => {
-                          const selected = selectedHazards.includes(hazard.id);
-                          return (
-                            <button
-                              key={hazard.id}
-                              type="button"
-                              aria-pressed={selected}
-                              onClick={() => toggleHazard(hazard.id)}
-                              className={`tap-target inline-flex min-h-[36px] items-center gap-1.5 rounded-full border px-3.5 text-xs font-bold transition-colors ${
-                                selected
-                                  ? 'border-transparent bg-carbon-90 text-ap-on-inverse '
-                                  : 'border-carbon-20 text-carbon-60 hover:border-carbon-30 dark:hover:border-carbon-60 hover:text-carbon-90 dark:hover:text-white'
-                              }`}
-                            >
-                              <span
-                                className="h-2 w-2 rounded-full"
-                                style={{ backgroundColor: hazard.color }}
-                                aria-hidden="true"
-                              />
-                              {hazard.name}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      <p className="mt-3 text-xs text-carbon-60">
-                        Showing {filteredDistricts.length} of {liveDistricts.length} districts
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* sticky CTA row */}
-                  <div className="shrink-0 flex items-center gap-2 px-5 py-4 border-t border-carbon-20 bg-white">
-                    <button
-                      type="button"
-                      aria-label="Reset division and hazard filters"
-                      onClick={() => {
-                        setSelectedDivision('All');
-                        selectAllHazards();
-                        setSearchQuery('');
-                      }}
-                      className="tap-target min-h-[44px] rounded-full px-5 bg-carbon-05 hover:bg-carbon-10 dark:hover:bg-carbon-70 text-carbon-70 font-bold text-xs transition-colors"
-                    >
-                      Reset
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsFilterModalOpen(false)}
-                      className="flex-1 min-h-[44px] rounded-full bg-carbon-90 hover:bg-carbon-80 dark:hover:bg-carbon-10 text-carbon-05 font-black text-xs transition-all"
-                    >
-                      Show {filteredDistricts.length} districts
-                    </button>
-                  </div>
-                </motion.div>
+                    Clear
+                  </button>
+                )}
               </div>
-            )}
-          </AnimatePresence>
+              <div className="flex flex-wrap gap-2">
+                {[{ id: 'all', name: 'All' }, ...ALL_8_DIVISIONS].map((div) => {
+                  const divName = div.id === 'all' ? 'All' : div.name.replace(' Division', '');
+                  const selected =
+                    div.id === 'all'
+                      ? selectedDivision === 'All'
+                      : selectedDivision.toLowerCase() === divName.toLowerCase();
+                  return (
+                    <button
+                      key={div.id}
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() => setSelectedDivision(divName)}
+                      className={`tap-target inline-flex min-h-[40px] items-center rounded-full px-4 text-xs font-bold transition-colors ${
+                        selected
+                          ? 'bg-carbon-90 text-ap-on-inverse'
+                          : 'bg-carbon-05 text-carbon-60 hover:bg-carbon-10 dark:hover:bg-carbon-70 hover:text-carbon-90 dark:hover:text-white'
+                      }`}
+                    >
+                      {divName}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* Hazards */}
+            <section aria-labelledby="filter-hazards-heading" className="space-y-3 border-t border-carbon-20 pt-4">
+              <div className="flex items-center justify-between">
+                <h4 id="filter-hazards-heading" className="text-xs font-bold uppercase tracking-[0.12em] text-carbon-60">
+                  Hazards ({selectedHazards.length}/{HAZARD_LAYERS.length})
+                </h4>
+                <div className="flex items-center gap-3 text-xs font-semibold">
+                  <button type="button" onClick={selectAllHazards} className="tap-target text-ap-link hover:underline">
+                    All
+                  </button>
+                  <button type="button" onClick={clearAllHazards} className="tap-target text-ap-link hover:underline">
+                    None
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {HAZARD_LAYERS.map((hazard) => {
+                  const selected = selectedHazards.includes(hazard.id);
+                  return (
+                    <button
+                      key={hazard.id}
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() => toggleHazard(hazard.id)}
+                      className={`tap-target inline-flex min-h-[40px] items-center gap-1.5 rounded-full border px-4 text-xs font-bold transition-colors ${
+                        selected
+                          ? 'border-transparent bg-carbon-90 text-ap-on-inverse'
+                          : 'border-carbon-20 text-carbon-60 hover:border-carbon-30 dark:hover:border-carbon-60 hover:text-carbon-90 dark:hover:text-white'
+                      }`}
+                    >
+                      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: hazard.color }} aria-hidden="true" />
+                      {hazard.name}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-carbon-60">
+                Showing {filteredDistricts.length} of {liveDistricts.length} districts
+              </p>
+            </section>
+          </BottomSheet>
 
           {/* Layer panel — one floating card, three flat sections: ground,
               overlays, hazards. Rows are icon + name + one pill, never a box
@@ -2684,8 +2598,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               the smallest readable size, with a soft shadow so it stays legible
               over any ground. Every character stays visible (map attribution is
               not collapsible), it just stops pretending to be chrome. */}
-          <div className="absolute bottom-1.5 left-2 z-[var(--ap-z-sticky)] font-sans text-[10px] leading-snug text-carbon-60 [text-shadow:0_1px_2px_rgba(255,255,255,0.7),0_0_6px_rgba(255,255,255,0.5)] dark:[text-shadow:0_1px_2px_rgba(0,0,0,0.8),0_0_6px_rgba(0,0,0,0.6)] pointer-events-auto max-w-[calc(100%-7rem)]">
-            <p className="leading-snug">{attributionFor(activeLayer)}</p>
+          <div className="absolute bottom-1.5 left-2 z-[var(--ap-z-sticky)] font-sans text-[10px] leading-snug text-carbon-60 [text-shadow:0_1px_2px_rgba(255,255,255,0.7),0_0_6px_rgba(255,255,255,0.5)] dark:[text-shadow:0_1px_2px_rgba(0,0,0,0.8),0_0_6px_rgba(0,0,0,0.6)] pointer-events-auto max-w-[min(34rem,calc(100%-8rem))]">
+            <p className="leading-snug line-clamp-2">{attributionFor(activeLayer)}</p>
           </div>
 
           <div className="absolute bottom-2 right-16 z-[var(--ap-z-sticky)] glass-pill px-4 py-2 text-xs font-mono font-semibold text-carbon-70 pointer-events-auto hidden lg:flex items-center gap-3 tabular-nums">

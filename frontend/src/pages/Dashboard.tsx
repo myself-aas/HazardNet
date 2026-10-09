@@ -307,7 +307,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
         {/* 2026-10-05 restyle: the stage title floats on the map as plain text,
             the way the reference apps float "Destination Ahead" — bold ink with
             a soft legibility shadow, no bounding card between it and the map. */}
-        <header className="pointer-events-none absolute inset-x-0 top-0 z-[var(--ap-z-sticky)] flex items-start justify-between gap-3 p-3 pt-[calc(var(--navbar-height)+8px)] sm:p-5">
+        <header className="pointer-events-none absolute inset-x-0 top-0 z-[var(--ap-z-sticky)] flex items-start justify-between gap-3 px-3 pb-3 sm:px-5 sm:pb-5 pt-[calc(var(--navbar-height)+12px)] sm:pt-[calc(var(--navbar-height)+12px)]">
           <div className="pointer-events-auto min-w-0 [text-shadow:0_1px_2px_rgba(255,255,255,0.7),0_0_8px_rgba(255,255,255,0.5)] dark:[text-shadow:0_1px_2px_rgba(0,0,0,0.8),0_0_8px_rgba(0,0,0,0.6)]">
             <p className="truncate font-sans text-[10px] font-bold uppercase leading-tight tracking-[0.12em] text-carbon-50">
               HazardNet / live
@@ -321,7 +321,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
           </div>
         </header>
 
-        <div className="relative min-h-0 flex-1 overflow-hidden">
+        <div className="live-stage relative min-h-0 flex-1 overflow-hidden">
           <Map
             selectedDistrictId={selectedDistrict?.id}
             onOpenDisasterModal={handleOpenDisasterModal}

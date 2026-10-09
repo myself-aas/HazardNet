@@ -2707,3 +2707,15 @@ button:not([data-compact-target="true"]),
    sets the base face, §12 sets Bengali, and the mono rule near the top of this file sets tabular
    type, all at ordinary specificity. Keeping the guard would have meant a universal selector
    beating those three rules and three !importants fighting back. */
+
+/* /live: the operational title sits top-left under the navbar. Leaflet's zoom
+   control defaults to the very corner, which is under the navbar on desktop and
+   on top of the title on phones. Drop it beneath the title block and align it
+   with the title's left edge. Scoped to .live-stage so other maps are unchanged. */
+.live-stage .leaflet-top.leaflet-left {
+  top: calc(var(--navbar-height) + 4.5rem);
+  left: 0.75rem;
+}
+@media (min-width: 640px) {
+  .live-stage .leaflet-top.leaflet-left { left: 1.25rem; }
+}

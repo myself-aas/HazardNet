@@ -26,11 +26,16 @@ export interface BottomSheetProps {
 
 const STAGE_ORDER: SheetDisclosureStage[] = ['peek', 'half', 'expanded'];
 
-/** How much of the viewport each stage may occupy. */
-const STAGE_MAX_HEIGHT: Record<SheetDisclosureStage, string> = {
-  peek: '38vh',
-  half: '62vh',
-  expanded: '92vh',
+/**
+ * Each stage is a fixed share of the viewport. The sheet's height comes from the
+ * stage, not from its content: otherwise short content makes "full" look identical
+ * to "half", and the drag gesture appears to do nothing. Literal class names so
+ * Tailwind generates them.
+ */
+const STAGE_HEIGHT_CLASS: Record<SheetDisclosureStage, string> = {
+  peek: 'h-[38vh]',
+  half: 'h-[62vh]',
+  expanded: 'h-[92vh]',
 };
 
 const stageLabel = (stage: SheetDisclosureStage) =>
@@ -158,7 +163,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             dragMomentum={false}
             style={{ y }}
             onDragEnd={handleDragEnd}
-            className={`pointer-events-auto relative w-full max-w-2xl mx-auto ap-sheet overflow-hidden flex flex-col ${className}`}
+            className={`pointer-events-auto relative w-full max-w-2xl mx-auto ap-sheet overflow-hidden flex flex-col transition-[height] duration-300 ${STAGE_HEIGHT_CLASS[stage]} ${className}`}
           >
             {/* Grabber and header. The grabber is also the stage control. */}
             <div
@@ -213,18 +218,10 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
               )}
             </div>
 
-            {/* Body. Scrolls when the content is taller than the stage. */}
-            <motion.div
-              animate={{ maxHeight: STAGE_MAX_HEIGHT[stage] }}
-              transition={{
-                type: 'spring',
-                stiffness: APPLE_MOTION.springStandard.stiffness,
-                damping: APPLE_MOTION.springStandard.damping,
-              }}
-              className="flex-1 overflow-y-auto p-4 space-y-4 touch-scroll min-h-0"
-            >
+            {/* Body. Takes whatever the stage leaves after the header and footer, and scrolls. */}
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-4 touch-scroll">
               {children}
-            </motion.div>
+            </div>
 
             {/* Actions. Side by side, never stacked: a sheet is short on
                 vertical room and long on horizontal. */}
