@@ -723,9 +723,9 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                   onSelectDistrict(String(activeSheetItem.district_id));
                   setActiveSheetItem(null);
                 }}
-                className="px-5 py-2.5 rounded-xl bg-primary text-ap-action-fg font-sans font-semibold text-xs hover:bg-primary-strong shadow-xs min-h-[44px] text-center"
+                className="px-5 py-2.5 rounded-xl bg-primary text-ap-action-fg font-sans font-semibold text-xs hover:bg-primary-strong shadow-xs min-h-[44px] whitespace-nowrap"
               >
-                View this district on the live map
+                View on Live GIS Map
               </button>
             )}
           </>
