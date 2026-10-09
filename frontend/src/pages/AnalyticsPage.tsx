@@ -77,7 +77,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
       transition={{ duration: 0.35, ease: 'easeOut' }}
       className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6"
     >
-      <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md relative overflow-hidden transition-all duration-300 hover:shadow-lg">
+      <div className="ap-card relative overflow-hidden transition-all duration-300">
         <div className="relative z-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-900 text-xs font-mono font-bold mb-3 shadow-2xs">
             <span>RESEARCHER & ADMIN ANALYTICS</span>
@@ -162,7 +162,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             transition={{ duration: 0.25 }}
             className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6"
           >
-            <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="bg-white border border-carbon-20/90 rounded-3xl p-6 shadow-md hover:shadow-lg transition-all space-y-3 cursor-pointer md:col-span-2">
+            <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="ap-card transition-all space-y-3 cursor-pointer md:col-span-2">
               <div className="text-xs font-mono text-carbon-60 font-bold">INFERENCE LATENCY</div>
               <div className="text-2xl font-black text-carbon-60">Not published</div>
               <p className="text-xs text-carbon-60 leading-relaxed">
@@ -170,7 +170,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
                 API is reachable, stays on the device that made the request.
               </p>
             </motion.div>
-            <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="bg-white border border-carbon-20/90 rounded-3xl p-6 shadow-md hover:shadow-lg transition-all space-y-3 cursor-pointer">
+            <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="ap-card transition-all space-y-3 cursor-pointer">
               <div className="text-xs font-mono text-carbon-60 font-bold">MEAN ABSOLUTE ERROR (MAE)</div>
               <div className="text-2xl font-black text-carbon-60">Not published</div>
               <p className="text-xs text-carbon-60 leading-relaxed">
@@ -178,7 +178,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
                 metric is quoted here. The model card documents the validation status that does exist.
               </p>
             </motion.div>
-            <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="bg-white border border-carbon-20/90 rounded-3xl p-6 shadow-md hover:shadow-lg transition-all space-y-3 sm:col-span-2 md:col-span-1 cursor-pointer">
+            <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="ap-card transition-all space-y-3 sm:col-span-2 md:col-span-1 cursor-pointer">
               <div className="text-xs font-mono text-carbon-60 font-bold">EXPECTED CALIBRATION ERROR (ECE)</div>
               <div className="text-2xl font-black text-carbon-60">Not published</div>
               <p className="text-xs text-carbon-60 leading-relaxed">
@@ -195,7 +195,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.25 }}
-            className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-6"
+            className="ap-card space-y-6"
           >
             <h2 className="text-xl font-bold text-carbon-90">Pipeline status, as the snapshot reports it</h2>
             <p className="text-xs text-carbon-60 leading-relaxed">
@@ -241,7 +241,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.25 }}
-            className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-6"
+            className="ap-card space-y-6"
           >
             <h2 className="text-xl font-bold text-carbon-90">EM-DAT International Disaster Database vs HazardNet Predictions</h2>
             <p className="text-sm text-carbon-60 leading-relaxed">
