@@ -625,7 +625,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
                 <tr className="print-table-emergency-header">
                   <th colSpan={8} className="emergency-protocol-title">
                     <AlertTriangle className="mr-2 inline h-4 w-4 align-[-2px]" aria-hidden="true" />
-                    NATIONAL EMERGENCY PROTOCOL & HAZARD DISTRIBUTION SUMMARY (SOD 2019)
+                    NATIONAL HAZARD DISTRIBUTION SUMMARY
                   </th>
                 </tr>
                 <tr>

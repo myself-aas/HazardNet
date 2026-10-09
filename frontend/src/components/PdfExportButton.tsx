@@ -74,7 +74,7 @@ export const PdfExportButton: React.FC<PdfExportButtonProps> = ({
     setIsOpenMenu(false);
 
     const evaluated = formatFilenameWithPlaceholders(initialTemplate, mergedContext);
-    const toastId = toast.loading(`Generating official ${documentType} PDF...`);
+    const toastId = toast.loading(`Generating ${documentType} PDF...`);
 
     try {
       await exportElementToPdf({

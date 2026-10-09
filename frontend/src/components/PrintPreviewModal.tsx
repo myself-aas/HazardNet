@@ -50,8 +50,8 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
   onClose,
   elementId = 'advisory-bulletin-container',
   customElement,
-  title = 'HazardNet Official Emergency Advisory Handout',
-  documentType = 'Emergency Operational Directive',
+  title = 'HazardNet Advisory Handout',
+  documentType = 'Advisory handout',
   filename,
   regionName,
   districtName,
@@ -74,9 +74,6 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
   // Escape, focus save/restore, scroll lock and the Tab cycle. The preview
   // closed on Escape already but let Tab walk out of it.
   useDialogBehavior({ isOpen, onClose, containerRef: dialogRef });
-  const dispatchRef = useRef<string>(
-    `HN-BD-${new Date().getFullYear()}-${Date.now().toString(36).slice(-5).toUpperCase()}`,
-  );
 
   const resolvedRegion = regionName || districtName || filenameContext.region || filenameContext.district || 'National';
   const resolvedHazard = hazardType || filenameContext.hazard || filenameContext.hazardType || 'Disaster_Alert';
@@ -88,7 +85,6 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
     district: resolvedRegion,
     hazard: resolvedHazard,
     hazardType: resolvedHazard,
-    dispatchRef: dispatchRef.current,
     ...filenameContext,
   };
 
@@ -205,7 +201,7 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
     setIsExportingPdf(true);
     setExportProgress({ percent: 10, stage: 'Preparing PDF...' });
     const evaluated = formatFilenameWithPlaceholders(initialTemplate, mergedContext);
-    const toastId = toast.loading(`Generating official ${documentType} PDF...`);
+    const toastId = toast.loading(`Generating ${documentType} PDF...`);
 
     try {
       await exportElementToPdf({
@@ -222,7 +218,7 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
           toast.loading(`${stage} (${percent}%)`, { id: toastId });
         },
         onComplete: () => {
-          toast.success(`Official PDF exported as "${evaluated}"!`, { id: toastId, duration: 4000 });
+          toast.success(`PDF exported as "${evaluated}"!`, { id: toastId, duration: 4000 });
         },
       });
     } catch (err) {
@@ -271,13 +267,6 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
                 >
                   {title}
                 </h2>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 text-xs font-mono font-bold">
-                  <CheckCircle2 className="w-3 h-3" />
-                  SOD 2019 VERIFIED
-                </span>
-                <span className="hidden lg:inline-flex px-2 py-0.5 rounded-md bg-carbon-80 border border-carbon-70 text-carbon-30 text-xs font-mono">
-                  REF: {dispatchRef.current}
-                </span>
               </div>
               <p className="text-xs text-carbon-30 font-mono truncate">
                 {orientation === 'portrait' ? 'A4 Portrait (210×297mm)' : 'A4 Landscape (297×210mm)'} • Real-time QR
@@ -427,24 +416,24 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
                 inkSaverMode ? 'ink-saver-active' : ''
               }`}
             >
-              {/* OFFICIAL EMBLEM & DIRECTIVE BANNER FOR A4 DOCUMENT */}
+              {/* Header for the A4 advisory handout */}
               <div className="border-b-2 border-carbon-90 pb-4 mb-6">
                 <div className="flex items-center justify-between border-b border-carbon-30 pb-2 mb-3 text-[8.5pt] font-mono font-bold text-carbon-90">
-                  <span>GOVERNMENT OF THE PEOPLE'S REPUBLIC OF BANGLADESH</span>
-                  <span>SOD 2019 OPERATIONAL DISPATCH</span>
-                  <span>PUBLIC SAFETY COMPLIANT</span>
+                  <span>HAZARDNET BANGLADESH</span>
+                  <span>ADVISORY HANDOUT</span>
+                  <span>NOT AN OFFICIAL WARNING</span>
                 </div>
 
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-carbon-90 text-carbon-05 font-mono text-[7.5pt] font-extrabold uppercase mb-1">
-                      OFFICIAL DISASTER EARLY WARNING DIRECTIVE
+                      ADVISORY HANDOUT, NOT AN OFFICIAL WARNING
                     </div>
                     <h1 className="text-xl sm:text-2xl font-black text-carbon-90 tracking-tight uppercase">
                       HAZARDNET BANGLADESH • {documentType.toUpperCase()}
                     </h1>
                     <p className="text-xs text-carbon-90 font-bold mt-1">
-                      National Disaster Management Authority (NDMA) & Agro-Meteorological Advisory Desk
+                      HazardNet Bangladesh. Official warnings: BMD and FFWC.
                     </p>
 
                     <div className="flex flex-wrap items-center gap-2 mt-2 pt-1 border-t border-carbon-20 text-[7.5pt] font-mono">
@@ -453,9 +442,8 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
                         {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })},{' '}
                         {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} BST
                       </span>
-                      <span className="print-currency-tag">DISPATCH REF: {dispatchRef.current}</span>
                       <span className="bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded font-bold border border-emerald-300">
-                        STATUS: ACTIVE OPERATIONAL BULLETIN
+                        STATUS: DRAFT FOR REVIEW
                       </span>
                     </div>
                   </div>
@@ -476,7 +464,7 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
                 aria-hidden="true"
                 className="rounded-2xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-[32deg] pointer-events-none select-none z-0 border-2 border-dashed border-carbon-90/4 text-carbon-90/5 font-mono font-black text-sm uppercase tracking-widest p-8 text-center max-w-[560px] leading-relaxed"
               >
-                HAZARDNET BANGLADESH • OFFICIAL EMERGENCY ADVISORY • SOD 2019 OPERATIONAL DIRECTIVE • UNRESTRICTED FIELD
+                HAZARDNET BANGLADESH • ADVISORY HANDOUT • NOT AN OFFICIAL WARNING
                 DISTRIBUTION
               </div>
 
@@ -492,7 +480,7 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
                 )}
               </div>
 
-              {/* OFFICIAL A4 FOOTER & SIGN-OFF */}
+              {/* A4 footer */}
               <div className="mt-12 pt-4 border-t-2 border-carbon-90 flex flex-wrap items-center justify-between gap-3 text-[7.5pt] font-mono text-carbon-60">
                 <div className="space-y-0.5">
                   <span className="font-bold text-carbon-90">HAZARDNET BANGLADESH DISASTER OPERATIONS</span>
@@ -500,9 +488,9 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
                 </div>
                 <div className="text-right">
                   <span className="font-bold text-carbon-90">
-                    HOTLINES: 999 (National) • 1090 (Disaster) • 16123 (Krishi)
+                    HOTLINES: 999 (National) • 1090 (DDM) • 16123 (Krishi Call Centre)
                   </span>
-                  <p>Official Directive Page 1 of 1 • SOD 2019 Public Safety Standard</p>
+                  <p>Advisory handout • Official warnings: BMD and FFWC</p>
                 </div>
               </div>
             </div>

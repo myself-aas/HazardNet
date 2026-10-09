@@ -372,7 +372,6 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
           title="Avg AI Confidence"
           value={`${stats.avgConfidence.toFixed(1)}%`}
           subtitle={`Latest Run: ${stats.latestDate}`}
-          statusBadge={{ label: 'VERIFIED', color: '#1d7a3e' }}
           icon={<MaterialIcon name="insights" />}
           gaugePercent={stats.avgConfidence}
         />

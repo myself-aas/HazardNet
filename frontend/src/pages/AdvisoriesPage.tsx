@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -31,6 +31,8 @@ import {
 import MaterialIcon from '../components/MaterialIcon';
 import { SECTOR_ADVISORIES, SectorAdvisoryData, TechnicalStep } from '../data/sectorAdvisoriesData';
 import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
+import { useForecasts } from '../hooks/useForecasts';
+import { advisorySignalOf, buildForecastIndex, canonicalKey, forecastAgeHours, type ForecastRow } from '../lib/forecasts';
 import { StructuredAdvisoryRenderer } from '../components/StructuredAdvisoryRenderer';
 import { PrintQrCode } from '../components/PrintQrCode';
 import { PdfExportButton } from '../components/PdfExportButton';
@@ -64,13 +66,17 @@ export const AdvisoriesPage: React.FC = () => {
   // Gemini Live AI Advisory Generator State
   const [showAiSynthesizer, setShowAiSynthesizer] = useState(false);
   const [aiDistrict, setAiDistrict] = useState<string>('Kurigram');
-  const recordFor = (name: string) => ALL_64_DISTRICTS.find((d) => d.name === name);
-  const [aiHazard, setAiHazard] = useState<string>(() => recordFor('Kurigram')?.hazardType ?? '');
-  const [aiSeverity, setAiSeverity] = useState<number | null>(() => {
-    const d = ALL_64_DISTRICTS.find((x) => x.name === 'Kurigram');
-    return d ? (d.finalSeverity ?? d.severity) : null;
-  });
-  const [aiConfidence, setAiConfidence] = useState<number | null>(() => ALL_64_DISTRICTS.find((x) => x.name === 'Kurigram')?.probTop1 ?? null);
+  // Severity, confidence and hazard come from the daily Kaggle ingest (the
+  // 7-day row for the selected district). They are never read from the static
+  // district table, and nothing is typed by hand.
+  const forecastQuery = useForecasts('7_days');
+  const forecastRows = forecastQuery.data;
+  const forecastIndex = useMemo(() => buildForecastIndex(forecastRows ?? []), [forecastRows]);
+  const kaggleRow: ForecastRow | null = forecastIndex.get(canonicalKey(aiDistrict)) ?? null;
+  const aiSeverity: number | null = kaggleRow ? advisorySignalOf(kaggleRow).final : null;
+  const aiConfidence: number | null =
+    kaggleRow && Number.isFinite(kaggleRow.confidence) ? kaggleRow.confidence : null;
+  const aiHazard: string = kaggleRow?.hazard_type ?? '';
   const [aiCropContext, setAiCropContext] = useState<string>('');
   const [aiLoading, setAiLoading] = useState<boolean>(false);
   const [aiAdvisoryData, setAiAdvisoryData] = useState<any | null>(null);
@@ -166,7 +172,7 @@ export const AdvisoriesPage: React.FC = () => {
       {/* PRINT-ONLY OFFICIAL EMERGENCY BULLETIN HEADER */}
       <div className="print-only mb-6 border-b-2 border-carbon-90 pb-4">
         <div className="flex items-center justify-between border-b border-carbon-30 pb-2 mb-3 text-[9pt] font-mono font-bold text-carbon-70">
-          <span>GOVERNMENT OF THE PEOPLE'S REPUBLIC OF BANGLADESH</span>
+          <span>HAZARDNET BANGLADESH</span>
           <span>Advisory reference</span>
           <span>Advisories</span>
         </div>
@@ -429,13 +435,7 @@ export const AdvisoriesPage: React.FC = () => {
                   <label className="text-xs font-mono font-bold text-carbon-30">TARGET DISTRICT (64):</label>
                   <select
                     value={aiDistrict}
-                    onChange={(e) => {
-                      const d = recordFor(e.target.value);
-                      setAiDistrict(e.target.value);
-                      setAiHazard(d?.hazardType ?? '');
-                      setAiSeverity(d ? (d.finalSeverity ?? d.severity) : null);
-                      setAiConfidence(d?.probTop1 ?? null);
-                    }}
+                    onChange={(e) => setAiDistrict(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-carbon-80 border border-carbon-70 text-carbon-05 text-xs font-semibold focus:outline-none focus:border-amber-400"
                   >
                     {ALL_64_DISTRICTS.map((d) => (
@@ -447,33 +447,34 @@ export const AdvisoriesPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-mono font-bold text-carbon-30">HAZARD PROFILE:</label>
-                  <select
-                    value={aiHazard}
-                    onChange={(e) => setAiHazard(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-carbon-80 border border-carbon-70 text-carbon-05 text-xs font-semibold focus:outline-none focus:border-amber-400"
-                  >
-                    <option value="Monsoon Flood">Monsoon Riverine Flood</option>
-                    <option value="Flash Flood">Northeastern Flash Flood (Haor)</option>
-                    <option value="Tropical Cyclone">Tropical Cyclone & Storm Surge</option>
-                    <option value="Salinity Intrusion">Coastal Salinity Shock</option>
-                    <option value="Drought">Barind Drought & Heatwave</option>
-                    <option value="Cold Wave">Winter Dense Fog & Cold Wave</option>
-                  </select>
+                  <span className="block text-xs font-mono font-bold text-carbon-30">HAZARD (KAGGLE RECORD):</span>
+                  <p className="text-xs font-mono text-carbon-05">{aiHazard || 'Not available for this district'}</p>
                 </div>
 
                 <div className="space-y-1.5">
-                  <span className="block text-xs font-mono font-bold text-carbon-30">SEVERITY (DISTRICT RECORD):</span>
+                  <span className="block text-xs font-mono font-bold text-carbon-30">SEVERITY (KAGGLE DAILY RECORD):</span>
                   <p className="text-xs font-mono text-carbon-05">
                     {aiSeverity == null ? 'Not available for this district' : aiSeverity.toFixed(2)}
                   </p>
-                  <p className="text-xs text-carbon-30">Read from the district record. Not set by hand.</p>
+                  <p className="text-xs text-carbon-30">
+                    {kaggleRow
+                      ? `Last ingested prediction ${kaggleRow.prediction_date}, target ${kaggleRow.target_date}. Source: Kaggle dataset ashifahmedshuvo/hazardnet-weekly-forecasts.${
+                          forecastAgeHours(kaggleRow.prediction_date) > 36
+                            ? ` This record is ${Math.round(forecastAgeHours(kaggleRow.prediction_date) / 24)} days old. Check the daily ingest before you draft.`
+                            : ''
+                        }`
+                      : forecastQuery.isError
+                        ? 'The Kaggle record could not be loaded. No value is shown.'
+                        : forecastQuery.isPending
+                          ? 'Loading the latest Kaggle record...'
+                          : 'No Kaggle record for this district in the latest ingest.'}
+                  </p>
                 </div>
 
                 <div className="space-y-1.5 flex flex-col justify-end">
                   <button
                     onClick={handleGenerateAiAdvisory}
-                    disabled={aiSeverity == null || aiLoading}
+                    disabled={aiSeverity == null || aiConfidence == null || !aiHazard || aiLoading}
                     className="w-full py-2.5 px-4 rounded-xl bg-primary hover:bg-ap-primary-tint text-ap-action-fg font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
                   >
                     {aiLoading ? (
@@ -541,7 +542,7 @@ export const AdvisoriesPage: React.FC = () => {
                 Step-by-Step Technical Standard Operating Procedures
               </h3>
               <p className="text-xs text-carbon-60">
-                Actionable execution directives formulated by national research directorates and line ministries.
+                Draft protocol steps. Check them against the national protocol reference shown above before use.
               </p>
             </div>
           </div>
@@ -763,7 +764,7 @@ export const AdvisoriesPage: React.FC = () => {
             </div>
             <div>
               <h3 className="text-base sm:text-lg font-black text-carbon-90 tracking-tight">
-                Official Portals, National Gazettes & Verified Research Docs
+                Official portals, national documents and research references
               </h3>
               <p className="text-xs text-carbon-60">
                 Direct external hyperlinks to Bangladesh government ministries and international UN repositories.

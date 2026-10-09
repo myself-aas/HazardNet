@@ -6,7 +6,6 @@ export interface PdfFilenameContext {
   hazardType?: string;
   docType?: string;
   documentType?: string;
-  dispatchRef?: string;
   customPrefix?: string;
   [key: string]: string | undefined;
 }
@@ -62,13 +61,6 @@ export const AVAILABLE_FILENAME_PLACEHOLDERS: PlaceholderDefinition[] = [
     },
   },
   {
-    tag: '{ref}',
-    label: 'SOD Dispatch Ref',
-    description: 'SOD 2019 reference code (e.g., HN-BD-2026-X8Y9)',
-    category: 'metadata',
-    getExample: (ctx) => ctx?.dispatchRef || `HN-BD-${new Date().getFullYear()}-REF01`,
-  },
-  {
     tag: '{year}',
     label: 'Year (YYYY)',
     description: 'Current 4-digit year',
@@ -96,10 +88,10 @@ export const AVAILABLE_FILENAME_PLACEHOLDERS: PlaceholderDefinition[] = [
  */
 export const FILENAME_PRESET_TEMPLATES = [
   {
-    id: 'standard-official',
-    name: 'Official SOD Directive',
+    id: 'standard-advisory',
+    name: 'Standard advisory',
     template: 'HazardNet_{docType}_{region}_{date}.pdf',
-    description: 'Recommended for official government & public safety dispatches',
+    description: 'For advisory handouts and situation reports',
   },
   {
     id: 'district-situation',
@@ -112,12 +104,6 @@ export const FILENAME_PRESET_TEMPLATES = [
     name: 'Timestamped Archive',
     template: 'HN_{region}_{date}_{time}.pdf',
     description: 'Includes exact hour-minute stamp for time-series logging',
-  },
-  {
-    id: 'dispatch-reference',
-    name: 'Dispatch Reference Tagged',
-    template: 'HazardNet_{ref}_{region}_{hazard}.pdf',
-    description: 'Prefixed with verified SOD dispatch audit ID',
   },
 ];
 
