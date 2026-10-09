@@ -31,7 +31,7 @@ import {
 import MaterialIcon from '../components/MaterialIcon';
 import { SECTOR_ADVISORIES, SectorAdvisoryData, TechnicalStep } from '../data/sectorAdvisoriesData';
 import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
-import { useForecasts } from '../hooks/useForecasts';
+import { useKaggleAdvisories } from '../hooks/useKaggleAdvisories';
 import { advisorySignalOf, buildForecastIndex, canonicalKey, forecastAgeHours, type ForecastRow } from '../lib/forecasts';
 import { StructuredAdvisoryRenderer } from '../components/StructuredAdvisoryRenderer';
 import { PrintQrCode } from '../components/PrintQrCode';
@@ -69,9 +69,9 @@ export const AdvisoriesPage: React.FC = () => {
   // Severity, confidence and hazard come from the daily Kaggle ingest (the
   // 7-day row for the selected district). They are never read from the static
   // district table, and nothing is typed by hand.
-  const forecastQuery = useForecasts('7_days');
-  const forecastRows = forecastQuery.data;
-  const forecastIndex = useMemo(() => buildForecastIndex(forecastRows ?? []), [forecastRows]);
+  const kaggleQuery = useKaggleAdvisories('7_days');
+  const kaggle = kaggleQuery.data;
+  const forecastIndex = useMemo(() => buildForecastIndex(kaggle?.rows ?? []), [kaggle]);
   const kaggleRow: ForecastRow | null = forecastIndex.get(canonicalKey(aiDistrict)) ?? null;
   const aiSeverity: number | null = kaggleRow ? advisorySignalOf(kaggleRow).final : null;
   const aiConfidence: number | null =
@@ -305,7 +305,7 @@ export const AdvisoriesPage: React.FC = () => {
       {/* 2. ACTIVE SECTOR EXECUTIVE INTELLIGENCE & MANDATE */}
       <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-6 relative overflow-hidden">
         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
-          <div className="space-y-3 max-w-4xl">
+          <div className="space-y-3 max-w-4xl min-w-0 lg:flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <span className="px-3 py-1 rounded-full text-xs font-mono font-black bg-amber-100 text-amber-950 border border-amber-300 shadow-2xs">
                 {sector.code}
@@ -330,7 +330,7 @@ export const AdvisoriesPage: React.FC = () => {
               <span className="font-mono font-black uppercase tracking-wider text-xs block text-amber-900">
                 Statutory Reference & Mandate:
               </span>
-              <p className="font-semibold text-carbon-80">{sector.sodReference}</p>
+              <p className="font-semibold text-carbon-80 break-words">{sector.sodReference}</p>
             </div>
           </div>
 
@@ -457,17 +457,23 @@ export const AdvisoriesPage: React.FC = () => {
                     {aiSeverity == null ? 'Not available for this district' : aiSeverity.toFixed(2)}
                   </p>
                   <p className="text-xs text-carbon-30">
-                    {kaggleRow
-                      ? `Last ingested prediction ${kaggleRow.prediction_date}, target ${kaggleRow.target_date}. Source: Kaggle dataset ashifahmedshuvo/hazardnet-weekly-forecasts.${
+                    {kaggleRow && kaggle
+                      ? `Fetched from the Kaggle Dataset API at ${kaggle.fetchedAt ?? 'an unknown time'} (UTC). Dataset generated ${kaggle.generatedAt ?? 'time not stated'}. Prediction ${kaggleRow.prediction_date}, target ${kaggleRow.target_date}.${
+                          kaggle.status === 'stale'
+                            ? ' Kaggle could not be reached on the last refresh. This is the last value fetched.'
+                            : ''
+                        }${
                           forecastAgeHours(kaggleRow.prediction_date) > 36
-                            ? ` This record is ${Math.round(forecastAgeHours(kaggleRow.prediction_date) / 24)} days old. Check the daily ingest before you draft.`
+                            ? ` This record is ${Math.round(forecastAgeHours(kaggleRow.prediction_date) / 24)} days old. Check the daily dataset update before you draft.`
                             : ''
                         }`
-                      : forecastQuery.isError
-                        ? 'The Kaggle record could not be loaded. No value is shown.'
-                        : forecastQuery.isPending
-                          ? 'Loading the latest Kaggle record...'
-                          : 'No Kaggle record for this district in the latest ingest.'}
+                      : kaggleQuery.isError
+                        ? 'The Kaggle advisory service could not be reached. No value is shown.'
+                        : kaggle?.status === 'unavailable'
+                          ? 'No Kaggle value is available yet. The advisory service has not fetched the dataset, so no value is shown.'
+                          : kaggleQuery.isPending
+                            ? 'Loading the latest value from the Kaggle Dataset API...'
+                            : 'No Kaggle record for this district in the latest fetch.'}
                   </p>
                 </div>
 
@@ -496,7 +502,7 @@ export const AdvisoriesPage: React.FC = () => {
               {aiLoading && (
                 <div className="p-6 sm:p-8 rounded-2xl bg-carbon-80/80 border border-carbon-70 text-center space-y-3 animate-pulse">
                   <div className="w-8 h-8 rounded-full border-2 border-amber-400 border-t-transparent animate-spin mx-auto"></div>
-                  <p className="text-xs text-carbon-30 font-mono">Querying Gemini 2.5 API with {aiDistrict} agro-ecological context & {sector.code} directives...</p>
+                  <p className="text-xs text-carbon-30 font-mono">Drafting from the {aiDistrict} forecast record and the {sector.code} protocol...</p>
                 </div>
               )}
 

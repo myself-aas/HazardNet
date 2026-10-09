@@ -54,13 +54,13 @@
       },
       "error": {
         "kind": "inline",
-        "evidence": "Failed to synthesize advisory.",
+        "evidence": "{aiError && !aiLoading && (",
         "retry": true,
         "retry_via": "the synthesize button re-enables"
       },
       "success": {
         "kind": "page",
-        "evidence": "EMERGENCY OPERATIONAL DIRECTIVE"
+        "evidence": "{aiAdvisoryData && !aiLoading && ("
       },
       "note": "the page body is a static import; the four states apply to the advisory-synthesizer block, which is the only thing that reads the network"
     },
@@ -380,7 +380,7 @@
       "data": "fetch",
       "loading": {
         "kind": "notice",
-        "evidence": "Cross-referencing historical events and active warning records"
+        "evidence": "Loading historical events and forecast records"
       },
       "empty": {
         "kind": "inline",

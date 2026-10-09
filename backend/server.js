@@ -12,6 +12,7 @@ import predictRoutes from './routes/predict.js';
 import pushRoutes from './routes/push.js';
 import conversionRoutes from './routes/conversions.js';
 import weatherRoutes from './routes/weather.js';
+import kaggleRoutes from './routes/kaggle.js';
 import alertRoutes from './routes/alerts.js';
 import historicalRoutes from './routes/historical.js';
 import groundingRoutes from './routes/grounding.js';
@@ -718,6 +719,7 @@ app.use(['/Models', '/models', '/hazardnet_fp32.tflite', '/hazardnet_int8.tflite
 // plus tighter buckets on the expensive AI/inference endpoints.
 app.use('/api', apiLimiter);
 app.use('/api/v1/forecasts', forecastRoutes);
+app.use('/api/v1/kaggle', kaggleRoutes);
 app.use('/v1/forecasts', apiLimiter, forecastRoutes);
 app.use('/api/chat', attachFirebaseAuthUser, dynamicAiLimiter, chatRoutes);
 app.use('/api/grounding', attachFirebaseAuthUser, dynamicAiLimiter, groundingRoutes);
