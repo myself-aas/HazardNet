@@ -24,8 +24,6 @@ on:
   # paths-ignore plus "[skip ci]" in the commit message below keep the workflow
   # from re-triggering itself when it commits its own report.
   push:
-    branches:
-      - arena/cfa12d91-hazardnet
     paths-ignore:
       - 'docs/ops/_tmp-403-probe.md'
 
