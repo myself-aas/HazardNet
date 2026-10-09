@@ -708,10 +708,12 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
         title={activeSheetItem?.district_name ? `${activeSheetItem.district_name} District Telemetry` : 'District Telemetry'}
         subtitle={activeSheetItem?.division ? `Division: ${activeSheetItem.division}` : undefined}
         footerContent={
-          <div className="flex items-center justify-between gap-3">
+          // BottomSheet lays its footer out as a single horizontal row, so the
+          // buttons are passed as siblings rather than pre-wrapped.
+          <>
             <button
               onClick={() => setActiveSheetItem(null)}
-              className="px-4 py-2.5 rounded-xl border border-carbon-20 font-sans font-semibold text-xs text-carbon-80 hover:bg-carbon-10 min-h-[44px]"
+              className="px-4 py-2.5 rounded-xl border border-carbon-20 font-sans font-semibold text-xs text-carbon-80 hover:bg-carbon-10 min-h-[44px] whitespace-nowrap"
             >
               Dismiss
             </button>
@@ -721,12 +723,12 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                   onSelectDistrict(String(activeSheetItem.district_id));
                   setActiveSheetItem(null);
                 }}
-                className="px-5 py-2.5 rounded-xl bg-primary text-ap-action-fg font-sans font-semibold text-xs hover:bg-primary-strong shadow-xs min-h-[44px]"
+                className="px-5 py-2.5 rounded-xl bg-primary text-ap-action-fg font-sans font-semibold text-xs hover:bg-primary-strong shadow-xs min-h-[44px] text-center"
               >
-                View on Live GIS Map
+                View this district on the live map
               </button>
             )}
-          </div>
+          </>
         }
       >
         {activeSheetItem && (

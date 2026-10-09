@@ -309,8 +309,10 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
             a soft legibility shadow, no bounding card between it and the map. */}
         <header className="pointer-events-none absolute inset-x-0 top-0 z-[var(--ap-z-sticky)] flex items-start justify-between gap-3 p-3 pt-[calc(var(--navbar-height)+8px)] sm:p-5">
           <div className="pointer-events-auto min-w-0 [text-shadow:0_1px_2px_rgba(255,255,255,0.7),0_0_8px_rgba(255,255,255,0.5)] dark:[text-shadow:0_1px_2px_rgba(0,0,0,0.8),0_0_8px_rgba(0,0,0,0.6)]">
-            <p className="truncate text-xs font-bold uppercase tracking-[0.14em] text-carbon-50">HazardNet / live</p>
-            <p className="truncate text-sm font-bold tracking-tight text-carbon-90 dark:text-white">
+            <p className="truncate font-sans text-[10px] font-bold uppercase leading-tight tracking-[0.12em] text-carbon-50">
+              HazardNet / live
+            </p>
+            <p className="truncate font-sans text-[11px] font-semibold leading-tight tracking-tight text-carbon-90 dark:text-white">
               National situational map
             </p>
           </div>

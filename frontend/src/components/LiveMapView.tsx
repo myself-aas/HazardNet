@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet.heat';
 import toast from 'react-hot-toast';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls, type PanInfo } from 'framer-motion';
 import { LocationMap } from './ui/expand-map';
 import { ALL_64_DISTRICTS, ALL_8_DIVISIONS } from '../data/bangladeshDistricts';
 import {
@@ -196,6 +196,18 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   // zoom control. The fake "sync live telemetry" action and the field-report form that
   // persisted nothing went with it.
   const [isFilterModalOpen, setIsFilterModalOpen] = useState<boolean>(false);
+  // Phone filter sheet: small (56vh) or full (92vh). Only meaningful below `sm`.
+  const [filterSheetExpanded, setFilterSheetExpanded] = useState<boolean>(false);
+  const filterDragControls = useDragControls();
+  const [isPhoneViewport, setIsPhoneViewport] = useState<boolean>(() =>
+    typeof window !== 'undefined' ? window.matchMedia('(max-width: 639px)').matches : false,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 639px)');
+    const onChange = () => setIsPhoneViewport(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
   const [isLayerModalOpen, setIsLayerModalOpen] = useState<boolean>(false);
 
   // Measure mode ref for Leaflet click callback
@@ -1365,7 +1377,12 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       ref={mainWrapperRef}
       className={
         isFullScreen
-          ? 'w-full h-full min-h-[360px] lg:min-h-[560px] h-dvh bg-carbon-05 overflow-hidden text-carbon-90 relative flex flex-col'
+          // `h-full`, not `h-dvh`. The full-screen stage sits inside a `flex-1`
+          // parent whose height is the viewport *minus* the operational header,
+          // so 100dvh overhangs it and the parent's `overflow-hidden` crops the
+          // bottom of the map — taking the bottom-anchored status popups and
+          // the attribution with it. Filling the parent is the correct height.
+          ? 'w-full h-full min-h-[360px] lg:min-h-[560px] bg-carbon-05 overflow-hidden text-carbon-90 relative flex flex-col'
           : className
             ? className
             : `w-full ${customHeight || 'h-full min-h-[360px] lg:min-h-[560px]'} bg-carbon-10 overflow-hidden text-carbon-90 relative flex flex-col border border-carbon-20 rounded-2xl shadow-md`
@@ -1760,11 +1777,42 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 24, scale: 0.98 }}
                   transition={{ duration: 0.22, ease: 'easeOut' }}
-                  className="w-full sm:max-w-md flex flex-col max-h-[88vh] sm:max-h-[80vh] overflow-hidden bg-white sm:rounded-xl rounded-t-xl shadow-map"
+                  // Phone: drag up to open to full height, drag down to step back or dismiss.
+                  // Desktop keeps the centred card and does not drag.
+                  drag={isPhoneViewport ? 'y' : false}
+                  dragControls={filterDragControls}
+                  dragListener={false}
+                  dragConstraints={{ top: -48, bottom: 480 }}
+                  dragElastic={0.08}
+                  dragMomentum={false}
+                  onDragEnd={(_: unknown, info: PanInfo) => {
+                    if (!isPhoneViewport) return;
+                    if (info.offset.y > 120 || info.velocity.y > 600) {
+                      if (filterSheetExpanded) setFilterSheetExpanded(false);
+                      else setIsFilterModalOpen(false);
+                    } else if (info.offset.y < -50 || info.velocity.y < -600) {
+                      setFilterSheetExpanded(true);
+                    }
+                  }}
+                  className={`w-full sm:max-w-md flex flex-col sm:max-h-[80vh] overflow-hidden bg-white sm:rounded-xl rounded-t-xl shadow-map transition-[max-height] duration-300 ${
+                    filterSheetExpanded ? 'max-h-[92vh]' : 'max-h-[56vh]'
+                  }`}
                 >
-                  {/* grab + header */}
-                  <div className="shrink-0 px-5 pt-3 pb-3 border-b border-carbon-20">
-                    <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-carbon-20 sm:hidden" aria-hidden="true" />
+                  {/* grab + header. This strip is the only drag handle on phones. */}
+                  <div
+                    className="shrink-0 px-5 pt-3 pb-3 border-b border-carbon-20 touch-none"
+                    onPointerDown={(e) => {
+                      if (isPhoneViewport) filterDragControls.start(e);
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setFilterSheetExpanded((v) => !v)}
+                      aria-label={filterSheetExpanded ? 'Shrink filter sheet' : 'Expand filter sheet'}
+                      className="sm:hidden mx-auto mb-3 flex h-4 w-16 items-center justify-center"
+                    >
+                      <span className="h-1 w-10 rounded-full bg-carbon-20" aria-hidden="true" />
+                    </button>
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <h3 className="text-base font-bold tracking-tight text-carbon-90 dark:text-white">
@@ -2636,7 +2684,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               the smallest readable size, with a soft shadow so it stays legible
               over any ground. Every character stays visible (map attribution is
               not collapsible), it just stops pretending to be chrome. */}
-          <div className="absolute bottom-1.5 left-2 z-[var(--ap-z-sticky)] text-xs leading-snug text-carbon-60 [text-shadow:0_1px_2px_rgba(255,255,255,0.7),0_0_6px_rgba(255,255,255,0.5)] dark:[text-shadow:0_1px_2px_rgba(0,0,0,0.8),0_0_6px_rgba(0,0,0,0.6)] pointer-events-auto max-w-[calc(100%-7rem)]">
+          <div className="absolute bottom-1.5 left-2 z-[var(--ap-z-sticky)] font-sans text-[10px] leading-snug text-carbon-60 [text-shadow:0_1px_2px_rgba(255,255,255,0.7),0_0_6px_rgba(255,255,255,0.5)] dark:[text-shadow:0_1px_2px_rgba(0,0,0,0.8),0_0_6px_rgba(0,0,0,0.6)] pointer-events-auto max-w-[calc(100%-7rem)]">
             <p className="leading-snug">{attributionFor(activeLayer)}</p>
           </div>
 
