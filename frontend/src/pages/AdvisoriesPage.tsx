@@ -56,8 +56,8 @@ export const AdvisoriesPage: React.FC = () => {
   // Interactive Email Modal State
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [selectedDistrictForEmail, setSelectedDistrictForEmail] = useState<string>('Kurigram');
-  const [affectedUpazilas, setAffectedUpazilas] = useState<string>('Chilmari, Ulipur, Roumari');
-  const [customOfficerName, setCustomOfficerName] = useState<string>('Md. Rafiqul Islam (Upazila Coordinator)');
+  const [affectedUpazilas, setAffectedUpazilas] = useState<string>('');
+  const [customOfficerName, setCustomOfficerName] = useState<string>('');
   const [customOfficerPhone, setCustomOfficerPhone] = useState<string>('+8801712-345678');
   const [customDamageArea, setCustomDamageArea] = useState<string>('4,500');
 
@@ -136,13 +136,14 @@ export const AdvisoriesPage: React.FC = () => {
 
       const data = await response.json();
       setAiAdvisoryData(data);
-      toast.success(`Generated real-time AI advisory for ${aiDistrict}!`, {
+      toast.success(`Drafted an AI advisory for ${aiDistrict}. Check it against BMD and FFWC before acting.`, {
         icon: <Sparkles className="w-4 h-4 text-amber-500" />
       });
     } catch (err: any) {
       console.error('Failed to generate advisory:', err);
-      setAiError(err.message || 'Failed to synthesize advisory.');
-      toast.error('Could not reach Gemini API. Showing validated protocol standards.');
+      setAiError(err.message || 'Failed to draft advisory.');
+      setAiAdvisoryData(null);
+      toast.error('The advisory service did not respond. No advisory was drafted.');
     } finally {
       setAiLoading(false);
     }
@@ -163,7 +164,7 @@ export const AdvisoriesPage: React.FC = () => {
         <div className="flex items-center justify-between border-b border-carbon-30 pb-2 mb-3 text-[9pt] font-mono font-bold text-carbon-70">
           <span>GOVERNMENT OF THE PEOPLE'S REPUBLIC OF BANGLADESH</span>
           <span>SOD 2019 COMPLIANT DIRECTIVE</span>
-          <span>EMERGENCY DISPATCH • PUBLIC SAFETY</span>
+          <span>Advisories</span>
         </div>
         
         <div className="flex items-start justify-between gap-4">
@@ -349,7 +350,7 @@ export const AdvisoriesPage: React.FC = () => {
                 }`}
               >
                 <Bot className="w-3.5 h-3.5 text-amber-300" />
-                <span>{showAiSynthesizer ? 'Hide AI Synthesizer' : 'Synthesize Gemini Advisory'}</span>
+                <span>{showAiSynthesizer ? 'Hide AI advisory' : 'Draft an AI advisory'}</span>
               </button>
             </div>
           </div>
@@ -402,7 +403,7 @@ export const AdvisoriesPage: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="text-base sm:text-lg font-black text-ap-on-inverse flex items-center gap-2">
-                      <span>Gemini 2.5 Dynamic Sector AI Synthesizer</span>
+                      <span>AI advisory drafting</span>
                       <span className="px-2 py-0.5 rounded-md bg-amber-400 text-carbon-black text-xs font-mono font-black">LIVE</span>
                     </h3>
                     <p className="text-xs text-carbon-30">
@@ -418,7 +419,7 @@ export const AdvisoriesPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* Simulation Controls */}
+              {/* Scenario inputs: typed by the user, not taken from a forecast run. */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-mono font-bold text-carbon-30">TARGET DISTRICT (64):</label>
@@ -452,7 +453,7 @@ export const AdvisoriesPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-mono font-bold text-carbon-30">SEVERITY INDEX ({aiSeverity}):</label>
+                  <label className="text-xs font-mono font-bold text-carbon-30">SCENARIO SEVERITY, SET BY YOU ({aiSeverity}):</label>
                   <input
                     type="range"
                     min="0.1"
@@ -483,7 +484,7 @@ export const AdvisoriesPage: React.FC = () => {
                     ) : (
                       <>
                         <Sparkles className="w-4 h-4" />
-                        <span>Synthesize AI Advisory</span>
+                        <span>Draft advisory</span>
                       </>
                     )}
                   </button>
@@ -510,10 +511,10 @@ export const AdvisoriesPage: React.FC = () => {
                   <div className="flex items-center justify-between border-b border-carbon-20 pb-3 mb-4">
                     <div>
                       <h4 className="text-sm font-black text-carbon-90">
-                        Synthesized AI Advisory for {aiDistrict} ({aiHazard})
+                        AI-drafted advisory for {aiDistrict} ({aiHazard})
                       </h4>
                       <p className="text-xs text-carbon-60 font-mono">
-                        Urgency: {aiAdvisoryData.urgency_tier || aiAdvisoryData.urgency_level || 'HIGH'} • Engine: {aiAdvisoryData.provider_source || 'Gemini'}
+                        Urgency: {aiAdvisoryData.urgency_tier || aiAdvisoryData.urgency_level || 'Not stated'} • Engine: {aiAdvisoryData.provider_source || 'Not stated'}
                       </p>
                     </div>
                     <span className="px-3 py-1 rounded-full text-xs font-mono font-black bg-amber-100 text-amber-950 border border-amber-300">
@@ -915,10 +916,9 @@ export const AdvisoriesPage: React.FC = () => {
             <div>• Livestock & Veterinary: 16358 | Health Hotline: 16263</div>
           </div>
           <div className="text-right">
-            <strong className="text-carbon-90 block mb-1">OFFICIAL DISPATCH AUTHENTICATION:</strong>
-            <div>HazardNet Bangladesh Disaster Intelligence System</div>
-            <div>Statutory Alignment: Standing Orders on Disaster (SOD 2019)</div>
-            <div>Official Field Responder & Disaster Management Handout</div>
+            <strong className="text-carbon-90 block mb-1">Source</strong>
+            <div>HazardNet Bangladesh. Not an official warning service.</div>
+            <div>Official warnings: BMD and FFWC. For emergencies, call 999.</div>
           </div>
         </div>
         <div className="text-center pt-2 text-[7.5pt] text-carbon-60">

@@ -245,7 +245,7 @@ export const HazardDetailPage: React.FC = () => {
         <div className="text-center">
           <InfinityLoader size={96} label="Loading" className="mx-auto mb-3 block" />
           <p className="text-sm font-medium text-carbon-70">Loading {data?.hazard || currentSlug} hazard data...</p>
-          <p className="text-xs text-carbon-60 mt-1">Cross-referencing historical events and active warning records</p>
+          <p className="text-xs text-carbon-60 mt-1">Loading historical events and forecast records</p>
         </div>
       </div>
     );
@@ -371,12 +371,12 @@ export const HazardDetailPage: React.FC = () => {
             <div>
               <h2 className="text-base font-semibold text-carbon-90 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-amber-600" />
-                Active Forecast Warnings for {data.hazard} Across Bangladesh
+                Forecast records for {data.hazard}, all districts
               </h2>
-              <p className="text-xs text-carbon-60">Identified in latest run from hazardnet_forecasts_latest.csv</p>
+              <p className="text-xs text-carbon-60">Districts with this hazard in the latest forecast run</p>
             </div>
             <span className="text-xs font-semibold px-2.5 py-1 bg-amber-50 text-amber-800 rounded-md border border-amber-200">
-              {data.forecasts.length} Active Warnings
+              {data.forecasts.length} records
             </span>
           </div>
 
@@ -628,11 +628,10 @@ export const HazardDetailPage: React.FC = () => {
           <div>
             <h3 className="text-base font-bold text-carbon-90 flex items-center gap-2">
               <Layers className="w-4 h-4 text-ap-link" />
-              Verified Event Log ({data.hazard})
+              Event log ({data.hazard})
             </h3>
             <p className="text-xs text-carbon-60">
-              Showing {filteredEvents.length} of {data.totalEvents} recorded incidents from
-              BGD_climatic_hazards_dataset_2000_2026.csv
+              Showing {filteredEvents.length} of {data.totalEvents} recorded incidents, 2000–2026. Source: BGD climatic hazards dataset.
             </p>
           </div>
 
@@ -699,7 +698,7 @@ export const HazardDetailPage: React.FC = () => {
                 },
                 { label: 'Division', value: event.division },
                 { label: 'GLIDE', value: event.glide || '-' },
-                { label: 'Severity', value: event.severity ? event.severity.toFixed(2) : '1.00' },
+                { label: 'Severity', value: event.severity ? event.severity.toFixed(2) : 'Not recorded' },
                 { label: 'Summary', value: event.desc || 'No descriptive summary logged' },
                 { label: 'Event ID', value: event.id },
                 { label: 'Coordinates', value: `${event.lat.toFixed(4)}, ${event.lng.toFixed(4)}` },
@@ -755,7 +754,7 @@ export const HazardDetailPage: React.FC = () => {
                                 : 'bg-carbon-10 text-carbon-70'
                           }`}
                         >
-                          {event.severity ? event.severity.toFixed(2) : '1.00'}
+                          {event.severity ? event.severity.toFixed(2) : 'Not recorded'}
                         </span>
                       </td>
                       <td className="p-3 text-carbon-60 max-w-xs truncate">

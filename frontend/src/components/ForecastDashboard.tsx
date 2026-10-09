@@ -322,7 +322,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
               District Hazard Forecast Analytics
             </h2>
             <p className="text-carbon-60 text-xs sm:text-sm max-w-3xl leading-relaxed">
-              Real-time multi-hazard risk quantification and weather trends across Bangladesh's 64 agricultural districts powered by CNN AI model inference and weather service observations.
+              Multi-hazard risk quantification and weather trends across Bangladesh's 64 agricultural districts powered by CNN AI model inference and weather service observations.
             </p>
           </div>
 
@@ -373,7 +373,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
           value={`${stats.avgConfidence.toFixed(1)}%`}
           subtitle={`Latest Run: ${stats.latestDate}`}
           statusBadge={{ label: 'VERIFIED', color: '#1d7a3e' }}
-          icon={<MaterialIcon name="verified" />}
+          icon={<MaterialIcon name="insights" />}
           gaugePercent={stats.avgConfidence}
         />
       </BentoGrid>
