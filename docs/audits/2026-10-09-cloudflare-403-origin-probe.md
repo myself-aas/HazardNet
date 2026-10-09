@@ -1,3 +1,58 @@
+# Cloudflare 403 origin probe — 2026-10-09
+
+**Question.** Every failure in `site-health` run 37870196679 was an HTTP 403. Which
+layer emits it — a Cloudflare WAF, the Firebase origin, or a stale deployment?
+
+**Answer: Cloudflare, and the request never reaches an origin. See "Conclusion" below.**
+
+**Method.** The sandbox this was diagnosed from cannot reach `hazardnet.live` (egress is
+restricted to `github.com`, `npm` and `pypi.org`), so the probe was run **from a GitHub
+Actions runner** and committed its output back to the branch. The runner is therefore the
+same class of client as the site-health probe itself: a datacenter IP that cannot execute
+a JavaScript challenge.
+
+## Conclusion
+
+Every request — `/`, `www`, a path that has never existed, with a Chrome user agent *and*
+with a plain `curl` one — returns the same thing:
+
+```
+HTTP/2 403
+server: cloudflare
+cf-mitigated: challenge
+content-type: text/html; charset=UTF-8
+<!DOCTYPE html><html lang="en-US"><head><title>Just a moment...</title> ...
+```
+
+`cf-mitigated: challenge` is decisive: Cloudflare terminated the request itself. There is
+no `x-fh-requested-host`, no `x-served-by`, no `x-vercel-id`, no `cf-cache-status` and no
+`age` on any response — **no origin ever answered**. This is Cloudflare's "Just a moment..."
+interstitial, i.e. a managed challenge / Under Attack Mode, not a site outage.
+
+Consequences:
+
+1. **The site is very likely fine for human visitors.** A real browser executes the
+   challenge and passes; `curl` cannot. The probe's red state is a false alarm for
+   human-facing availability.
+2. **No header change can fix it.** The Chrome user agent and `curl-diagnostic` produce
+   byte-identical challenges, so `PROBE_USER_AGENT` (PR #87) was never going to help.
+3. **It is intermittent, which is why some checks passed at 01:31Z.** Whether a given
+   request is challenged depends on reputation signals at that moment. Paths Cloudflare
+   already had cached can be served without challenge; `/data/**` is marked
+   `Cache-Control: public, max-age=0, must-revalidate` in both `firebase.json` and
+   `vercel.json`, so it always goes through the full pipeline and is always challenged.
+   That is the entire "some paths 200, some 403" pattern.
+
+**Fix (owner-side, Cloudflare dashboard):** add a WAF skip rule that bypasses bot
+management when a shared-secret header is present (e.g.
+`http.request.headers["x-hazardnet-probe"] == "<secret>"`), store the secret as an Actions
+secret, and have `site-health.yml` send it. Alternatively point the probe at the
+deployment's own origin URL rather than the Cloudflare-fronted domain.
+
+---
+
+# Raw probe output
+
 # 403 diagnostic — from a GitHub runner
 
 - ran at: 2026-10-09T05:41:14Z

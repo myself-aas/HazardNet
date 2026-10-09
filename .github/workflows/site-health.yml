@@ -64,6 +64,65 @@ jobs:
         with:
           node-version: '20'
 
+      # Cloudflare challenge detection (2026-10-09 — docs/ops/owner-actions.md
+      # Action 18; evidence in docs/audits/2026-10-09-cloudflare-403-origin-probe.md).
+      #
+      # Measured from a runner: every request this workflow makes — `/`, `www`,
+      # `/status`, `/sitemap.xml`, `/data/*`, `/api/*`, and a path that has never
+      # existed — returns HTTP 403 with `server: cloudflare` and
+      # `cf-mitigated: challenge`, serving Cloudflare's "Just a moment..."
+      # interstitial. No origin answers at all, so every check below reports a
+      # site outage that does not exist, and a red run sends triage at the
+      # deploy, the DNS and the build in turn.
+      #
+      # Detect it once, up front, and say so. This step is deliberately
+      # additive: it changes no pass/fail semantics, so it can never mask a
+      # real outage — it only stops the run from being misread.
+      - name: Detect an edge challenge (Cloudflare "Just a moment…")
+        id: edge_challenge
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -uo pipefail
+          CODE=$(curl -sSL --max-redirs 5 -A "$PROBE_USER_AGENT" \
+                  -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
+                  -H 'Accept-Language: en-US,en;q=0.9' \
+                  -D /tmp/edge-headers.txt -o /tmp/edge-body.html \
+                  -w '%{http_code}' --max-time 30 "$SITE_URL/" 2>/dev/null) || CODE=000
+
+          MITIGATED=$(grep -i '^cf-mitigated:' /tmp/edge-headers.txt 2>/dev/null | head -1 | tr -d '\r' | sed 's/^[^:]*: *//')
+          SERVER=$(grep -i '^server:' /tmp/edge-headers.txt 2>/dev/null | head -1 | tr -d '\r' | sed 's/^[^:]*: *//')
+
+          CHALLENGED=0
+          if [ -n "$MITIGATED" ]; then
+            CHALLENGED=1
+          elif grep -qiE 'just a moment|cf-browser-verification|attention required|enable javascript and cookies|checking your browser' /tmp/edge-body.html 2>/dev/null; then
+            CHALLENGED=1
+          fi
+
+          echo "edge probe: HTTP $CODE | server: ${SERVER:-none} | cf-mitigated: ${MITIGATED:-none} | challenged: $CHALLENGED"
+          echo "challenged=$CHALLENGED" >> "$GITHUB_OUTPUT"
+
+          if [ "$CHALLENGED" = "1" ]; then
+            echo "::error::CLOUDFLARE IS CHALLENGING THE PROBE — $SITE_URL/ returned HTTP $CODE (server: ${SERVER:-none}, cf-mitigated: ${MITIGATED:-challenge}). No request reached an origin, so no check below says whether HazardNet is actually up. See docs/ops/owner-actions.md Action 18."
+            {
+              echo ""
+              echo "> ## ⚠️ Probe blocked by Cloudflare — every result below is meaningless"
+              echo ">"
+              echo "> \`$SITE_URL/\` returned **HTTP $CODE** with \`server: ${SERVER:-cloudflare}\` and"
+              echo "> \`cf-mitigated: ${MITIGATED:-challenge}\`. Cloudflare served its \"Just a moment…\""
+              echo "> interstitial to this runner, so **no request reached an origin**."
+              echo ">"
+              echo "> The site is very likely fine for human visitors: a browser executes the"
+              echo "> challenge, and \`curl\` cannot. This run says the probe is blind, not that"
+              echo "> HazardNet is down."
+              echo ">"
+              echo "> **Fix:** docs/ops/owner-actions.md **Action 18** — a WAF skip rule on a"
+              echo "> shared-secret header. Note that a browser-like user agent (PR #87) cannot"
+              echo "> help: a Chrome UA and a plain \`curl\` UA are challenged identically."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       # `-L` (follow redirects) is required, not cosmetic: the canonical
       # deployment is www.hazardnet.live and the apex answers 308. Without -L
       # curl reported that redirect *as* the probe result, so every scheduled
