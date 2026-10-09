@@ -141,24 +141,27 @@ test.describe('Advisory Generation', () => {
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 20_000 });
   });
 
-  test('AI advisory synthesizer panel opens', async ({ page }) => {
+  test('AI advisory drafting panel opens', async ({ page }) => {
     await page.goto(`${BASE}/advisories/crops`);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 20_000 });
 
-    // The control is a disclosure for the Gemini synthesizer panel — the model
-    // call itself needs a GEMINI_API_KEY that CI does not have, so the contract
-    // under test is that the panel mounts and the page stays healthy.
+    // The control is a disclosure for the AI drafting panel — the draft call
+    // itself posts to /api/advisory, which the CI preview server does not run,
+    // so the contract under test is that the panel mounts and the page stays
+    // healthy. (The toggle used to read "Synthesize Gemini Advisory"; it was
+    // renamed to "Draft an AI advisory" when the inputs were constrained to
+    // the district forecast record, and this locator follows the control.)
     const failures: string[] = [];
     page.on('pageerror', (error) => failures.push(error.message));
 
-    const synthesize = page.getByRole('button', { name: /synthesi[sz]e .*advisory/i });
-    await expect(synthesize).toBeVisible();
-    await synthesize.click();
+    const draft = page.getByRole('button', { name: /draft an ai advisory/i });
+    await expect(draft).toBeVisible();
+    await draft.click();
 
-    await expect(page.getByRole('button', { name: /hide ai synthesizer/i })).toBeVisible({
+    await expect(page.getByRole('button', { name: /hide ai advisory/i })).toBeVisible({
       timeout: 10_000,
     });
-    expect(failures, `page errors after opening the synthesizer: ${failures.join(', ')}`).toEqual([]);
+    expect(failures, `page errors after opening the drafting panel: ${failures.join(', ')}`).toEqual([]);
   });
 
   test('advisory contains structured sections', async ({ page }) => {
