@@ -45,6 +45,7 @@ import { ALERT_LEVELS, sortAlerts } from '../lib/alerts';
 import { DISTRICT_ALERT_LAYER_ID, buildAlertLevelLayer } from '../lib/alertLayer';
 import { downloadAlertsCsv } from '../lib/alertsCsv';
 import { EMERGENCY_NUMBERS } from '../lib/legal';
+import { DataCreditLines } from '../components/DataCreditLines';
 
 export const AlertsPage: React.FC = () => {
   const { t, formatDate, formatNumber } = useI18n();
@@ -363,12 +364,20 @@ export const AlertsPage: React.FC = () => {
           ))}
           <li>
             <a
-              href="https://live4.bmd.gov.bd/"
+              href="https://bmd.gov.bd/"
               target="_blank"
               rel="noopener noreferrer"
               className="underline decoration-dotted underline-offset-2 hover:text-amber-800"
             >
               BMD
+            </a>
+            {' — '}
+            <a href="tel:+8802-41025705" className="underline decoration-dotted underline-offset-2 hover:text-amber-800">
+              +8802-41025705
+            </a>
+            {', '}
+            <a href="mailto:info@bmd.gov.bd" className="underline decoration-dotted underline-offset-2 hover:text-amber-800">
+              info@bmd.gov.bd
             </a>
           </li>
           <li>
@@ -380,9 +389,27 @@ export const AlertsPage: React.FC = () => {
             >
               FFWC
             </a>
+            {' — '}
+            <a href="tel:+88-02-2222-30070" className="underline decoration-dotted underline-offset-2 hover:text-amber-800">
+              +88-02-2222-30070
+            </a>
+            {', fax +880-2-9557386, '}
+            <a href="mailto:ffwcbwdb@gmail.com" className="underline decoration-dotted underline-offset-2 hover:text-amber-800">
+              ffwcbwdb@gmail.com
+            </a>
+            {', '}
+            <a href="mailto:ffwc05@yahoo.com" className="underline decoration-dotted underline-offset-2 hover:text-amber-800">
+              ffwc05@yahoo.com
+            </a>
+            {', '}
+            <a href="mailto:ffwc@bwdb.gov.bd" className="underline decoration-dotted underline-offset-2 hover:text-amber-800">
+              ffwc@bwdb.gov.bd
+            </a>
           </li>
         </ul>
       </section>
+
+      <DataCreditLines ids={['forecasts', 'advisoryEda']} showBibtex className="mt-6" />
 
       <Disclaimer variant="banner" className="mt-4" text={data.policy?.disclaimer} />
 

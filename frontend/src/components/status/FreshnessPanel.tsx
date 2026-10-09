@@ -275,8 +275,8 @@ export const FreshnessPanel: React.FC = () => {
               <>
                 <strong>Not stamped.</strong> The ingest pipeline does not yet record a{' '}
                 <code>model_version</code> on the rows it produces, so no number on this site claims
-                one, and §1.6 of the product spec blocks automatic publication of anything above{' '}
-                <code>WATCH</code> until one exists.
+                one, and anything above{' '}
+                <code>WATCH</code> is held for duty-officer review until one exists.
               </>
             )}
           </p>

@@ -32,7 +32,8 @@ import { useMapSnapshot } from '../hooks/useMapSnapshot';
 import { useLiveDistricts } from '../hooks/useForecasts';
 import { type ForecastHorizon } from '../lib/forecasts';
 import { LIVE_LAYERS, LIVE_SECTIONS } from '../lib/liveLayers';
-import { activeCredits } from '../lib/dataCredits';
+import { activeCredits, KAGGLE_BIBTEX } from '../lib/dataCredits';
+
 import {
   ConcurrencyGate,
   GIBS_IMERG_RAIN,
@@ -363,8 +364,9 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   // credit follows whichever model the artifact carries (credits follow the
   // ladder).
   const attributionCreditIds: string[] = activeLayer === 'esriSatellite' ? ['esri'] : ['osm', 'opentopomap'];
-  if (isRiverLayerActive || isHeatmapActive || isClusteringActive) {
-    attributionCreditIds.push('forecasts');
+  const showsForecastRecords = isRiverLayerActive || isHeatmapActive || isClusteringActive;
+  if (showsForecastRecords) {
+    attributionCreditIds.push('forecasts', 'advisoryEda');
   }
   if ((isTrueColorActive && trueColorStatus === 'ready') || (isRainActive && rainStatus === 'ready')) {
     attributionCreditIds.push('gibs');
@@ -2482,6 +2484,12 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                       </li>
                     ))}
                   </ul>
+                  {showsForecastRecords ? (
+                    <details className="mt-4">
+                      <summary className="min-h-[44px] cursor-pointer text-sm font-semibold text-carbon-90">Cite the forecast dataset (BibTeX)</summary>
+                      <pre className="mt-2 overflow-x-auto whitespace-pre rounded-lg bg-carbon-05 p-3 font-mono text-[12px] leading-relaxed text-carbon-90 dark:bg-carbon-80 dark:text-white">{KAGGLE_BIBTEX}</pre>
+                    </details>
+                  ) : null}
                 </motion.div>
               </div>
             )}

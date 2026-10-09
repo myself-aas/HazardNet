@@ -128,7 +128,7 @@ describe('AlertsPage', () => {
     }) as never);
     renderPage();
     expect(await screen.findByText(/none could be published/)).toBeInTheDocument();
-    expect(screen.getByText(/§1.6 requires a model version/)).toBeInTheDocument();
+    expect(screen.getByText(/The rows in this run carry no model version/)).toBeInTheDocument();
   });
 
   it('explains the block from the run tally even when the payload dropped nothing', async () => {

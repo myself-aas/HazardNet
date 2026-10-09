@@ -50,7 +50,7 @@ const systemPrompt = `You are the HazardNet RAG Assistant — an expert AI advis
 YOUR RESPONSIBILITIES:
 1. Provide accurate, practical, and action-oriented advice grounded in official Department of Agricultural Extension (DAE), Department of Livestock Services (DLS), Department of Fisheries (DoF), BMD, BWDB, BARC, BRRI, and Ministry of Disaster Management (MoDMR) protocols.
 2. Whenever relevant, cite specific stress-tolerant seed varieties (e.g., BRRI dhan51, dhan52, dhan71), veterinary treatments (e.g., Anthrax spore vaccine, foot rot baths), pond protection methods, or disaster protocols.
-3. Include official contact helplines (e.g. Krishi Call Centre 16123, Pranishampad 16333, Disaster Warning 1090, Emergency 999) and website links (http://www.dae.gov.bd, http://www.dls.gov.bd, http://www.fisheries.gov.bd, http://www.bmd.gov.bd, http://www.bwdb.gov.bd).
+3. Include official contact helplines (e.g. Krishi Call Centre 16123, Disaster Warning 1090, Emergency 999) and website links (http://www.dae.gov.bd, http://www.dls.gov.bd, http://www.fisheries.gov.bd, http://www.bmd.gov.bd, http://www.bwdb.gov.bd).
 4. Maintain a polite, professional, and clear tone using well-structured Markdown headings, bullet points, and key takeaways.
 5. If district context is provided, tailor your response specifically to that district's agro-ecological zone (AEZ) and local hazards.`;
 
@@ -404,7 +404,7 @@ fences, no surrounding prose:
   if (!answerMarkdown) {
     answerMarkdown = `### 🌾 RAG Knowledge Base Search Results\n\nWe found **${ragResult.results.length} relevant official document(s)** matching your query:\n\n` +
       ragResult.results.map(r => `#### 📄 ${r.title} (${r.category})\n${r.content.slice(0, 300)}...`).join('\n\n') +
-      `\n\n---\n**Emergency Helplines:** DAE Krishi Hotline: **16123** | Livestock Helpline: **16333** | Disaster Warning: **1090** | Emergency: **999**`;
+      `\n\n---\n**Emergency Helplines:** DAE Krishi Hotline: **16123** | Disaster Warning: **1090** | Emergency: **999**`;
   }
 
   // 5. Gather government contacts for district if available

@@ -89,7 +89,6 @@ CRITICAL VOICE CONVERSATION DIRECTIVES:
    - For Cold Waves / Fog: Polythene sheet covers for Boro seedbeds, Mancozeb (2g/L) for potato late blight.
 4. Provide government emergency helplines when relevant:
    - Krishi Call Centre: 16123
-   - Pranishampad (Livestock) Helpline: 16333
    - Disaster Early Warning: 1090
    - National Emergency: 999
 5. You have real-time tool calling enabled ('search_hazard_knowledge' and 'get_emergency_contacts'). Use them whenever the user asks for specific technical details, chemical dosages, or local contacts.
@@ -179,7 +178,7 @@ export function setupLiveVoiceWebSocket(server) {
                   },
                   {
                     name: 'get_emergency_contacts',
-                    description: 'Look up official government hotlines (Krishi Call Centre 16123, Pranishampad 16333, Disaster 1090) and district extension officers.',
+                    description: 'Look up official government hotlines (Krishi Call Centre 16123, Disaster 1090) and district extension officers.',
                     parameters: {
                       type: 'object',
                       properties: {

@@ -42,7 +42,7 @@ const Terms = lazy(() => import('./pages/Terms'));
 const Privacy = lazy(() => import('./pages/Privacy'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const AdvisoriesPage = lazy(() => import('./pages/AdvisoriesPage').then((m) => ({ default: m.AdvisoriesPage })));
-const AnalyticsAnalyticsPage = lazy(() => import('./pages/AnalyticsPage').then((m) => ({ default: m.AnalyticsAnalyticsPage })));
+const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage').then((m) => ({ default: m.AnalyticsPage })));
 const DistrictDetailPage = lazy(() => import('./pages/DistrictDetailPage').then((m) => ({ default: m.DistrictDetailPage })));
 const DivisionsPage = lazy(() => import('./pages/DivisionsPage'));
 const DivisionDetailPage = lazy(() => import('./pages/DivisionDetailPage'));
@@ -156,8 +156,8 @@ const AppRoutes: React.FC<{ location: ReturnType<typeof useLocation> }> = ({ loc
               <Route path="/alerts/:id" element={<AlertDetailPage />} />
               <Route path="/advisories" element={<AdvisoriesPage />} />
               <Route path="/advisories/:subCategory" element={<AdvisoriesPage />} />
-              <Route path="/analytics" element={<AnalyticsAnalyticsPage />} />
-              <Route path="/analytics/:subCategory" element={<AnalyticsAnalyticsPage />} />
+              <Route path="/analytics" element={<AnalyticsPage />} />
+              <Route path="/analytics/:subCategory" element={<AnalyticsPage />} />
               <Route path="/upload" element={<UploadPage />} />
               <Route path="/use-cases" element={<UseCases />} />
               <Route path="/download" element={<DownloadCenter />} />

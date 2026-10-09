@@ -2719,6 +2719,11 @@ button:not([data-compact-target="true"]),
 @media (min-width: 640px) {
   .live-stage .leaflet-top.leaflet-left { left: 1.25rem; }
 }
+/* /live, phone: the title takes the top-left, so the zoom control moves to the top-right,
+   clear of the title and of the map FAB column that sits lower on the right. */
+@media (max-width: 639px) {
+  .live-stage .leaflet-top.leaflet-left { left: auto; right: 0.75rem; }
+}
 
 /* /live, phone: the map FAB column must stay reachable while the district forecast
    sheet is open. The sheet is portalled to <body>, so the rule matches from there.

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ForecastDashboard from '../components/ForecastDashboard';
 import { DataStateEmpty, DataStateError, DataStateLoading } from '../components/ui/DataState';
 import EmdatComparisonChart from '../components/EmdatComparisonChart';
+import { DataCreditLines } from '../components/DataCreditLines';
 import hazardCatalog from '../../public/data/historical/hazard-catalog-index.json';
 import modelPerformance from '../../public/data/model-performance.json';
 
@@ -25,7 +26,7 @@ function field(label: string, value: unknown): { label: string; value: string } 
   return { label, value: String(value) };
 }
 
-export const AnalyticsAnalyticsPage: React.FC = () => {
+export const AnalyticsPage: React.FC = () => {
   const { subCategory } = useParams<{ subCategory?: string }>();
   const navigate = useNavigate();
   const activeTab = subCategory || 'forecast-dashboard';
@@ -82,7 +83,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-900 text-xs font-mono font-bold mb-3 shadow-2xs">
             <span>RESEARCHER & ADMIN ANALYTICS</span>
             <span>•</span>
-            <span>model & CI/CD Telemetry</span>
+            <span>Model and pipeline diagnostics</span>
           </div>
           <h1 className="text-2xl sm:text-4xl font-extrabold text-carbon-90 tracking-tight">
             Model Diagnostics & Pipeline Observability
@@ -106,7 +107,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             activeTab === 'forecast-dashboard' ? 'bg-amber-500 text-ap-on-sev shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
           }`}
         >
-          Forecast Dashboard (Firestore & Recharts)
+          Forecast dashboard
         </motion.button>
         <motion.button
           whileHover={{ scale: 1.02 }}
@@ -116,7 +117,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             activeTab === 'model-metrics' ? 'bg-amber-500 text-ap-on-sev shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
           }`}
         >
-          Model Metrics (Latency, MAE, ECE)
+          Model metrics
         </motion.button>
         <motion.button
           whileHover={{ scale: 1.02 }}
@@ -126,7 +127,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             activeTab === 'pipeline-status' ? 'bg-amber-500 text-ap-on-sev shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
           }`}
         >
-          Pipeline Status (production / GitHub CI/CD)
+          Pipeline status
         </motion.button>
         <motion.button
           whileHover={{ scale: 1.02 }}
@@ -136,7 +137,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             activeTab === 'historical' ? 'bg-amber-500 text-ap-on-sev shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
           }`}
         >
-          Historical EM-DAT vs Prediction Explorer
+          Historical record vs detections
         </motion.button>
       </div>
 
@@ -166,8 +167,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
               <div className="text-xs font-mono text-carbon-60 font-bold">INFERENCE LATENCY</div>
               <div className="text-2xl font-black text-carbon-60">Not published</div>
               <p className="text-xs text-carbon-60 leading-relaxed">
-                No committed benchmark measures end-to-end inference latency. Per-request timing, where the inference
-                API is reachable, stays on the device that made the request.
+                No committed benchmark measures end-to-end inference latency.
               </p>
             </motion.div>
             <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="ap-card transition-all space-y-3 cursor-pointer">
@@ -175,7 +175,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
               <div className="text-2xl font-black text-carbon-60">Not published</div>
               <p className="text-xs text-carbon-60 leading-relaxed">
                 The classifier has not yet been scored against independent BMD/FFWC station records, so no error
-                metric is quoted here. The model card documents the validation status that does exist.
+                metric is quoted here. The methodology page describes the validation status that does exist.
               </p>
             </motion.div>
             <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="ap-card transition-all space-y-3 sm:col-span-2 md:col-span-1 cursor-pointer">
@@ -200,8 +200,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             <h2 className="text-xl font-bold text-carbon-90">Pipeline status, as the snapshot reports it</h2>
             <p className="text-xs text-carbon-60 leading-relaxed">
               Read from the committed forecast snapshot on every load. This page does not quote run logs it did not
-              read: the three log lines that used to sit here were literals, and a pipeline status a reader cannot
-              verify is worse than no status at all.
+              read.
             </p>
 
             {snapshotLoading && <DataStateLoading label="Reading the forecast snapshot" loader={false} />}
@@ -243,7 +242,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             transition={{ duration: 0.25 }}
             className="ap-card space-y-6"
           >
-            <h2 className="text-xl font-bold text-carbon-90">EM-DAT International Disaster Database vs HazardNet Predictions</h2>
+            <h2 className="text-xl font-bold text-carbon-90">Recorded historical events vs HazardNet detections</h2>
             <p className="text-sm text-carbon-60 leading-relaxed">
               The catalogued historical record for Bangladesh plotted against the episodes HazardNet has been
               scored on. The two are different kinds of measurement and are drawn as different marks: the record
@@ -257,8 +256,10 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <DataCreditLines ids={['forecasts', 'advisoryEda']} showBibtex />
     </motion.div>
   );
 };
 
-export default AnalyticsAnalyticsPage;
+export default AnalyticsPage;

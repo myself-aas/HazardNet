@@ -40,7 +40,7 @@ export const DATA_CREDITS: Record<string, DataCredit> = {
   forecasts: {
     id: 'forecasts',
     label:
-      'Forecast records: Shuvo, A. A. (2026). HazardNet Live Advisory. Kaggle. doi:10.34740/KAGGLE/DS/11470083',
+      'Forecast records: Ashif Ahmed Shuvo (2026). HazardNet Live Advisory. Kaggle. DOI 10.34740/KAGGLE/DS/11470083',
     href: 'https://doi.org/10.34740/KAGGLE/DS/11470083',
     licence: 'CC BY-NC 4.0',
   },

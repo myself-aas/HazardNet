@@ -162,8 +162,8 @@ const EN = {
     'Alert data could not be loaded, from either the live API or the offline snapshot. ' +
     'The map and the district pages still carry the last forecast the device has.',
   'alerts.empty.blocked':
-    '{assessed} district rows were assessed in this run and none could be published: §1.6 ' +
-    'requires a model version on every published alert, and this run does not carry one. The ' +
+    '{assessed} district rows were assessed in this run and none could be published. ' +
+    'The rows in this run carry no model version, and a published alert needs one. The ' +
     'assessments are held, not hidden. They become publishable as soon as the pipeline stamps ' +
     'their provenance.',
   'alerts.count.one': '{count} published alert',
@@ -642,7 +642,7 @@ const BN: Record<string, string> = {
     'মানচিত্র ও জেলার পাতায় যন্ত্রে সংরক্ষিত সর্বশেষ পূর্বাভাস আগের মতোই আছে।',
   'alerts.empty.blocked':
     'এই রানে {assessed}টি জেলার সারি পর্যালোচনা করা হয়েছে, কিন্তু একটিও প্রকাশ করা যায়নি: ' +
-    '§1.6 অনুযায়ী প্রতিটি প্রকাশিত সতর্কবার্তায় মডেল সংস্করণ থাকতে হয়, আর এই রানে তা নেই। ' +
+    'এই রানের সারিতে মডেল সংস্করণ নেই, অথচ প্রকাশিত প্রতিটি সতর্কবার্তায় তা থাকতে হয়। ' +
     'পর্যালোচনাগুলো আটকে রাখা হয়েছে, লুকানো হয়নি. উৎস নথিভুক্ত হলেই সেগুলো প্রকাশযোগ্য হবে।',
   'alerts.count.one': '{count}টি প্রকাশিত সতর্কবার্তা',
   'alerts.count.other': '{count}টি প্রকাশিত সতর্কবার্তা',

@@ -320,7 +320,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
             </p>
           </div>
           <div className="pointer-events-auto hidden items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-carbon-50 [text-shadow:0_1px_2px_rgba(255,255,255,0.7),0_0_8px_rgba(255,255,255,0.5)] dark:[text-shadow:0_1px_2px_rgba(0,0,0,0.8),0_0_8px_rgba(0,0,0,0.6)] sm:flex">
-            {predictionSource === 'live' ? 'Forecast synced' : 'Baseline coverage'}
+            {predictionSource === 'live' ? 'Forecast synced' : 'Static baseline severity'}
           </div>
         </header>
 
