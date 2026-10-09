@@ -50,7 +50,7 @@ export const Disclaimer: React.FC<DisclaimerProps> = ({ variant = 'inline', text
 
   const shell =
     variant === 'banner'
-      ? 'border border-carbon-20 border-l-4 border-l-amber-500 rounded-r-xl bg-white p-4'
+      ? 'border border-carbon-20 border-l-[2px] border-l-amber-500 rounded-r-xl bg-white p-4'
       : 'rounded-xl border border-carbon-20 bg-carbon-05 p-4';
 
   // `role="note"` rather than `<aside>`: a complementary landmark must be top-level, and

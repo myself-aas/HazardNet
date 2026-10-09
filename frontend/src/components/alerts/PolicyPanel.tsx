@@ -68,7 +68,7 @@ export const PolicyPanel: React.FC<PolicyPanelProps> = ({ policy, className = ''
         </div>
       </dl>
 
-      <p className="mt-3 border border-carbon-20 rounded-xl border-l-4 border-l-amber-500 bg-white p-4 text-base leading-[1.62] text-carbon-70">
+      <p className="mt-3 border border-carbon-20 rounded-xl border-l-[2px] border-l-amber-500 bg-white p-4 text-base leading-[1.62] text-carbon-70">
         {t('alerts.policy.calibration')}
       </p>
 

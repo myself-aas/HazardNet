@@ -12,7 +12,8 @@
     "                    so the same three-across shape cannot be pasted onto a second marketing page.",
     "Every entry is asserted against a live scan of frontend/src by __tests__/designSignature.test.js,",
     "so a new decorative dot or a pasted card row fails the suite instead of shipping quietly.",
-    "2026-10-06: pages/UserDashboardPage.tsx loses its `grid-cols-2 sm:grid-cols-3` entry. The definition list it counted moved into components/user/PublicProfileCard.tsx, which both the dashboard preview and /u/<username> now render; the scan walks pages/ only, so a row in a component is out of scope rather than un-ledgered."
+    "2026-10-06: pages/UserDashboardPage.tsx loses its `grid-cols-2 sm:grid-cols-3` entry. The definition list it counted moved into components/user/PublicProfileCard.tsx, which both the dashboard preview and /u/<username> now render; the scan walks pages/ only, so a row in a component is out of scope rather than un-ledgered.",
+    "2026-10-08: components/district/DistrictBriefBody.tsx gains three kept dots. The Cupertino Precision sweep (51bd0ed) rounded the geospatial heatmap's legend swatches from `rounded-sm` to `rounded-full`, which puts them inside the dot rule; they are severity encoders next to a label each, so they are ledgered as kept rather than deleted. The sweep changed 62 frontend files and no ledger, which is why the backend job went red on the next push instead of on the sweep itself."
   ],
   "statusDots": {
     "kept": {
@@ -27,6 +28,10 @@
       "components/LiveMapView.tsx": {
         "count": 1,
         "reason": "a circular close *control* (44px, holds an icon), matched by the size rule but not a status dot; kept so the detector rule stays simple."
+      },
+      "components/district/DistrictBriefBody.tsx": {
+        "count": 3,
+        "reason": "the geospatial severity heatmap's legend swatches - Low (0-33%), Moderate (34-66%), Critical (67-100%) - one per band the cells below are tinted by. The colour is the datum and the swatch is the only thing that ties a cell's tint to its band, so this is the map legends' role again, not decoration beside a label."
       },
       "components/frontdoor/RunVisual.tsx": {
         "count": 2,

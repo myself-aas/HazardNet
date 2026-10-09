@@ -195,7 +195,7 @@ export const AlertsPage: React.FC = () => {
           )}
         </div>
         {data.warnings.length > 0 && (
-          <details className="rounded-xl border border-carbon-20 border-l-4 border-l-amber-500 bg-white p-4 text-base text-carbon-90">
+          <details className="rounded-xl border border-carbon-20 border-l-[2px] border-l-amber-500 bg-white p-4 text-base text-carbon-90">
             <summary className="min-h-[44px] cursor-pointer font-bold">{t('alerts.page.degraded')}</summary>
             <ul className="mt-1 list-disc space-y-0.5 pl-4">
               {data.warnings.map((warning) => (

@@ -62,8 +62,14 @@ export const DistrictBriefHeader: React.FC = () => {
 
   return (
     <>
-      {/* CONSOLIDATED OFFICIAL DISTRICT DISASTER INTELLIGENCE HEADER */}
-      <header className="district-brief-header mb-6 border-b-2 border-carbon-90 pb-4 bg-white p-4 sm:p-6 border border-carbon-20 rounded-xl space-y-4">
+      {/* CONSOLIDATED OFFICIAL DISTRICT DISASTER INTELLIGENCE HEADER
+          A hairline card like every other surface on the brief. The 2px carbon-90
+          masthead rule it used to carry clashes with the rounded corners the
+          Cupertino Precision sweep added (the detector's `border-accent-on-rounded`),
+          and DESIGN.md §Elevation & Depth puts hierarchy in "optical hairline
+          borders", not heavy rules. The printed directive keeps its masthead rule:
+          see PrintPreviewModal.tsx. */}
+      <header className="district-brief-header mb-6 pb-4 bg-white p-4 sm:p-6 border border-carbon-20 rounded-xl space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-carbon-20 pb-2 text-xs font-mono text-carbon-70 leading-tight min-w-0">
           <div className="flex items-center gap-1.5">
             <span className="font-bold text-carbon-90 uppercase tracking-wider">HazardNet</span>

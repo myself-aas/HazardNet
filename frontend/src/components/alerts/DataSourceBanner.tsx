@@ -54,7 +54,7 @@ export const DataSourceBanner: React.FC<DataSourceBannerProps> = ({
   const stale = withinSlo === false || source === 'cache';
   const tone =
     source === 'none' || stale
-      ? 'border-carbon-20 border-l-4 border-l-amber-500 rounded-r-xl bg-white text-carbon-90'
+      ? 'border-carbon-20 border-l-[2px] border-l-amber-500 rounded-r-xl bg-white text-carbon-90'
       : 'border-carbon-20 bg-white text-carbon-70';
 
   const ageText =
