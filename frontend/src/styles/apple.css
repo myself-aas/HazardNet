@@ -707,18 +707,6 @@
    ─────────────────────────────────────────────────────────────────────────────── */
 
 /* ── Type roles (spec §Typography). ─────────────────────────────────────────── */
-.ap-type-display-hero { font-family: var(--ap-font-display); font-size: var(--ap-type-display-hero-size); line-height: var(--ap-type-display-hero-line); letter-spacing: var(--ap-type-display-hero-track); font-weight: var(--ap-type-display-hero-weight); color: var(--ap-label); }
-.ap-type-headline-xl { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-xl-size); line-height: var(--ap-type-headline-xl-line); letter-spacing: var(--ap-type-headline-xl-track); font-weight: var(--ap-type-headline-xl-weight); color: var(--ap-label); }
-.ap-type-headline-lg { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-lg-size); line-height: var(--ap-type-headline-lg-line); letter-spacing: var(--ap-type-headline-lg-track); font-weight: var(--ap-type-headline-lg-weight); color: var(--ap-label); }
-.ap-type-headline-md { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-md-size); line-height: var(--ap-type-headline-md-line); letter-spacing: var(--ap-type-headline-md-track); font-weight: var(--ap-type-headline-md-weight); color: var(--ap-label); }
-.ap-type-headline-sm { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-sm-size); line-height: var(--ap-type-headline-sm-line); letter-spacing: var(--ap-type-headline-sm-track); font-weight: var(--ap-type-headline-sm-weight); color: var(--ap-label); }
-.ap-type-body-lg { font-family: var(--ap-font-text); font-size: var(--ap-type-body-lg-size); line-height: var(--ap-type-body-lg-line); letter-spacing: var(--ap-type-body-lg-track); font-weight: var(--ap-type-body-lg-weight); color: var(--ap-label); }
-.ap-type-body-md { font-family: var(--ap-font-text); font-size: var(--ap-type-body-md-size); line-height: var(--ap-type-body-md-line); letter-spacing: var(--ap-type-body-md-track); font-weight: var(--ap-type-body-md-weight); color: var(--ap-label); }
-.ap-type-body-sm { font-family: var(--ap-font-text); font-size: var(--ap-type-body-sm-size); line-height: var(--ap-type-body-sm-line); letter-spacing: var(--ap-type-body-sm-track); font-weight: var(--ap-type-body-sm-weight); color: var(--ap-label-secondary); }
-.ap-type-label-md { font-family: var(--ap-font-text); font-size: var(--ap-type-label-md-size); line-height: var(--ap-type-label-md-line); letter-spacing: var(--ap-type-label-md-track); font-weight: var(--ap-type-label-md-weight); color: var(--ap-label); }
-.ap-type-label-sm { font-family: var(--ap-font-text); font-size: var(--ap-type-label-sm-size); line-height: var(--ap-type-label-sm-line); letter-spacing: var(--ap-type-label-sm-track); font-weight: var(--ap-type-label-sm-weight); color: var(--ap-label-secondary); }
-.ap-type-caption { font-family: var(--ap-font-text); font-size: var(--ap-type-caption-size); line-height: var(--ap-type-caption-line); letter-spacing: var(--ap-type-caption-track); font-weight: var(--ap-type-caption-weight); color: var(--ap-label-secondary); }
-
 /* Legacy names. Each maps to the nearest Cupertino role; new code uses the names above. */
 .ap-hero { font-family: var(--ap-font-display); font-size: var(--ap-type-display-hero-size); line-height: var(--ap-type-display-hero-line); letter-spacing: var(--ap-type-display-hero-track); font-weight: var(--ap-type-display-hero-weight); color: var(--ap-label); }
 .ap-display { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-xl-size); line-height: var(--ap-type-headline-xl-line); letter-spacing: var(--ap-type-headline-xl-track); font-weight: var(--ap-type-headline-xl-weight); color: var(--ap-label); }
