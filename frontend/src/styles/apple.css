@@ -486,10 +486,6 @@
   background-color: color-mix(in srgb, var(--ap-bg-canvas) 90%, transparent);
 }
 
-[data-theme='dark'] .bg-white\/92 {
-  background-color: color-mix(in srgb, var(--ap-bg-canvas) 92%, transparent);
-}
-
 [data-theme='dark'] .bg-white\/95 {
   background-color: color-mix(in srgb, var(--ap-bg-canvas) 95%, transparent);
 }
@@ -520,10 +516,6 @@
 
 .dark .bg-white\/90 {
   background-color: color-mix(in srgb, var(--ap-bg-canvas) 90%, transparent);
-}
-
-.dark .bg-white\/92 {
-  background-color: color-mix(in srgb, var(--ap-bg-canvas) 92%, transparent);
 }
 
 .dark .bg-white\/95 {
@@ -557,10 +549,6 @@
 
   :root:not([data-theme='light']) .bg-white\/90 {
     background-color: color-mix(in srgb, var(--ap-bg-canvas) 90%, transparent);
-  }
-
-  :root:not([data-theme='light']) .bg-white\/92 {
-    background-color: color-mix(in srgb, var(--ap-bg-canvas) 92%, transparent);
   }
 
   :root:not([data-theme='light']) .bg-white\/95 {
