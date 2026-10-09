@@ -34,6 +34,15 @@ env:
   # the production pipeline pushes to HAZARDNET_API_URL, which need not be the
   # website's own host.
   API_METADATA_URL: ${{ vars.API_METADATA_URL || '' }}
+  # Shared secret the probe sends as `x-hazardnet-probe` on every request
+  # (docs/ops/owner-actions.md Action 18). Cloudflare's managed challenge
+  # answers GitHub runners with its "Just a moment..." interstitial, so no
+  # probe request reaches an origin; the owner adds a WAF skip rule that
+  # bypasses bot management when this header matches, and stores the same
+  # value as the SITE_PROBE_TOKEN Actions secret. While the secret is unset
+  # the header goes out empty and is ignored — the probe keeps reporting what
+  # the edge answers, never a forged pass.
+  SITE_PROBE_TOKEN: ${{ secrets.SITE_PROBE_TOKEN }}
 
 jobs:
   probe:
@@ -63,6 +72,30 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: '20'
+
+      # Probe authentication (Action 18). curl reads $CURL_HOME/.curlrc on every
+      # invocation, so one generated config file carries the shared-secret header
+      # on all fourteen probe requests below — present and future — with no
+      # per-call flag to forget (a single un-headered call would keep 403ing
+      # after the WAF rule lands and read as a partial outage). The value is
+      # never printed: the step reports only whether a token is configured.
+      # Newlines are stripped because a pasted secret carrying one would break
+      # the config line and fail every request instead of authenticating none.
+      - name: Configure probe authentication
+        shell: bash
+        run: |
+          set -uo pipefail
+          TOKEN="${SITE_PROBE_TOKEN//$'\n'/}"
+          TOKEN="${TOKEN//$'\r'/}"
+          mkdir -p /tmp/probe-curl
+          printf 'header = "x-hazardnet-probe: %s"\n' "$TOKEN" > /tmp/probe-curl/.curlrc
+          chmod 600 /tmp/probe-curl/.curlrc
+          echo "CURL_HOME=/tmp/probe-curl" >> "$GITHUB_ENV"
+          if [ -n "$TOKEN" ]; then
+            echo "probe authentication: SITE_PROBE_TOKEN is configured (value not shown)"
+          else
+            echo "probe authentication: no SITE_PROBE_TOKEN secret — requests go out unauthenticated (docs/ops/owner-actions.md Action 18)"
+          fi
 
       # Cloudflare challenge detection (2026-10-09 — docs/ops/owner-actions.md
       # Action 18; evidence in docs/audits/2026-10-09-cloudflare-403-origin-probe.md).
@@ -513,6 +546,7 @@ jobs:
           OUT_FORECAST_DATA: ${{ steps.forecast_data.outcome }}
           OUT_STATUS_PAGE: ${{ steps.status_page.outcome }}
           OUT_CONTENT_PAGES: ${{ steps.content_pages.outcome }}
+          OUT_EDGE_CHALLENGED: ${{ steps.edge_challenge.outputs.challenged }}
         run: |
           set -uo pipefail
           mkdir -p data/site-health
@@ -520,6 +554,7 @@ jobs:
             --arg ran_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             --arg run_url "$RUN_URL" \
             --arg site_url "$SITE_URL" \
+            --arg edge_challenged "$OUT_EDGE_CHALLENGED" \
             --arg homepage "$OUT_HOMEPAGE" \
             --arg deep_links "$OUT_DEEP_LINKS" \
             --arg security_headers "$OUT_SECURITY_HEADERS" \
@@ -532,6 +567,7 @@ jobs:
               ran_at: $ran_at,
               run_url: $run_url,
               site_url: $site_url,
+              edge_challenged: ($edge_challenged == "1"),
               outcome: (if ([$homepage, $deep_links, $security_headers, $sitemap, $forecast_data, $status_page, $content_pages] | all(. == "success")) then "pass" else "fail" end),
               checks: [
                 { id: "homepage", outcome: $homepage, detail: null },
@@ -548,6 +584,7 @@ jobs:
           {
             echo ""
             echo "- probe outcome: $(jq -r '.outcome' data/site-health/latest.json)"
+            echo "- edge challenged: $(jq -r '.edge_challenged' data/site-health/latest.json)"
             jq -r '.checks[] | "  - \(.id): \(.outcome)"' data/site-health/latest.json
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -576,7 +613,8 @@ jobs:
           # — and `git log` stopped carrying any signal.
           #
           # Comparing the state projection instead records the transitions that
-          # matter (a check flipping, forecast data moving) and nothing else.
+          # matter (a check flipping, the edge challenge appearing or clearing,
+          # forecast data moving) and nothing else.
           #
           # This does not make the /status page lie about a stuck-red probe:
           # build_freshness_artifact.mjs derives the probe source's state as
@@ -585,7 +623,7 @@ jobs:
           # committed result gets. It never degrades to "the probe stopped running".
           # The current result is still in this run's summary and artifact.
           probe_signal() {
-            jq -c '{outcome, checks: [.checks[]? | {id, outcome}]}' "$1" 2>/dev/null || echo '{}'
+            jq -c '{outcome, edge_challenged, checks: [.checks[]? | {id, outcome}]}' "$1" 2>/dev/null || echo '{}'
           }
           freshness_signal() {
             jq -c '{overall: {state: .overall.state, not_fresh: .overall.not_fresh},
