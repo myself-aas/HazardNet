@@ -26,10 +26,10 @@
       "reason": "print sheet inside a modal; the modal body above it carries the same fields as cards."
     },
     "components/district/DistrictBriefBody.tsx": {
-      "tables": 2,
+      "tables": 1,
       "status": "converted",
       "remaining": 1,
-      "remainingReason": "the upazila section's default view is already the card grid; this table is the explicit Table toggle, holding the same rows."
+      "remainingReason": "the historical events log keeps an explicit table view at md and up; below md it is one card per event, holding the same rows."
     },
     "components/district/DistrictForecastRecords.tsx": {
       "tables": 1,

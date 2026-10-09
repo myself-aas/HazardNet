@@ -14,7 +14,7 @@ export const DistrictBriefHeader: React.FC = () => {
     district,
     climaticEventsData,
     peakSeverityInfo,
-    riskStyles,
+    metadata,
     navigate,
     saved,
     copiedAlert,
@@ -26,7 +26,6 @@ export const DistrictBriefHeader: React.FC = () => {
     handleToggleSave,
     handleShareAlert,
     handlePrintBrief,
-    handleDownloadReport,
     loadingForecastTable,
     chartData,
     activeTableHorizon,
@@ -36,24 +35,12 @@ export const DistrictBriefHeader: React.FC = () => {
     handleDownloadTableCsv,
     scrollToSection,
     activeSection,
-    processedUpazilas,
-    upazilaViewMode,
-    setUpazilaViewMode,
-    upazilaSearch,
-    setUpazilaSearch,
-    upazilaFilter,
-    setUpazilaFilter,
-    upazilaSortBy,
-    setUpazilaSortBy,
     trendViewMode,
     setTrendViewMode,
     hazardTrendData,
     showLiveAiAdvisory,
     setShowLiveAiAdvisory,
     weather,
-    dispatchStatus,
-    handleTriggerDispatch,
-    dispatchLogs,
     eventHazardFilter,
     setEventHazardFilter,
     expandedHistoricalEventId,
@@ -74,20 +61,11 @@ export const DistrictBriefHeader: React.FC = () => {
           <div className="flex items-center gap-1.5">
             <span className="font-bold text-carbon-90 uppercase tracking-wider">HazardNet</span>
             <span className="text-carbon-60">•</span>
-            <span className="font-semibold text-carbon-60">MoDMR / NDMA Disaster Intelligence</span>
+            <span className="font-semibold text-carbon-60">District brief</span>
           </div>
           <div className="flex items-center gap-2">
             <span>
-              DISPATCH ID:{' '}
-              <strong className="text-carbon-90 font-bold">
-                HN-BD-2026-{data.districtId.toUpperCase().slice(0, 4)}-
-                {new Date().toISOString().slice(5, 10).replace('-', '')}
-              </strong>
-            </span>
-            <span className="text-carbon-60">•</span>
-            <span>
-              DATE: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })},{' '}
-              {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} BST
+              Forecast run: <strong className="text-carbon-90 font-bold">{metadata.predictionDate ?? 'not available'}</strong>
             </span>
           </div>
         </div>
@@ -95,36 +73,21 @@ export const DistrictBriefHeader: React.FC = () => {
         {/* Header Title with Prominent Risk Badge */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="text-xs font-mono font-bold text-carbon-60 uppercase tracking-wider">
-              DISTRICT DISASTER INTELLIGENCE BRIEF
-            </div>
             <h1 className="text-ap-lead sm:text-ap-display-md font-bold text-carbon-90 tracking-tight leading-[1.2]">
-              {data.districtName} District <span className="text-carbon-60 font-light mx-1">|</span> {data.hazardType}
+              {data.districtName} District
             </h1>
           </div>
 
-          {/* Prominent Risk Badge */}
           <div className="shrink-0">
-            <span
-              className={`inline-flex min-h-6 items-center gap-2 px-3 py-1 rounded-control text-xs font-mono font-bold ${
-                data.modelAssessment.riskCategory === 'High'
-                  ? 'bg-[#c01f1f] text-white'
-                  : data.modelAssessment.riskCategory === 'Moderate'
-                    ? 'bg-[#8a5a00] text-carbon-black'
-                    : 'bg-[#1d7a3e] text-white'
-              }`}
-            >
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  data.modelAssessment.riskCategory === 'High'
-                    ? 'bg-white animate-pulse'
-                    : data.modelAssessment.riskCategory === 'Moderate'
-                      ? 'bg-carbon-black'
-                      : 'bg-white'
-                }`}
-              />
-              Risk Level: {data.modelAssessment.riskCategory} ({Math.round(district.severity * 100)}% Severity)
-            </span>
+            {peakSeverityInfo ? (
+              <span className="inline-flex min-h-6 items-center gap-2 px-3 py-1 rounded-control text-xs font-mono font-bold bg-carbon-10 text-carbon-90 border border-carbon-30">
+                Peak published severity {Math.round(peakSeverityInfo.peakScore * 100)}%
+              </span>
+            ) : (
+              <span className="inline-flex min-h-6 items-center gap-2 px-3 py-1 rounded-control text-xs font-mono font-bold bg-carbon-05 text-carbon-70 border border-carbon-20">
+                Not in the current forecast run
+              </span>
+            )}
           </div>
         </div>
 
@@ -133,7 +96,6 @@ export const DistrictBriefHeader: React.FC = () => {
             an absent strip must not read as an absent hazard. */}
         <DistrictAlertStrip
           district={district.id || data.districtName || district.name}
-          baselineOnly={Boolean((data as { baselineOnly?: boolean }).baselineOnly)}
         />
 
         {/* Quick Navigation to Parent Division & Primary Hazard Dashboards */}
@@ -147,52 +109,46 @@ export const DistrictBriefHeader: React.FC = () => {
             <ExternalLink className="w-3 h-3" />
           </Link>
           <Link
-            to={`/hazards/${(climaticEventsData?.primaryHazard || data.hazardType).toLowerCase().replace(/\s+/g, '-')}`}
+            to={`/hazards/${(climaticEventsData?.primaryHazard || peakSeverityInfo?.hazard || 'flood').toLowerCase().replace(/\s+/g, '-')}`}
             className="rounded-full inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 hover:text-amber-900 transition-colors cursor-pointer"
           >
             <AlertTriangle className="w-3.5 h-3.5" />
-            <span>{climaticEventsData?.primaryHazard || data.hazardType} Peril Analytics</span>
+            <span>{climaticEventsData?.primaryHazard || peakSeverityInfo?.hazard || 'Hazard'} analytics</span>
             <ExternalLink className="w-3 h-3" />
           </Link>
           {climaticEventsData && (
             <span className="rounded-full inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-carbon-10 text-carbon-70 border border-carbon-20">
               <History className="w-3.5 h-3.5 text-carbon-60" />
-              <span>{climaticEventsData.totalEvents} Verified Historical Events (2000–2026)</span>
+              <span>{climaticEventsData.totalEvents} recorded historical events (2000–2026)</span>
             </span>
           )}
         </div>
 
-        {/* Highlighted Hazard & Peak Severity Occurrence Date Banner */}
-        <div className="rounded-xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-mono">
-          <div className="flex items-center gap-3">
-            <span className="p-2.5 bg-amber-500 text-ap-on-sev font-black">
-              <Calendar className="w-5 h-5" />
-            </span>
+        {peakSeverityInfo ? (
+          <div className="rounded-xl bg-carbon-05 border border-carbon-20 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <div className="text-carbon-60 font-semibold uppercase tracking-wider text-xs">
-                Peak Severity Occurrence Date
-              </div>
-              <div className="text-carbon-90 font-black text-sm sm:text-base flex items-center gap-2">
+              <div className="text-carbon-60 font-semibold uppercase tracking-wider text-xs">Peak date in the published record</div>
+              <div className="text-carbon-90 font-bold text-sm sm:text-base">
                 <span>{peakSeverityInfo.peakDate}</span>
-                <span className="px-2 py-0.5 rounded bg-red-600 text-ap-on-sev text-xs font-black">
-                  {Math.round(peakSeverityInfo.peakScore * 100)}% Severity
-                </span>
+                <span className="ml-2 font-mono">{Math.round(peakSeverityInfo.peakScore * 100)}% severity</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-6 sm:border-l sm:border-carbon-20 sm:pl-6">
+              <div>
+                <div className="text-carbon-60 font-semibold uppercase tracking-wider text-xs">Hazard</div>
+                <div className="text-carbon-90 font-bold text-sm">{peakSeverityInfo.hazard}</div>
+              </div>
+              <div>
+                <div className="text-carbon-60 font-semibold uppercase tracking-wider text-xs">Confidence score (uncalibrated)</div>
+                <div className="text-carbon-90 font-bold text-sm">{Math.round(peakSeverityInfo.confidence * 100)}%</div>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-6 sm:border-l sm:border-amber-200/80 sm:pl-6">
-            <div>
-              <div className="text-carbon-60 font-semibold uppercase tracking-wider text-xs">Highlighted Hazard</div>
-              <div className="text-red-700 font-black uppercase tracking-wider text-sm">{peakSeverityInfo.hazard}</div>
-            </div>
-            <div>
-              <div className="text-carbon-60 font-semibold uppercase tracking-wider text-xs">Model Confidence</div>
-              <div className="text-carbon-90 font-extrabold text-sm">
-                {Math.round(peakSeverityInfo.confidence * 100)}%
-              </div>
-            </div>
-          </div>
-        </div>
+        ) : (
+          <p className="rounded-xl bg-carbon-05 border border-carbon-20 p-4 text-sm text-carbon-70">
+            This district is not in the current forecast run. No severity, date or confidence is shown, and the absence is not a zero.
+          </p>
+        )}
 
         {/* Consolidated Metadata Block (Two-Column Layout) */}
         <div className="rounded-xl grid grid-cols-1 sm:grid-cols-2 gap-4 bg-carbon-05 border border-carbon-20/90 p-4 text-sm">
@@ -200,21 +156,11 @@ export const DistrictBriefHeader: React.FC = () => {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-carbon-60 font-medium">Hazard Category:</span>
-              <strong className="font-bold text-carbon-90">{data.hazardType}</strong>
+              <strong className="font-bold text-carbon-90">{peakSeverityInfo?.hazard ?? 'Not in current run'}</strong>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-carbon-60 font-medium">Administrative Division:</span>
               <strong className="font-bold text-carbon-90">{data.division} Division</strong>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-carbon-60 font-medium">Specific Phenomenon:</span>
-              <strong className="font-bold text-carbon-90">{data.hazardSubtype}</strong>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-carbon-60 font-medium">Ingestion Telemetry Station:</span>
-              <strong className="font-mono font-bold text-carbon-90">
-                {data.physicalSensorMetrics.sensorStationName}
-              </strong>
             </div>
           </div>
 
@@ -226,10 +172,6 @@ export const DistrictBriefHeader: React.FC = () => {
                 <span className="font-mono font-bold text-carbon-90">
                   {district.lat.toFixed(4)}°N, {district.lng.toFixed(4)}°E
                 </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-carbon-60 font-medium">Surface Elevation Datum:</span>
-                <span className="font-mono font-bold text-carbon-90">{data.elevationMeters} m MSL</span>
               </div>
               {/* `flex-wrap` + `break-all`: the printed brief carries the full URL, and on a
                   375px viewport the label and the unbroken URL cannot share a line — this row was
@@ -251,11 +193,11 @@ export const DistrictBriefHeader: React.FC = () => {
             </div>
 
             <div className="pt-2 border-t border-carbon-20 flex items-center justify-between">
-              <span className="text-[8pt] text-carbon-60 font-mono">Real-time Mobile Telemetry Feed:</span>
+              <span className="text-[8pt] text-carbon-60 font-mono">Open on a phone:</span>
               <PrintQrCode
                 url={`https://www.hazardnet.live/forecast/district/${districtId}`}
                 districtOrSector={data.districtName}
-                title="Live Field Telemetry"
+                title="District page QR code"
                 size={42}
               />
             </div>

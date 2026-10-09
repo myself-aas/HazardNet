@@ -29,10 +29,6 @@
         "count": 1,
         "reason": "a circular close *control* (44px, holds an icon), matched by the size rule but not a status dot; kept so the detector rule stays simple."
       },
-      "components/district/DistrictBriefBody.tsx": {
-        "count": 3,
-        "reason": "the geospatial severity heatmap's legend swatches - Low (0-33%), Moderate (34-66%), Critical (67-100%) - one per band the cells below are tinted by. The colour is the datum and the swatch is the only thing that ties a cell's tint to its band, so this is the map legends' role again, not decoration beside a label."
-      },
       "components/frontdoor/RunVisual.tsx": {
         "count": 2,
         "reason": "nodes in the run timeline diagram, positioned by that diagram's geometry rather than used as bullet decoration."

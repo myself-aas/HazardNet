@@ -242,7 +242,7 @@
       },
       "empty": {
         "kind": "inline",
-        "evidence": "Awaiting forecast pipeline ingestion"
+        "evidence": "is not one of the 64 districts HazardNet covers"
       },
       "error": {
         "kind": "inline",

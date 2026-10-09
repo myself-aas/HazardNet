@@ -23,7 +23,6 @@ export const DistrictBriefActions: React.FC = () => {
     district,
     climaticEventsData,
     peakSeverityInfo,
-    riskStyles,
     navigate,
     saved,
     copiedAlert,
@@ -35,7 +34,6 @@ export const DistrictBriefActions: React.FC = () => {
     handleToggleSave,
     handleShareAlert,
     handlePrintBrief,
-    handleDownloadReport,
     loadingForecastTable,
     chartData,
     activeTableHorizon,
@@ -45,24 +43,12 @@ export const DistrictBriefActions: React.FC = () => {
     handleDownloadTableCsv,
     scrollToSection,
     activeSection,
-    processedUpazilas,
-    upazilaViewMode,
-    setUpazilaViewMode,
-    upazilaSearch,
-    setUpazilaSearch,
-    upazilaFilter,
-    setUpazilaFilter,
-    upazilaSortBy,
-    setUpazilaSortBy,
     trendViewMode,
     setTrendViewMode,
     hazardTrendData,
     showLiveAiAdvisory,
     setShowLiveAiAdvisory,
     weather,
-    dispatchStatus,
-    handleTriggerDispatch,
-    dispatchLogs,
     eventHazardFilter,
     setEventHazardFilter,
     expandedHistoricalEventId,
@@ -208,29 +194,20 @@ export const DistrictBriefActions: React.FC = () => {
             filenameTemplate="HazardNet_{docType}_{region}_{date}.pdf"
             regionName={data.districtName}
             districtName={data.districtName}
-            hazardType={data.hazardType}
+            hazardType={(peakSeverityInfo?.hazard ?? '')}
             documentType="District Intelligence Brief"
             title="Export PDF Brief"
             filenameContext={{
               region: data.districtName,
               district: data.districtName,
               division: data.division,
-              hazard: data.hazardType,
-              hazardType: data.hazardType,
+              hazard: peakSeverityInfo?.hazard ?? 'none',
+              hazardType: peakSeverityInfo?.hazard ?? 'none',
               docType: 'District_Brief',
-              documentType: 'District Intelligence Brief',
+              documentType: 'District brief',
             }}
           />
 
-          {/* Download Full JSON Telemetry */}
-          <button
-            onClick={handleDownloadReport}
-            title="Download Raw Machine-Readable JSON Telemetry"
-            className="inline-flex min-h-[44px] items-center gap-2 px-3.5 py-2 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 text-sm font-semibold cursor-pointer touch-manipulation"
-          >
-            <Download className="w-4 h-4 text-amber-300" />
-            <span>Export Data</span>
-          </button>
         </div>
       </div>
     </>

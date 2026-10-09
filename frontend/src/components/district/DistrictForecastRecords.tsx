@@ -14,7 +14,6 @@ export const DistrictForecastRecords: React.FC = () => {
     district,
     climaticEventsData,
     peakSeverityInfo,
-    riskStyles,
     navigate,
     saved,
     copiedAlert,
@@ -26,7 +25,6 @@ export const DistrictForecastRecords: React.FC = () => {
     handleToggleSave,
     handleShareAlert,
     handlePrintBrief,
-    handleDownloadReport,
     loadingForecastTable,
     chartData,
     activeTableHorizon,
@@ -36,24 +34,12 @@ export const DistrictForecastRecords: React.FC = () => {
     handleDownloadTableCsv,
     scrollToSection,
     activeSection,
-    processedUpazilas,
-    upazilaViewMode,
-    setUpazilaViewMode,
-    upazilaSearch,
-    setUpazilaSearch,
-    upazilaFilter,
-    setUpazilaFilter,
-    upazilaSortBy,
-    setUpazilaSortBy,
     trendViewMode,
     setTrendViewMode,
     hazardTrendData,
     showLiveAiAdvisory,
     setShowLiveAiAdvisory,
     weather,
-    dispatchStatus,
-    handleTriggerDispatch,
-    dispatchLogs,
     eventHazardFilter,
     setEventHazardFilter,
     expandedHistoricalEventId,
@@ -71,7 +57,7 @@ export const DistrictForecastRecords: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-carbon-20 pb-4">
           <div>
             <div className="text-xs font-mono font-bold text-amber-600 uppercase tracking-wider">
-              Published Forecast Records • District Telemetry Feed
+              Published forecast records
             </div>
             <h2 className="text-xl font-black text-carbon-90 tracking-tight">
               7-Day & 15-Day Forecast Records ({data.districtName})
