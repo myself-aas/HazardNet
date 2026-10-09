@@ -1,554 +1,221 @@
----
-name: Cupertino Precision
+# HazardNet — Visual System
 
-colors:
+**Status:** active · **Notional direction:** Apple · **Build path:** code
+**Applies to:** every surface that ships from `hazardnetbd.work` (108 prerendered routes).
 
-  surface: '#131314'
+This is the authority for the visual layer. Primitives, shared components, and route-level
+compositions all derive from the tokens here. Where a page's own brief conflicts with this
+document, the brief wins for that page only; it does not amend the system.
 
-  surface-dim: '#131314'
-
-  surface-bright: '#39393a'
-
-  surface-container-lowest: '#0e0e0f'
-
-  surface-container-low: '#1b1b1c'
-
-  surface-container: '#201f20'
-
-  surface-container-high: '#2a2a2b'
-
-  surface-container-highest: '#353436'
-
-  on-surface: '#e5e2e3'
-
-  on-surface-variant: '#c1c6d6'
-
-  inverse-surface: '#e5e2e3'
-
-  inverse-on-surface: '#303031'
-
-  outline: '#8b919f'
-
-  outline-variant: '#414753'
-
-  surface-tint: '#abc7ff'
-
-  primary: '#abc7ff'
-
-  on-primary: '#002f66'
-
-  primary-container: '#0071e3'
-
-  on-primary-container: '#fcfbff'
-
-  inverse-primary: '#005cbb'
-
-  secondary: '#c8c6c8'
-
-  on-secondary: '#303032'
-
-  secondary-container: '#474649'
-
-  on-secondary-container: '#b6b4b7'
-
-  tertiary: '#a3c9ff'
-
-  on-tertiary: '#00315c'
-
-  tertiary-container: '#0076d0'
-
-  on-tertiary-container: '#fcfbff'
-
-  error: '#ffb4ab'
-
-  on-error: '#690005'
-
-  error-container: '#93000a'
-
-  on-error-container: '#ffdad6'
-
-  primary-fixed: '#d7e2ff'
-
-  primary-fixed-dim: '#abc7ff'
-
-  on-primary-fixed: '#001b3f'
-
-  on-primary-fixed-variant: '#00458f'
-
-  secondary-fixed: '#e4e2e4'
-
-  secondary-fixed-dim: '#c8c6c8'
-
-  on-secondary-fixed: '#1b1b1d'
-
-  on-secondary-fixed-variant: '#474649'
-
-  tertiary-fixed: '#d3e3ff'
-
-  tertiary-fixed-dim: '#a3c9ff'
-
-  on-tertiary-fixed: '#001c39'
-
-  on-tertiary-fixed-variant: '#004882'
-
-  background: '#131314'
-
-  on-background: '#e5e2e3'
-
-  surface-variant: '#353436'
-
-  dark-bg-primary: '#000000'
-
-  dark-bg-secondary: '#161617'
-
-  dark-bg-tertiary: '#242426'
-
-  dark-bg-elevated: '#1C1C1E'
-
-  dark-label-primary: '#F5F5F7'
-
-  dark-label-secondary: '#A1A1A6'
-
-  dark-label-tertiary: '#86868B'
-
-  dark-label-quaternary: '#424245'
-
-  dark-tint-blue: '#2997FF'
-
-  dark-tint-green: '#30D158'
-
-  dark-tint-orange: '#FF9F0A'
-
-  dark-tint-red: '#FF453A'
-
-  dark-tint-purple: '#BF5AF2'
-
-  dark-fill-thin: rgba(255, 255, 255, 0.06)
-
-  dark-fill-regular: rgba(255, 255, 255, 0.12)
-
-  dark-fill-strong: rgba(255, 255, 255, 0.20)
-
-  dark-separator: '#424245'
-
-  dark-separator-subtle: rgba(255, 255, 255, 0.12)
-
-  light-bg-primary: '#FFFFFF'
-
-  light-bg-secondary: '#F5F5F7'
-
-  light-bg-tertiary: '#EEEDF3'
-
-  light-label-primary: '#1D1D1F'
-
-  light-label-secondary: '#86868B'
-
-  light-tint-blue: '#0071E3'
-
-typography:
-
-  display-hero:
-
-    fontFamily: Inter
-
-    fontSize: 56px
-
-    fontWeight: '700'
-
-    lineHeight: 60px
-
-    letterSpacing: -0.015em
-
-  display-hero-mobile:
-
-    fontFamily: Inter
-
-    fontSize: 40px
-
-    fontWeight: '700'
-
-    lineHeight: 44px
-
-    letterSpacing: -0.012em
-
-  headline-xl:
-
-    fontFamily: Inter
-
-    fontSize: 44px
-
-    fontWeight: '600'
-
-    lineHeight: 48px
-
-    letterSpacing: -0.012em
-
-  headline-xl-mobile:
-
-    fontFamily: Inter
-
-    fontSize: 32px
-
-    fontWeight: '600'
-
-    lineHeight: 36px
-
-    letterSpacing: -0.010em
-
-  headline-lg:
-
-    fontFamily: Inter
-
-    fontSize: 28px
-
-    fontWeight: '600'
-
-    lineHeight: 32px
-
-    letterSpacing: -0.008em
-
-  headline-md:
-
-    fontFamily: Inter
-
-    fontSize: 21px
-
-    fontWeight: '600'
-
-    lineHeight: 26px
-
-    letterSpacing: -0.006em
-
-  headline-sm:
-
-    fontFamily: Inter
-
-    fontSize: 17px
-
-    fontWeight: '600'
-
-    lineHeight: 22px
-
-    letterSpacing: -0.004em
-
-  body-lg:
-
-    fontFamily: Inter
-
-    fontSize: 19px
-
-    fontWeight: '400'
-
-    lineHeight: 26px
-
-    letterSpacing: -0.005em
-
-  body-md:
-
-    fontFamily: Inter
-
-    fontSize: 17px
-
-    fontWeight: '400'
-
-    lineHeight: 24px
-
-    letterSpacing: -0.004em
-
-  body-sm:
-
-    fontFamily: Inter
-
-    fontSize: 14px
-
-    fontWeight: '400'
-
-    lineHeight: 18px
-
-    letterSpacing: 0em
-
-  label-md:
-
-    fontFamily: Inter
-
-    fontSize: 14px
-
-    fontWeight: '500'
-
-    lineHeight: 18px
-
-    letterSpacing: -0.002em
-
-  label-sm:
-
-    fontFamily: Inter
-
-    fontSize: 12px
-
-    fontWeight: '500'
-
-    lineHeight: 16px
-
-    letterSpacing: 0.010em
-
-  caption:
-
-    fontFamily: Inter
-
-    fontSize: 11px
-
-    fontWeight: '400'
-
-    lineHeight: 14px
-
-    letterSpacing: 0.012em
-
-rounded:
-
-  sm: 0.25rem
-
-  DEFAULT: 0.5rem
-
-  md: 0.75rem
-
-  lg: 1rem
-
-  xl: 1.5rem
-
-  full: 9999px
-
-spacing:
-
-  gutter: 1.5rem
-
-  gutter-mobile: 1rem
-
-  margin: 2.5rem
-
-  margin-mobile: 1.25rem
-
-  space-xs: 0.25rem
-
-  space-sm: 0.5rem
-
-  space-md: 1rem
-
-  space-lg: 1.5rem
-
-  space-xl: 2.5rem
+This document governs appearance. It deliberately says nothing about forecasting, model
+architecture, training data, benchmarking, or severity derivation — those are research-private
+under `docs/PUBLICATION_POLICY.md`. Nothing here implies a capability the product does not have.
 
 ---
 
-
-
-## Brand & Style
-
-
-
-The design system embodies the philosophy of unobtrusive clarity, physical material honesty, and structural hierarchy inspired by state-of-the-art human interface hardware and software integration. The aesthetic unifies pure minimalism with optical glassmorphism, prioritizing content immersion through deliberate negative space, tight typographic tracking, and physical-world optics—translucency, specular highlights, dynamic light transmission, and continuous super-ellipse curvature.
-
-
-
-Targeting discerning professionals and global consumers who expect friction-free utility paired with cinematic polish, the interface evokes quiet confidence and frictionless speed. With native dual-mode support, it flows seamlessly between an ethereal, pristine light appearance and a deep, immersive obsidian dark appearance. Every interactive layer responds with authentic momentum and calibrated physical damping, echoing the tactile precision of bead-blasted aluminum, OLED black crystal, and optical frosted glass.
-
-
-
-## Colors
-
-
-
-The color palette operates as a dynamic, dual-mode perceptual hierarchy designed to preserve identical functional legibility across Light and Dark appearances.
-
-
-
-### Appearance Architecture
-
-
-
-#### 1. Backgrounds & Surfaces
-
-- **Light Appearance:** Grounded in a pure `#FFFFFF` canvas, using `#F5F5F7` for secondary grouped modules and `#EEEDF3` for inset tracks.
-
-- **Dark Appearance:** Anchored in absolute OLED `#000000` for primary backdrops, transitioning up to `#161617` for content cards and secondary tiers, `#242426` for tertiary inner containers, and `#1C1C1E` (or `rgba(22, 22, 23, 0.8)`) for floating elevated chrome, sheets, and popovers.
-
-
-
-#### 2. Label & Text Tiers
-
-- **Light:** Primary text sits at `#1D1D1F` (high contrast), secondary metadata at `#86868B`, and subtle helper text at `#C1C6D6`.
-
-- **Dark:** Primary text shifts to high-luminance `#F5F5F7`, secondary descriptions to `#A1A1A6`, tertiary captions to `#86868B`, and non-essential placeholder or disabled markers to quaternary `#424245`.
-
-
-
-#### 3. Semantic Interactive Tints
-
-Interactive accents shift in luminance between modes to maintain optical weight against varying contrast poles:
-
-- **Blue Tint:** `#0071E3` in light appearance steps up to `#2997FF` in dark mode to prevent chromatic muddying against obsidian surfaces.
-
-- **Success / Green:** `#34C759` (light) shifts to `#30D158` (dark).
-
-- **Warning / Orange:** `#FF9500` (light) shifts to `#FF9F0A` (dark).
-
-- **Destructive / Red:** `#FF3B30` (light) shifts to `#FF453A` (dark).
-
-- **Creative / Purple:** `#AF52DE` (light) shifts to `#BF5AF2` (dark).
-
-
-
-#### 4. Fills & Separators
-
-In dark appearance, opaque borders are avoided in favor of alpha-blended light planes:
-
-- Thin Fill: `rgba(255, 255, 255, 0.06)` for subtle hover states and inactive track surfaces.
-
-- Regular Fill: `rgba(255, 255, 255, 0.12)` for standard interactive pill wells.
-
-- Strong Fill: `rgba(255, 255, 255, 0.20)` for pressed states.
-
-- Separators: Crisp `#424245` on solid layouts or `rgba(255, 255, 255, 0.12)` on translucent blurred backgrounds.
-
-
-
-## Typography
-
-
-
-The typographic hierarchy is calibrated around Inter to provide maximum technical precision and legibility across high-density retina displays.
-
-
-
-- **Optical Tracking:** Headlines rely on tight negative tracking (from `-0.015em` to `-0.006em`) to eliminate loose typesetting on display scales, yielding an authoritative editorial weight. As point sizes descend into body and caption tiers, letter spacing shifts to neutral and positive values (`0` to `+0.012em`) to guarantee quick eye scanning in low-light environments.
-
-- **Leading Ratios:** Display lines maintain a disciplined leading of 1.08x to 1.15x. Body copy relaxes to a 1.35x–1.42x ratio, preserving paragraph balance without inflating vertical layout height.
-
-- **Weight Pairing:** Text steps cleanly between regular (`400`) body copy, medium (`500`) interactive indicators/labels, and semi-bold (`600`) or bold (`700`) section titles, keeping the typographic plane purposeful and structured.
-
-
-
-## Layout & Spacing
-
-
-
-Layout geometry follows an 8px architectural grid bound by a 1280px maximum content shell on desktop viewports, stepping into an 8-column layout for tablets and a single-column 4-column flow on mobile viewports (<768px).
-
-
-
-- **Margins & Safe Zones:** Canvas outer borders use `margin` (40px) on desktop to frame content symmetrically, collapsing gracefully to `margin-mobile` (20px) on mobile viewports to provide generous horizontal interactive surfaces.
-
-- **Rhythm & Insets:** Inner card paddings consistently adopt `space-md` (16px) or `space-lg` (24px). Micro spacing (`space-xs` and `space-sm`) enforces strict touch target separation, and large structural sections rely on `space-xl` (40px) and multiples thereof (64px, 96px) to maintain breathing room.
-
-
-
-## Elevation & Depth
-
-
-
-Visual hierarchy does not rely on heavy drop shadows. Instead, it is expressed through material transmission, backdrop blurs, surface luminance tiers, and optical hairline borders.
-
-
-
-### 1. Optical Glassmorphism
-
-Floating headers, modal backgrounds, and floating pill docks feature specular translucency:
-
-- **Light:** `rgba(255, 255, 255, 0.80)` backing with `backdrop-filter: blur(20px) saturate(180%)` and a bottom hairline of `rgba(0, 0, 0, 0.08)`.
-
-- **Dark:** `rgba(0, 0, 0, 0.80)` backing with `backdrop-filter: blur(20px) saturate(180%)` and a bottom hairline of `rgba(255, 255, 255, 0.10)`.
-
-
-
-### 2. Tonal Surface Stacking (Dark Mode)
-
-Depth is created by stepping up surface values against the `#000000` base:
-
-- **Level 0 (Canvas):** `#000000`
-
-- **Level 1 (Cards & Modules):** `#161617` bounded by a 1px border of `rgba(255, 255, 255, 0.08)` or `#424245`
-
-- **Level 2 (Modals, Popovers, Flyouts):** `#1C1C1E` or `rgba(22, 22, 23, 0.85)` with ambient drop-shadow: `0 24px 48px -12px rgba(0, 0, 0, 0.65)` and an internal 1px highlight stroke of `rgba(255, 255, 255, 0.15)` along top edges.
-
-
-
-## Shapes
-
-
-
-The design system enforces continuous squircle curvature across all containers, mitigating sharp transitions.
-
-
-
-- **Primary Cards & Modals:** Standardized to a generous roundedness (`1.25rem` to `1.5rem`), establishing soft, confident outlines for media cards and grouped containers.
-
-- **Nested Concentricity:** Child elements inside containers reduce their corner radii proportionally (e.g., an inset panel inside a 20px card uses 10px–12px radius) to maintain optical balance.
-
-- **Interactive Controls:** Action buttons, segmented toggle switches, and pill chips use fully rounded contours (`border-radius: 9999px`) to contrast cleanly with structural rectangular cards.
-
-
-
-## Components
-
-
-
-### Buttons
-
-- **Primary Tinted (Action):** Pill contour (`9999px`), solid `#0071E3` in light mode or `#2997FF` in dark mode, set with high-contrast text (`#FFFFFF` in light, `#000000` or `#FFFFFF` depending on contrast role). Height: 36px (desktop/inline) or 44px (touch target). Micro-interactions: scales down to `0.97` on active tap; transitions smoothly with `cubic-bezier(0.25, 1, 0.5, 1)`.
-
-- **Secondary Dark Button:** Pill contour (`9999px`), fill set to `#1D1D1F`, hover shifting to `#2D2D2F`, text in `#F5F5F7`, bounded by a hairline border `rgba(255, 255, 255, 0.10)`.
-
-- **Ghost / Link:** Flat text using `#0071E3` (light) or `#2997FF` (dark) with an inline trailing chevron (`›`) that animates 2px horizontally on hover.
-
-
-
-### Navigation Bar
-
-- Pinned top chrome with fixed heights (44px mobile, 48px desktop).
-
-- **Dark Appearance Variant:** Background set to `rgba(0, 0, 0, 0.80)` with `backdrop-filter: blur(20px) saturate(180%)`, bottom border `rgba(255, 255, 255, 0.10)`, containing high-contrast navigation links in `#F5F5F7` with secondary actions in `#A1A1A6`.
-
-
-
-### Product & Content Cards
-
-- **Dark Mode Card:** Solid `#161617` surface with a continuous 18px–22px corner radius, framed by a 1px border of `#424245` or `rgba(255, 255, 255, 0.08)`.
-
-- **Typography inside Card:** Titles styled in `#F5F5F7` (`headline-sm` or `headline-md`), subtitles in `#A1A1A6` (`body-md`), and metadata or fine print in quaternary `#86868B`. Inset separators set to `rgba(255, 255, 255, 0.08)`.
-
-
-
-### Segmented Controls
-
-- Container track built using a pill shape (`9999px`) with dark fill `rgba(255, 255, 255, 0.06)` or `#1C1C1E`.
-
-- Active segment uses an elevated sliding pill (`#2C2C2E` in dark mode or `#FFFFFF` in light mode) casting an ultra-soft shadow (`0 2px 6px rgba(0, 0, 0, 0.30)`), animating along the horizontal axis with a spring response (`damping: 26, stiffness: 320`). Active label is `#F5F5F7`; inactive labels sit at `#86868B`.
-
-
-
-### Input Fields
-
-- Inputs feature a continuous 10px–12px radius.
-
-- **Dark Mode Variant:** Filled with `#1C1C1E` (or `rgba(255, 255, 255, 0.06)`), 1px stroke of `rgba(255, 255, 255, 0.12)`, text `#F5F5F7`, and placeholder text `#424245`.
-
-- **Focus State:** 1px border transitions to `#2997FF` accompanied by a subtle 3px diffused outer halo: `0 0 0 3px rgba(41, 151, 255, 0.25)`.
-
-
-
-### Modals & Bottom Sheets
-
-- **Dark Mode Presentation:** Background styled in `#1C1C1E` (or `rgba(22, 22, 23, 0.85)` with blur), crowned by a top highlight hairline (`rgba(255, 255, 255, 0.12)`) and grabber handle styled with pill dimensions (36px x 5px) in `rgba(255, 255, 255, 0.20)`. Backdrops darken with an alpha dimming layer of `rgba(0, 0, 0, 0.70)`.
+## 1. The world
+
+HazardNet is read in daylight, outdoors, on cheap Android phones, often by someone who has
+walked to a neighbour's house to check a screen. Sometimes it is read at a desk by a researcher
+comparing seasons. The same screen serves both.
+
+Apple's language suits this because it is a language of **restraint under load**: large quiet
+surfaces, one idea per screen, type doing the structural work, colour reserved for meaning.
+That maps onto our problem. A hazard level is not decoration — it is the one thing on the screen
+that must survive glare, a cracked screen, and a glance.
+
+**What we take from Apple:** the neutral ramp, the label hierarchy, the tint system, generous
+vertical rhythm, deep and specific shadows, type as the primary hierarchy device.
+
+**What we do not take:** Apple's marketing gestures. No full-bleed product theatre, no
+scroll-choreographed reveals, no oversized display type floating in empty space. We are a
+public instrument, not a product launch.
 
 ---
 
-## HazardNet implementation notes
+## 2. Grounds
 
-These are the places where the web system does not take a value from this document literally. Each one is a WCAG AA or repository-policy decision. The token files carry the same notes next to the value.
+Two grounds, both first-class. Light is the default ground for reading; dark is the default
+ground for night and for low-light outdoor use. Neither is a decoration of the other.
 
-- **Text on light surfaces.** `#86868B` measures 3.6:1 on white, so light secondary and tertiary text use `#5A5A5D` and `#6E6E73` (6.9:1 and 5.1:1 on white). `#C1C6D6` measures 1.7:1 on white and is not used as text.
-- **Blue text on parchment.** `#0071E3` measures 4.3:1 on `#F5F5F7`, so link text on light grounds uses `#0066CC` (5.1:1). The filled action and the focus ring keep `#0071E3`.
-- **Placeholder text.** `#424245` measures 1.8:1 on `#161617`. Placeholders use `#86868B` (4.7:1 on the input fill). Quaternary `#424245` remains for disabled markers only.
-- **Button label on dark.** On `#2997FF`, white measures 3.0:1, so dark-mode action labels use `#000000` (7.0:1).
-- **Caption size.** The 11px caption tier is below the repository's former 12px type floor. The floor is now 11px, and no text is smaller than 11px.
-- **Inter.** Inter is named first in every text stack. It is not shipped: `frontend/public/fonts/README.md` allows 50 KiB of local web fonts in total, and the Bengali face already uses 43.3 KiB. Shipping Inter needs a budget decision.
-- **Hazard and severity palettes.** These are data encodings, not chrome. They are unchanged and are re-measured by the parity test.
+Surfaces are Apple's neutral ramp, expressed as an **auto-inverting scale**: a token inverts to
+its counterpart when the ground flips, so a component written once is correct on both grounds.
+
+| Token | Light | Dark | Use |
+|---|---|---|---|
+| `--hn-bg` | `#FFFFFF` | `#000000` | Page ground |
+| `--hn-surface` | `#FFFFFF` | `#1C1C1E` | Cards, panels, sheets |
+| `--hn-surface-2` | `#F5F5F7` | `#2C2C2E` | Recessed panels, table stripes, wells |
+| `--hn-surface-3` | `#EEEDF3` | `#3A3A3C` | Inputs on a raised surface |
+
+Text is Apple's label ramp:
+
+| Token | Light | Dark | Use |
+|---|---|---|---|
+| `--hn-text` | `#1D1D1F` | `#F5F5F7` | Body, headings |
+| `--hn-text-2` | `#6E6E73` | `#98989F` | Secondary, labels, captions |
+| `--hn-muted` | `#86868B` | `#8E8E93` | Tertiary, metadata, axes |
+
+**Tinted surfaces** — hazard bands, callouts, banners — tint the ground rather than painting a
+flat block. Secondary text inside a tinted surface is tinted *from that hue*, never greyed. This
+is the rule most often broken and the one that decides whether a band looks designed.
+
+**Separators** are hairlines: `rgba(0,0,0,0.10)` on light, `rgba(255,255,255,0.12)` on dark.
+One pixel. A visible grey rule between sections is a defect.
+
+---
+
+## 3. Colour
+
+Colour carries **meaning only**. If a colour does not indicate state, severity, or interactivity,
+it should be neutral.
+
+Severity is a closed, ordered ramp. Each level owns one hue, and the hue is never reused for
+anything else anywhere in the product.
+
+| Level | Light | Dark | Bangla |
+|---|---|---|---|
+| Severe | `#D70015` | `#FF453A` | মারাত্মক |
+| High | `#FF9500` | `#FF9F0A` | উচ্চ |
+| Moderate | `#AF8300` | `#FFD60A` | মধ্যম |
+| Low | `#007A33` | `#30D158` | স্বল্প |
+| Minimal / none | `#6E6E73` | `#98989F` | সর্বনিম্ন |
+
+The light values are darkened against Apple's defaults — this is a deliberate divergence, and the
+reason is in §7.
+
+**One accent.** Interactive chrome uses Apple system blue — `#0071E3` on light, `#2997FF` on
+dark — and nothing else. No secondary accent, no brand gradient, no colour-used-for-personality.
+
+**Fills** are translucent so they sit correctly on any ground:
+`rgba(0,0,0,0.04 / 0.08 / 0.16)` on light, `rgba(255,255,255,0.06 / 0.12 / 0.20)` on dark.
+
+**Depth** is a soft, offset shadow — never a zero-offset halo, never a hard block offset.
+`0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.10)` is the raised card; lower steps drop the
+second layer. Shadows fade on dark, where elevation reads through surface lightness instead.
+
+---
+
+## 4. Type
+
+**The honest stack.** We do not ship a Latin webfont. Our total self-hosted font budget is
+**50 KiB**, and Bengali (which has no platform substitute and is a first-class language here)
+takes **43.3 KiB** of it. That leaves no room for a credible Latin face, and a bad subset is
+worse than none.
+
+So Latin resolves through the platform stack — `-apple-system, BlinkMacSystemFont, "SF Pro Text",
+"Segoe UI", Roboto, sans-serif`. This is not a fallback: it is the same decision Apple's own
+site makes, and on the devices our users hold it renders SF Pro or a close System Sans. Bengali
+resolves through the self-hosted face, which is metrically matched to the stack's x-height so
+Bangla and English copy can sit on the same line without the Bangla reading as a different
+product.
+
+**Scale.** One family. Body 17px/1.47. Headings step in obvious jumps — 48 / 40 / 32 / 24 / 20 —
+with tracking tightening as size grows, floored at `-0.03em`. Display type caps at 6rem.
+
+**Measure** is 65–75 characters for prose. Wide screens earn wider margins, not longer lines.
+Headings balance their wraps; a heading ending in one stranded word is a defect.
+
+**Numbers** in tabular contexts — forecasts, levels, comparisons — are `font-variant-numeric:
+tabular-nums` and never reflow between updates.
+
+**Bangla** is not a translation layer. It sets at a slightly larger size and looser line-height
+than its English counterpart, because the script's ascenders and matras need the room. Any
+component that fits English but clips Bangla is broken.
+
+---
+
+## 5. Layout
+
+A 12-column grid, 20px gutters, content capped at **1280px** and centred with fluid side margins.
+Breakpoints at 734px, 1068px, and 1440px — Apple's own, chosen because our analytics show that
+is where real devices actually cluster.
+
+**Vertical rhythm** comes from a single spacing scale: 4 / 8 / 12 / 16 / 24 / 32 / 48 / 64 / 96.
+Section separation is generous — 96px on desktop, 64px on mobile. Within a section, related
+things sit 8–12px apart; unrelated things sit 48px or more apart. Space above a heading exceeds
+space below it, so a heading belongs to what follows it.
+
+**Cards are not the default container.** Content flows on the ground and is separated by spacing
+and alignment. A card earns its place when it groups something that must travel together — a
+hazard card, a map panel, a data table. Cards are never nested inside cards.
+
+---
+
+## 6. Motion
+
+One authored moment per screen. Everything else is a state change.
+
+Entrances run 480–680ms on an exponential ease-out, starting from an already-visible default —
+never from invisible. Hover and press are 200ms and 120ms. If the user has asked for reduced
+motion, everything resolves to its end state instantly; nothing is removed, nothing is hidden.
+
+**This product has a hard constraint that overrides aesthetics: a hazard level must be readable
+the instant the screen paints.** No level, threshold, or warning animates in. No severity colour
+transitions on load. Motion is for navigation and disclosure, never for the reading of a warning.
+
+---
+
+## 7. Accessibility — binding, not aspirational
+
+This section is not negotiable and is enforced by `npm run check:contrast`, which gates the build.
+
+- **WCAG 2.1 AA** on *both* grounds, for text, controls, focus rings, and graphical objects.
+- **Body text ≥ 4.5:1, large text ≥ 3:1.** Verified against the token pairs, not estimated.
+- **44 × 44px** minimum touch and pointer target, including icon buttons and table row controls.
+- **Colour never carries meaning alone.** Every severity level ships a text label and a shape cue.
+  This is why the light severity hues are darkened below Apple's defaults — the stock light
+  palette cannot reach 4.5:1 against white, and the divergence is the fix, not a preference.
+- Visible focus on every interactive element, in both grounds, never removed for tidiness.
+- Bangla and English are both first-class; neither is a fallback rendering of the other.
+- Usable at 200% zoom and at 320px width.
+
+---
+
+## 8. Safety framing
+
+Every surface that presents a hazard level, forecast, or advisory carries, in the same viewport
+and without interaction:
+
+1. that HazardNet is **not an official warning service**;
+2. the standing authority — **BMD / FFWC** — as the source of official warnings;
+3. the emergency number **999**.
+
+This is a layout requirement, not a footnote. A design that makes these legible only after
+scrolling has failed, regardless of how it scores elsewhere.
+
+---
+
+## 9. Imagery
+
+Photographic imagery is used where it carries information a diagram cannot: the front door, and
+the headers of major sections. Every image is **illustrative**.
+
+Imagery documents no actual disaster, place, person, or event. No generated or stock image is
+captioned, placed, or written about as though it depicts a real flood, a real river, or a real
+farmer. Any image that could be read that way is labelled as illustrative at the point of use, or
+is not used.
+
+Images carry correct intrinsic dimensions to prevent layout shift, responsive sources, and alt
+text that conveys the image's information — or empty alt where the image is genuinely decorative.
+
+---
+
+## 10. Browser surfaces
+
+The parts of the page we did not draw still carry the system. Text selection, the caret, custom
+scrollbars, focus rings, underline offset, and tabular numerals all ship with browser defaults
+that belong to no design system, and all are themed from the palette here. It is the cheapest
+signal that a page was built rather than assembled.
+
+---
+
+## 11. Reference
+
+Authoritative Apple values live in `frontend/src/styles/apple.css`. Verification:
+
+```bash
+npm run check:tokens    # no raw values outside the token set
+npm run check:contrast  # WCAG AA, both grounds, every component
+npm run check:contrast:css
+```
