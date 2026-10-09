@@ -420,12 +420,17 @@ measures 4.3:1 on parchment and text needs 4.5:1. Filled actions and focus keep 
 One family, ten steps. Body is 17px/24px; `body-lg` is 19px/26px; `display-hero` is 56px/60px at
 weight 700 with tracking at -0.015em. Tracking tightens as size grows.
 
-**The font is unresolved, and this is a known defect rather than a decision.** The spec names
-Inter, but Inter is not shipped: the 50 KiB self-hosted budget is already spent on the Bengali
-face (`frontend/public/fonts/README.md`), so Inter resolves only where a user happens to have it
-installed and otherwise falls through to the platform UI face. No third-party font request is
-made. Fixing this means either naming the platform stack honestly or rebudgeting the Bengali
-face — a change that touches all three artifacts and the parity suite together.
+**No Latin webfont is shipped, and that is a decision rather than an omission.** The stack runs
+`Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif` — Inter first as a
+zero-byte enhancement for anyone who has it installed, then the platform UI face, which is how
+Apple's own site resolves. On Apple devices that lands on SF Pro; on Windows, Segoe UI; on
+Android, Roboto. The parity suite pins the arrangement: no `@font-face`, no remote URL, Inter
+named first in both stacks.
+
+**Bangla is a separate, self-hosted face.** `--ap-font-bengali` carries Noto Sans Bengali at
+43.31 KiB of the 50 KiB budget, scoped to `[lang='bn']`, `:lang(bn)`, `.lang-bn`,
+`.farmer-advisory` and `.tts-fallback-text`. That leaves 6.69 KiB of headroom — too little for a
+credible Latin subset, which is why none is shipped.
 
 **Bangla is not a translation layer.** It is a first-class language with a self-hosted face, and
 it sets at a slightly larger size and looser line-height than its English counterpart because the
