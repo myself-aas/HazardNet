@@ -1463,14 +1463,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         )}
 
         {currentSelected && !inspectedPoint && (
-          <div
-            data-testid="district-forecast-slot"
-            /* `relative z-20` keeps the in-flow mobile card above the overlay HUD
-               (its attribution bar and hazard-action cluster are absolute
-               `z-[var(--ap-z-sticky)]` = 10 children of the `inset-0` stage overlay and
-               used to swallow the card's primary action at phone widths). */
-            className="relative z-20 lg:absolute lg:top-4 lg:right-4 lg:w-[clamp(280px,28vw,340px)] lg:max-w-[calc(100%-2rem)] max-w-full shrink-0 w-full border-t lg:border-t-0 border-carbon-20 bg-white"
-          >
+          <div data-testid="district-forecast-slot" className="contents">
             <DistrictForecastCard
               district={currentSelected}
               onClose={() => {
@@ -1870,36 +1863,33 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               OpenStreetMap's volunteer-run servers (deleted 2026-10-05 as the
               abuse named at osm.wiki/blocked) and a "Doppler radar" toggle that
               drew hard-coded storm cells — data with no artifact behind it. */}
-          <AnimatePresence>
-            {isLayerModalOpen && (
-              <div className="fixed inset-0 z-[var(--ap-z-modal)] bg-carbon-black/40 flex items-center justify-center p-4 pointer-events-auto">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.97 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.97 }}
-                  transition={{ duration: 0.18 }}
-                  className="w-full max-w-sm rounded-xl bg-white border border-carbon-20 p-5 sm:p-6 flex flex-col gap-5 max-h-[85vh] overflow-y-auto"
-                  role="dialog"
-                  aria-modal="true"
-                  aria-labelledby="map-layers-title"
+          {/* Map layers: the shared BottomSheet, modal. Basemap and overlays in the
+              body; the attribution entry and Done in the footer. */}
+          <BottomSheet
+            isOpen={isLayerModalOpen}
+            onClose={() => setIsLayerModalOpen(false)}
+            title="Map layers"
+            closeLabel="Close map layers"
+            footerContent={
+              <>
+                <button
+                  type="button"
+                  onClick={() => setIsAttributionOpen(true)}
+                  className="mr-auto min-h-[44px] px-1 flex items-center gap-1.5 text-xs font-medium text-carbon-60 hover:text-carbon-90 dark:hover:text-white transition-colors"
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <h3
-                      id="map-layers-title"
-                      className="text-lg font-bold tracking-tight text-carbon-90 dark:text-white"
-                    >
-                      Map layers
-                    </h3>
-                    <button
-                      type="button"
-                      onClick={() => setIsLayerModalOpen(false)}
-                      className="tap-target w-11 h-11 rounded-full bg-carbon-10 hover:bg-carbon-20 dark:hover:bg-carbon-70 text-carbon-60 flex items-center justify-center transition-colors"
-                      aria-label="Close map layers"
-                    >
-                      <MaterialIcon name="close" className="w-5 h-5" />
-                    </button>
-                  </div>
-
+                  <MaterialIcon name="info" className="w-4 h-4" />
+                  Data attribution ({attributionList.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsLayerModalOpen(false)}
+                  className="min-h-[44px] px-6 rounded-full bg-carbon-90 hover:bg-carbon-80 dark:hover:bg-carbon-10 text-carbon-05 text-sm font-bold transition-colors"
+                >
+                  Done
+                </button>
+              </>
+            }
+          >
                   {/* Ground: two basemaps, one at a time. */}
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wider text-carbon-60 mb-2.5">
@@ -1937,7 +1927,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                     <p className="text-xs font-semibold uppercase tracking-wider text-carbon-60 mb-1.5">
                       {LIVE_SECTIONS[1].label}
                     </p>
-                    <ul className="flex flex-col" role="group" aria-labelledby="map-layers-title">
+                    <ul className="flex flex-col" role="group" aria-label="Map overlays">
                       {LIVE_LAYERS.filter((l) => l.section === 'overlays').map((def) => {
                         if (def.id === 'overlay-wind') {
                           // Wind row (Phase E): model chip with the cycle time,
@@ -2441,28 +2431,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                     </div>
                   </div>
 
-                  {/* Footer: attribution entry on the left, high-contrast Done pill on the right. */}
-                  <div className="flex items-center justify-between gap-3 border-t border-carbon-20 pt-4">
-                    <button
-                      type="button"
-                      onClick={() => setIsAttributionOpen(true)}
-                      className="min-h-[44px] px-1 flex items-center gap-1.5 text-xs font-medium text-carbon-60 hover:text-carbon-90 dark:hover:text-white transition-colors"
-                    >
-                      <MaterialIcon name="info" className="w-4 h-4" />
-                      Data attribution ({attributionList.length})
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsLayerModalOpen(false)}
-                      className="min-h-[44px] px-6 rounded-full bg-carbon-90 hover:bg-carbon-80 dark:hover:bg-carbon-10 text-carbon-05 text-sm font-bold transition-colors"
-                    >
-                      Done
-                    </button>
-                  </div>
-                </motion.div>
-              </div>
-            )}
-          </AnimatePresence>
+          </BottomSheet>
 
           {/* Data attribution lightbox: exactly the credits of what is on screen,
               each with its licence and a pointer to the provider's terms. */}
@@ -2598,7 +2567,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               the smallest readable size, with a soft shadow so it stays legible
               over any ground. Every character stays visible (map attribution is
               not collapsible), it just stops pretending to be chrome. */}
-          <div className="absolute bottom-1.5 left-2 z-[var(--ap-z-sticky)] font-sans text-[10px] leading-snug text-carbon-60 [text-shadow:0_1px_2px_rgba(255,255,255,0.7),0_0_6px_rgba(255,255,255,0.5)] dark:[text-shadow:0_1px_2px_rgba(0,0,0,0.8),0_0_6px_rgba(0,0,0,0.6)] pointer-events-auto max-w-[min(34rem,calc(100%-8rem))]">
+          <div className="absolute bottom-1.5 left-2 z-[var(--ap-z-sticky)] font-sans text-xs leading-snug text-carbon-60 [text-shadow:0_1px_2px_rgba(255,255,255,0.7),0_0_6px_rgba(255,255,255,0.5)] dark:[text-shadow:0_1px_2px_rgba(0,0,0,0.8),0_0_6px_rgba(0,0,0,0.6)] pointer-events-auto max-w-[min(34rem,calc(100%-8rem))]">
             <p className="leading-snug line-clamp-2">{attributionFor(activeLayer)}</p>
           </div>
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import {
   motion,
   AnimatePresence,
@@ -22,6 +23,21 @@ export interface BottomSheetProps {
   snapPoints?: [number, number] | [number, number, number]; // [peekPx, halfPx, expandedPx]
   footerContent?: React.ReactNode;
   className?: string;
+  /** Controlled stage. Omit it and the sheet manages its own, starting at `half`. */
+  stage?: SheetDisclosureStage;
+  onStageChange?: (stage: SheetDisclosureStage) => void;
+  /**
+   * Modal (default): dims the page, traps focus, locks scroll, and Escape closes.
+   * Non-modal: the page stays fully interactive underneath, for detail panels the
+   * user should be able to use alongside the map (e.g. picking another district).
+   */
+  modal?: boolean;
+  /** Accessible name for the dialog. Defaults to `title`. */
+  ariaLabel?: string;
+  /** Accessible name for the header close control. */
+  closeLabel?: string;
+  /** Test hook on the sheet element. */
+  testId?: string;
 }
 
 const STAGE_ORDER: SheetDisclosureStage[] = ['peek', 'half', 'expanded'];
@@ -38,9 +54,6 @@ const STAGE_HEIGHT_CLASS: Record<SheetDisclosureStage, string> = {
   expanded: 'h-[92vh]',
 };
 
-const stageLabel = (stage: SheetDisclosureStage) =>
-  stage === 'peek' ? 'small' : stage === 'half' ? 'medium' : 'full';
-
 export const BottomSheet: React.FC<BottomSheetProps> = ({
   isOpen,
   onClose,
@@ -50,26 +63,42 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   snapPoints = [APPLE_TOUCH.bottomSheetSnapMin, 360, APPLE_TOUCH.bottomSheetSnapMax],
   footerContent,
   className = '',
+  stage: controlledStage,
+  onStageChange,
+  modal = true,
+  ariaLabel,
+  closeLabel = 'Close sheet',
+  testId,
 }) => {
-  const [stage, setStage] = React.useState<SheetDisclosureStage>('half');
-  const maxSnap = snapPoints[snapPoints.length - 1] ?? 540;
+  const [internalStage, setInternalStage] = React.useState<SheetDisclosureStage>('half');
+  const isControlled = controlledStage !== undefined;
+  const stage: SheetDisclosureStage = isControlled ? (controlledStage as SheetDisclosureStage) : internalStage;
   const stageIndex = STAGE_ORDER.indexOf(stage);
+  const maxSnap = snapPoints[snapPoints.length - 1] ?? 540;
 
   /** Live drag offset. 0 means "sitting exactly on the current stage". */
   const y = useMotionValue(0);
 
-  // The backdrop follows the sheet: the taller the sheet, the more it dims,
-  // and dragging the sheet down lifts the dim with it.
+  // The scrim follows the sheet: the taller the sheet, the more it dims, and
+  // dragging the sheet down lifts the dim with it.
   const backdropOpacity = useTransform(y, [-160, 0, maxSnap], [0.55, 0.45, 0]);
 
   const sheetRef = React.useRef<HTMLDivElement>(null);
+  const closeButtonRef = React.useRef<HTMLButtonElement>(null);
   // Drag starts only from the header, so a flick inside the scrolling body scrolls it.
   const dragControls = useDragControls();
-  const closeButtonRef = React.useRef<HTMLButtonElement>(null);
-  // `aria-modal="true"` below promises containment; this is what delivers it.
-  // Escape closes, focus is saved and restored, body scroll locks, and Tab
-  // cycles inside the sheet instead of walking out into the page behind it.
-  useDialogBehavior({ isOpen, onClose, containerRef: sheetRef, initialFocusRef: closeButtonRef });
+
+  // `aria-modal` promises containment; this is what delivers it. Only modal sheets
+  // take over focus, scroll and Escape.
+  useDialogBehavior({ isOpen: isOpen && modal, onClose, containerRef: sheetRef, initialFocusRef: closeButtonRef });
+
+  const setStage = React.useCallback(
+    (next: SheetDisclosureStage) => {
+      if (!isControlled) setInternalStage(next);
+      onStageChange?.(next);
+    },
+    [isControlled, onStageChange],
+  );
 
   /** Return the sheet to rest on whatever stage is current. */
   const settle = React.useCallback(() => {
@@ -85,7 +114,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
       setStage(next);
       settle();
     },
-    [settle],
+    [setStage, settle],
   );
 
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
@@ -105,13 +134,11 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
 
     // A short downward drag collapses one stage.
     if (offset.y > 60) {
-      const next = STAGE_ORDER[Math.max(stageIndex - 1, 0)];
       if (stageIndex === 0) {
-        // Already at the smallest stage: honour the downward intent and close.
         onClose();
         return;
       }
-      goToStage(next);
+      goToStage(STAGE_ORDER[stageIndex - 1]);
       return;
     }
 
@@ -119,30 +146,39 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
     settle();
   };
 
-  return (
+  const nextStage = STAGE_ORDER[stageIndex === STAGE_ORDER.length - 1 ? 0 : stageIndex + 1];
+
+  // Portalled to <body>: a sheet rendered inside a map container inherits that
+  // container's stacking context, so page chrome can paint over it.
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <div
-          aria-modal="true"
           role="dialog"
-          aria-label={title || 'Contextual information sheet'}
+          aria-modal={modal ? 'true' : undefined}
+          aria-label={ariaLabel || title || 'Contextual information sheet'}
           className="fixed inset-0 z-[var(--ap-z-modal)] flex flex-col justify-end pointer-events-none"
         >
-          {/* Scrim. Tapping it dismisses, the way every sheet should. */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.45 }}
-            exit={{ opacity: 0 }}
-            style={{ opacity: backdropOpacity }}
-            onClick={onClose}
-            className="absolute inset-0 bg-ap-scrim pointer-events-auto cursor-pointer"
-          />
+          {/* Scrim. Modal only. Tapping it dismisses, the way every modal sheet should. */}
+          {modal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.45 }}
+              exit={{ opacity: 0 }}
+              style={{ opacity: backdropOpacity }}
+              onClick={onClose}
+              className="absolute inset-0 bg-ap-scrim pointer-events-auto cursor-pointer"
+            />
+          )}
 
-          {/* The sheet itself: draggable up and down, snapping between stages. */}
+          {/* The sheet: draggable up and down, snapping between stages. */}
           <motion.div
             ref={sheetRef}
             tabIndex={-1}
             data-sheet-stage={stage}
+            data-testid={testId}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -172,16 +208,8 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             >
               <button
                 type="button"
-                onClick={() =>
-                  goToStage(
-                    STAGE_ORDER[
-                      stageIndex === STAGE_ORDER.length - 1 ? 0 : stageIndex + 1
-                    ],
-                  )
-                }
-                aria-label={`Sheet is ${stageLabel(stage)}. Show it ${
-                  stageLabel(STAGE_ORDER[stageIndex === STAGE_ORDER.length - 1 ? 0 : stageIndex + 1])
-                }.`}
+                onClick={() => goToStage(nextStage)}
+                aria-label={`Cycle sheet height (current: ${stage}, next: ${nextStage})`}
                 className="min-h-[44px] min-w-[44px] px-4 flex items-center justify-center cursor-grab active:cursor-grabbing transition-colors tap-target"
               >
                 <span className="ap-sheet-grabber" aria-hidden="true" />
@@ -191,7 +219,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
                 <div className="w-full flex items-start justify-between gap-3 mt-1">
                   <div className="min-w-0">
                     {title && (
-                      <h3 className="font-heading font-semibold text-base text-carbon-90 tracking-tight truncate">
+                      <h3 className="font-heading font-semibold text-base text-carbon-90 dark:text-white tracking-tight truncate">
                         {title}
                       </h3>
                     )}
@@ -201,17 +229,13 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
                   </div>
                   <button
                     ref={closeButtonRef}
+                    type="button"
                     onClick={onClose}
-                    aria-label="Close sheet"
-                    className="tap-target p-2 text-carbon-60 hover:text-carbon-90 dark:hover:text-white rounded-full hover:bg-carbon-10 dark:hover:bg-carbon-80 transition-colors shrink-0"
+                    aria-label={closeLabel}
+                    className="tap-target min-h-[44px] min-w-[44px] p-2 text-carbon-60 hover:text-carbon-90 dark:hover:text-white rounded-full hover:bg-carbon-10 dark:hover:bg-carbon-80 transition-colors shrink-0"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 </div>
@@ -223,18 +247,16 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
               {children}
             </div>
 
-            {/* Actions. Side by side, never stacked: a sheet is short on
-                vertical room and long on horizontal. */}
+            {/* Actions. Side by side, never stacked: a sheet is short on vertical room. */}
             {footerContent && (
               <div className="p-3 bg-surface-page/60 border-t border-carbon-20/30 backdrop-blur-md shrink-0">
-                <div className="flex flex-row items-center justify-end gap-3 flex-nowrap">
-                  {footerContent}
-                </div>
+                <div className="flex flex-row items-center justify-end gap-3 flex-nowrap">{footerContent}</div>
               </div>
             )}
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 };
