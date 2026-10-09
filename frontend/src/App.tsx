@@ -15,6 +15,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ErrorBoundary from './components/ErrorBoundary';
 import { vercelAnalyticsEnabled } from './lib/vercelAnalytics';
+import { isConsoleTrack } from './lib/navigation';
 import { useHazardNotifications } from './hooks/useHazardNotifications';
 import { initializeAttributionCapture } from './services/conversionTracking';
 import { RequireSuperAdmin } from './components/blog/RequireSuperAdmin';
@@ -291,8 +292,13 @@ const AppContent: React.FC = () => {
     location.pathname === '/set-password' ||
     location.pathname.startsWith('/auth/');
 
+  // See isConsoleTrack in lib/navigation.ts for which routes are console and
+  // for why setting this attribute does not yet change anything on screen.
+  const consoleTrack = isConsoleTrack(location.pathname);
+
   return (
     <div
+      data-track={consoleTrack ? 'console' : undefined}
       className={
         isHomePage
           ? 'h-dvh w-full overflow-hidden bg-transparent text-carbon-90 flex flex-col font-sans relative pointer-events-none'

@@ -50,6 +50,38 @@ export function isPathCurrent(pathname: string, path: string): boolean {
 
 const startsWithAny = (pathname: string, prefixes: string[]) => prefixes.some((p) => isPathCurrent(pathname, p));
 
+/**
+ * The console density track.
+ *
+ * DESIGN.md §Layout gives the product two tracks — editorial and console — that
+ * share one spacing scale and differ only in step. Every route rendering the
+ * Dashboard or the analytics page is console; the front door and the content
+ * routes stay editorial. `/home`, `/home/overview` and `/forecast/overview`
+ * count as console because they are Dashboard deep links, not separate pages.
+ *
+ * Read this before assuming the attribute does something on screen: it sets
+ * --ap-section-block, --ap-section-gap, --ap-card-padding and --ap-track-max,
+ * and those four are read only by `.ap-tile`, `.ap-tile-inner` and `.ap-card` —
+ * none of which /live or /analytics renders, because both compose with Tailwind
+ * utilities instead. This classifier is the prerequisite; making the track
+ * visible means moving those pages onto the design system's own card and tile
+ * primitives.
+ */
+const CONSOLE_TRACK_PREFIXES = [
+  '/live',
+  '/home',
+  '/forecast/overview',
+  '/forecast/my-districts',
+  '/forecast/compare',
+  '/forecast/settings',
+  '/settings',
+  '/analytics',
+];
+
+export function isConsoleTrack(pathname: string): boolean {
+  return CONSOLE_TRACK_PREFIXES.some((p) => isPathCurrent(pathname, p));
+}
+
 /** The five links in the header bar (from the `lg` breakpoint up; below it the menu button is the only control). */
 export const PRIMARY_LINKS: PrimaryLink[] = [
   { id: 'home', label: 'Home', path: '/', isCurrent: (p) => p === '/' },
