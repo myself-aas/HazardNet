@@ -339,216 +339,199 @@ spacing:
 
 ---
 
+## The world
+
+HazardNet is read in daylight, outdoors, on cheap Android phones, often by someone who has
+walked to a neighbour's house to check a screen. Sometimes it is read at a desk by a researcher
+comparing seasons. The same screen serves both, and the same tokens serve both.
+
+Apple's language suits this because it is a language of **restraint under load**: large quiet
+surfaces, one idea per screen, type doing the structural work, colour reserved for meaning. A
+hazard level is not decoration — it is the one thing on the screen that must survive glare, a
+cracked screen, and a glance.
+
+**What we take:** the neutral ramp, the label hierarchy, the tint system, generous vertical
+rhythm, a single deep shadow, type as the primary hierarchy device.
+
+**What we do not take:** Apple's marketing gestures. No full-bleed product theatre, no
+scroll-choreographed reveals, no oversized display type floating in empty space. This is a
+public instrument, not a product launch.
 
+Three rules pin this as *Apple* rather than merely "a blue design system", and the parity suite
+enforces them: **one accent, one shadow — and not on UI — and no hover state is ever the only
+affordance.**
 
-## Brand & Style
+## Grounds
 
+Two appearances, both first-class. Surfaces come from the neutral ramp; text comes from the
+label ramp. Components read role tokens (`--ap-canvas`, `--ap-ink`, `--ap-tile-1`) and never
+touch the primitives, so a surface written once is correct on both grounds.
 
+| Role | Light | Dark |
+|---|---|---|
+| Page ground | `--ap-canvas` `#FFFFFF` | `--ap-black` `#000000` |
+| Raised surface | `--ap-tile-2` | `#1C1C1E` |
+| Recessed panel | `--ap-parchment` `#F5F5F7` | `--ap-tile-1` `#161617` |
+| Input / inset | `--ap-inset` `#EEEDF3` | `--ap-tile-3` `#242426` |
+| Primary text | `--ap-ink` `#1D1D1F` | `#F5F5F7` |
+| Secondary text | `--ap-n-50` `#6E6E73` | `#A1A1A6` |
+| Tertiary text | `--ap-n-40` | `#86868B` |
 
-The design system embodies the philosophy of unobtrusive clarity, physical material honesty, and structural hierarchy inspired by state-of-the-art human interface hardware and software integration. The aesthetic unifies pure minimalism with optical glassmorphism, prioritizing content immersion through deliberate negative space, tight typographic tracking, and physical-world optics—translucency, specular highlights, dynamic light transmission, and continuous super-ellipse curvature.
+Separators are hairlines — `--ap-hairline` on light, a 12% white overlay on dark. One pixel. A
+visible grey rule between sections is a defect.
 
+Tinted surfaces tint the ground rather than painting a flat block, and secondary text inside a
+tinted surface is tinted *from that hue*, never greyed.
 
+## Colour carries meaning only
 
-Targeting discerning professionals and global consumers who expect friction-free utility paired with cinematic polish, the interface evokes quiet confidence and frictionless speed. With native dual-mode support, it flows seamlessly between an ethereal, pristine light appearance and a deep, immersive obsidian dark appearance. Every interactive layer responds with authentic momentum and calibrated physical damping, echoing the tactile precision of bead-blasted aluminum, OLED black crystal, and optical frosted glass.
+If a colour does not indicate a hazard, a status, or interactivity, it is neutral.
 
+**Hazards** are eight categories, each owning one hue with a light-ground and dark-ground value.
+The hue is never reused for anything else anywhere in the product.
 
+| Hazard | Light | Dark |
+|---|---|---|
+| Flood | `#496dab` | `#7b97c6` |
+| Flash flood | `#357882` | `#30b9cf` |
+| Tropical cyclone | `#a03dd1` | `#b582ce` |
+| Drought | `#846b39` | `#cf9a30` |
+| Heat wave | `#a75b2f` | `#d68251` |
+| Cold wave | `#184962` | `#9bc1d4` |
+| Severe storm | `#b1488e` | `#d199be` |
+| Fire | `#ca3a2f` | `#c68580` |
 
-## Colors
+Several display names resolve onto one key by design — *Flood*, *Monsoon Flood* and *Riverine
+Flood* are the same encoding, as are *Severe Storm*, *Severe Local Storm* and *Lightning*. The
+mapping lives in `APPLE_HAZARD_ALIASES`.
 
+**Non-hazard status** is a separate, smaller set: success `#1d7a3e`, warning `#8a5a00`, danger
+`#c01f1f`, info resolving to the accent.
 
+**One accent.** Interactive chrome uses Action Blue — `#0071E3` on light, `#2997FF` on dark —
+and nothing else. There is no second accent, no brand gradient, no colour used for personality.
 
-The color palette operates as a dynamic, dual-mode perceptual hierarchy designed to preserve identical functional legibility across Light and Dark appearances.
+Contrast-driven divergence from Apple's stock values is expected and is recorded where it
+happens: the accent's text weight is `#0066cc` rather than `#0071E3`, because `#0071E3`
+measures 4.3:1 on parchment and text needs 4.5:1. Filled actions and focus keep `#0071E3`.
 
+## Type
 
+One family, ten steps. Body is 17px/24px; `body-lg` is 19px/26px; `display-hero` is 56px/60px at
+weight 700 with tracking at -0.015em. Tracking tightens as size grows.
 
-### Appearance Architecture
+**No Latin webfont is shipped, and that is a decision rather than an omission.** The stack runs
+`Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif` — Inter first as a
+zero-byte enhancement for anyone who has it installed, then the platform UI face, which is how
+Apple's own site resolves. On Apple devices that lands on SF Pro; on Windows, Segoe UI; on
+Android, Roboto. The parity suite pins the arrangement: no `@font-face`, no remote URL, Inter
+named first in both stacks.
 
+**Bangla is a separate, self-hosted face.** `--ap-font-bengali` carries Noto Sans Bengali at
+43.31 KiB of the 50 KiB budget, scoped to `[lang='bn']`, `:lang(bn)`, `.lang-bn`,
+`.farmer-advisory` and `.tts-fallback-text`. That leaves 6.69 KiB of headroom — too little for a
+credible Latin subset, which is why none is shipped.
 
+**Bangla is not a translation layer.** It is a first-class language with a self-hosted face, and
+it sets at a slightly larger size and looser line-height than its English counterpart because the
+script's ascenders and matras need the room. A component that fits English but clips Bangla is
+broken.
 
-#### 1. Backgrounds & Surfaces
+Numbers in tabular contexts — forecasts, levels, comparisons — are `tabular-nums` and never
+reflow between updates.
 
-- **Light Appearance:** Grounded in a pure `#FFFFFF` canvas, using `#F5F5F7` for secondary grouped modules and `#EEEDF3` for inset tracks.
+## Layout
 
-- **Dark Appearance:** Anchored in absolute OLED `#000000` for primary backdrops, transitioning up to `#161617` for content cards and secondary tiers, `#242426` for tertiary inner containers, and `#1C1C1E` (or `rgba(22, 22, 23, 0.8)`) for floating elevated chrome, sheets, and popovers.
+Two density tracks share one spacing scale; only the step changes. **Editorial** (front door,
+docs, hazards, about) runs the full 80px section rhythm. **Console** (`/live`, analytics, alert
+tables) runs tighter. Both draw from `APPLE_SPACE`, so the two never drift apart.
 
+The spacing scale runs `space-xs` 0.25rem → `space-xl` 2.5rem. Within a section, related things
+sit 8–12px apart; unrelated things sit 48px or more apart. Space above a heading exceeds space
+below it, so a heading belongs to what follows it.
 
+**Cards are not the default container.** Content flows on the ground and is separated by spacing
+and alignment. A card earns its place when it groups something that must travel together. Cards
+are never nested inside cards.
 
-#### 2. Label & Text Tiers
+## Motion
 
-- **Light:** Primary text sits at `#1D1D1F` (high contrast), secondary metadata at `#86868B`, and subtle helper text at `#C1C6D6`.
+One authored moment per screen; everything else is a state change. Entrances start from an
+already-visible default, never from invisible. Reduced-motion preferences resolve straight to
+the end state — nothing is removed, nothing is hidden.
 
-- **Dark:** Primary text shifts to high-luminance `#F5F5F7`, secondary descriptions to `#A1A1A6`, tertiary captions to `#86868B`, and non-essential placeholder or disabled markers to quaternary `#424245`.
+**One shadow, and not on UI.** Elevation is a single deep shadow used where depth genuinely
+communicates layering, and it is not applied to interface chrome.
 
+**A hazard level must be readable the instant the screen paints.** No level, threshold, or
+warning animates in; no hazard colour transitions on load. Motion is for navigation and
+disclosure, never for the reading of a warning.
 
+**No hover-only affordance.** Hover may refine an interaction; it may never be the only way to
+discover one.
 
-#### 3. Semantic Interactive Tints
+## Accessibility — binding, not aspirational
 
-Interactive accents shift in luminance between modes to maintain optical weight against varying contrast poles:
+This section is enforced by scripts that gate the build.
 
-- **Blue Tint:** `#0071E3` in light appearance steps up to `#2997FF` in dark mode to prevent chromatic muddying against obsidian surfaces.
+- **WCAG 2.1 AA** on both grounds, for text, controls, focus rings, and graphical objects.
+- **Body text ≥ 4.5:1, large text ≥ 3:1** — measured on token pairs, not estimated.
+- **44 × 44px** minimum target, including icon buttons and table row controls.
+- **Colour never carries meaning alone.** Every hazard ships a text label alongside its hue.
+- Visible focus on every interactive element, in both grounds, never removed for tidiness.
+- Usable at 200% zoom and at 320px width.
+- `prefers-contrast: more`, `prefers-reduced-transparency`, and `prefers-reduced-motion` are all
+  honoured.
 
-- **Success / Green:** `#34C759` (light) shifts to `#30D158` (dark).
+## Safety framing
 
-- **Warning / Orange:** `#FF9500` (light) shifts to `#FF9F0A` (dark).
+Every surface that presents a hazard level, forecast, or advisory carries, in the same viewport
+and without interaction:
 
-- **Destructive / Red:** `#FF3B30` (light) shifts to `#FF453A` (dark).
+1. that HazardNet is **not an official warning service**;
+2. the standing authority — **BMD / FFWC** — as the source of official warnings;
+3. the emergency number **999**.
 
-- **Creative / Purple:** `#AF52DE` (light) shifts to `#BF5AF2` (dark).
+This is a layout requirement, not a footnote. A design that makes these legible only after
+scrolling has failed, regardless of how it scores elsewhere.
 
+## Imagery
 
+Photographic imagery is used where it carries information a diagram cannot: the front door
+(`public/hero-carousel/`, four scenes wired through `hero-media.css`) and section headers
+(`public/img/`).
 
-#### 4. Fills & Separators
+**Every image is illustrative.** Imagery documents no actual disaster, place, person, or event,
+and nothing is captioned or placed so that a viewer could reasonably read it as a real flood, a
+real river, or a real farmer. Any image that could be read that way is labelled illustrative at
+the point of use, or is not used.
 
-In dark appearance, opaque borders are avoided in favor of alpha-blended light planes:
+Images carry intrinsic dimensions to prevent layout shift, responsive sources, and alt text that
+conveys the image's information — or empty alt where the image is genuinely decorative.
 
-- Thin Fill: `rgba(255, 255, 255, 0.06)` for subtle hover states and inactive track surfaces.
+## Browser surfaces
 
-- Regular Fill: `rgba(255, 255, 255, 0.12)` for standard interactive pill wells.
+The parts of the page we did not draw still carry the system. Text selection, the caret,
+scrollbars, focus rings, underline offset, and tabular numerals all ship with browser defaults
+that belong to no design system. All are themed from this palette.
 
-- Strong Fill: `rgba(255, 255, 255, 0.20)` for pressed states.
+## Reference
 
-- Separators: Crisp `#424245` on solid layouts or `rgba(255, 255, 255, 0.12)` on translucent blurred backgrounds.
+This document is not free-form prose: its YAML front matter is the machine-read spec. Three
+artifacts must agree, and `__tests__/appleParity.test.js` fails if they drift — the values are
+read back out of this file and asserted against the token module and the stylesheet.
 
+- `DESIGN.md` — this spec
+- `packages/design-system/src/apple.ts` — the values, for JS/TS and React Native
+- `frontend/src/styles/apple.css` — how the values reach the browser
 
+Changing a token means changing all three together and letting the suite confirm it. Run the
+checks from the repository root:
 
-## Typography
-
-
-
-The typographic hierarchy is calibrated around Inter to provide maximum technical precision and legibility across high-density retina displays.
-
-
-
-- **Optical Tracking:** Headlines rely on tight negative tracking (from `-0.015em` to `-0.006em`) to eliminate loose typesetting on display scales, yielding an authoritative editorial weight. As point sizes descend into body and caption tiers, letter spacing shifts to neutral and positive values (`0` to `+0.012em`) to guarantee quick eye scanning in low-light environments.
-
-- **Leading Ratios:** Display lines maintain a disciplined leading of 1.08x to 1.15x. Body copy relaxes to a 1.35x–1.42x ratio, preserving paragraph balance without inflating vertical layout height.
-
-- **Weight Pairing:** Text steps cleanly between regular (`400`) body copy, medium (`500`) interactive indicators/labels, and semi-bold (`600`) or bold (`700`) section titles, keeping the typographic plane purposeful and structured.
-
-
-
-## Layout & Spacing
-
-
-
-Layout geometry follows an 8px architectural grid bound by a 1280px maximum content shell on desktop viewports, stepping into an 8-column layout for tablets and a single-column 4-column flow on mobile viewports (<768px).
-
-
-
-- **Margins & Safe Zones:** Canvas outer borders use `margin` (40px) on desktop to frame content symmetrically, collapsing gracefully to `margin-mobile` (20px) on mobile viewports to provide generous horizontal interactive surfaces.
-
-- **Rhythm & Insets:** Inner card paddings consistently adopt `space-md` (16px) or `space-lg` (24px). Micro spacing (`space-xs` and `space-sm`) enforces strict touch target separation, and large structural sections rely on `space-xl` (40px) and multiples thereof (64px, 96px) to maintain breathing room.
-
-
-
-## Elevation & Depth
-
-
-
-Visual hierarchy does not rely on heavy drop shadows. Instead, it is expressed through material transmission, backdrop blurs, surface luminance tiers, and optical hairline borders.
-
-
-
-### 1. Optical Glassmorphism
-
-Floating headers, modal backgrounds, and floating pill docks feature specular translucency:
-
-- **Light:** `rgba(255, 255, 255, 0.80)` backing with `backdrop-filter: blur(20px) saturate(180%)` and a bottom hairline of `rgba(0, 0, 0, 0.08)`.
-
-- **Dark:** `rgba(0, 0, 0, 0.80)` backing with `backdrop-filter: blur(20px) saturate(180%)` and a bottom hairline of `rgba(255, 255, 255, 0.10)`.
-
-
-
-### 2. Tonal Surface Stacking (Dark Mode)
-
-Depth is created by stepping up surface values against the `#000000` base:
-
-- **Level 0 (Canvas):** `#000000`
-
-- **Level 1 (Cards & Modules):** `#161617` bounded by a 1px border of `rgba(255, 255, 255, 0.08)` or `#424245`
-
-- **Level 2 (Modals, Popovers, Flyouts):** `#1C1C1E` or `rgba(22, 22, 23, 0.85)` with ambient drop-shadow: `0 24px 48px -12px rgba(0, 0, 0, 0.65)` and an internal 1px highlight stroke of `rgba(255, 255, 255, 0.15)` along top edges.
-
-
-
-## Shapes
-
-
-
-The design system enforces continuous squircle curvature across all containers, mitigating sharp transitions.
-
-
-
-- **Primary Cards & Modals:** Standardized to a generous roundedness (`1.25rem` to `1.5rem`), establishing soft, confident outlines for media cards and grouped containers.
-
-- **Nested Concentricity:** Child elements inside containers reduce their corner radii proportionally (e.g., an inset panel inside a 20px card uses 10px–12px radius) to maintain optical balance.
-
-- **Interactive Controls:** Action buttons, segmented toggle switches, and pill chips use fully rounded contours (`border-radius: 9999px`) to contrast cleanly with structural rectangular cards.
-
-
-
-## Components
-
-
-
-### Buttons
-
-- **Primary Tinted (Action):** Pill contour (`9999px`), solid `#0071E3` in light mode or `#2997FF` in dark mode, set with high-contrast text (`#FFFFFF` in light, `#000000` or `#FFFFFF` depending on contrast role). Height: 36px (desktop/inline) or 44px (touch target). Micro-interactions: scales down to `0.97` on active tap; transitions smoothly with `cubic-bezier(0.25, 1, 0.5, 1)`.
-
-- **Secondary Dark Button:** Pill contour (`9999px`), fill set to `#1D1D1F`, hover shifting to `#2D2D2F`, text in `#F5F5F7`, bounded by a hairline border `rgba(255, 255, 255, 0.10)`.
-
-- **Ghost / Link:** Flat text using `#0071E3` (light) or `#2997FF` (dark) with an inline trailing chevron (`›`) that animates 2px horizontally on hover.
-
-
-
-### Navigation Bar
-
-- Pinned top chrome with fixed heights (44px mobile, 48px desktop).
-
-- **Dark Appearance Variant:** Background set to `rgba(0, 0, 0, 0.80)` with `backdrop-filter: blur(20px) saturate(180%)`, bottom border `rgba(255, 255, 255, 0.10)`, containing high-contrast navigation links in `#F5F5F7` with secondary actions in `#A1A1A6`.
-
-
-
-### Product & Content Cards
-
-- **Dark Mode Card:** Solid `#161617` surface with a continuous 18px–22px corner radius, framed by a 1px border of `#424245` or `rgba(255, 255, 255, 0.08)`.
-
-- **Typography inside Card:** Titles styled in `#F5F5F7` (`headline-sm` or `headline-md`), subtitles in `#A1A1A6` (`body-md`), and metadata or fine print in quaternary `#86868B`. Inset separators set to `rgba(255, 255, 255, 0.08)`.
-
-
-
-### Segmented Controls
-
-- Container track built using a pill shape (`9999px`) with dark fill `rgba(255, 255, 255, 0.06)` or `#1C1C1E`.
-
-- Active segment uses an elevated sliding pill (`#2C2C2E` in dark mode or `#FFFFFF` in light mode) casting an ultra-soft shadow (`0 2px 6px rgba(0, 0, 0, 0.30)`), animating along the horizontal axis with a spring response (`damping: 26, stiffness: 320`). Active label is `#F5F5F7`; inactive labels sit at `#86868B`.
-
-
-
-### Input Fields
-
-- Inputs feature a continuous 10px–12px radius.
-
-- **Dark Mode Variant:** Filled with `#1C1C1E` (or `rgba(255, 255, 255, 0.06)`), 1px stroke of `rgba(255, 255, 255, 0.12)`, text `#F5F5F7`, and placeholder text `#424245`.
-
-- **Focus State:** 1px border transitions to `#2997FF` accompanied by a subtle 3px diffused outer halo: `0 0 0 3px rgba(41, 151, 255, 0.25)`.
-
-
-
-### Modals & Bottom Sheets
-
-- **Dark Mode Presentation:** Background styled in `#1C1C1E` (or `rgba(22, 22, 23, 0.85)` with blur), crowned by a top highlight hairline (`rgba(255, 255, 255, 0.12)`) and grabber handle styled with pill dimensions (36px x 5px) in `rgba(255, 255, 255, 0.20)`. Backdrops darken with an alpha dimming layer of `rgba(0, 0, 0, 0.70)`.
-
----
-
-## HazardNet implementation notes
-
-These are the places where the web system does not take a value from this document literally. Each one is a WCAG AA or repository-policy decision. The token files carry the same notes next to the value.
-
-- **Text on light surfaces.** `#86868B` measures 3.6:1 on white, so light secondary and tertiary text use `#5A5A5D` and `#6E6E73` (6.9:1 and 5.1:1 on white). `#C1C6D6` measures 1.7:1 on white and is not used as text.
-- **Blue text on parchment.** `#0071E3` measures 4.3:1 on `#F5F5F7`, so link text on light grounds uses `#0066CC` (5.1:1). The filled action and the focus ring keep `#0071E3`.
-- **Placeholder text.** `#424245` measures 1.8:1 on `#161617`. Placeholders use `#86868B` (4.7:1 on the input fill). Quaternary `#424245` remains for disabled markers only.
-- **Button label on dark.** On `#2997FF`, white measures 3.0:1, so dark-mode action labels use `#000000` (7.0:1).
-- **Caption size.** The 11px caption tier is below the repository's former 12px type floor. The floor is now 11px, and no text is smaller than 11px.
-- **Inter.** Inter is named first in every text stack. It is not shipped: `frontend/public/fonts/README.md` allows 50 KiB of local web fonts in total, and the Bengali face already uses 43.3 KiB. Shipping Inter needs a budget decision.
-- **Hazard and severity palettes.** These are data encodings, not chrome. They are unchanged and are re-measured by the parity test.
+```bash
+npm run check:tokens      # no raw values outside the token set
+npm run check:contrast    # WCAG AA, both grounds
+npm run check:contrast:css
+npm run check:residue
+npm test -- __tests__/appleParity.test.js
+```

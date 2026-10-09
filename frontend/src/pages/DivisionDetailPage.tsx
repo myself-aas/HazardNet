@@ -122,8 +122,8 @@ export const DivisionDetailPage: React.FC = () => {
     if (!data || !data.districtRankings) return [];
     return data.districtRankings.map((d) => ({
       district: d.district,
-      '7-Day Severity': d.forecast7DSeverity !== null ? d.forecast7DSeverity : 0,
-      '15-Day Severity': d.forecast15DSeverity !== null ? d.forecast15DSeverity : 0,
+      '7-Day Severity': d.forecast7DSeverity,
+      '15-Day Severity': d.forecast15DSeverity,
       forecast7DHazard: d.forecast7DHazard,
       forecast15DHazard: d.forecast15DHazard,
     }));
@@ -134,8 +134,8 @@ export const DivisionDetailPage: React.FC = () => {
       <div className="min-h-dvh bg-carbon-05 flex items-center justify-center p-6">
         <div className="text-center">
           <InfinityLoader size={96} label="Loading" className="mx-auto mb-3 block" />
-          <p className="text-sm font-medium text-carbon-70">Loading {divisionId} division climatic data...</p>
-          <p className="text-xs text-carbon-60 mt-1">Parsing historical events (2000-2026) and forecast records</p>
+          <p className="text-sm font-medium text-carbon-70">Loading division data…</p>
+          <p className="text-xs text-carbon-60 mt-1">Loading historical events (2000–2026) and forecast records</p>
         </div>
       </div>
     );
@@ -198,17 +198,15 @@ export const DivisionDetailPage: React.FC = () => {
       <div className="bg-white border border-carbon-20 rounded-2xl p-6 sm:p-8 mb-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold bg-carbon-05 text-ap-link border border-carbon-20 rounded-full mb-3">
-              <MapPin className="w-3.5 h-3.5" />
-              <span>Administrative Division Dashboard</span>
-            </div>
             <h1 className="text-ap-lead font-bold sm:text-ap-display-md text-carbon-90 tracking-tight">
               {data.division} Division
             </h1>
             <p className="mt-1.5 text-base leading-[1.62] text-carbon-70 max-w-2xl">
-              Covering {data.totalDistricts} constituent districts with {data.totalEvents.toLocaleString()} verified
-              climatic disaster events recorded between 2000 and 2026. Primary regional vulnerability:{' '}
-              <span className="font-semibold text-carbon-90">{data.primaryHazard}</span>.
+              {data.division} Division has {data.totalDistricts} districts and {data.totalEvents.toLocaleString()} recorded
+              climatic disaster events between 2000 and 2026.{' '}
+              {data.totalEvents > 0 && data.primaryHazard && (
+                <>Most recorded hazard: <span className="font-semibold text-carbon-90">{data.primaryHazard}</span>.</>
+              )}
             </p>
           </div>
 
@@ -243,11 +241,11 @@ export const DivisionDetailPage: React.FC = () => {
                 Active Model Forecasts Across {data.division} Districts
               </h2>
               <p className="text-xs text-carbon-60">
-                Directly from the latest 7-day and 15-day AI predictions (hazardnet_forecasts_latest.csv)
+                The latest 7-day and 15-day forecast records for each district
               </p>
             </div>
             <span className="text-xs font-semibold px-2.5 py-1 bg-carbon-05 text-ap-link rounded-md">
-              {data.forecasts.length} Records Active
+              {data.forecasts.length} records
             </span>
           </div>
 
@@ -291,15 +289,15 @@ export const DivisionDetailPage: React.FC = () => {
                 key: dr.district,
                 heading: dr.district,
                 fields: [
-                  { label: '7-Day Threat', value: dr.forecast7DHazard || 'No threat' },
+                  { label: '7-Day Threat', value: dr.forecast7DHazard || 'Not in this run' },
                   {
                     label: '7-Day Severity',
-                    value: dr.forecast7DSeverity !== null ? dr.forecast7DSeverity.toFixed(2) : 'N/A',
+                    value: dr.forecast7DSeverity !== null ? dr.forecast7DSeverity.toFixed(2) : 'Not available',
                   },
-                  { label: '15-Day Threat', value: dr.forecast15DHazard || 'No threat' },
+                  { label: '15-Day Threat', value: dr.forecast15DHazard || 'Not in this run' },
                   {
                     label: '15-Day Severity',
-                    value: dr.forecast15DSeverity !== null ? dr.forecast15DSeverity.toFixed(2) : 'N/A',
+                    value: dr.forecast15DSeverity !== null ? dr.forecast15DSeverity.toFixed(2) : 'Not available',
                   },
                   { label: 'Precipitation', value: f7 ? `${f7.precipitationMm.toFixed(1)} mm` : '-' },
                   { label: 'Max Wind', value: f7 ? `${f7.windMaxKmh.toFixed(1)} km/h` : '-' },
@@ -664,7 +662,7 @@ export const DivisionDetailPage: React.FC = () => {
               },
               { label: 'Hazard Type', value: event.hazard },
               { label: 'GLIDE', value: event.glide || '-' },
-              { label: 'Severity', value: event.severity ? event.severity.toFixed(2) : '1.00' },
+              { label: 'Severity', value: event.severity ? event.severity.toFixed(2) : 'Not recorded' },
               { label: 'Description', value: event.desc || 'No descriptive summary logged' },
               { label: 'Event ID', value: event.id },
               { label: 'Coordinates', value: `${event.lat.toFixed(4)}, ${event.lng.toFixed(4)}` },

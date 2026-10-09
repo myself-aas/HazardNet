@@ -50,7 +50,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
   onClose,
   elementId,
   customElement,
-  title = 'Export Official PDF',
+  title = 'Export PDF',
   documentType = 'Emergency Advisory Bulletin',
   defaultTemplate,
   filenameContext = {},
@@ -223,7 +223,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
     if (isExporting) return;
     setIsExporting(true);
 
-    const toastId = toast.loading(`Generating official ${documentType} PDF...`);
+    const toastId = toast.loading(`Generating ${documentType} PDF...`);
 
     try {
       await exportElementToPdf({
@@ -301,9 +301,6 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
             <div>
               <h3 id="pdf-config-modal-title" className="text-base font-bold text-ap-on-inverse tracking-tight flex items-center gap-2">
                 <span>PDF Export Configuration</span>
-                <span className="px-2 py-0.5 rounded text-xs font-mono bg-carbon-80 text-amber-300 border border-carbon-70">
-                  SOD 2019
-                </span>
               </h3>
               <p className="text-xs text-carbon-30 font-medium">
                 Customize document filename, dynamic tags, and layout before downloading

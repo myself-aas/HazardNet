@@ -296,7 +296,7 @@ export async function fetchDistrictEvents(districtId: string): Promise<DistrictE
     district: matchedEvents[0]?.district || districtId,
     division: matchedEvents[0]?.division || 'Dhaka',
     totalEvents: matchedEvents.length,
-    primaryHazard: Object.entries(hazardCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Flood',
+    primaryHazard: Object.entries(hazardCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || '',
     hazardBreakdown: Object.entries(hazardCounts).map(([hazard, count]) => ({
       hazard,
       count,
@@ -380,11 +380,11 @@ export async function fetchDivisionEvents(divisionId: string): Promise<DivisionE
       name: capName,
       capital: capName,
       districtCount: Object.keys(districtCounts).length,
-      primaryHazard: Object.entries(hazardCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Flood',
+      primaryHazard: Object.entries(hazardCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || '',
     },
     totalEvents: matchedEvents.length,
     totalDistricts: Object.keys(districtCounts).length,
-    primaryHazard: Object.entries(hazardCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Flood',
+    primaryHazard: Object.entries(hazardCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || '',
     districtRankings,
     hazardBreakdown: Object.entries(hazardCounts).map(([hazard, count]) => ({
       hazard,

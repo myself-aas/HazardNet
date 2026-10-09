@@ -1,4 +1,4 @@
-import { DRAWER_SECTIONS, PRIMARY_LINKS, isPathCurrent } from '../navigation';
+import { DRAWER_SECTIONS, PRIMARY_LINKS, isPathCurrent, isConsoleTrack } from '../navigation';
 
 const allItems = DRAWER_SECTIONS.flatMap((section) => section.items);
 
@@ -94,5 +94,52 @@ describe('navigation metadata', () => {
     expect(current('/docs')).toEqual(['learn']);
     expect(current('/status')).toEqual(['learn']);
     expect(current('/model-performance')).toEqual(['learn']);
+  });
+
+  describe('the console density track', () => {
+    it('classifies every Dashboard and analytics route as console', () => {
+      const consoleRoutes = [
+        '/live',
+        '/home',
+        '/home/overview',
+        '/forecast/overview',
+        '/forecast/my-districts',
+        '/forecast/compare',
+        '/forecast/settings',
+        '/settings',
+        '/analytics',
+        '/analytics/forecast-dashboard',
+      ];
+      for (const path of consoleRoutes) {
+        expect(isConsoleTrack(path)).toBe(true);
+      }
+    });
+
+    it('leaves the front door and the content routes editorial', () => {
+      const editorialRoutes = [
+        '/',
+        '/about',
+        '/docs',
+        '/hazards',
+        '/divisions',
+        '/districts/dhaka',
+        '/alerts',
+        '/advisories/crops',
+        '/blogs',
+        '/login',
+      ];
+      for (const path of editorialRoutes) {
+        expect(isConsoleTrack(path)).toBe(false);
+      }
+    });
+
+    it('does not treat a lookalike prefix as console', () => {
+      // Prefix matching has to stay segment-aware: `/settings` is a Dashboard
+      // route, `/settingsx` is not a route at all.
+      expect(isConsoleTrack('/settingsx')).toBe(false);
+      expect(isConsoleTrack('/live-map')).toBe(false);
+      expect(isConsoleTrack('/homes')).toBe(false);
+      expect(isConsoleTrack('/analyticsx')).toBe(false);
+    });
   });
 });

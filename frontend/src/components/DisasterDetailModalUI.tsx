@@ -62,12 +62,12 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
 
   const renderReportBody = () => (
     <>
-      {/* PRINT-ONLY OFFICIAL DIRECTIVE BANNER */}
+      {/* PRINT-ONLY ADVISORY BANNER */}
       <div className="print-only mb-4 p-4 bg-white border-2 border-carbon-90 rounded-xl space-y-3">
         <div className="flex items-center justify-between border-b border-carbon-30 pb-2 text-[8pt] font-mono font-bold text-carbon-70">
-          <span>GOVERNMENT OF THE PEOPLE'S REPUBLIC OF BANGLADESH</span>
-          <span>SOD 2019 COMPLIANT DISPATCH</span>
-          <span>PUBLIC SAFETY DIRECTIVE</span>
+          <span>HAZARDNET BANGLADESH</span>
+          <span>ADVISORY HANDOUT</span>
+          <span>NOT AN OFFICIAL WARNING</span>
         </div>
 
         <div className="flex items-start justify-between gap-4">

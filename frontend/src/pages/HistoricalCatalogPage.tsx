@@ -126,7 +126,7 @@ export const HistoricalCatalogPage: React.FC = () => {
     if (existing) {
       setActiveEvent(existing);
     } else {
-      // Synthesize event modal from catalog record
+      // Build the event modal from the catalog record
       setActiveEvent({
         event_id: record.id,
         glide: record.glide || 'Domestic Catalog',
@@ -153,9 +153,6 @@ export const HistoricalCatalogPage: React.FC = () => {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-rose-50 text-ap-link border border-rose-200">
-                  Phase E Verified
-                </span>
                 <span className="text-xs font-mono text-carbon-60">
                   Empirical Catalog 2000–2026
                 </span>

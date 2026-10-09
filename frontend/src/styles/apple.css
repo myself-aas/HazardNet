@@ -486,10 +486,6 @@
   background-color: color-mix(in srgb, var(--ap-bg-canvas) 90%, transparent);
 }
 
-[data-theme='dark'] .bg-white\/92 {
-  background-color: color-mix(in srgb, var(--ap-bg-canvas) 92%, transparent);
-}
-
 [data-theme='dark'] .bg-white\/95 {
   background-color: color-mix(in srgb, var(--ap-bg-canvas) 95%, transparent);
 }
@@ -520,10 +516,6 @@
 
 .dark .bg-white\/90 {
   background-color: color-mix(in srgb, var(--ap-bg-canvas) 90%, transparent);
-}
-
-.dark .bg-white\/92 {
-  background-color: color-mix(in srgb, var(--ap-bg-canvas) 92%, transparent);
 }
 
 .dark .bg-white\/95 {
@@ -557,10 +549,6 @@
 
   :root:not([data-theme='light']) .bg-white\/90 {
     background-color: color-mix(in srgb, var(--ap-bg-canvas) 90%, transparent);
-  }
-
-  :root:not([data-theme='light']) .bg-white\/92 {
-    background-color: color-mix(in srgb, var(--ap-bg-canvas) 92%, transparent);
   }
 
   :root:not([data-theme='light']) .bg-white\/95 {
@@ -719,28 +707,14 @@
    ─────────────────────────────────────────────────────────────────────────────── */
 
 /* ── Type roles (spec §Typography). ─────────────────────────────────────────── */
-.ap-type-display-hero { font-family: var(--ap-font-display); font-size: var(--ap-type-display-hero-size); line-height: var(--ap-type-display-hero-line); letter-spacing: var(--ap-type-display-hero-track); font-weight: var(--ap-type-display-hero-weight); color: var(--ap-label); }
-.ap-type-headline-xl { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-xl-size); line-height: var(--ap-type-headline-xl-line); letter-spacing: var(--ap-type-headline-xl-track); font-weight: var(--ap-type-headline-xl-weight); color: var(--ap-label); }
-.ap-type-headline-lg { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-lg-size); line-height: var(--ap-type-headline-lg-line); letter-spacing: var(--ap-type-headline-lg-track); font-weight: var(--ap-type-headline-lg-weight); color: var(--ap-label); }
-.ap-type-headline-md { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-md-size); line-height: var(--ap-type-headline-md-line); letter-spacing: var(--ap-type-headline-md-track); font-weight: var(--ap-type-headline-md-weight); color: var(--ap-label); }
-.ap-type-headline-sm { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-sm-size); line-height: var(--ap-type-headline-sm-line); letter-spacing: var(--ap-type-headline-sm-track); font-weight: var(--ap-type-headline-sm-weight); color: var(--ap-label); }
-.ap-type-body-lg { font-family: var(--ap-font-text); font-size: var(--ap-type-body-lg-size); line-height: var(--ap-type-body-lg-line); letter-spacing: var(--ap-type-body-lg-track); font-weight: var(--ap-type-body-lg-weight); color: var(--ap-label); }
-.ap-type-body-md { font-family: var(--ap-font-text); font-size: var(--ap-type-body-md-size); line-height: var(--ap-type-body-md-line); letter-spacing: var(--ap-type-body-md-track); font-weight: var(--ap-type-body-md-weight); color: var(--ap-label); }
-.ap-type-body-sm { font-family: var(--ap-font-text); font-size: var(--ap-type-body-sm-size); line-height: var(--ap-type-body-sm-line); letter-spacing: var(--ap-type-body-sm-track); font-weight: var(--ap-type-body-sm-weight); color: var(--ap-label-secondary); }
-.ap-type-label-md { font-family: var(--ap-font-text); font-size: var(--ap-type-label-md-size); line-height: var(--ap-type-label-md-line); letter-spacing: var(--ap-type-label-md-track); font-weight: var(--ap-type-label-md-weight); color: var(--ap-label); }
-.ap-type-label-sm { font-family: var(--ap-font-text); font-size: var(--ap-type-label-sm-size); line-height: var(--ap-type-label-sm-line); letter-spacing: var(--ap-type-label-sm-track); font-weight: var(--ap-type-label-sm-weight); color: var(--ap-label-secondary); }
-.ap-type-caption { font-family: var(--ap-font-text); font-size: var(--ap-type-caption-size); line-height: var(--ap-type-caption-line); letter-spacing: var(--ap-type-caption-track); font-weight: var(--ap-type-caption-weight); color: var(--ap-label-secondary); }
-
 /* Legacy names. Each maps to the nearest Cupertino role; new code uses the names above. */
 .ap-hero { font-family: var(--ap-font-display); font-size: var(--ap-type-display-hero-size); line-height: var(--ap-type-display-hero-line); letter-spacing: var(--ap-type-display-hero-track); font-weight: var(--ap-type-display-hero-weight); color: var(--ap-label); }
 .ap-display { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-xl-size); line-height: var(--ap-type-headline-xl-line); letter-spacing: var(--ap-type-headline-xl-track); font-weight: var(--ap-type-headline-xl-weight); color: var(--ap-label); }
 .ap-display-md { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-lg-size); line-height: var(--ap-type-headline-lg-line); letter-spacing: var(--ap-type-headline-lg-track); font-weight: var(--ap-type-headline-lg-weight); color: var(--ap-label); }
 .ap-lead { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-lg-size); line-height: var(--ap-type-headline-lg-line); letter-spacing: var(--ap-type-headline-lg-track); font-weight: var(--ap-weight-regular); color: var(--ap-label-secondary); }
-.ap-lead-airy { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-md-size); line-height: var(--ap-type-headline-md-line); letter-spacing: var(--ap-type-headline-md-track); font-weight: var(--ap-weight-regular); color: var(--ap-label-secondary); }
 .ap-tagline { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-md-size); line-height: var(--ap-type-headline-md-line); letter-spacing: var(--ap-type-headline-md-track); font-weight: var(--ap-type-headline-md-weight); color: var(--ap-label); }
 .ap-body { font-family: var(--ap-font-text); font-size: var(--ap-type-body-md-size); line-height: var(--ap-type-body-md-line); letter-spacing: var(--ap-type-body-md-track); font-weight: var(--ap-type-body-md-weight); color: var(--ap-label); }
 .ap-body-strong { font-family: var(--ap-font-display); font-size: var(--ap-type-headline-sm-size); line-height: var(--ap-type-headline-sm-line); letter-spacing: var(--ap-type-headline-sm-track); font-weight: var(--ap-type-headline-sm-weight); color: var(--ap-label); }
-.ap-dense-link { font-family: var(--ap-font-text); font-size: var(--ap-type-body-md-size); line-height: var(--ap-type-body-md-line); letter-spacing: var(--ap-type-body-md-track); font-weight: var(--ap-type-body-md-weight); color: inherit; }
 .ap-caption { font-family: var(--ap-font-text); font-size: var(--ap-type-body-sm-size); line-height: var(--ap-type-body-sm-line); letter-spacing: var(--ap-type-body-sm-track); font-weight: var(--ap-type-body-sm-weight); color: var(--ap-label-secondary); }
 .ap-caption-strong { font-family: var(--ap-font-text); font-size: var(--ap-type-label-md-size); line-height: var(--ap-type-label-md-line); letter-spacing: var(--ap-type-label-md-track); font-weight: var(--ap-type-label-md-weight); color: var(--ap-label); }
 .ap-fine-print { font-family: var(--ap-font-text); font-size: var(--ap-type-label-sm-size); line-height: var(--ap-type-label-sm-line); letter-spacing: var(--ap-type-label-sm-track); font-weight: var(--ap-type-label-sm-weight); color: var(--ap-label-secondary); }
@@ -861,7 +835,6 @@
   padding: var(--ap-card-padding);
   box-shadow: var(--ap-elev-flat);
 }
-.ap-card-media { border-radius: var(--ap-radius-sm); overflow: hidden; }
 
 /* The ONE shadow in the system — product imagery only. */
 .ap-product-shadow { box-shadow: var(--ap-elev-product); }
@@ -959,14 +932,6 @@
   letter-spacing: var(--ap-type-label-sm-track);
   z-index: var(--ap-z-nav);
 }
-.ap-subnav {
-  background: var(--ap-frosted-bg); color: var(--ap-label);
-  -webkit-backdrop-filter: saturate(var(--ap-frosted-saturate)) blur(var(--ap-frosted-blur));
-  backdrop-filter: saturate(var(--ap-frosted-saturate)) blur(var(--ap-frosted-blur));
-  min-height: var(--ap-subnav-h);
-  border-bottom: 1px solid var(--ap-glass-hairline);
-  z-index: var(--ap-z-sticky);
-}
 .ap-sticky-bar {
   background: var(--ap-frosted-bg); color: var(--ap-label);
   -webkit-backdrop-filter: saturate(var(--ap-frosted-saturate)) blur(var(--ap-frosted-blur));
@@ -974,7 +939,6 @@
   min-height: var(--ap-sticky-h); padding: 12px 32px;
   z-index: var(--ap-z-sticky);
 }
-.ap-footer { background: var(--ap-bg-grouped); color: var(--ap-ink-muted-80); padding-block: 64px; }
 
 /* ── Sheets, popovers, modals. Spec: #1C1C1E, 24px top radius, grabber, scrim. ─ */
 .ap-scrim { position: fixed; inset: 0; background: var(--ap-scrim); }
@@ -1026,9 +990,6 @@ svg.lucide {
 
 /* ── Focus. One ring, everywhere. ──────────────────────────────────────────── */
 .ap-focusable:focus-visible { outline: var(--ap-focus-width) solid var(--ap-focus-ring); outline-offset: var(--ap-focus-offset); }
-
-/* ── Container. Spec: 1280px shell, margin 40px desktop / 20px mobile. ─────── */
-.ap-container { max-width: var(--ap-track-max); margin-inline: auto; padding-inline: var(--ap-margin); }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    10 · RESPONSIVE — spec §Layout & Spacing. Mobile is a 4-column flow below 768px.
@@ -1091,7 +1052,7 @@ svg.lucide {
    *state* (the connected connector card, the selected chip, a severity badge) is
    deliberately absent: a state change must never lag its own press, and those
    carry `.ap-state-transition` / press timings of their own. */
-html, body, .ap-nav, .ap-subnav, .ap-sticky-bar, .ap-footer, .ap-card, .ap-input {
+html, body, .ap-nav, .ap-sticky-bar, .ap-card, .ap-input {
   transition: background-color var(--ap-duration-base) var(--ap-ease),
               color var(--ap-duration-base) var(--ap-ease),
               border-color var(--ap-duration-base) var(--ap-ease);
@@ -1165,7 +1126,7 @@ html, body, .ap-nav, .ap-subnav, .ap-sticky-bar, .ap-footer, .ap-card, .ap-input
 /* ─────────────────────────────────────────────────────────────────────────────
    12 · BENGALI — extension. Matras clip at Latin leading; no negative tracking.
    ───────────────────────────────────────────────────────────────────────────── */
-.lang-bn, .farmer-advisory, .tts-fallback-text, [lang='bn'], :lang(bn) {
+.lang-bn, [lang='bn'], :lang(bn) {
   font-family: var(--ap-font-bengali);
   line-height: var(--ap-bn-leading);
   letter-spacing: var(--ap-bn-tracking);

@@ -1691,7 +1691,7 @@ caption {
 
 /* ==========================================================================
    OFFICIAL DISASTER MANAGEMENT & EMERGENCY HANDOUT PRINT MEDIA SYSTEM
-   Formatted specifically for physical field handouts, SOD 2019 compliance,
+   Formatted for physical field handouts,
    and executive emergency responder distribution.
    ========================================================================== */
 
@@ -1717,7 +1717,7 @@ caption {
       color: var(--ap-n-60);
     }
     @bottom-center {
-      content: "SOD 2019 Disaster Management Compliance";
+      content: "HazardNet Bangladesh. Not an official warning service.";
       font-family: "Times New Roman", Times, serif;
       font-size: 8pt;
       color: var(--ap-n-40);
@@ -2707,3 +2707,37 @@ button:not([data-compact-target="true"]),
    sets the base face, §12 sets Bengali, and the mono rule near the top of this file sets tabular
    type, all at ordinary specificity. Keeping the guard would have meant a universal selector
    beating those three rules and three !importants fighting back. */
+
+/* /live: the operational title sits top-left under the navbar. Leaflet's zoom
+   control defaults to the very corner, which is under the navbar on desktop and
+   on top of the title on phones. Drop it beneath the title block and align it
+   with the title's left edge. Scoped to .live-stage so other maps are unchanged. */
+.live-stage .leaflet-top.leaflet-left {
+  top: calc(var(--navbar-height) + 4.5rem);
+  left: 0.75rem;
+}
+@media (min-width: 640px) {
+  .live-stage .leaflet-top.leaflet-left { left: 1.25rem; }
+}
+/* /live, phone: the title takes the top-left, so the zoom control moves to the top-right,
+   clear of the title and of the map FAB column that sits lower on the right. */
+@media (max-width: 639px) {
+  .live-stage .leaflet-top.leaflet-left { left: auto; right: 0.75rem; }
+}
+
+/* /live, phone: the map FAB column must stay reachable while the district forecast
+   sheet is open. The sheet is portalled to <body>, so the rule matches from there.
+   Peek and half lift the column just above the sheet's top edge; expanded leaves no
+   room above the sheet, so the column hides until the sheet is shrunk. Desktop is
+   unchanged: the sheet is centred and does not reach the column. */
+@media (max-width: 639px) {
+  body:has([data-testid='district-forecast-card'][data-sheet-stage='peek']) .live-fab-column {
+    bottom: calc(38vh + 12px);
+  }
+  body:has([data-testid='district-forecast-card'][data-sheet-stage='half']) .live-fab-column {
+    bottom: calc(62vh + 12px);
+  }
+  body:has([data-testid='district-forecast-card'][data-sheet-stage='expanded']) .live-fab-column {
+    visibility: hidden;
+  }
+}

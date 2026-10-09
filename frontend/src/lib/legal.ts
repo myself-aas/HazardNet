@@ -23,8 +23,8 @@ export const ALERT_DISCLAIMER =
 /** The same text with the numbers split out, for UI rendering as a list. */
 export const EMERGENCY_NUMBERS = [
   { number: '999', label: 'National emergency' },
-  { number: '1090', label: 'Disaster response' },
-  { number: '16123', label: 'Agriculture helpline' },
+  { number: '1090', label: 'Disaster Management (DDM)' },
+  { number: '16123', label: 'Krishi Call Centre' },
 ] as const;
 
 export const OFFICIAL_SOURCES = [

@@ -117,3 +117,7 @@ agent/
 data/skills/
 skills/
 skills-lock.json
+
+# Impeccable: per-developer hook consent and local overrides (not shared)
+.impeccable/config.local.json
+.impeccable/*.cache.json

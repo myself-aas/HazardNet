@@ -307,19 +307,24 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
         {/* 2026-10-05 restyle: the stage title floats on the map as plain text,
             the way the reference apps float "Destination Ahead" — bold ink with
             a soft legibility shadow, no bounding card between it and the map. */}
-        <header className="pointer-events-none absolute inset-x-0 top-0 z-[var(--ap-z-sticky)] flex items-start justify-between gap-3 p-3 pt-[calc(var(--navbar-height)+8px)] sm:p-5">
+        {/* Soft scrim behind the title block: fades map markers out of the header band
+            without a card. Pointer-events none, so markers under it stay clickable. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 z-[var(--ap-z-sticky)] h-[calc(var(--navbar-height)+8.5rem)] bg-gradient-to-b from-surface-page/90 via-surface-page/50 to-transparent"
+        />
+        <header className="pointer-events-none absolute inset-x-0 top-0 z-[var(--ap-z-sticky)] flex items-start justify-between gap-3 px-3 pb-3 sm:px-5 sm:pb-5 pt-[calc(var(--navbar-height)+12px)] sm:pt-[calc(var(--navbar-height)+12px)]">
           <div className="pointer-events-auto min-w-0 [text-shadow:0_1px_2px_rgba(255,255,255,0.7),0_0_8px_rgba(255,255,255,0.5)] dark:[text-shadow:0_1px_2px_rgba(0,0,0,0.8),0_0_8px_rgba(0,0,0,0.6)]">
-            <p className="truncate text-xs font-bold uppercase tracking-[0.14em] text-carbon-50">HazardNet / live</p>
-            <p className="truncate text-sm font-bold tracking-tight text-carbon-90 dark:text-white">
+            <p className="truncate font-sans text-xs font-semibold leading-tight tracking-tight text-carbon-90 dark:text-white">
               National situational map
             </p>
           </div>
           <div className="pointer-events-auto hidden items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-carbon-50 [text-shadow:0_1px_2px_rgba(255,255,255,0.7),0_0_8px_rgba(255,255,255,0.5)] dark:[text-shadow:0_1px_2px_rgba(0,0,0,0.8),0_0_8px_rgba(0,0,0,0.6)] sm:flex">
-            {predictionSource === 'live' ? 'Forecast synced' : 'Baseline coverage'}
+            {predictionSource === 'live' ? 'Forecast synced' : 'Static baseline severity'}
           </div>
         </header>
 
-        <div className="relative min-h-0 flex-1 overflow-hidden">
+        <div className="live-stage relative min-h-0 flex-1 overflow-hidden">
           <Map
             selectedDistrictId={selectedDistrict?.id}
             onOpenDisasterModal={handleOpenDisasterModal}
@@ -640,7 +645,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
               {/* Left Column: Saved Districts Drawer List */}
               <div className="lg:col-span-4 space-y-3 sm:space-y-4">
-                <div className="bg-white border border-carbon-20 rounded-lg sm:rounded-xl md:rounded-xl p-4 sm:p-5 space-y-3.5 sm:space-y-4">
+                <div className="ap-card space-y-3.5 sm:space-y-4">
                   <div className="flex items-center justify-between gap-3">
                     <h3 className="text-sm sm:text-base font-black text-carbon-90 flex items-center gap-1.5 sm:gap-2">
                       <MaterialIcon name="push_pin" className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
@@ -712,7 +717,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
 
               {/* Right Column: Full Scale Interactive LiveMapView Stage */}
               <div className="lg:col-span-8 space-y-3 sm:space-y-4">
-                <div className="bg-white border border-carbon-20 rounded-lg sm:rounded-xl md:rounded-xl p-3 sm:p-4 space-y-3 sm:space-y-4">
+                <div className="ap-card space-y-3 sm:space-y-4">
                   <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2 px-1 sm:px-3 text-xs">
                     <div className="flex items-center gap-1.5 sm:gap-2 font-extrabold text-carbon-80 min-w-0">
                       <span className="truncate">GIS Map</span>
@@ -814,7 +819,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
 
                 {/* Selected District Telemetry Details Card */}
                 {selectedDistrict && (
-                  <div className="bg-white border border-carbon-20 rounded-xl p-6 space-y-4">
+                  <div className="ap-card space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-carbon-20 pb-4">
                       <div>
                         <div className="flex items-center gap-3">
@@ -883,7 +888,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
         {/* VIEW 3: MULTI-DISTRICT COMPARISON */}
         {activeView === 'compare' && (
           <div className="space-y-6">
-            <div className="bg-white border border-carbon-20 rounded-xl p-6 sm:p-8 space-y-4">
+            <div className="ap-card space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h2 className="text-2xl font-black text-carbon-90">Multi-District Agricultural Hazard Comparison</h2>
@@ -968,7 +973,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
             {/* Cards Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
               {/* Tile policy card */}
-              <div className="lg:col-span-7 bg-white border border-carbon-20 rounded-xl p-6 sm:p-8 space-y-6">
+              <div className="lg:col-span-7 ap-card space-y-6">
                 <div className="flex items-center justify-between border-b border-carbon-20 pb-4">
                   <div className="flex items-center gap-3">
                     <div className="rounded-full w-12 h-12 bg-ap-primary/15 border border-ap-primary/30 text-amber-700 flex items-center justify-center font-bold text-xl">
@@ -1035,7 +1040,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
 
               {/* Application Cache Card */}
               <div className="lg:col-span-5 space-y-6">
-                <div className="bg-white border border-carbon-20 rounded-xl p-6 space-y-4">
+                <div className="ap-card space-y-4">
                   <div className="flex items-center gap-3 border-b border-carbon-20 pb-3">
                     <div className="w-10 h-10 bg-carbon-10 text-carbon-80 flex items-center justify-center font-bold text-lg">
                       <MaterialIcon name="psychology" className="w-4 h-4 inline-block mr-1" />

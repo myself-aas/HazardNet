@@ -72,7 +72,7 @@ describe('Phase 5 — GIS Choropleth, Progressive Disclosure & Mobile Viewport E
       );
 
       const card = screen.getByTestId('district-forecast-card');
-      expect(card).toHaveAttribute('data-disclosure-stage', 'half');
+      expect(card).toHaveAttribute('data-sheet-stage', 'half');
       expect(screen.getByTitle(/Main crop: Aman Rice & Jute/i)).toBeInTheDocument();
       expect(screen.queryByTestId('location-map-tile')).not.toBeInTheDocument();
 
@@ -80,23 +80,24 @@ describe('Phase 5 — GIS Choropleth, Progressive Disclosure & Mobile Viewport E
       expect(closeBtn.className).toContain('min-w-[44px]');
       expect(closeBtn.className).toContain('min-h-[44px]');
 
-      const toggleBtn = screen.getByTestId('disclosure-stage-toggle');
+      // The shared sheet's grabber is the stage control.
+      const toggleBtn = screen.getByRole('button', { name: /cycle sheet height/i });
       expect(toggleBtn.className).toContain('min-h-[44px]');
 
       // Cycle half -> expanded (shows location map)
       fireEvent.click(toggleBtn);
-      expect(card).toHaveAttribute('data-disclosure-stage', 'expanded');
+      expect(card).toHaveAttribute('data-sheet-stage', 'expanded');
       expect(screen.getByTestId('location-map-tile')).toBeInTheDocument();
 
       // Cycle expanded -> peek (collapses secondary metadata tiles & location map)
       fireEvent.click(toggleBtn);
-      expect(card).toHaveAttribute('data-disclosure-stage', 'peek');
+      expect(card).toHaveAttribute('data-sheet-stage', 'peek');
       expect(screen.queryByTitle(/Main crop: Aman Rice & Jute/i)).not.toBeInTheDocument();
       expect(screen.queryByTestId('location-map-tile')).not.toBeInTheDocument();
 
       // Cycle peek -> half (restores telemetry summary tiles)
       fireEvent.click(toggleBtn);
-      expect(card).toHaveAttribute('data-disclosure-stage', 'half');
+      expect(card).toHaveAttribute('data-sheet-stage', 'half');
       expect(screen.getByTitle(/Main crop: Aman Rice & Jute/i)).toBeInTheDocument();
     });
 

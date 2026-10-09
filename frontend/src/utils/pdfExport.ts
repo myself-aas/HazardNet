@@ -44,7 +44,7 @@ const errorMessage = (err: unknown): string => {
 
 /**
  * High-Fidelity PDF Exporter for HazardNet Bangladesh
- * Generates official SOD 2019 compliant disaster directives, situation reports,
+ * Generates advisory PDFs (handouts and situation reports),
  * and agromet advisory handouts with vector headers, footers, QR telemetry, and ink-friendly contrast.
  */
 export async function exportElementToPdf(options: PdfExportOptions = {}): Promise<void> {
@@ -52,7 +52,7 @@ export async function exportElementToPdf(options: PdfExportOptions = {}): Promis
     filename = 'HazardNet_{docType}_{region}_{date}.pdf',
     filenameTemplate,
     filenameContext = {},
-    title = 'HazardNet Emergency Directive',
+    title = 'HazardNet Advisory',
     documentType = 'Emergency Advisory Bulletin',
     elementId,
     customElement,
@@ -106,7 +106,7 @@ export async function exportElementToPdf(options: PdfExportOptions = {}): Promis
       throw new Error(`Target element "${elementId || 'default'}" for PDF export could not be located in document.`);
     }
 
-    onProgress?.(25, 'Applying official print styling & QR telemetry tags...');
+    onProgress?.(25, 'Applying print styling & QR code...');
 
     // 2. Ensure web fonts are fully loaded
     try {
@@ -433,7 +433,6 @@ export async function exportElementToPdf(options: PdfExportOptions = {}): Promis
       return pageCanvas.toDataURL('image/jpeg', 0.94);
     };
 
-    const dispatchRef = `HN-BD-${new Date().getFullYear()}-${Date.now().toString(36).slice(-5).toUpperCase()}`;
     const generatedDateStr = new Date().toLocaleDateString('en-GB', {
       day: '2-digit',
       month: 'short',
@@ -458,12 +457,11 @@ export async function exportElementToPdf(options: PdfExportOptions = {}): Promis
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(6.5);
         pdf.setTextColor(88, 88, 91); // carbon-60
-        pdf.text('HAZARDNET BANGLADESH • SOD 2019 DISASTER DIRECTIVE', marginX, 6.5);
+        pdf.text('HAZARDNET BANGLADESH • ADVISORY HANDOUT • NOT AN OFFICIAL WARNING', marginX, 6.5);
         pdf.setFont('helvetica', 'normal');
-        pdf.text(`REF: ${dispatchRef}`, page.width - marginX, 6.5, { align: 'right' });
       }
 
-      // Bottom Vector Footer: Reference, SOD 2019 Compliance Stamp, BST Time, Page Numbering
+      // Bottom footer: source line, generated time, page numbering
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(7);
       pdf.setTextColor(23, 23, 27); // carbon-90
@@ -476,7 +474,7 @@ export async function exportElementToPdf(options: PdfExportOptions = {}): Promis
       // record is the last place to spend contrast.
       pdf.setTextColor(88, 88, 91); // carbon-60
       pdf.text(
-        `${documentType.toUpperCase()} • DISPATCH ${dispatchRef} • ${generatedDateStr} ${generatedTimeStr} BST`,
+        `${documentType.toUpperCase()} • ${generatedDateStr} ${generatedTimeStr} BST`,
         page.width / 2,
         page.height - footerOffsetMm,
         { align: 'center' }

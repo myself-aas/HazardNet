@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -31,6 +31,8 @@ import {
 import MaterialIcon from '../components/MaterialIcon';
 import { SECTOR_ADVISORIES, SectorAdvisoryData, TechnicalStep } from '../data/sectorAdvisoriesData';
 import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
+import { useKaggleAdvisories } from '../hooks/useKaggleAdvisories';
+import { advisorySignalOf, buildForecastIndex, canonicalKey, forecastAgeHours, type ForecastRow } from '../lib/forecasts';
 import { StructuredAdvisoryRenderer } from '../components/StructuredAdvisoryRenderer';
 import { PrintQrCode } from '../components/PrintQrCode';
 import { PdfExportButton } from '../components/PdfExportButton';
@@ -56,18 +58,26 @@ export const AdvisoriesPage: React.FC = () => {
   // Interactive Email Modal State
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [selectedDistrictForEmail, setSelectedDistrictForEmail] = useState<string>('Kurigram');
-  const [affectedUpazilas, setAffectedUpazilas] = useState<string>('Chilmari, Ulipur, Roumari');
-  const [customOfficerName, setCustomOfficerName] = useState<string>('Md. Rafiqul Islam (Upazila Coordinator)');
-  const [customOfficerPhone, setCustomOfficerPhone] = useState<string>('+8801712-345678');
-  const [customDamageArea, setCustomDamageArea] = useState<string>('4,500');
+  const [affectedUpazilas, setAffectedUpazilas] = useState<string>('');
+  const [customOfficerName, setCustomOfficerName] = useState<string>('');
+  const [customOfficerPhone, setCustomOfficerPhone] = useState<string>('');
+  const [customDamageArea, setCustomDamageArea] = useState<string>('');
 
   // Gemini Live AI Advisory Generator State
   const [showAiSynthesizer, setShowAiSynthesizer] = useState(false);
   const [aiDistrict, setAiDistrict] = useState<string>('Kurigram');
-  const [aiHazard, setAiHazard] = useState<string>('Monsoon Flood');
-  const [aiSeverity, setAiSeverity] = useState<number>(0.85);
-  const [aiConfidence, setAiConfidence] = useState<number>(0.92);
-  const [aiCropContext, setAiCropContext] = useState<string>('T. Aman Rice (Vegetative Tillering Stage)');
+  // Severity, confidence and hazard come from the daily Kaggle ingest (the
+  // 7-day row for the selected district). They are never read from the static
+  // district table, and nothing is typed by hand.
+  const kaggleQuery = useKaggleAdvisories('7_days');
+  const kaggle = kaggleQuery.data;
+  const forecastIndex = useMemo(() => buildForecastIndex(kaggle?.rows ?? []), [kaggle]);
+  const kaggleRow: ForecastRow | null = forecastIndex.get(canonicalKey(aiDistrict)) ?? null;
+  const aiSeverity: number | null = kaggleRow ? advisorySignalOf(kaggleRow).final : null;
+  const aiConfidence: number | null =
+    kaggleRow && Number.isFinite(kaggleRow.confidence) ? kaggleRow.confidence : null;
+  const aiHazard: string = kaggleRow?.hazard_type ?? '';
+  const [aiCropContext, setAiCropContext] = useState<string>('');
   const [aiLoading, setAiLoading] = useState<boolean>(false);
   const [aiAdvisoryData, setAiAdvisoryData] = useState<any | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
@@ -136,13 +146,14 @@ export const AdvisoriesPage: React.FC = () => {
 
       const data = await response.json();
       setAiAdvisoryData(data);
-      toast.success(`Generated real-time AI advisory for ${aiDistrict}!`, {
+      toast.success(`Drafted an AI advisory for ${aiDistrict}. Check it against BMD and FFWC before acting.`, {
         icon: <Sparkles className="w-4 h-4 text-amber-500" />
       });
     } catch (err: any) {
       console.error('Failed to generate advisory:', err);
-      setAiError(err.message || 'Failed to synthesize advisory.');
-      toast.error('Could not reach Gemini API. Showing validated protocol standards.');
+      setAiError(err.message || 'Failed to draft advisory.');
+      setAiAdvisoryData(null);
+      toast.error('The advisory service did not respond. No advisory was drafted.');
     } finally {
       setAiLoading(false);
     }
@@ -161,15 +172,15 @@ export const AdvisoriesPage: React.FC = () => {
       {/* PRINT-ONLY OFFICIAL EMERGENCY BULLETIN HEADER */}
       <div className="print-only mb-6 border-b-2 border-carbon-90 pb-4">
         <div className="flex items-center justify-between border-b border-carbon-30 pb-2 mb-3 text-[9pt] font-mono font-bold text-carbon-70">
-          <span>GOVERNMENT OF THE PEOPLE'S REPUBLIC OF BANGLADESH</span>
-          <span>SOD 2019 COMPLIANT DIRECTIVE</span>
-          <span>EMERGENCY DISPATCH • PUBLIC SAFETY</span>
+          <span>HAZARDNET BANGLADESH</span>
+          <span>Advisory reference</span>
+          <span>Advisories</span>
         </div>
         
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <h1 className="text-xl font-black text-carbon-90 tracking-tight">
-              HAZARDNET BANGLADESH • EMERGENCY OPERATIONAL DIRECTIVE
+              HAZARDNET BANGLADESH • ADVISORY REFERENCE • NOT AN OFFICIAL WARNING
             </h1>
             <p className="text-xs text-carbon-80 font-bold mt-0.5">
               Sector: {sector.name} ({sector.code}) • Standard Operating Procedures & Technical Action Matrix
@@ -199,7 +210,7 @@ export const AdvisoriesPage: React.FC = () => {
         </div>
 
         <div className="flex items-center justify-between mt-2 pt-2 border-t border-carbon-20 text-[8pt] font-mono text-carbon-60">
-          <div>Coordinating Authority: DAE / DLS / DoF / DGHS / MoDMR / FFWC</div>
+          <div>Agencies referenced: DAE / DLS / DoF / DGHS / MoDMR / FFWC</div>
           <div>Advisory Status: ACTIVE FIELD OPERATIONAL PROTOCOL</div>
         </div>
       </div>
@@ -294,7 +305,7 @@ export const AdvisoriesPage: React.FC = () => {
       {/* 2. ACTIVE SECTOR EXECUTIVE INTELLIGENCE & MANDATE */}
       <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-6 relative overflow-hidden">
         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
-          <div className="space-y-3 max-w-4xl">
+          <div className="space-y-3 max-w-4xl min-w-0 lg:flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <span className="px-3 py-1 rounded-full text-xs font-mono font-black bg-amber-100 text-amber-950 border border-amber-300 shadow-2xs">
                 {sector.code}
@@ -319,7 +330,7 @@ export const AdvisoriesPage: React.FC = () => {
               <span className="font-mono font-black uppercase tracking-wider text-xs block text-amber-900">
                 Statutory Reference & Mandate:
               </span>
-              <p className="font-semibold text-carbon-80">{sector.sodReference}</p>
+              <p className="font-semibold text-carbon-80 break-words">{sector.sodReference}</p>
             </div>
           </div>
 
@@ -349,7 +360,7 @@ export const AdvisoriesPage: React.FC = () => {
                 }`}
               >
                 <Bot className="w-3.5 h-3.5 text-amber-300" />
-                <span>{showAiSynthesizer ? 'Hide AI Synthesizer' : 'Synthesize Gemini Advisory'}</span>
+                <span>{showAiSynthesizer ? 'Hide AI advisory' : 'Draft an AI advisory'}</span>
               </button>
             </div>
           </div>
@@ -402,7 +413,7 @@ export const AdvisoriesPage: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="text-base sm:text-lg font-black text-ap-on-inverse flex items-center gap-2">
-                      <span>Gemini 2.5 Dynamic Sector AI Synthesizer</span>
+                      <span>AI advisory drafting</span>
                       <span className="px-2 py-0.5 rounded-md bg-amber-400 text-carbon-black text-xs font-mono font-black">LIVE</span>
                     </h3>
                     <p className="text-xs text-carbon-30">
@@ -418,7 +429,7 @@ export const AdvisoriesPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* Simulation Controls */}
+              {/* Scenario inputs: typed by the user, not taken from a forecast run. */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-mono font-bold text-carbon-30">TARGET DISTRICT (64):</label>
@@ -436,54 +447,51 @@ export const AdvisoriesPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-mono font-bold text-carbon-30">HAZARD PROFILE:</label>
-                  <select
-                    value={aiHazard}
-                    onChange={(e) => setAiHazard(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-carbon-80 border border-carbon-70 text-carbon-05 text-xs font-semibold focus:outline-none focus:border-amber-400"
-                  >
-                    <option value="Monsoon Flood">Monsoon Riverine Flood</option>
-                    <option value="Flash Flood">Northeastern Flash Flood (Haor)</option>
-                    <option value="Tropical Cyclone">Tropical Cyclone & Storm Surge</option>
-                    <option value="Salinity Intrusion">Coastal Salinity Shock</option>
-                    <option value="Drought">Barind Drought & Heatwave</option>
-                    <option value="Cold Wave">Winter Dense Fog & Cold Wave</option>
-                  </select>
+                  <span className="block text-xs font-mono font-bold text-carbon-30">HAZARD (KAGGLE RECORD):</span>
+                  <p className="text-xs font-mono text-carbon-05">{aiHazard || 'Not available for this district'}</p>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-mono font-bold text-carbon-30">SEVERITY INDEX ({aiSeverity}):</label>
-                  <input
-                    type="range"
-                    min="0.1"
-                    max="1.0"
-                    step="0.05"
-                    value={aiSeverity}
-                    onChange={(e) => setAiSeverity(parseFloat(e.target.value))}
-                    className="w-full accent-amber-400 cursor-pointer"
-                  />
-                  <div className="flex justify-between text-xs text-carbon-30 font-mono">
-                    <span>Watch (0.1)</span>
-                    <span>Warning (0.5)</span>
-                    <span className="text-rose-300 font-bold">Emergency (1.0)</span>
-                  </div>
+                  <span className="block text-xs font-mono font-bold text-carbon-30">SEVERITY (KAGGLE DAILY RECORD):</span>
+                  <p className="text-xs font-mono text-carbon-05">
+                    {aiSeverity == null ? 'Not available for this district' : aiSeverity.toFixed(2)}
+                  </p>
+                  <p className="text-xs text-carbon-30">
+                    {kaggleRow && kaggle
+                      ? `Fetched from the Kaggle Dataset API at ${kaggle.fetchedAt ?? 'an unknown time'} (UTC). Dataset generated ${kaggle.generatedAt ?? 'time not stated'}. Prediction ${kaggleRow.prediction_date}, target ${kaggleRow.target_date}.${
+                          kaggle.status === 'stale'
+                            ? ' Kaggle could not be reached on the last refresh. This is the last value fetched.'
+                            : ''
+                        }${
+                          forecastAgeHours(kaggleRow.prediction_date) > 36
+                            ? ` This record is ${Math.round(forecastAgeHours(kaggleRow.prediction_date) / 24)} days old. Check the daily dataset update before you draft.`
+                            : ''
+                        }`
+                      : kaggleQuery.isError
+                        ? 'The Kaggle advisory service could not be reached. No value is shown.'
+                        : kaggle?.status === 'unavailable'
+                          ? 'No Kaggle value is available yet. The advisory service has not fetched the dataset, so no value is shown.'
+                          : kaggleQuery.isPending
+                            ? 'Loading the latest value from the Kaggle Dataset API...'
+                            : 'No Kaggle record for this district in the latest fetch.'}
+                  </p>
                 </div>
 
                 <div className="space-y-1.5 flex flex-col justify-end">
                   <button
                     onClick={handleGenerateAiAdvisory}
-                    disabled={aiLoading}
+                    disabled={aiSeverity == null || aiConfidence == null || !aiHazard || aiLoading}
                     className="w-full py-2.5 px-4 rounded-xl bg-primary hover:bg-ap-primary-tint text-ap-action-fg font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
                   >
                     {aiLoading ? (
                       <>
                         <div className="w-4 h-4 border-2 border-carbon-black border-t-transparent rounded-full animate-spin"></div>
-                        <span>Inferencing...</span>
+                        <span>Drafting...</span>
                       </>
                     ) : (
                       <>
                         <Sparkles className="w-4 h-4" />
-                        <span>Synthesize AI Advisory</span>
+                        <span>Draft advisory</span>
                       </>
                     )}
                   </button>
@@ -494,7 +502,7 @@ export const AdvisoriesPage: React.FC = () => {
               {aiLoading && (
                 <div className="p-6 sm:p-8 rounded-2xl bg-carbon-80/80 border border-carbon-70 text-center space-y-3 animate-pulse">
                   <div className="w-8 h-8 rounded-full border-2 border-amber-400 border-t-transparent animate-spin mx-auto"></div>
-                  <p className="text-xs text-carbon-30 font-mono">Querying Gemini 2.5 API with {aiDistrict} agro-ecological context & {sector.code} directives...</p>
+                  <p className="text-xs text-carbon-30 font-mono">Drafting from the {aiDistrict} forecast record and the {sector.code} protocol...</p>
                 </div>
               )}
 
@@ -510,14 +518,14 @@ export const AdvisoriesPage: React.FC = () => {
                   <div className="flex items-center justify-between border-b border-carbon-20 pb-3 mb-4">
                     <div>
                       <h4 className="text-sm font-black text-carbon-90">
-                        Synthesized AI Advisory for {aiDistrict} ({aiHazard})
+                        AI-drafted advisory for {aiDistrict} ({aiHazard})
                       </h4>
                       <p className="text-xs text-carbon-60 font-mono">
-                        Urgency: {aiAdvisoryData.urgency_tier || aiAdvisoryData.urgency_level || 'HIGH'} • Engine: {aiAdvisoryData.provider_source || 'Gemini'}
+                        Urgency: {aiAdvisoryData.urgency_tier || aiAdvisoryData.urgency_level || 'Not stated'} • Engine: {aiAdvisoryData.provider_source || 'Not stated'}
                       </p>
                     </div>
                     <span className="px-3 py-1 rounded-full text-xs font-mono font-black bg-amber-100 text-amber-950 border border-amber-300">
-                      CONFIDENCE: {Math.round(aiConfidence * 100)}%
+                      CONFIDENCE: {aiConfidence == null ? 'NOT AVAILABLE' : `${Math.round(aiConfidence * 100)}%`}
                     </span>
                   </div>
                   <StructuredAdvisoryRenderer advisoryJson={aiAdvisoryData} />
@@ -540,7 +548,7 @@ export const AdvisoriesPage: React.FC = () => {
                 Step-by-Step Technical Standard Operating Procedures
               </h3>
               <p className="text-xs text-carbon-60">
-                Actionable execution directives formulated by national research directorates and line ministries.
+                Draft protocol steps. Check them against the national protocol reference shown above before use.
               </p>
             </div>
           </div>
@@ -715,7 +723,7 @@ export const AdvisoriesPage: React.FC = () => {
               <tr className="print-table-emergency-header">
                 <th colSpan={5} className="emergency-protocol-title">
                   <AlertTriangle className="mr-2 inline h-4 w-4 align-[-2px]" aria-hidden="true" />
-                  EMERGENCY PROTOCOL & TECHNICAL SPECIFICATION MATRIX (SOD 2019) • {sector.name.toUpperCase()} SECTOR
+                  PROTOCOL MATRIX • {sector.name.toUpperCase()} SECTOR
                 </th>
               </tr>
               <tr className="border-b border-carbon-20 text-carbon-60 font-mono text-xs">
@@ -762,7 +770,7 @@ export const AdvisoriesPage: React.FC = () => {
             </div>
             <div>
               <h3 className="text-base sm:text-lg font-black text-carbon-90 tracking-tight">
-                Official Portals, National Gazettes & Verified Research Docs
+                Official portals, national documents and research references
               </h3>
               <p className="text-xs text-carbon-60">
                 Direct external hyperlinks to Bangladesh government ministries and international UN repositories.
@@ -909,16 +917,16 @@ export const AdvisoriesPage: React.FC = () => {
         <div className="grid grid-cols-2 gap-4 pb-2 border-b border-carbon-30">
           <div>
             <strong className="text-carbon-90 block mb-1">NATIONAL TOLL-FREE EMERGENCY HOTLINES:</strong>
-            <div>• Disaster Early Warning: 1090 (24/7 Toll-Free BMD/FFWC)</div>
+            <div>• Disaster Management (DDM): 1090</div>
             <div>• National Emergency Services: 999 (Police, Fire, Medical)</div>
-            <div>• Agriculture Call Center: 16123 (Krishi Desk DAE)</div>
-            <div>• Livestock & Veterinary: 16358 | Health Hotline: 16263</div>
-          </div>
+            <div>• Krishi Call Centre: 16123</div>
+                      </div>
           <div className="text-right">
-            <strong className="text-carbon-90 block mb-1">OFFICIAL DISPATCH AUTHENTICATION:</strong>
-            <div>HazardNet Bangladesh Disaster Intelligence System</div>
-            <div>Statutory Alignment: Standing Orders on Disaster (SOD 2019)</div>
-            <div>Official Field Responder & Disaster Management Handout</div>
+            <strong className="text-carbon-90 block mb-1">Source</strong>
+            <div>HazardNet Bangladesh. Not an official warning service.</div>
+            <div>BMD: +880 2 41025705, info@bmd.gov.bd</div>
+            <div>FFWC: +880 2 2222 30070, ffwc@bwdb.gov.bd</div>
+            <div>For emergencies, call 999.</div>
           </div>
         </div>
         <div className="text-center pt-2 text-[7.5pt] text-carbon-60">
@@ -928,7 +936,7 @@ export const AdvisoriesPage: React.FC = () => {
 
       {/* PRINT-ONLY FIXED RUNNING FOOTER WITH DYNAMIC CSS PAGE NUMBERING */}
       <div className="print-only print-page-footer">
-        <span>HAZARDNET BANGLADESH • SOD 2019 DIRECTIVE</span>
+        <span>HAZARDNET BANGLADESH • ADVISORY REFERENCE</span>
         <span>SECTOR: {sector.name.toUpperCase()} ({sector.code})</span>
         <span className="print-page-number"></span>
       </div>
@@ -954,7 +962,7 @@ export const AdvisoriesPage: React.FC = () => {
                       Emergency Assistance Email Requisition Generator
                     </h3>
                     <p className="text-xs text-carbon-60 font-mono break-words">
-                      Pre-formatted official communication aligned with SOD 2019 standards
+                      Pre-formatted email draft. Review before sending.
                     </p>
                   </div>
                 </div>

@@ -146,7 +146,7 @@ describe('/status', () => {
     renderPage();
     await waitForArtifact();
     expect(screen.getByText(/Not stamped\./)).toBeInTheDocument();
-    expect(screen.getByText(/blocks\s+automatic publication of anything above/)).toBeInTheDocument();
+    expect(screen.getByText(/is held for duty-officer review until one exists/)).toBeInTheDocument();
     expect(screen.queryByText(/carry mn-/)).not.toBeInTheDocument();
   });
 

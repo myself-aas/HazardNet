@@ -8,6 +8,7 @@ import 'leaflet.heat';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LocationMap } from './ui/expand-map';
+import { BottomSheet } from './ui/BottomSheet';
 import { ALL_64_DISTRICTS, ALL_8_DIVISIONS } from '../data/bangladeshDistricts';
 import {
   isValidLatLng,
@@ -31,7 +32,8 @@ import { useMapSnapshot } from '../hooks/useMapSnapshot';
 import { useLiveDistricts } from '../hooks/useForecasts';
 import { type ForecastHorizon } from '../lib/forecasts';
 import { LIVE_LAYERS, LIVE_SECTIONS } from '../lib/liveLayers';
-import { activeCredits } from '../lib/dataCredits';
+import { activeCredits, KAGGLE_BIBTEX } from '../lib/dataCredits';
+
 import {
   ConcurrencyGate,
   GIBS_IMERG_RAIN,
@@ -362,8 +364,9 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   // credit follows whichever model the artifact carries (credits follow the
   // ladder).
   const attributionCreditIds: string[] = activeLayer === 'esriSatellite' ? ['esri'] : ['osm', 'opentopomap'];
-  if (isRiverLayerActive || isHeatmapActive || isClusteringActive) {
-    attributionCreditIds.push('forecasts');
+  const showsForecastRecords = isRiverLayerActive || isHeatmapActive || isClusteringActive;
+  if (showsForecastRecords) {
+    attributionCreditIds.push('forecasts', 'advisoryEda');
   }
   if ((isTrueColorActive && trueColorStatus === 'ready') || (isRainActive && rainStatus === 'ready')) {
     attributionCreditIds.push('gibs');
@@ -1365,7 +1368,12 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       ref={mainWrapperRef}
       className={
         isFullScreen
-          ? 'w-full h-full min-h-[360px] lg:min-h-[560px] h-dvh bg-carbon-05 overflow-hidden text-carbon-90 relative flex flex-col'
+          // `h-full`, not `h-dvh`. The full-screen stage sits inside a `flex-1`
+          // parent whose height is the viewport *minus* the operational header,
+          // so 100dvh overhangs it and the parent's `overflow-hidden` crops the
+          // bottom of the map — taking the bottom-anchored status popups and
+          // the attribution with it. Filling the parent is the correct height.
+          ? 'w-full h-full min-h-[360px] lg:min-h-[560px] bg-carbon-05 overflow-hidden text-carbon-90 relative flex flex-col'
           : className
             ? className
             : `w-full ${customHeight || 'h-full min-h-[360px] lg:min-h-[560px]'} bg-carbon-10 overflow-hidden text-carbon-90 relative flex flex-col border border-carbon-20 rounded-2xl shadow-md`
@@ -1457,14 +1465,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         )}
 
         {currentSelected && !inspectedPoint && (
-          <div
-            data-testid="district-forecast-slot"
-            /* `relative z-20` keeps the in-flow mobile card above the overlay HUD
-               (its attribution bar and hazard-action cluster are absolute
-               `z-[var(--ap-z-sticky)]` = 10 children of the `inset-0` stage overlay and
-               used to swallow the card's primary action at phone widths). */
-            className="relative z-20 lg:absolute lg:top-4 lg:right-4 lg:w-[clamp(280px,28vw,340px)] lg:max-w-[calc(100%-2rem)] max-w-full shrink-0 w-full border-t lg:border-t-0 border-carbon-20 bg-white"
-          >
+          <div data-testid="district-forecast-slot" className="contents">
             <DistrictForecastCard
               district={currentSelected}
               onClose={() => {
@@ -1583,7 +1584,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.2 }}
-                className="absolute top-4 left-4 right-4 lg:right-auto z-[var(--ap-z-sticky)] pointer-events-auto lg:max-w-[320px] w-auto"
+                className="absolute bottom-36 sm:bottom-16 left-4 right-20 sm:right-auto z-[var(--ap-z-sticky)] pointer-events-auto lg:max-w-[320px] w-auto"
               >
                 <div className="bg-white text-carbon-90 border border-carbon-20 rounded-2xl p-4 flex flex-col gap-2">
                   <div className="flex items-center justify-between border-b border-carbon-20 pb-2 text-xs font-bold">
@@ -1737,165 +1738,121 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             </div>
           )}
 
-          {/* District & hazard filters: 2026-10-05 restyle to the shared map
-              language. One rounded floating sheet (a bottom sheet on phones,
-              a centered card on desktop), a bold title with grey support text,
-              hairline dividers between the two pickers, round division pills,
-              hazard pills with coloured dots, and a sticky CTA row.
-              44px targets throughout, both themes. */}
-          <AnimatePresence>
-            {isFilterModalOpen && (
-              <div
-                className="fixed inset-0 z-[var(--ap-z-modal)] bg-carbon-black/30 flex items-end sm:items-center justify-center sm:p-4 pointer-events-auto"
-                onClick={(e) => {
-                  if (e.target === e.currentTarget) setIsFilterModalOpen(false);
-                }}
-              >
-                <motion.div
-                  key="district-filter-sheet"
-                  role="dialog"
-                  aria-modal="true"
-                  aria-label="Division and hazard filters"
-                  initial={{ opacity: 0, y: 24, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 24, scale: 0.98 }}
-                  transition={{ duration: 0.22, ease: 'easeOut' }}
-                  className="w-full sm:max-w-md flex flex-col max-h-[88vh] sm:max-h-[80vh] overflow-hidden bg-white sm:rounded-xl rounded-t-xl shadow-map"
+          {/* Districts & hazards. Opened from the Filters control and rendered by the
+              shared BottomSheet, so it drags up to full and down to shrink or dismiss,
+              and its footer actions sit side by side. */}
+          <BottomSheet
+            isOpen={isFilterModalOpen}
+            onClose={() => setIsFilterModalOpen(false)}
+            title="Districts & hazards"
+            subtitle="Narrow the national situational map"
+            footerContent={
+              <>
+                <button
+                  type="button"
+                  aria-label="Reset division and hazard filters"
+                  onClick={() => {
+                    setSelectedDivision('All');
+                    selectAllHazards();
+                    setSearchQuery('');
+                  }}
+                  className="tap-target min-h-[44px] shrink-0 whitespace-nowrap rounded-full px-5 bg-carbon-05 hover:bg-carbon-10 dark:hover:bg-carbon-70 text-carbon-70 font-bold text-xs transition-colors"
                 >
-                  {/* grab + header */}
-                  <div className="shrink-0 px-5 pt-3 pb-3 border-b border-carbon-20">
-                    <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-carbon-20 sm:hidden" aria-hidden="true" />
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <h3 className="text-base font-bold tracking-tight text-carbon-90 dark:text-white">
-                          Districts & hazards
-                        </h3>
-                        <p className="text-xs text-carbon-60">Narrow the national situational map</p>
-                      </div>
-                      <button
-                        type="button"
-                        aria-label="Close filters"
-                        onClick={() => setIsFilterModalOpen(false)}
-                        className="tap-target shrink-0 w-11 h-11 grid place-items-center rounded-full bg-carbon-05 text-carbon-50 hover:text-carbon-90 dark:hover:text-white hover:bg-carbon-10 dark:hover:bg-carbon-70 transition-colors"
-                      >
-                        <MaterialIcon name="close" className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex-1 overflow-y-auto overscroll-contain min-h-0 px-5">
-                    {/* Divisions */}
-                    <div className="py-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-xs font-bold uppercase tracking-[0.12em] text-carbon-60">Division</span>
-                        {selectedDivision !== 'All' && (
-                          <button
-                            type="button"
-                            onClick={() => setSelectedDivision('All')}
-                            className="text-xs font-semibold text-ap-link hover:underline"
-                          >
-                            Clear
-                          </button>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {[{ id: 'all', name: 'All' }, ...ALL_8_DIVISIONS].map((div) => {
-                          const divName = div.id === 'all' ? 'All' : div.name.replace(' Division', '');
-                          const selected =
-                            div.id === 'all'
-                              ? selectedDivision === 'All'
-                              : selectedDivision.toLowerCase() === divName.toLowerCase();
-                          return (
-                            <button
-                              key={div.id}
-                              type="button"
-                              aria-pressed={selected}
-                              onClick={() => setSelectedDivision(divName)}
-                              className={`tap-target inline-flex min-h-[36px] items-center rounded-full px-3.5 text-xs font-bold transition-colors ${
-                                selected
-                                  ? 'bg-carbon-90 text-ap-on-inverse '
-                                  : 'bg-carbon-05 text-carbon-60 hover:bg-carbon-10 dark:hover:bg-carbon-70 hover:text-carbon-90 dark:hover:text-white'
-                              }`}
-                            >
-                              {divName}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Hazards */}
-                    <div className="py-4 border-t border-carbon-20">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-xs font-bold uppercase tracking-[0.12em] text-carbon-60">
-                          Hazards ({selectedHazards.length}/{HAZARD_LAYERS.length})
-                        </span>
-                        <div className="flex items-center gap-3 text-xs font-semibold">
-                          <button type="button" onClick={selectAllHazards} className="text-ap-link hover:underline">
-                            All
-                          </button>
-                          <button type="button" onClick={clearAllHazards} className="text-ap-link hover:underline">
-                            None
-                          </button>
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {HAZARD_LAYERS.map((hazard) => {
-                          const selected = selectedHazards.includes(hazard.id);
-                          return (
-                            <button
-                              key={hazard.id}
-                              type="button"
-                              aria-pressed={selected}
-                              onClick={() => toggleHazard(hazard.id)}
-                              className={`tap-target inline-flex min-h-[36px] items-center gap-1.5 rounded-full border px-3.5 text-xs font-bold transition-colors ${
-                                selected
-                                  ? 'border-transparent bg-carbon-90 text-ap-on-inverse '
-                                  : 'border-carbon-20 text-carbon-60 hover:border-carbon-30 dark:hover:border-carbon-60 hover:text-carbon-90 dark:hover:text-white'
-                              }`}
-                            >
-                              <span
-                                className="h-2 w-2 rounded-full"
-                                style={{ backgroundColor: hazard.color }}
-                                aria-hidden="true"
-                              />
-                              {hazard.name}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      <p className="mt-3 text-xs text-carbon-60">
-                        Showing {filteredDistricts.length} of {liveDistricts.length} districts
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* sticky CTA row */}
-                  <div className="shrink-0 flex items-center gap-2 px-5 py-4 border-t border-carbon-20 bg-white">
-                    <button
-                      type="button"
-                      aria-label="Reset division and hazard filters"
-                      onClick={() => {
-                        setSelectedDivision('All');
-                        selectAllHazards();
-                        setSearchQuery('');
-                      }}
-                      className="tap-target min-h-[44px] rounded-full px-5 bg-carbon-05 hover:bg-carbon-10 dark:hover:bg-carbon-70 text-carbon-70 font-bold text-xs transition-colors"
-                    >
-                      Reset
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsFilterModalOpen(false)}
-                      className="flex-1 min-h-[44px] rounded-full bg-carbon-90 hover:bg-carbon-80 dark:hover:bg-carbon-10 text-carbon-05 font-black text-xs transition-all"
-                    >
-                      Show {filteredDistricts.length} districts
-                    </button>
-                  </div>
-                </motion.div>
+                  Reset
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsFilterModalOpen(false)}
+                  className="tap-target flex-1 min-h-[44px] whitespace-nowrap rounded-full bg-carbon-90 hover:bg-carbon-80 dark:hover:bg-carbon-10 text-carbon-05 font-black text-xs transition-all"
+                >
+                  Show {filteredDistricts.length} districts
+                </button>
+              </>
+            }
+          >
+            {/* Division */}
+            <section aria-labelledby="filter-division-heading" className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 id="filter-division-heading" className="text-xs font-bold uppercase tracking-[0.12em] text-carbon-60">
+                  Division
+                </h4>
+                {selectedDivision !== 'All' && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDivision('All')}
+                    className="tap-target text-xs font-semibold text-ap-link hover:underline"
+                  >
+                    Clear
+                  </button>
+                )}
               </div>
-            )}
-          </AnimatePresence>
+              <div className="flex flex-wrap gap-2">
+                {[{ id: 'all', name: 'All' }, ...ALL_8_DIVISIONS].map((div) => {
+                  const divName = div.id === 'all' ? 'All' : div.name.replace(' Division', '');
+                  const selected =
+                    div.id === 'all'
+                      ? selectedDivision === 'All'
+                      : selectedDivision.toLowerCase() === divName.toLowerCase();
+                  return (
+                    <button
+                      key={div.id}
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() => setSelectedDivision(divName)}
+                      className={`tap-target inline-flex min-h-[40px] items-center rounded-full px-4 text-xs font-bold transition-colors ${
+                        selected
+                          ? 'bg-carbon-90 text-ap-on-inverse'
+                          : 'bg-carbon-05 text-carbon-60 hover:bg-carbon-10 dark:hover:bg-carbon-70 hover:text-carbon-90 dark:hover:text-white'
+                      }`}
+                    >
+                      {divName}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* Hazards */}
+            <section aria-labelledby="filter-hazards-heading" className="space-y-3 border-t border-carbon-20 pt-4">
+              <div className="flex items-center justify-between">
+                <h4 id="filter-hazards-heading" className="text-xs font-bold uppercase tracking-[0.12em] text-carbon-60">
+                  Hazards ({selectedHazards.length}/{HAZARD_LAYERS.length})
+                </h4>
+                <div className="flex items-center gap-3 text-xs font-semibold">
+                  <button type="button" onClick={selectAllHazards} className="tap-target text-ap-link hover:underline">
+                    All
+                  </button>
+                  <button type="button" onClick={clearAllHazards} className="tap-target text-ap-link hover:underline">
+                    None
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {HAZARD_LAYERS.map((hazard) => {
+                  const selected = selectedHazards.includes(hazard.id);
+                  return (
+                    <button
+                      key={hazard.id}
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() => toggleHazard(hazard.id)}
+                      className={`tap-target inline-flex min-h-[40px] items-center gap-1.5 rounded-full border px-4 text-xs font-bold transition-colors ${
+                        selected
+                          ? 'border-transparent bg-carbon-90 text-ap-on-inverse'
+                          : 'border-carbon-20 text-carbon-60 hover:border-carbon-30 dark:hover:border-carbon-60 hover:text-carbon-90 dark:hover:text-white'
+                      }`}
+                    >
+                      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: hazard.color }} aria-hidden="true" />
+                      {hazard.name}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-carbon-60">
+                Showing {filteredDistricts.length} of {liveDistricts.length} districts
+              </p>
+            </section>
+          </BottomSheet>
 
           {/* Layer panel — one floating card, three flat sections: ground,
               overlays, hazards. Rows are icon + name + one pill, never a box
@@ -1908,36 +1865,33 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               OpenStreetMap's volunteer-run servers (deleted 2026-10-05 as the
               abuse named at osm.wiki/blocked) and a "Doppler radar" toggle that
               drew hard-coded storm cells — data with no artifact behind it. */}
-          <AnimatePresence>
-            {isLayerModalOpen && (
-              <div className="fixed inset-0 z-[var(--ap-z-modal)] bg-carbon-black/40 flex items-center justify-center p-4 pointer-events-auto">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.97 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.97 }}
-                  transition={{ duration: 0.18 }}
-                  className="w-full max-w-sm rounded-xl bg-white border border-carbon-20 p-5 sm:p-6 flex flex-col gap-5 max-h-[85vh] overflow-y-auto"
-                  role="dialog"
-                  aria-modal="true"
-                  aria-labelledby="map-layers-title"
+          {/* Map layers: the shared BottomSheet, modal. Basemap and overlays in the
+              body; the attribution entry and Done in the footer. */}
+          <BottomSheet
+            isOpen={isLayerModalOpen}
+            onClose={() => setIsLayerModalOpen(false)}
+            title="Map layers"
+            closeLabel="Close map layers"
+            footerContent={
+              <>
+                <button
+                  type="button"
+                  onClick={() => setIsAttributionOpen(true)}
+                  className="mr-auto min-h-[44px] px-1 flex items-center gap-1.5 text-xs font-medium text-carbon-60 hover:text-carbon-90 dark:hover:text-white transition-colors"
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <h3
-                      id="map-layers-title"
-                      className="text-lg font-bold tracking-tight text-carbon-90 dark:text-white"
-                    >
-                      Map layers
-                    </h3>
-                    <button
-                      type="button"
-                      onClick={() => setIsLayerModalOpen(false)}
-                      className="tap-target w-11 h-11 rounded-full bg-carbon-10 hover:bg-carbon-20 dark:hover:bg-carbon-70 text-carbon-60 flex items-center justify-center transition-colors"
-                      aria-label="Close map layers"
-                    >
-                      <MaterialIcon name="close" className="w-5 h-5" />
-                    </button>
-                  </div>
-
+                  <MaterialIcon name="info" className="w-4 h-4" />
+                  Data attribution ({attributionList.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsLayerModalOpen(false)}
+                  className="min-h-[44px] px-6 rounded-full bg-carbon-90 hover:bg-carbon-80 dark:hover:bg-carbon-10 text-carbon-05 text-sm font-bold transition-colors"
+                >
+                  Done
+                </button>
+              </>
+            }
+          >
                   {/* Ground: two basemaps, one at a time. */}
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wider text-carbon-60 mb-2.5">
@@ -1975,7 +1929,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                     <p className="text-xs font-semibold uppercase tracking-wider text-carbon-60 mb-1.5">
                       {LIVE_SECTIONS[1].label}
                     </p>
-                    <ul className="flex flex-col" role="group" aria-labelledby="map-layers-title">
+                    <ul className="flex flex-col" role="group" aria-label="Map overlays">
                       {LIVE_LAYERS.filter((l) => l.section === 'overlays').map((def) => {
                         if (def.id === 'overlay-wind') {
                           // Wind row (Phase E): model chip with the cycle time,
@@ -2479,28 +2433,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                     </div>
                   </div>
 
-                  {/* Footer: attribution entry on the left, high-contrast Done pill on the right. */}
-                  <div className="flex items-center justify-between gap-3 border-t border-carbon-20 pt-4">
-                    <button
-                      type="button"
-                      onClick={() => setIsAttributionOpen(true)}
-                      className="min-h-[44px] px-1 flex items-center gap-1.5 text-xs font-medium text-carbon-60 hover:text-carbon-90 dark:hover:text-white transition-colors"
-                    >
-                      <MaterialIcon name="info" className="w-4 h-4" />
-                      Data attribution ({attributionList.length})
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsLayerModalOpen(false)}
-                      className="min-h-[44px] px-6 rounded-full bg-carbon-90 hover:bg-carbon-80 dark:hover:bg-carbon-10 text-carbon-05 text-sm font-bold transition-colors"
-                    >
-                      Done
-                    </button>
-                  </div>
-                </motion.div>
-              </div>
-            )}
-          </AnimatePresence>
+          </BottomSheet>
 
           {/* Data attribution lightbox: exactly the credits of what is on screen,
               each with its licence and a pointer to the provider's terms. */}
@@ -2551,6 +2484,12 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                       </li>
                     ))}
                   </ul>
+                  {showsForecastRecords ? (
+                    <details className="mt-4">
+                      <summary className="min-h-[44px] cursor-pointer text-sm font-semibold text-carbon-90">Cite the forecast dataset (BibTeX)</summary>
+                      <pre className="mt-2 overflow-x-auto whitespace-pre rounded-lg bg-carbon-05 p-3 font-mono text-[12px] leading-relaxed text-carbon-90 dark:bg-carbon-80 dark:text-white">{KAGGLE_BIBTEX}</pre>
+                    </details>
+                  ) : null}
                 </motion.div>
               </div>
             )}
@@ -2594,7 +2533,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               on 2026-10-05 it became these three controls plus Leaflet's native zoom.
               On phones they sit above the bottom-center clear pill so the two never
               overlap. Opaque white, visible focus, no glass. */}
-          <div className="absolute bottom-32 sm:bottom-14 right-3 sm:right-5 z-[var(--ap-z-sticky)] pointer-events-auto flex flex-col items-center gap-2.5">
+          <div className="live-fab-column absolute bottom-32 sm:bottom-14 right-3 sm:right-5 z-[var(--ap-z-sticky)] pointer-events-auto flex flex-col items-center gap-2.5">
             <button
               type="button"
               onClick={() => setIsFilterModalOpen(true)}
@@ -2636,7 +2575,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               the smallest readable size, with a soft shadow so it stays legible
               over any ground. Every character stays visible (map attribution is
               not collapsible), it just stops pretending to be chrome. */}
-          <div className="absolute bottom-1.5 left-2 z-[var(--ap-z-sticky)] text-xs leading-snug text-carbon-60 [text-shadow:0_1px_2px_rgba(255,255,255,0.7),0_0_6px_rgba(255,255,255,0.5)] dark:[text-shadow:0_1px_2px_rgba(0,0,0,0.8),0_0_6px_rgba(0,0,0,0.6)] pointer-events-auto max-w-[calc(100%-7rem)]">
+          <div className="absolute bottom-1.5 left-2 z-[var(--ap-z-sticky)] font-sans text-xs leading-snug text-carbon-60 [text-shadow:0_1px_2px_rgba(255,255,255,0.7),0_0_6px_rgba(255,255,255,0.5)] dark:[text-shadow:0_1px_2px_rgba(0,0,0,0.8),0_0_6px_rgba(0,0,0,0.6)] pointer-events-auto max-w-[min(34rem,calc(100%-8rem))]">
             <p className="leading-snug">{attributionFor(activeLayer)}</p>
           </div>
 

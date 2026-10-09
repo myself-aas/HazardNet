@@ -50,14 +50,12 @@ describe('DistrictForecastCard (HDS selected panel)', () => {
     expect(screen.getByTestId('location-map-tile')).toBeInTheDocument()
   })
 
-  it('is an in-flow opaque card, not a glass overlay covering the map', () => {
-    const { container } = mount()
-    const card = container.firstElementChild as HTMLElement
-    expect(card.className).not.toContain('absolute')
-    expect(card.className).not.toContain('top-20')
-    expect(card.className).not.toContain('backdrop-blur')
-    expect(card.className).toContain('bg-white')
-    expect(card.className).toContain('border-carbon-20')
+  it('renders through the shared BottomSheet at the half stage', () => {
+    mount()
+    const sheet = screen.getByTestId('district-forecast-card')
+    expect(sheet).toHaveAttribute('data-sheet-stage', 'half')
+    expect(sheet.className).toContain('ap-sheet')
+    expect(sheet.className).toContain('h-[62vh]')
   })
 
   it('uses a 44px close control', () => {

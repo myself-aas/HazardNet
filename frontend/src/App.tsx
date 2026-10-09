@@ -15,6 +15,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ErrorBoundary from './components/ErrorBoundary';
 import { vercelAnalyticsEnabled } from './lib/vercelAnalytics';
+import { isConsoleTrack } from './lib/navigation';
 import { useHazardNotifications } from './hooks/useHazardNotifications';
 import { initializeAttributionCapture } from './services/conversionTracking';
 import { RequireSuperAdmin } from './components/blog/RequireSuperAdmin';
@@ -41,7 +42,7 @@ const Terms = lazy(() => import('./pages/Terms'));
 const Privacy = lazy(() => import('./pages/Privacy'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const AdvisoriesPage = lazy(() => import('./pages/AdvisoriesPage').then((m) => ({ default: m.AdvisoriesPage })));
-const AnalyticsAnalyticsPage = lazy(() => import('./pages/AnalyticsPage').then((m) => ({ default: m.AnalyticsAnalyticsPage })));
+const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage').then((m) => ({ default: m.AnalyticsPage })));
 const DistrictDetailPage = lazy(() => import('./pages/DistrictDetailPage').then((m) => ({ default: m.DistrictDetailPage })));
 const DivisionsPage = lazy(() => import('./pages/DivisionsPage'));
 const DivisionDetailPage = lazy(() => import('./pages/DivisionDetailPage'));
@@ -155,8 +156,8 @@ const AppRoutes: React.FC<{ location: ReturnType<typeof useLocation> }> = ({ loc
               <Route path="/alerts/:id" element={<AlertDetailPage />} />
               <Route path="/advisories" element={<AdvisoriesPage />} />
               <Route path="/advisories/:subCategory" element={<AdvisoriesPage />} />
-              <Route path="/analytics" element={<AnalyticsAnalyticsPage />} />
-              <Route path="/analytics/:subCategory" element={<AnalyticsAnalyticsPage />} />
+              <Route path="/analytics" element={<AnalyticsPage />} />
+              <Route path="/analytics/:subCategory" element={<AnalyticsPage />} />
               <Route path="/upload" element={<UploadPage />} />
               <Route path="/use-cases" element={<UseCases />} />
               <Route path="/download" element={<DownloadCenter />} />
@@ -291,8 +292,13 @@ const AppContent: React.FC = () => {
     location.pathname === '/set-password' ||
     location.pathname.startsWith('/auth/');
 
+  // See isConsoleTrack in lib/navigation.ts for which routes are console and
+  // for why setting this attribute does not yet change anything on screen.
+  const consoleTrack = isConsoleTrack(location.pathname);
+
   return (
     <div
+      data-track={consoleTrack ? 'console' : undefined}
       className={
         isHomePage
           ? 'h-dvh w-full overflow-hidden bg-transparent text-carbon-90 flex flex-col font-sans relative pointer-events-none'
@@ -302,7 +308,8 @@ const AppContent: React.FC = () => {
       <Toaster
         position="top-right"
         containerStyle={{
-          top: 'calc(8px + env(safe-area-inset-top, 0px))',
+          // Below the navbar, not over it: --navbar-height already carries the safe-area inset.
+          top: 'calc(var(--navbar-height) + 8px)',
           right: 'calc(8px + env(safe-area-inset-right, 0px))',
           zIndex: 70,
         }}

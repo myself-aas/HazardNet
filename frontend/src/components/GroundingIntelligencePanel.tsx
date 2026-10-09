@@ -402,7 +402,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                       Real-Time Meteorological & Hazard Bulletins
                     </h4>
                     <p className="text-xs text-carbon-60">
-                      Verified real-time information grounded via Google Search engine
+                      Search-grounded information from Google Search
                     </p>
                   </div>
                 </div>
@@ -449,7 +449,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                   <div className="space-y-2">
                     <h5 className="text-xs font-bold text-carbon-80 flex items-center gap-1.5">
                       <Globe className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>Verified Google Search Citations ({sources.length}):</span>
+                      <span>Google Search citations ({sources.length}):</span>
                     </h5>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {sources.map((src, idx) => (

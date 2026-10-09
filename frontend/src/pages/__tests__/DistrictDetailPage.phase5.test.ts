@@ -18,10 +18,29 @@ describe('DistrictDetailPage Phase 5 contracts', () => {
     .map((name) => fs.readFileSync(path.join(districtDir, name), 'utf8'))
     .join('\n');
   const source = `${page}\n${extracted}`;
+  const districtOutlook = fs.readFileSync(path.join(districtDir, 'DistrictOutlookCard.tsx'), 'utf8');
+  const body = fs.readFileSync(path.join(districtDir, 'DistrictBriefBody.tsx'), 'utf8');
 
   it('does not invent a 24-hour telemetry sparkline', () => {
     expect(source).not.toMatch(/telemetryTrendData/);
-    expect(source).toMatch(/not recorded for this district/);
+    expect(source).not.toMatch(/24-hour gauge trend/);
+  });
+
+  it('does not render synthesised exposure figures', () => {
+    expect(source).not.toMatch(/getGranularDisasterData|data\/disasterDetails/);
+    expect(source).not.toMatch(/affectedPopulation|affectedHouseholds|affectedCropLandHectares|reliefDistributedTons|activeShelters|medicalTeamsDeployed/);
+    expect(source).toMatch(/Not available/);
+  });
+
+  it('carries no claim of official status or of an issued dispatch', () => {
+    expect(source).not.toMatch(/MoDMR|PKI Verified|DISPATCH ID|OFFICIAL USE ONLY|SOD 2019/);
+    expect(source).not.toMatch(/handleTriggerDispatch|Betar|SMS queued|Emergency SOPs transmitted/);
+  });
+
+  it('keeps the authority boundary on the outlook and at the end of the brief', () => {
+    expect(districtOutlook).toMatch(/not an official warning service/i);
+    expect(districtOutlook).toMatch(/999/);
+    expect(body).toMatch(/not an official warning service/i);
   });
 
   it('withholds Compound Vulnerability as a chart series', () => {
@@ -55,7 +74,5 @@ describe('DistrictDetailPage Phase 5 contracts', () => {
     expect(outlook).toBeLessThan(table);
   });
 
-  it('labels emergency dispatch as a simulation', () => {
-    expect(source).toMatch(/Simulation only/);
-  });
+
 });

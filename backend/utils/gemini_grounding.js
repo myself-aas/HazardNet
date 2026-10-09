@@ -169,7 +169,7 @@ Provide clear markdown instructions with the exact location names, addresses, la
     `   - Direct Krishi Helpline: **16123**\n\n` +
     `2. **Upazila Livestock Hospital & Veterinary Clinic (DLS - ${resolvedDistrict})**\n` +
     `   - Animal vaccination, emergency fodder supply, flood-safe livestock shelter assistance.\n` +
-    `   - Direct Livestock Helpline: **16333**\n\n` +
+    `\n` +
     `3. **District Disaster Management Control Room & Shelters**\n` +
     `   - Disaster Warning Hotline: **1090** | Emergency Rescue: **999**\n` +
     `   - Union Parishad Disaster Management Committee (UDMC) coordinates local cyclone and flood shelters.`;

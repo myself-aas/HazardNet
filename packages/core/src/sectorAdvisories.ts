@@ -1,3 +1,18 @@
+/**
+ * Verified protocol references. Each URL was checked against the publishing
+ * body's own page. Clause numbers are deliberately not cited: they were not
+ * confirmed against the PDF, so only document-level references are given.
+ */
+export const SOD_2019_URL =
+  'https://modmr.portal.gov.bd/sites/default/files/files/modmr.portal.gov.bd/policies/7a9f5844_76c0_46f6_9d8a_5e176d2510b9/SOD%202019%20_English_FINAL.pdf';
+export const SENDAI_URL = 'https://www.undrr.org/publication/sendai-framework-disaster-risk-reduction-2015-2030';
+export const CAP_URL = 'https://docs.oasis-open.org/emergency/cap/v1.2/CAP-v1.2-os.html';
+
+const protocolRef = (sector: string, extra?: string): string =>
+  `Standing Orders on Disaster, 2019 (MoDMR, Bangladesh), ${sector}: ${SOD_2019_URL}` +
+  (extra ? ` · ${extra}` : '') +
+  ` · Sendai Framework 2015–2030 (UNDRR): ${SENDAI_URL}`;
+
 export interface TechnicalStep {
   stepNumber: string;
   title: string;
@@ -23,7 +38,7 @@ export interface CultivarOrInputSpec {
 export interface OfficialDocLink {
   title: string;
   issuingBody: string;
-  docType: 'Official Portal' | 'National Gazette' | 'Technical Manual' | 'Research Bulletin' | 'WHO/UN Guideline';
+  docType: 'Official Portal' | 'National Gazette' | 'Government standing orders (PDF)' | 'Technical Manual' | 'Research Bulletin' | 'WHO/UN Guideline' | 'International standard';
   url: string;
   description: string;
 }
@@ -77,7 +92,7 @@ export const SECTOR_ADVISORIES: Record<string, SectorAdvisoryData> = {
       'Bangladesh Agricultural Research Institute (BARI)',
       'Agriculture Information Service (AIS)'
     ],
-    sodReference: 'Standing Orders on Disaster (SOD 2019) Clause 4.2.1 (Ministry of Agriculture)',
+    sodReference: protocolRef('agriculture'),
     executiveSummary: 'Mandatory technical standard operating procedures for cereal, pulse, oilseed, and horticulture preservation before, during, and after extreme hydro-meteorological shocks across Bangladesh agro-ecological zones (AEZs).',
     hazardVulnerabilitySummary: 'Flash flood inundation in Haor regions (Sylhet, Sunamganj), monsoon riverine flooding in Brahmaputra-Jamuna & Padma basins, cyclone storm surge in southern coastal belt, and salinity intrusion in Khulna/Barishal divisions.',
     phasedProtocols: [
@@ -160,7 +175,7 @@ export const SECTOR_ADVISORIES: Record<string, SectorAdvisoryData> = {
         phase: 'post-disaster',
         timeline: 'T+7d to T+30d',
         leadAgency: 'Ministry of Agriculture & Upazila Agricultural Rehabilitation Committee',
-        triggerThreshold: 'Official crop damage declaration under SOD Clause 4.2.5.',
+        triggerThreshold: 'Not defined in HazardNet. The responsible agency sets it under the national protocol.',
         detailedProtocol: 'Compile geotagged damage assessments via HazardNet platform and distribute government-subsidized agricultural incentive packages (Pranodona) containing certified BRRI/BARI seeds, Diammonium Phosphate (DAP), and MoP fertilizer directly to marginalized smallholders.',
         technicalSpecs: [
           'Per bigha package: 5kg certified paddy seed + 10kg DAP + 10kg MoP',
@@ -227,11 +242,11 @@ export const SECTOR_ADVISORIES: Record<string, SectorAdvisoryData> = {
         description: 'Official directives, Upazila Agriculture Officer rosters, disaster compensation guidelines, and weekly agrometeorological advisories.'
       },
       {
-        title: 'Standing Orders on Disaster (SOD 2019) - MoDMR',
+        title: 'Standing Orders on Disaster, 2019 (MoDMR)',
         issuingBody: 'Ministry of Disaster Management and Relief',
-        docType: 'National Gazette',
-        url: 'https://modmr.gov.bd/',
-        description: 'Authorized legal framework detailing responsibilities of the Ministry of Agriculture and field-level committees during emergencies.'
+        docType: 'Government standing orders (PDF)',
+        url: SOD_2019_URL,
+        description: 'Document-level reference for the national disaster protocol, including the roles of sector agencies. Clause numbers are not cited.'
       },
       {
         title: 'Agriculture Information Service (AIS) Digital Media Hub',
@@ -291,7 +306,7 @@ Subject: [EMERGENCY-AGRICULTURE] Urgent Request for Contingency Seed & Agro-Reha
 
 Dear Sir/Madam,
 
-In accordance with the Standing Orders on Disaster (SOD 2019), this official communication reports severe agricultural disruption in District: [DISTRICT_NAME], Upazila(s): [UPAZILAS_AFFECTED] due to ongoing [HAZARD_TYPE: Flood/Salinity/Cyclone].
+This draft reports severe agricultural disruption in District: [DISTRICT_NAME], Upazila(s): [UPAZILAS_AFFECTED] due to ongoing [HAZARD_TYPE: Flood/Salinity/Cyclone].
 
 1. ESTIMATED DAMAGE TELEMETRY:
 - Inundated Cropland Area: [AREA_IN_HECTARES] Ha
@@ -332,7 +347,7 @@ Contact: [PHONE_NUMBER]`
       'Bangladesh Livestock Research Institute (BLRI)',
       'Ministry of Fisheries and Livestock (MoFL)'
     ],
-    sodReference: 'Standing Orders on Disaster (SOD 2019) Clause 4.3.2 (Livestock Emergency Directives)',
+    sodReference: protocolRef('livestock'),
     executiveSummary: 'Standard operating procedures for livestock shelter staging on Mujib Killas, mass vaccination campaigns against Anthrax, Black Quarter (BQ), and Foot-and-Mouth Disease (FMD), silage preservation, and biosecure carcass disposal.',
     hazardVulnerabilitySummary: 'High mortality risks during cyclone storm surges in coastal districts (Bhola, Barguna, Noakhali), prolonged fodder starvation during riverine floods in Kurigram, Gaibandha, and Sirajganj, and heat stroke during summer heatwaves.',
     phasedProtocols: [
@@ -573,7 +588,7 @@ Contact: [PHONE_NUMBER]`
       'Bangladesh Fisheries Research Institute (BFRI)',
       'Ministry of Fisheries and Livestock (MoFL)'
     ],
-    sodReference: 'Standing Orders on Disaster (SOD 2019) Clause 4.3.3 (Fisheries & Aquaculture)',
+    sodReference: protocolRef('fisheries and aquaculture'),
     executiveSummary: 'Protocols for perimeter net reinforcement around commercial carp and shrimp gher ponds, emergency oxygenation, disease prophylaxis (EUS / bacterial fin rot), and post-flood pond rehabilitation.',
     hazardVulnerabilitySummary: 'Severe fish washout during flash floods in Mymensingh, Netrokona, and Sunamganj; salinity shock and coastal pond dyke erosion in Satkhira, Khulna, and Bagerhat shrimp ghers.',
     phasedProtocols: [
@@ -812,7 +827,7 @@ Contact: [PHONE_NUMBER]`
       'World Health Organization (WHO)',
       'UNICEF Bangladesh'
     ],
-    sodReference: 'Standing Orders on Disaster (SOD 2019) Clause 4.4.1 (Health & Public Safety)',
+    sodReference: protocolRef('health and public safety'),
     executiveSummary: 'Mandatory technical standard operating procedures for safe drinking water staging, tube-well shock-chlorination, Oral Rehydration Salt (ORS) distribution, waterborne disease (Cholera, Acute Watery Diarrhea, Typhoid) outbreak containment, and snakebite antivenom management.',
     hazardVulnerabilitySummary: 'Severe contamination of shallow groundwater tube-wells during flooding, high risk of acute watery diarrhea (AWD) in displacement shelters, and spike in venomous snakebites (Russell\'s Viper, Cobra, Krait) during monsoon inundations.',
     phasedProtocols: [
@@ -1071,7 +1086,7 @@ Contact: [PHONE_NUMBER]`
       'Flood Forecasting and Warning Centre (FFWC)',
       'Bangladesh Agricultural Research Council (BARC)'
     ],
-    sodReference: 'Standing Orders on Disaster (SOD 2019) Clause 4.2.3 (Agrometeorological Early Warning & Calendars)',
+    sodReference: protocolRef('agrometeorological early warning', `Common Alerting Protocol v1.2 (OASIS): ${CAP_URL}`),
     executiveSummary: 'Precision seasonal timeline directives mapping planting, transplanting, fertilizing, and harvesting windows against probabilistic monsoon onset, flash floods, pre-monsoon Nor\'wester (Kalbaishakhi) thunderstorms, and dry season drought cycles.',
     hazardVulnerabilitySummary: 'Boro crop exposure to early April flash floods in northeastern Haors; T. Aman vulnerability to mid-monsoon drought (mid-season dry spell) and late-monsoon inundation; Rabi vegetables/wheat vulnerable to pre-mature heat and cyclone surges.',
     phasedProtocols: [
@@ -1308,7 +1323,7 @@ Contact: [PHONE_NUMBER]`
       'Bangladesh Red Crescent Society (BDRCS)',
       'Armed Forces Division (AFD)'
     ],
-    sodReference: 'Standing Orders on Disaster (SOD 2019) Clause 2.1 (National Disaster Response Coordination Centre - NDRCC)',
+    sodReference: protocolRef('national coordination'),
     executiveSummary: 'Standard operational protocol for activating Union/Upazila Disaster Management Committees (UDMC/UzDMC), translating BMD maritime warning signals (Signals 1-11) into field-level community evacuation actions, shelter management, and multi-agency humanitarian relief logistics.',
     hazardVulnerabilitySummary: 'Severe tropical cyclonic storm surges impacting 19 coastal districts; mega-floods along the Jamuna, Padma, and Meghna rivers; and active riverbank erosion displacing thousands of households annually.',
     phasedProtocols: [
@@ -1438,7 +1453,7 @@ Contact: [PHONE_NUMBER]`
         issuingBody: 'Ministry of Disaster Management and Relief (MoDMR)',
         docType: 'Official Portal',
         url: 'https://modmr.gov.bd/',
-        description: 'National disaster policies, emergency relief budget allocations, SOD 2019 documentation, and ministerial orders.'
+        description: 'National disaster policies, emergency relief budget allocations, the Standing Orders on Disaster (2019), and ministerial orders.'
       },
       {
         title: 'Department of Disaster Management (DDM) Portal',

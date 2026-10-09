@@ -39,9 +39,16 @@ export const DATA_CREDITS: Record<string, DataCredit> = {
   },
   forecasts: {
     id: 'forecasts',
-    label: 'HazardNet weekly hazard forecast product',
-    href: 'https://www.kaggle.com/datasets/ashifahmedshuvo/hazardnet-weekly-forecasts',
+    label:
+      'Forecast records: Ashif Ahmed Shuvo (2026). HazardNet Live Advisory. Kaggle. DOI 10.34740/KAGGLE/DS/11470083',
+    href: 'https://doi.org/10.34740/KAGGLE/DS/11470083',
     licence: 'CC BY-NC 4.0',
+  },
+  advisoryEda: {
+    id: 'advisoryEda',
+    label: 'Advisory EDA notebook: Ashif Ahmed Shuvo, Kaggle (cited by URL)',
+    href: 'https://www.kaggle.com/code/ashifahmedshuvo/hazardnet-advisory-eda-visualization',
+    licence: 'Kaggle notebook (licence shown on the notebook page)',
   },
   gibs: {
     id: 'gibs',
@@ -78,3 +85,13 @@ export function activeCredits(ids: string[]): DataCredit[] {
   }
   return out;
 }
+
+/** BibTeX entries for the Kaggle sources. Kept in docs/CITATION.bib as well. */
+export const KAGGLE_BIBTEX = `@misc{ashif_ahmed_shuvo_2026,
+	title={HazardNet Live Advisory},
+	url={https://www.kaggle.com/ds/11470083},
+	DOI={10.34740/KAGGLE/DS/11470083},
+	publisher={Kaggle},
+	author={Ashif Ahmed Shuvo},
+	year={2026}
+}`;
