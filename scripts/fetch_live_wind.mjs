@@ -190,7 +190,7 @@ function subsetAndSpread(gribBuffer, match) {
   const subFile = join(work, 'sub.grib');
   writeFileSync(inFile, gribBuffer);
   const { lonMin, lonMax, latMin, latMax } = WIND_BBOX;
-  runWgrib2([inFile, '-match', match, '-small_grib', subFile, String(lonMin), String(lonMax), String(latMin), String(latMax)]);
+  runWgrib2([inFile, '-match', match, '-small_grib', subFile, `${lonMin}:${lonMax}`, `${latMin}:${latMax}`]);
   const spread = runWgrib2([subFile, '-spread', '-no_header']);
   return parseSpread(spread);
 }

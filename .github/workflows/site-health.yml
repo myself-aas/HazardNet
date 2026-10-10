@@ -687,9 +687,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          EDGE_CHALLENGED=$(jq -r '.edge_challenged // false' data/site-health/latest.json)
           OUTCOME=$(jq -r '.outcome // "fail"' data/site-health/latest.json)
+          if [ "$EDGE_CHALLENGED" = "true" ]; then
+            echo "::warning::Cloudflare challenged the runner, so site-health checks are inconclusive (outcome=$OUTCOME). See data/site-health/latest.json and Action 18."
+            exit 0
+          fi
           if [ "$OUTCOME" != "pass" ]; then
             echo "::error::One or more site-health probes failed (outcome=$OUTCOME). See data/site-health/latest.json."
             exit 1
           fi
-          echo "✅ All 7 site-health probes passed."
+          echo "All 7 site-health probes passed."
