@@ -16,32 +16,19 @@
 .github/workflows/app-releases.yml
 .github/workflows/ci.yml
 .github/workflows/daily_advisory_ingest.yml
+.github/workflows/live-wind-update.yml
+.github/workflows/secret-rotation-audit.yml
 .github/workflows/site-health.yml
 .github/workflows/verify-secrets.yml
 .gitignore
+.impeccable
+.impeccable/config.json
 .npmrc
 .prettierrc
-.vs
-.vs/HazardNet
-.vs/HazardNet/CopilotIndices
-.vs/HazardNet/CopilotIndices/18.10.1201.59691
-.vs/HazardNet.slnx
-.vs/HazardNet.slnx/FileContentIndex
-.vs/HazardNet.slnx/FileContentIndex/2b95b664-848c-4a9f-8a2f-43f1338e1a7e.vsidx
-.vs/HazardNet.slnx/FileContentIndex/d73c9f81-ef32-4442-92d8-725b151bb1a1.vsidx
-.vs/HazardNet.slnx/config
-.vs/HazardNet.slnx/config/applicationhost.config
-.vs/HazardNet.slnx/v18
-.vs/HazardNet.slnx/v18/.wsuo
-.vs/HazardNet.slnx/v18/Browse.VC.db
-.vs/HazardNet.slnx/v18/DocumentLayout.backup.json
-.vs/HazardNet.slnx/v18/DocumentLayout.json
-.vs/ProjectSettings.json
-.vs/VSWorkspaceState.json
-.vs/slnx.sqlite
 CITATION.cff
 CLAIMS.md
 CppProperties.json
+DESIGN.md
 LICENSE
 MONITORING_SETUP_GUIDE.md
 Models
@@ -56,6 +43,7 @@ Models/inference_example.py
 Models/labels.json
 Models/normalization_stats.json
 Models/preprocessing_config.json
+PRODUCT.md
 README.md
 SECURITY.md
 __tests__
@@ -75,6 +63,8 @@ __tests__/__mocks__/react-native.js
 __tests__/__mocks__/react-navigation.js
 __tests__/__mocks__/tanstack-react-query.js
 __tests__/advisoryPipeline.test.js
+__tests__/advisoryTierBands.test.js
+__tests__/advisoryTierStamp.test.js
 __tests__/alertReplay.test.js
 __tests__/alertSnapshot.test.js
 __tests__/alerts
@@ -95,14 +85,23 @@ __tests__/api/predict.test.js
 __tests__/api/security.test.js
 __tests__/api/serverlessGuard.test.js
 __tests__/api/serverlessRouting.test.js
+__tests__/api/telemetry.test.js
+__tests__/appleMotion.test.js
+__tests__/appleParity.test.js
 __tests__/brandAssets.test.js
+__tests__/brandPalette.test.js
 __tests__/chatService.test.js
+__tests__/climaticHazardsSummary.test.js
+__tests__/colourDiscipline.test.js
 __tests__/contentEngine.test.js
 __tests__/conversions.test.js
 __tests__/cors.test.js
 __tests__/csvSafety.test.js
-__tests__/designTokensParity.test.js
+__tests__/darkTheme.test.js
+__tests__/designSignature.test.js
 __tests__/designTypography.test.js
+__tests__/fetchKaggleAdvisory.integration.test.js
+__tests__/fetchKaggleAdvisory.test.js
 __tests__/firebaseAuth.test.js
 __tests__/firestoreRules.test.js
 __tests__/forecastFreshness.test.js
@@ -112,19 +111,20 @@ __tests__/forecastServe.test.js
 __tests__/forecastStore.test.js
 __tests__/forecastsHistory.test.js
 __tests__/forecastsUpdate.test.js
+__tests__/fourState.test.js
 __tests__/freshnessArtifact.test.js
 __tests__/grounding.test.js
+__tests__/iconFamily.test.js
 __tests__/ingest.test.js
+__tests__/kaggleAdvisoryClient.test.js
 __tests__/liveVoice.test.js
-__tests__/meridianContrast.test.js
-__tests__/meridianParity.test.js
+__tests__/mapPalette.test.js
 __tests__/metricsApi.test.js
 __tests__/mobile
 __tests__/mobile/alertsStates.test.js
 __tests__/mobile/noScrollViewCollections.test.js
 __tests__/mobile/offlineState.test.js
 __tests__/modelArtifactsNotServed.test.js
-__tests__/nasaTokens.test.js
 __tests__/noRepoPaths.test.js
 __tests__/paletteTokens.test.js
 __tests__/phase1Packages.test.js
@@ -132,7 +132,6 @@ __tests__/phase2MobileShell.test.js
 __tests__/phase2MotionComponents.test.js
 __tests__/phase3RemotionHero.test.js
 __tests__/phase3WindowsApp.test.js
-__tests__/phase4DesignOverhaul.test.js
 __tests__/phase4PageSurfaceRedesign.test.js
 __tests__/phase5GisMobileErgonomics.test.js
 __tests__/phase6FinalReadinessGate.test.js
@@ -140,12 +139,15 @@ __tests__/phaseBFrontend.test.js
 __tests__/phaseCBackend.test.js
 __tests__/phaseDHardening.test.js
 __tests__/phaseEHistorical.test.js
+__tests__/pluginManifest.test.js
 __tests__/predict.test.js
 __tests__/predictFromStore.test.js
 __tests__/primaryActionContrast.test.js
 __tests__/publicText.test.js
 __tests__/push.test.js
+__tests__/routeSeo.test.js
 __tests__/runtimeDependencies.test.js
+__tests__/secretRotation.test.js
 __tests__/security.test.js
 __tests__/securityHeadersParity.test.js
 __tests__/securityTxt.test.js
@@ -154,8 +156,10 @@ __tests__/serviceWorker.test.js
 __tests__/staticShellContrast.test.js
 __tests__/statusPagePrerender.test.js
 __tests__/structuredData.test.js
+__tests__/tableStack.test.js
 __tests__/tokenCompliance.test.js
 __tests__/vercelForecasts.test.js
+__tests__/windPipeline.test.js
 api
 api/[endpoint].js
 api/chat
@@ -168,6 +172,8 @@ api/v1/forecasts
 api/v1/forecasts/[action].js
 api/v1/weather
 api/v1/weather/batch.js
+apple
+apple/DESIGN.md
 apps
 apps/mobile
 apps/mobile/.maestro
@@ -178,8 +184,11 @@ apps/mobile/.maestro/today-alerts-flow.yaml
 apps/mobile/App.tsx
 apps/mobile/PHASE0_STATUS.md
 apps/mobile/__tests__
+apps/mobile/__tests__/advisories.test.tsx
 apps/mobile/__tests__/alertDetailStates.test.tsx
 apps/mobile/__tests__/alertsScreenStates.test.tsx
+apps/mobile/__tests__/deviceConditions.test.ts
+apps/mobile/__tests__/nativeAppleParity.test.tsx
 apps/mobile/__tests__/noScrollViewCollections.test.js
 apps/mobile/__tests__/phase5MapAndSaved.test.tsx
 apps/mobile/__tests__/phase6Notifications.test.tsx
@@ -191,15 +200,6 @@ apps/mobile/app.json
 apps/mobile/assets
 apps/mobile/assets/.well-known
 apps/mobile/assets/adaptive-icon.png
-apps/mobile/assets/favicon.png
-apps/mobile/assets/icon.png
-apps/mobile/assets/snapshot
-apps/mobile/assets/splash.png
-apps/mobile/babel.config.cjs
-apps/mobile/ci-signing.gradle
-apps/mobile/eas.json
-apps/mobile/jest.config.cjs
-apps/mobile/jest.fileTransform.cjs
 
 === STACK DETECTION (manifest files) ===
 
@@ -266,7 +266,7 @@ apps/mobile/jest.fileTransform.cjs
         "prettier": "^3.6.2",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
-        "react-native": "^0.74.5",
+        "react-native": "0.74.5",
         "react-test-renderer": "^18.2.0",
         "supertest": "^7.2.2",
         "ts-jest": "^29.4.12",
@@ -285,7 +285,7 @@ apps/mobile/jest.fileTransform.cjs
         "@hazardnet/core": "*",
         "@hazardnet/design-system": "*",
 
-[TRUNCATED] Showing first 80 of 34963 lines.
+[TRUNCATED] Showing first 80 of 31759 lines.
 --- package.json ---
 {
   "name": "hazardnet",
@@ -322,11 +322,14 @@ apps/mobile/jest.fileTransform.cjs
   ],
   "scripts": {
     "dev": "node scripts/ensure-frontend.mjs && node backend/server.js",
-  "dev:api": "PORT=3001 node backend/server.js",
+    "dev:api": "PORT=3001 node backend/server.js",
     "start": "node backend/server.js",
     "build": "npm run build:frontend && node scripts/copy-dist.mjs",
     "build:frontend": "npm --prefix frontend run build",
     "build:frontend:copy": "npm run build",
+    "build:events-summary": "node scripts/build_climatic_hazards_summary.mjs",
+    "check:events-summary": "node scripts/build_climatic_hazards_summary.mjs --check",
+    "check:device": "npm run check:tokens && npm run check:prose && npm run icons:check && npm run check:events-summary && npm run check:important && npm run check:contrast && npm run check:contrast:css && npm run check:residue && npm run check:svg-tokens",
     "lint": "tsc -p frontend/tsconfig.json --noEmit",
     "test": "jest --passWithNoTests",
     "lint:eslint": "eslint . --max-warnings 685",
@@ -335,8 +338,11 @@ apps/mobile/jest.fileTransform.cjs
     "alerts:snapshot": "node scripts/rehearse_alert_engine.mjs --out /tmp/alert-run.json --quiet && node scripts/build_alert_snapshot.mjs --in /tmp/alert-run.json",
     "check:bundle": "node scripts/check-bundle.mjs",
     "check:functions": "node scripts/check-vercel-functions.mjs",
+    "check:rotation": "node scripts/check-secret-rotation.mjs",
     "check:design": "node scripts/check-design-quality.mjs",
     "check:tokens": "node scripts/check-token-compliance.mjs",
+    "check:brand": "node scripts/check-brand-palette.mjs --scope pages",
+    "fetch:advisory": "node scripts/fetch_kaggle_advisory.mjs",
     "check:design:source": "node scripts/check-design-quality.mjs --source-only",
     "check:paths": "node scripts/check-public-paths.mjs",
     "check:design:update": "node scripts/check-design-quality.mjs --update",
@@ -345,30 +351,24 @@ apps/mobile/jest.fileTransform.cjs
     "check:env": "node scripts/validate_env.mjs",
     "check:claims": "node scripts/verify_claims.mjs",
     "test:phases": "node --test __tests__/advisoryPipeline.test.js __tests__/phaseBFrontend.test.js __tests__/phaseCBackend.test.js __tests__/phaseDHardening.test.js __tests__/phaseEHistorical.test.js",
-    "check:fonts": "node scripts/check-font-payload.mjs"
+    "check:fonts": "node scripts/check-font-payload.mjs",
+    "icons:build": "node scripts/generate-icon-glyphs.mjs",
+    "icons:check": "node scripts/generate-icon-glyphs.mjs --check",
+    "check:prose": "node scripts/check-prose-dashes.mjs",
+    "check:important": "node scripts/check-css-important.mjs",
+    "check:important:report": "node scripts/check-css-important.mjs --report",
+    "check:contrast": "node scripts/check-contrast.mjs",
+    "check:contrast:report": "node scripts/check-contrast.mjs --report",
+    "check:contrast:css": "node scripts/check-contrast.mjs --check-css",
+    "check:residue": "node scripts/check-design-residue.mjs",
+    "check:residue:report": "node scripts/check-design-residue.mjs --report",
+    "check:svg-tokens": "node scripts/check-svg-tokens.mjs",
+    "check:svg-tokens:report": "node scripts/check-svg-tokens.mjs --report"
   },
   "dependencies": {
     "@google-cloud/firestore": "^7.11.6",
-    "@google/genai": "^2.15.0",
-    "busboy": "^1.6.0",
-    "cors": "^2.8.5",
-    "csv-parser": "^3.2.1",
-    "dompurify": "^3.4.15",
-    "dotenv": "^17.4.2",
-    "express": "^4.18.2",
-    "express-rate-limit": "^7.5.0",
-    "firebase": "^12.17.0",
-    "firebase-admin": "^13.10.0",
-    "helmet": "^8.1.0",
-    "multer": "^2.2.0",
-    "prom-client": "^15.1.3",
-    "web-push": "^3.6.7",
-    "ws": "^8.21.3",
-    "zod": "^3.23.0"
-  },
-  "devDependencies": {
 
-[TRUNCATED] Showing first 80 of 122 lines.
+[TRUNCATED] Showing first 80 of 141 lines.
 
 === ENTRY POINTS ===
 No common entry points found. Check 'main' or 'scripts.start' in manifest files above.
@@ -379,86 +379,53 @@ Found: .prettierrc
 
 === ENVIRONMENT VARIABLE TEMPLATES ===
 --- .env.example ---
-# HazardNet environment template — PLACEHOLDERS ONLY.
-#
-# This is the only env file ever committed (docs/ENVIRONMENT_SECRETS.md §0).
-# Copy it and fill real values locally:
-#
-#     cp .env.example .env
-#
-# Real values belong in exactly two other places: the Vercel project
-# environment (serverless runtime + the Vite build) and GitHub Actions
-# secrets/variables. Never commit them, and never paste them into an issue,
-# a screenshot or a chat. `bash scripts/check-secrets.sh` is the leak scanner.
-#
-# Anything prefixed VITE_ is compiled into the public JS bundle — public
-# identifiers only (docs/ENVIRONMENT_SECRETS.md §0, rule 2).
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Frontend build — Vite (public by design)
-# ─────────────────────────────────────────────────────────────────────────────
-VITE_FIREBASE_API_KEY=your_firebase_web_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your-project-id
-VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=your-messaging-sender-id
-VITE_FIREBASE_APP_ID=your-firebase-app-id
-VITE_FIREBASE_MEASUREMENT_ID=
-# Set only for a named Firestore database; unset selects "(default)".
-VITE_FIREBASE_FIRESTORE_DATABASE_ID=
-VITE_FIREBASE_DATABASE_URL=
-VITE_VAPID_PUBLIC_KEY=your-vapid-public-key
-VITE_CONTACT_EMAIL=you@example.com
-VITE_VERCEL_ANALYTICS=
-VITE_DOWNLOAD_GITHUB_OWNER=
-VITE_DOWNLOAD_REPO_ANDROID=
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Backend / serverless runtime (Vercel project env; local .env for self-host)
-# ─────────────────────────────────────────────────────────────────────────────
-# Bearer token for POST /api/v1/forecasts/update — generate with
-# `openssl rand -hex 32`. Required for ingest; leave empty locally if unused.
+ALERT_AUTO_PUBLISH=
+ALERT_AUTO_PUBLISH_MINUTES=
+ALERT_DUTY_OFFICERS=
 BACKEND_API_KEY=
+CSP_ENFORCE=
+E2E_BASE_URL=
+FIREBASE_CLIENT_EMAIL=
+FIREBASE_PRIVATE_KEY=
+FIREBASE_PROJECT_ID=
+FIREBASE_SERVICE_ACCOUNT_JSON=
+FORECAST_DATASET=
+FORECAST_STORE=
+FRONTEND_ORIGIN=
 GEMINI_API_KEY=
 GEMINI_API_KEY_BACKUP=
 GROQ_API_KEY=
-OPENROUTER_API_KEY=
 HUGGINGFACE_API_KEY=
-# Firestore access. Paste the minified service-account JSON as ONE line.
-FIREBASE_SERVICE_ACCOUNT_JSON=
-FIREBASE_PROJECT_ID=
-FIREBASE_CLIENT_EMAIL=
-FIREBASE_PRIVATE_KEY=
-VAPID_PUBLIC_KEY=
-VAPID_PRIVATE_KEY=
-WEB_PUSH_CONTACT=mailto:you@example.com
-# CORS allowlist, comma-separated. Production: https://www.hazardnet.live
-FRONTEND_ORIGIN=http://localhost:3000
-CSP_ENFORCE=
-FORECAST_STORE=firestore
-FORECAST_DATASET=hazardnet/weekly-forecasts
-ALERT_AUTO_PUBLISH=false
-ALERT_AUTO_PUBLISH_MINUTES=
-ALERT_DUTY_OFFICERS=
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Local development only (never set these in a deployment)
-# ─────────────────────────────────────────────────────────────────────────────
-# The backend defaults to :3000 (npm start serves frontend/dist there). The Vite
-# dev server owns :3000 with strictPort and proxies /api, /metrics and /health to
-# :3001, so run the API beside it with:  PORT=3001 npm run dev:api
-PORT=3001
-# Playwright / QA harness overrides (docs/codebase/TESTING.md)
-E2E_BASE_URL=http://127.0.0.1:3000
-QA_NO_API_RUNTIME=1
+OPENROUTER_API_KEY=
 QA_CHROMIUM_PATH=
+QA_NO_API_RUNTIME=
+VAPID_PRIVATE_KEY=
+VAPID_PUBLIC_KEY=
+VITE_CONTACT_EMAIL=
+VITE_DOWNLOAD_GITHUB_OWNER=
+VITE_DOWNLOAD_REPO_ANDROID=
+VITE_FIREBASE_API_KEY=
+VITE_FIREBASE_APP_ID=
+VITE_FIREBASE_AUTH_DOMAIN=
+VITE_FIREBASE_DATABASE_URL=
+VITE_FIREBASE_FIRESTORE_DATABASE_ID=
+VITE_FIREBASE_MEASUREMENT_ID=
+VITE_FIREBASE_MESSAGING_SENDER_ID=
+VITE_FIREBASE_PROJECT_ID=
+VITE_FIREBASE_STORAGE_BUCKET=
+VITE_VAPID_PUBLIC_KEY=
+VITE_VERCEL_ANALYTICS=
+WEB_PUSH_CONTACT=
+# Kaggle Dataset API (server-side only). Set in the backend host environment, never in the browser build or in git.
+KAGGLE_USERNAME=
+KAGGLE_KEY=
 
 
 === TODO / FIXME / HACK (production code only, test dirs excluded) ===
 None found.
 
 === GIT RECENT COMMITS (last 20) ===
-e4fc8eb Merge pull request #69 from myself-aas/arena/01a0fbbc-hazardnet
+3a1af69 Fix E2E drafting-panel locators; authenticate the site-health probe (Action 18) (#93)
 
 === HIGH-CHURN FILES (last 90 days, top 20) ===
    1 .env.example
@@ -474,13 +441,13 @@ e4fc8eb Merge pull request #69 from myself-aas/arena/01a0fbbc-hazardnet
    1 .github/workflows/app-releases.yml
    1 .github/workflows/ci.yml
    1 .github/workflows/daily_advisory_ingest.yml
+   1 .github/workflows/live-wind-update.yml
+   1 .github/workflows/secret-rotation-audit.yml
    1 .github/workflows/site-health.yml
    1 .github/workflows/verify-secrets.yml
    1 .gitignore
+   1 .impeccable/config.json
    1 .npmrc
-   1 .prettierrc
-   1 .vs/HazardNet.slnx/FileContentIndex/2b95b664-848c-4a9f-8a2f-43f1338e1a7e.vsidx
-   1 .vs/HazardNet.slnx/FileContentIndex/d73c9f81-ef32-4442-92d8-725b151bb1a1.vsidx
 
 === MONOREPO SIGNALS ===
 Sub-package directory found: packages/
@@ -488,29 +455,29 @@ Sub-package directory found: apps/
 package.json has 'workspaces' field (npm/yarn workspaces monorepo)
 
 === CODE METRICS ===
-Total files scanned: 928
-Total lines of code: 162123
+Total files scanned: 1035
+Total lines of code: 170009
 
 Files by language:
-  Other: 301
-  TypeScript/React: 238
-  TypeScript: 188
-  JavaScript: 180
+  Other: 337
+  TypeScript/React: 259
+  TypeScript: 218
+  JavaScript: 200
   Python: 11
   C++: 5
   C Header: 5
 
 Top 10 largest files:
-.vs/HazardNet.slnx/v18/Browse.VC.db: 61568.0KB
-frontend/assets/hero-section/Hero_Section_hd_3840_2160_30fps.mp4: 58577.1KB
-frontend/public/hero-section/Hero_Section_hd_3840_2160_30fps.mp4: 58577.1KB
-frontend/assets/hero-section/Hero_Section_hd_2560_1440_30fps.mp4: 25880.7KB
-frontend/public/hero-section/Hero_Section_hd_2560_1440_30fps.mp4: 25880.7KB
-frontend/assets/hero-section/Hero_Section_hd_1920_1080_30fps.mp4: 16161.9KB
-frontend/public/hero-section/Hero_Section_hd_1920_1080_30fps.mp4: 16161.9KB
-frontend/assets/hero-section/Hero_Section_hd_1280_720_30fps.mp4: 8780.1KB
-frontend/public/hero-section/Hero_Section_hd_1280_720_30fps.mp4: 8780.1KB
-frontend/assets/hero-section/Hero_Section_sd_960_540_30fps.mp4: 5371.7KB
+data/historical-sources/HazardNet_Events_For_GEE.csv: 9024.0KB
+data/historical-sources/hazardnet_with_severity.csv: 7092.5KB
+data/historical-sources/BGD_climatic_hazards_dataset_2000_2026.csv: 7056.2KB
+frontend/public/data/historical/hazard-catalog-index.json: 1484.6KB
+package-lock.json: 1155.9KB
+Models/hazardnet_fp32.tflite: 772.0KB
+Models/hazardnet_int8.tflite: 772.0KB
+frontend/src/content/generated-routes.json: 439.3KB
+frontend/public/img/hero-delta-dawn.jpg: 343.5KB
+frontend/public/hero-carousel/hero-flood-delta-portrait-2x.jpg: 296.2KB
 
 === CI/CD PIPELINES ===
 CI/CD: GitHub Actions

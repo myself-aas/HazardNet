@@ -79,6 +79,24 @@ The complete zone file with all record definitions (including experimental
 
 ## AI Catalog
 
-A machine-readable catalog of all agent endpoints is at
-`/.well-known/ai-catalog.json`, listing protocols, endpoints, DNS-AID records,
-and discovery URLs.
+`/.well-known/ai-catalog.json` is an **Agentic Resource Discovery (ARD) 1.0** catalog —
+the artifact Lighthouse 13.5.0 validates under its Agentic Browsing category. Its schema
+(`spec/schemas/ai-catalog.schema.json` in `ards-project/ard-spec`) sets
+`additionalProperties: false` at the root and allows exactly `specVersion`, `host` and
+`entries`, so the file cannot also carry the free-form `agents` / `dns_aid` / `discovery`
+blocks it used to. What those held now lives where it is actually consumed:
+
+- **DNS-AID records** — `scripts/publish-dns-aid.mjs` and [`dns/agents-zone.txt`](../../dns/agents-zone.txt)
+  are the source of truth; the script has always carried its own record list and never read
+  the catalog. Each entry repeats its own record as a scalar `metadata.dnsAid` so the
+  binding between a protocol and its `_agents` name stays visible in one place.
+- **Discovery URLs** (OAuth protected resource, OpenID configuration, authorization
+  server, `security.txt`) — these are standard well-known paths that agents fetch by
+  convention, so duplicating them in the catalog added a second copy to drift.
+- **WebMCP tools** — registered at runtime from `frontend/src/lib/webmcp.ts` with no
+  separate fetchable descriptor, so that entry publishes its tool list inline via ARD's
+  `data` member rather than a `url`.
+
+`__tests__/aiCatalog.test.js` pins the ARD shape and asserts that every `url` in the
+catalog resolves to a real file under `frontend/public/`, so a renamed artifact fails CI
+instead of 404ing for registries that fetch every listed URL.

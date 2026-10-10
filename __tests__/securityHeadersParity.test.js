@@ -18,6 +18,7 @@
  * makes that drift visible in CI instead of only in a live-header probe.
  */
 
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -187,7 +188,13 @@ describe('security header parity', () => {
   });
 
   it('is the same string in the shared module, both configs and helmet', async () => {
-    const { CSP, cspDirectivesFromString, AUTH_SCRIPT_ORIGINS } = await import('../backend/security/csp.js');
+    const {
+      CSP,
+      cspDirectivesFromString,
+      AUTH_SCRIPT_ORIGINS,
+      ANALYTICS_SCRIPT_ORIGINS,
+      INLINE_THEME_SCRIPT_HASH,
+    } = await import('../backend/security/csp.js');
 
     // One source of truth: every host config carries exactly the canonical string.
     expect(rootHeaders['Content-Security-Policy']).toBe(CSP);
@@ -203,11 +210,73 @@ describe('security header parity', () => {
     expect(directives.formAction).toEqual(expect.arrayContaining(["'self'"]));
     expect(directives.formAction.join(' ')).toContain('firebaseapp.com');
     expect(directives.upgradeInsecureRequests).toEqual([]);
-    // script-src is exactly 'self' plus the auth origins — nothing else.
-    expect(directives.scriptSrc).toEqual(["'self'", ...AUTH_SCRIPT_ORIGINS]);
+    // script-src is exactly 'self', the one inline-script hash, the auth origins and the
+    // Cloudflare beacon host — nothing else. In particular still no 'unsafe-inline'.
+    expect(directives.scriptSrc).toEqual([
+      "'self'",
+      INLINE_THEME_SCRIPT_HASH,
+      ...AUTH_SCRIPT_ORIGINS,
+      ...ANALYTICS_SCRIPT_ORIGINS,
+    ]);
+    expect(directives.scriptSrc).not.toContain("'unsafe-inline'");
     expect(server).toContain("from './security/csp.js'");
     expect(server).toContain('cspDirectivesFromString()');
     // No third-party script origin may be re-typed inline in server.js.
     expect(server).not.toContain('googlesyndication.com');
+  });
+
+  /**
+   * `INLINE_THEME_SCRIPT_HASH` is the only thing standing between the theme-boot script in
+   * `frontend/index.html` and being blocked at runtime: `script-src` carries no
+   * `'unsafe-inline'` and no nonce, so an inline script is allowed by hash or not at all.
+   *
+   * The hash is over the verbatim text node between the tags, leading newline and trailing
+   * indentation included. That makes it correct and brittle at the same time — reindenting
+   * the script, or running a formatter over the HTML, changes the digest and silently
+   * reinstates the dark/light flash the script exists to prevent. Nothing else in the build
+   * would notice: Vite copies the script through byte-for-byte (verified — the digest of
+   * `frontend/index.html`'s script and of the built `dist/index.html`'s are identical).
+   *
+   * So this recomputes the digest from the HTML instead of trusting the literal. If it
+   * fails, the fix is to update the constant in `backend/security/csp.js` and re-run the
+   * propagation to the three host configs above — not to loosen the policy.
+   */
+  it("hashes frontend/index.html's inline theme script, and the policy still carries it", async () => {
+    const { INLINE_THEME_SCRIPT_HASH, cspDirectivesFromString } = await import(
+      '../backend/security/csp.js'
+    );
+    const html = readFileSync(join(root, 'frontend/index.html'), 'utf8');
+
+    // Only executable inline scripts are gated by script-src. The built page also carries
+    // a `<script type="application/ld+json">` data block; browsers never run it, so it
+    // needs no hash and must not be counted here.
+    const inline = [...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)]
+      .filter(([, attrs]) => !/\bsrc\s*=/.test(attrs))
+      .filter(([, attrs]) => !/\btype\s*=\s*["']?application\/(ld\+)?json["']?/i.test(attrs))
+      .map(([, , body]) => body);
+
+    expect(inline).toHaveLength(1);
+    expect(inline[0]).toContain('hazardnet.theme');
+
+    const digest = createHash('sha256').update(inline[0], 'utf8').digest('base64');
+    expect(INLINE_THEME_SCRIPT_HASH).toBe(`'sha256-${digest}'`);
+
+    // A correct constant that no surface ships is still a blocked script.
+    for (const headers of [rootHeaders, frontendHeaders, firebaseHeaders]) {
+      expect(headers['Content-Security-Policy']).toContain(INLINE_THEME_SCRIPT_HASH);
+    }
+    expect(cspDirectivesFromString().scriptSrc).toContain(INLINE_THEME_SCRIPT_HASH);
+  });
+
+  /**
+   * Cloudflare injects its Web Analytics beacon at the edge, so it is not in the
+   * repository and cannot be reviewed here — but it is on every page of the live site and
+   * was being blocked. Pin the origin so it cannot be dropped by accident, and so the
+   * reason it is allowlisted stays next to the allowlist.
+   */
+  it('allows the Cloudflare Web Analytics beacon host', async () => {
+    const { ANALYTICS_SCRIPT_ORIGINS, CSP } = await import('../backend/security/csp.js');
+    expect(ANALYTICS_SCRIPT_ORIGINS).toContain('https://static.cloudflareinsights.com');
+    expect(CSP).toContain('https://static.cloudflareinsights.com');
   });
 });

@@ -127,6 +127,15 @@ export default defineConfig(({ mode }) => {
       strategies: 'injectManifest',
       srcDir: 'public',
       filename: 'serviceWorker.js',
+      // The default (`'auto'`) injected
+      // `<script id="vite-plugin-pwa:register-sw" src="/registerSW.js">` into <head>
+      // with no `defer`, so the browser had to fetch and execute the registration
+      // before first paint — Lighthouse measured it on the render-blocking path
+      // (376 ms in the critical chain) on a page where the service worker does
+      // nothing until after load. `script-defer` emits the same tag with `defer`:
+      // registration still happens, just after parsing, which is soon enough for
+      // the `prompt` update flow this app uses.
+      injectRegister: 'script-defer',
       injectManifest: {
         injectionPoint: 'self.__WB_MANIFEST',
         globIgnores: ['**/hero-section/*.mp4'],
@@ -185,7 +194,12 @@ export default defineConfig(({ mode }) => {
   },
   build: {
     chunkSizeWarningLimit: 1000, // increase limit (KB) if needed
-    rollupOptions: {
+    // `build.rollupOptions` is deprecated under Vite 8's Rolldown bundler, and
+    // so is the `manualChunks` function it used to carry. That mattered here:
+    // Rolldown ignores the chunk name `manualChunks` returns for virtual
+    // modules, so the preload helper could not be relocated that way.
+    // `codeSplitting.groups` is the supported replacement.
+    rolldownOptions: {
       output: {
         // Vendor splitting: the heaviest third-party stacks get their own
         // long-cacheable chunks so the root chunk stays lean and repeat
@@ -193,26 +207,62 @@ export default defineConfig(({ mode }) => {
         // PDF export buttons; leaflet the maps; firebase auth/data;
         // recharts the charts. The design system ships no vendor chunk — it
         // is CSS custom properties plus Tailwind utilities, no runtime.)
-        manualChunks(id) {
-          if (!id.includes('node_modules')) return undefined;
-          if (id.includes('node_modules/recharts')) return 'vendor-recharts';
-          if (id.includes('node_modules/jspdf') || id.includes('node_modules/html2canvas')) {
-            return 'vendor-pdf';
-          }
-          if (id.includes('node_modules/leaflet')) return 'vendor-leaflet';
-          if (id.includes('node_modules/firebase') || id.includes('node_modules/@firebase')) {
-            return 'vendor-firebase';
-          }
-          if (
-            id.includes('node_modules/react') ||
-            id.includes('node_modules/react-dom') ||
-            id.includes('node_modules/react-router') ||
-            id.includes('node_modules/@tanstack') ||
-            id.includes('node_modules/framer-motion')
-          ) {
-            return 'vendor-react';
-          }
-          return undefined;
+        //
+        // `includeDependenciesRecursively` defaults to true, which would make
+        // each vendor group swallow its whole dependency tree; the old
+        // `manualChunks` matched only the package itself, so it is turned off
+        // globally to keep the split equivalent.
+        //
+        // Priority then does the work that ordering used to. Two small groups
+        // outrank every vendor group, because any module the entry chunk
+        // needs drags its whole chunk onto the landing page:
+        //
+        //   · `vendor-runtime` — Vite's modulepreload helper
+        //     (`\0vite/preload-helper.js`) wraps every
+        //     `React.lazy(() => import(...))` in App.tsx. Left unclaimed it was
+        //     merged into `vendor-pdf`, so the front door downloaded 862 KiB
+        //     (244 KiB gzip) of jspdf + html2canvas before it could lazy-load
+        //     a single route.
+        //   · `vendor-shared` — `clsx` and `tailwind-merge`, the two halves of
+        //     `lib/utils.ts`' `cn()` (`twMerge(clsx(inputs))`), called by
+        //     App.tsx and nearly every component. clsx was merged into
+        //     `vendor-recharts`, so `/` — a page with no charts at all —
+        //     pulled 402 KiB (103 KiB gzip) of recharts to join class names.
+        //
+        // Those two were ~340 KiB gzip of the 587 KiB of unused JavaScript
+        // Lighthouse measured on the landing page, sitting on the critical
+        // path ahead of the LCP text (13.1 s LCP against a 7.0 s FCP).
+        codeSplitting: {
+          includeDependenciesRecursively: false,
+          groups: [
+            {
+              name: 'vendor-runtime',
+              test: /vite\/(preload-helper|modulepreload-polyfill)/,
+              priority: 100,
+            },
+            {
+              name: 'vendor-shared',
+              test: /node_modules\/(clsx|tailwind-merge)\//,
+              priority: 90,
+            },
+            { name: 'vendor-recharts', test: /node_modules\/recharts/, priority: 10 },
+            {
+              name: 'vendor-pdf',
+              test: /node_modules\/(jspdf|html2canvas)/,
+              priority: 10,
+            },
+            { name: 'vendor-leaflet', test: /node_modules\/leaflet/, priority: 10 },
+            {
+              name: 'vendor-firebase',
+              test: /node_modules\/@?firebase/,
+              priority: 10,
+            },
+            {
+              name: 'vendor-react',
+              test: /node_modules\/(react|react-dom|react-router|@tanstack|framer-motion)/,
+              priority: 10,
+            },
+          ],
         },
       },
     },
