@@ -115,18 +115,22 @@ describe("Tailwind's dark: variant covers both of apple.css's dark arms", () => 
         .map((f) => join(distAssets, f))
     : [];
 
-  it.each(builtCss)('the built stylesheet %s carries a dark: utility in both arms',
-    (file) => {
-      const css = readFileSync(file, 'utf8');
-      // Any dark: utility that resolves a hazard accent — the pairing Lighthouse flagged.
-      const classArm = /\.dark\\:[^{]*:where\(\[data-theme=dark\]/.test(css);
-      const mediaArm =
-        /@media \(prefers-color-scheme:dark\)\{\.dark\\:[^{]*:where\(:root:not\(\[data-theme=light\]\)/.test(
-          css
-        );
-      expect({ classArm, mediaArm }).toEqual({ classArm: true, mediaArm: true });
-    }
-  );
+  const builtStylesheetTest = (file) => {
+    const css = readFileSync(file, 'utf8');
+    // Any dark: utility that resolves a hazard accent — the pairing Lighthouse flagged.
+    const classArm = /\.dark\\:[^{]*:where\(\[data-theme=dark\]/.test(css);
+    const mediaArm =
+      /@media \(prefers-color-scheme:dark\)\{\.dark\\:[^{]*:where\(:root:not\(\[data-theme=light\]\)/.test(
+        css
+      );
+    expect({ classArm, mediaArm }).toEqual({ classArm: true, mediaArm: true });
+  };
+
+  if (builtCss.length > 0) {
+    it.each(builtCss)('the built stylesheet %s carries a dark: utility in both arms', builtStylesheetTest);
+  } else {
+    it.skip('the built stylesheet carries a dark: utility in both arms when a build artifact is present', () => {});
+  }
 });
 
 describe('the two hazard arms are not interchangeable, which is why the parity above matters', () => {
