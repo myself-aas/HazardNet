@@ -167,7 +167,7 @@ const HAZARD_CONFIGS: Record<string, HazardCardConfig> = {
     kickerEn: 'CONVECTIVE EXTREME · KALBAISHAKHI',
     kickerBn: 'কালবৈশাখী · তীব্র স্থানীয় ঝড়',
     taglineEn: 'High-shear squall lines, destructive hail, and lightning strikes along pre-monsoon drylines.',
-    taglineBn: 'চৈত্র-বৈশাখ মাসের তীব্র কালবৈশাখী, শিলাবৃষ্টি ও বজ্রপাত।',
+    taglineBn: 'চৈত্র-বৈশাখ মাসের তীব্র ��ালবৈশাখী, শিলাবৃষ্টি ও বজ্রপাত।',
     leadTime: 'Pre-monsoon afternoon hours · Convective CAPE index',
     isDark: true,
     renderVisual: () => (
@@ -321,7 +321,7 @@ const HAZARD_CONFIGS: Record<string, HazardCardConfig> = {
 export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards }) => {
   const { language, t } = useI18n();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [viewMode, setViewMode] = useState<'shelf' | 'grid'>('grid');
+  const [viewMode, setViewMode] = useState<'shelf' | 'grid'>('shelf');
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
