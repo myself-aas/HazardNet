@@ -64,7 +64,12 @@ jobs:
         # imports, security.txt, header parity and the content engine — silently,
         # on every commit. A suite that genuinely cannot run belongs in a failing
         # state a human has to look at, not in this list.
-        run: npx jest --ci --coverage --coverageDirectory=./coverage/backend --testPathIgnorePatterns='/node_modules/' '/e2e/' '/frontend/' '/apps/' '/__mocks__/'
+        run: |
+          # `dist/` is a generated, ignored artifact and must not let a stale local
+          # stylesheet decide whether backend tests pass. The frontend build job owns
+          # validating generated CSS; backend coverage should validate source only.
+          rm -rf dist
+          npx jest --ci --coverage --coverageDirectory=./coverage/backend --testPathIgnorePatterns='/node_modules/' '/e2e/' '/frontend/' '/apps/' '/__mocks__/'
 
       - name: Upload backend coverage
         if: always()
