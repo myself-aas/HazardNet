@@ -101,7 +101,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-carbon-60 hover:text-carbon-90 hover:bg-carbon-20 dark:hover:bg-carbon-70 transition-colors"
+                className="min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center text-carbon-60 hover:text-carbon-90 hover:bg-carbon-20 dark:hover:bg-carbon-70 transition-colors"
                 aria-label="Close detail panel"
               >
                 <MaterialIcon name="close" className="w-4 h-4" />

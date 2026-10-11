@@ -74,7 +74,7 @@ describe('test-path discipline', () => {
 
   it('finds the suites it guards, so it cannot pass vacuously', () => {
     expect(files.length).toBeGreaterThan(50);
-    const names = files.map((f) => relative(FRONTEND_ROOT, f));
+    const names = files.map((f) => relative(FRONTEND_ROOT, f).replace(/\\/g, '/'));
     expect(names).toContain('src/lib/__tests__/easing.test.ts');
     expect(names).toContain('src/hooks/__tests__/mapAttribution.test.ts');
   });
@@ -82,7 +82,7 @@ describe('test-path discipline', () => {
   it('never resolves a repository file from the process cwd', () => {
     const offenders = files
       .filter((file) => CWD_AS_PATH_ROOT.test(executableSource(file)))
-      .map((file) => relative(FRONTEND_ROOT, file));
+      .map((file) => relative(FRONTEND_ROOT, file).replace(/\\/g, '/'));
 
     // The failure message says what to do, because the fix is not "delete the assertion".
     if (offenders.length > 0) {

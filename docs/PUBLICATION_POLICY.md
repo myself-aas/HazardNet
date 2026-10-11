@@ -21,10 +21,9 @@ other public surface:
 - the validation scorecard's headline counts (with their plain limitations)
 - the freshness/provenance record
 - the web application code that presents these results
-- `Models/` — trained artifacts retained **unadvertised** (not linked, not downloadable
-  through any page, not described publicly)
+- `Models/` — metadata and normalization configs only (`labels.json`, `normalization_stats.json`, `preprocessing_config.json`, `VERSION.json`). **All model binaries (`*.tflite`) have been deleted from the repository** to strictly enforce the public-only policy.
 
-Trained artifacts in `Models/` may be removed at any time; nothing may ever link to them.
+**Journal Publication Embargo:** No internal benchmarks, derived evaluations, or research-private assets may be released or published publicly until the research article is formally accepted and published in a peer-reviewed journal.
 
 ## Git history — required purge before republication
 

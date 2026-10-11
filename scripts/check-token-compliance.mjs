@@ -192,7 +192,7 @@ const countHexLiterals = () => {
     const ext = extname(file);
     if (ext !== '.ts' && ext !== '.tsx') continue;
     const found = stripComments(readFileSync(file, 'utf8')).match(HEX_LITERAL);
-    if (found?.length) counts.set(relative(ROOT, file), found.length);
+    if (found?.length) counts.set(relative(ROOT, file).replace(/\\/g, '/'), found.length);
   }
   return counts;
 };

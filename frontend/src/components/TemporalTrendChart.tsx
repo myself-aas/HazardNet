@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Sparkles } from 'lucide-react';
-import defaultTrends from '../../public/data/historical/temporal-trends.json';
+import { MAP_CHART_PALETTE } from '@hazardnet/design-system';
+import defaultTrends from '../data/temporalTrends.json';
 
 export interface TemporalTrendRecord {
   year: number;
@@ -22,9 +23,9 @@ interface MilestoneAnnotation {
 }
 
 const MILESTONES: MilestoneAnnotation[] = [
-  { year: 2007, label: 'Cyclone Sidr', sublabel: 'Cat 5 / 3,400+ casualties', color: '#c01f1f' },
-  { year: 2017, label: 'Flash Floods', sublabel: 'Haor Basin submerged', color: '#0066cc' },
-  { year: 2024, label: 'Cyclone Remal', sublabel: 'Severe storm surge', color: '#8a5a00' },
+  { year: 2007, label: 'Cyclone Sidr', sublabel: 'Cat 5 / 3,400+ casualties', color: MAP_CHART_PALETTE.red },
+  { year: 2017, label: 'Flash Floods', sublabel: 'Haor Basin submerged', color: MAP_CHART_PALETTE.blue },
+  { year: 2024, label: 'Cyclone Remal', sublabel: 'Severe storm surge', color: MAP_CHART_PALETTE.amber },
 ];
 
 export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({

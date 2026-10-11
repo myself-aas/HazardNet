@@ -13,10 +13,8 @@ export interface UpazilaImpact {
  * `confidenceLevel` are derived from the static district baseline
  * (`bangladeshDistricts.ts`) for display; they are not model output and must not
  * be presented as such. `confidenceLevel` in particular is
- * `92 + severity * 7.2` — a display score, not a calibrated probability (Phase 3
- * model ops: `docs/model-ops/CALIBRATION.md`, and the copy guards in
- * `scripts/tests/test_model_claims.py`). Replacing this panel with served
- * forecast fields is tracked for Phase 5.
+ * `92 + severity * 7.2` — a display score, not a calibrated probability.
+ * Replacing this panel with served forecast fields is tracked for Phase 5.
  */
 export interface GranularDisasterData {
   districtId: string;

@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 
 import { ALL_64_DISTRICTS, getDistrictById } from '../data/bangladeshDistricts';
 import { fetchForecastMetadata, fetchStaticForecastSnapshot, ForecastRow, canonicalKey } from '../lib/forecasts';
+import { loadKaggleAdvisories } from '../hooks/useKaggleAdvisories';
 import { useWeather } from '../hooks/useWeather';
 import { fetchDistrictEvents, DistrictEventsResponse } from '../lib/eventsClient';
 import { DistrictBriefProvider } from '../components/district/DistrictBriefContext';
@@ -38,10 +39,10 @@ export const DistrictDetailPage: React.FC = () => {
       try {
         const m = await fetchForecastMetadata();
         if (cancelled) return;
-        setMetadata({ predictionDate: m.predictionDate, source: m.source, ingestionTimestamp: m.ingestionTimestamp });
+        setMetadata((prev) => (prev.source === 'Kaggle_Daily_Advisory' ? prev : { predictionDate: m.predictionDate, source: m.source, ingestionTimestamp: m.ingestionTimestamp }));
       } catch {
         // Never revive stale dates when the live source is unavailable.
-        if (!cancelled) setMetadata({ predictionDate: null, source: null, ingestionTimestamp: null });
+        if (!cancelled) setMetadata((prev) => (prev.source === 'Kaggle_Daily_Advisory' ? prev : { predictionDate: null, source: null, ingestionTimestamp: null }));
       }
     };
     refreshMetadata();
@@ -64,21 +65,58 @@ export const DistrictDetailPage: React.FC = () => {
     if (!district) return;
     let isMounted = true;
     setLoadingForecastTable(true);
+
+    const matchName = district.name.toLowerCase();
+    const filterDistrict = (r: ForecastRow) =>
+      r.district_name.toLowerCase() === matchName || canonicalKey(r.district_name) === canonicalKey(district.name);
+
+    async function fetchHorizonRows(horizon: '7_days' | '15_days') {
+      try {
+        const kaggle = await loadKaggleAdvisories(horizon);
+        const districtRows = (kaggle.rows || []).filter(filterDistrict);
+        if (districtRows.length > 0) {
+          return {
+            rows: districtRows,
+            source: 'Kaggle_Daily_Advisory',
+            generatedAt: kaggle.generatedAt,
+            fetchedAt: kaggle.fetchedAt,
+          };
+        }
+      } catch {
+        // Fallback to static snapshot on Kaggle outage or error
+      }
+      const staticRows = await fetchStaticForecastSnapshot(horizon).catch(() => []);
+      return {
+        rows: staticRows.filter(filterDistrict),
+        source: null,
+        generatedAt: null,
+        fetchedAt: null,
+      };
+    }
+
     Promise.all([
-      fetchStaticForecastSnapshot('7_days').catch(() => []),
-      fetchStaticForecastSnapshot('15_days').catch(() => []),
-    ]).then(([rows7, rows15]) => {
+      fetchHorizonRows('7_days'),
+      fetchHorizonRows('15_days'),
+    ]).then(([res7, res15]) => {
       if (!isMounted) return;
-      const matchName = district.name.toLowerCase();
-      const filterDistrict = (r: ForecastRow) =>
-        r.district_name.toLowerCase() === matchName || canonicalKey(r.district_name) === canonicalKey(district.name);
-      const district7D = rows7.filter(filterDistrict);
-      const district15D = rows15.filter(filterDistrict);
-      setDistrictForecasts7D(district7D);
-      setDistrictForecasts15D(district15D);
+      setDistrictForecasts7D(res7.rows);
+      setDistrictForecasts15D(res15.rows);
+
+      // If Kaggle advisory data was fetched, wire real-time metadata (generatedAt/fetchedAt)
+      const liveSource = res7.source || res15.source;
+      const generatedAt = res7.generatedAt || res15.generatedAt;
+      const fetchedAt = res7.fetchedAt || res15.fetchedAt;
+      if (liveSource && generatedAt) {
+        setMetadata({
+          predictionDate: generatedAt.slice(0, 10),
+          source: liveSource,
+          ingestionTimestamp: fetchedAt || generatedAt,
+        });
+      }
+
       // The pipeline does not always emit both horizons for every district, so open the horizon that has rows.
       setActiveTableHorizon((current) => {
-        const rowsFor = (h: '7_days' | '15_days') => (h === '7_days' ? district7D : district15D);
+        const rowsFor = (h: '7_days' | '15_days') => (h === '7_days' ? res7.rows : res15.rows);
         if (rowsFor(current).length > 0) return current;
         const other = current === '7_days' ? '15_days' : '7_days';
         return rowsFor(other).length > 0 ? other : current;
@@ -87,6 +125,7 @@ export const DistrictDetailPage: React.FC = () => {
     }).catch(() => {
       if (isMounted) setLoadingForecastTable(false);
     });
+
     return () => {
       isMounted = false;
     };

@@ -345,7 +345,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
                   const cap = ALL_64_DISTRICTS.find((d) => d.name.toLowerCase() === div.capital.toLowerCase());
                   if (cap) onSelectDistrict(cap);
                 }}
-                className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 border min-h-[38px] ${
+                className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 border min-h-[44px] ${
                   isSelected
                     ? 'bg-primary text-ap-action-fg border-ap-primary shadow-xs scale-[1.02]'
                     : 'bg-carbon-05 text-carbon-70 border-carbon-20 hover:text-carbon-90 hover:bg-carbon-10'

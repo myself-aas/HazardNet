@@ -74,6 +74,13 @@ export function routeSegment(req, param, table) {
 
   const raw = req.query ? req.query[param] : undefined;
   const candidate = Array.isArray(raw) ? raw[raw.length - 1] : raw;
+  if (typeof candidate === 'string' && table.has(candidate)) return candidate;
+
+  const parts = path.split('/');
+  for (const part of parts) {
+    if (table.has(part)) return part;
+  }
+
   return typeof candidate === 'string' ? candidate : fromPath;
 }
 

@@ -141,6 +141,12 @@ export const APPLE_WEIGHTS = [400, 500, 600, 700] as const;
 /** The display/text face boundary, in px. Kept from the previous system; no spec value. */
 export const APPLE_FACE_BOUNDARY = 20;
 
+/**
+ * Canonical typography font stack per DESIGN.md.
+ * Zero-byte enhancement: Inter first, falling back to the native platform UI face.
+ */
+export const APPLE_FONT_STACK = "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+
 /* ═════════════════════════════════════════════════════════════════════════════
    GEOMETRY — spec §Shapes. Mirrors apple.css §3.
    ═════════════════════════════════════════════════════════════════════════════ */

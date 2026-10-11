@@ -329,38 +329,38 @@ export function LocationMap({
           </div>
 
           {/* Right Action Icons: Zoom, Recenter, Expand */}
-          <div className="flex items-center gap-1 pointer-events-auto">
+          <div className="flex items-center gap-1.5 pointer-events-auto">
             {/* Recenter button */}
             <button
               type="button"
               onClick={handleRecenter}
-              className="w-7 h-7 rounded-full bg-carbon-black/80 hover:bg-carbon-80 text-white hover:text-white backdrop-blur-md border border-white/20 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] rounded-full bg-carbon-black/80 hover:bg-carbon-80 text-white hover:text-white backdrop-blur-md border border-white/20 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
               title="Recenter Map on Target Coordinates"
               aria-label="Recenter Map"
             >
-              <RotateCcw className="w-3.5 h-3.5 text-ap-on-scrim-muted" />
+              <RotateCcw className="w-4 h-4 text-ap-on-scrim-muted" />
             </button>
 
             {/* Zoom In */}
             <button
               type="button"
               onClick={handleZoomIn}
-              className="w-7 h-7 rounded-full bg-carbon-black/80 hover:bg-carbon-80 text-white hover:text-white backdrop-blur-md border border-white/20 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] rounded-full bg-carbon-black/80 hover:bg-carbon-80 text-white hover:text-white backdrop-blur-md border border-white/20 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
               title="Zoom In"
               aria-label="Zoom In"
             >
-              <ZoomIn className="w-3.5 h-3.5" />
+              <ZoomIn className="w-4 h-4" />
             </button>
 
             {/* Zoom Out */}
             <button
               type="button"
               onClick={handleZoomOut}
-              className="w-7 h-7 rounded-full bg-carbon-black/80 hover:bg-carbon-80 text-white hover:text-white backdrop-blur-md border border-white/20 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] rounded-full bg-carbon-black/80 hover:bg-carbon-80 text-white hover:text-white backdrop-blur-md border border-white/20 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
               title="Zoom Out"
               aria-label="Zoom Out"
             >
-              <ZoomOut className="w-3.5 h-3.5" />
+              <ZoomOut className="w-4 h-4" />
             </button>
 
             {/* Expand / Minimize Toggle */}
@@ -370,14 +370,14 @@ export function LocationMap({
                 e.stopPropagation();
                 setIsExpanded(!isExpanded);
               }}
-              className="w-7 h-7 rounded-full bg-carbon-black/80 hover:bg-carbon-80 text-ap-on-scrim-sev hover:text-amber-300 backdrop-blur-md border border-carbon-70/80 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] rounded-full bg-carbon-black/80 hover:bg-carbon-80 text-ap-on-scrim-sev hover:text-amber-300 backdrop-blur-md border border-carbon-70/80 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
               title={isExpanded ? "Collapse Mini Map" : "Expand Mini Map View"}
               aria-label={isExpanded ? "Collapse Mini Map" : "Expand Mini Map View"}
             >
               {isExpanded ? (
-                <Minimize2 className="w-3.5 h-3.5" />
+                <Minimize2 className="w-4 h-4" />
               ) : (
-                <Maximize2 className="w-3.5 h-3.5" />
+                <Maximize2 className="w-4 h-4" />
               )}
             </button>
           </div>

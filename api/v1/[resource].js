@@ -20,7 +20,8 @@ export default createDispatcher({
   routes: {
     alerts: () => import('../../serverless/v1/alerts/index.js'),
     historical: () => import('../../serverless/v1/historical.js'),
-    weather: () => import('../../serverless/v1/weather.js'),
+    kaggle: () => import('../../serverless/v1/kaggle.js'),
     telemetry: () => import('../../serverless/v1/telemetry.js'),
+    weather: () => import('../../serverless/v1/weather.js'),
   },
 });

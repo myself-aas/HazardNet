@@ -1,8 +1,7 @@
 # HazardNet Edge Deployment Bundle
 
 ## Contents
-- `hazardnet_int8.tflite` - Optimized FP32 model (TFLite CONV_3D requires FP32)
-- `hazardnet_fp32.tflite` - FP32 baseline model
+- Model binaries (`*.tflite`) are research-private and deleted from the repository to strictly satisfy `docs/PUBLICATION_POLICY.md`.
 - `labels.json` - 8 hazard class labels
 - `preprocessing_config.json` - Pre-computed normalization stats + band order
 - `inference_example.py` - Standalone inference with normalization & NDHWC transpose

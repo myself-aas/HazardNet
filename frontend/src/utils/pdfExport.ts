@@ -242,14 +242,14 @@ export async function exportElementToPdf(options: PdfExportOptions = {}): Promis
             body {
               background: #ffffff !important;
               color: #1d1d1f !important;
-              font-family: "Times New Roman", Times, serif !important;
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
               font-size: 12pt !important;
               line-height: 1.5 !important;
             }
             .pdf-capture-mode {
               background: #ffffff !important;
               color: #1d1d1f !important;
-              font-family: "Times New Roman", Times, serif !important;
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
               font-size: 12pt !important;
               line-height: 1.5 !important;
             }

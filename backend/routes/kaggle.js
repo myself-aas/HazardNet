@@ -13,7 +13,7 @@ const router = express.Router();
  *   unavailable  no successful fetch yet; no rows (HTTP 503)
  * No credentials appear in the response.
  */
-router.get('/advisories', async (req, res) => {
+router.get(['/', '/advisories'], async (req, res) => {
   const horizon = typeof req.query.horizon === 'string' && req.query.horizon ? req.query.horizon : '7_days';
   if (!['7_days', '15_days'].includes(horizon)) {
     return res.status(400).json({ error: 'horizon must be 7_days or 15_days' });

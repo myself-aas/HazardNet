@@ -391,7 +391,7 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
                 type="button"
                 onClick={() => handleScroll('left')}
                 disabled={!canScrollLeft}
-                className="w-8 h-8 rounded-full flex items-center justify-center bg-carbon-10 border border-carbon-20 text-carbon-70 hover:bg-carbon-20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                className="min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center bg-carbon-10 border border-carbon-20 text-carbon-70 hover:bg-carbon-20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                 aria-label="Scroll hazards left"
               >
                 <MaterialIcon name="chevron_left" className="text-base" />
@@ -400,7 +400,7 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
                 type="button"
                 onClick={() => handleScroll('right')}
                 disabled={!canScrollRight}
-                className="w-8 h-8 rounded-full flex items-center justify-center bg-carbon-10 border border-carbon-20 text-carbon-70 hover:bg-carbon-20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                className="min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center bg-carbon-10 border border-carbon-20 text-carbon-70 hover:bg-carbon-20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                 aria-label="Scroll hazards right"
               >
                 <MaterialIcon name="chevron_right" className="text-base" />

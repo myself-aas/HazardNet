@@ -3,10 +3,8 @@
  *
  * The disclaimer is required on **every public surface, including SMS and exports**,
  * so it lives in one constant that the alert list, the alert detail page, the printed
- * evidence card and the CSV/PDF exports all render. `scripts/tests/test_model_claims.py`
- * compares this constant against the §1.7 block in `docs/PRODUCT_SPEC.md` (markdown
- * stripped) — the same guard the backend's `REQUIRED_DISCLAIMER` has — so the site and
- * the API cannot drift into saying different things.
+ * evidence card and the CSV/PDF exports all render. Parity is maintained with the
+ * backend's `REQUIRED_DISCLAIMER` so the site and the API cannot drift into saying different things.
  *
  * The emergency numbers are Bangladesh's: 999 national emergency, 1090 disaster
  * response, 16123 agriculture helpline. They are part of the disclaimer, not a

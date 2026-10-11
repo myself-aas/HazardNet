@@ -82,3 +82,15 @@ export const MAP_RAIN_RAMP = {
   snowModerate: '#3b5bdb',
   snowHeavy: '#7048e8',
 } as const;
+
+/**
+ * Map trend and milestone chart colors — mapped to Apple severity and primary tokens.
+ */
+export const MAP_CHART_PALETTE = {
+  blue: MAP_INTERACTIVE.blue,
+  green: APPLE_SEVERITY.low.solid,
+  amber: APPLE_SEVERITY.moderate.solid,
+  red: APPLE_SEVERITY.veryHigh.solid,
+  plum: APPLE_SEVERITY.extreme.solid,
+} as const;
+

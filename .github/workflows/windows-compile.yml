@@ -1,0 +1,79 @@
+name: Windows PR Compile
+
+# Dedicated PR compile workflow validating apps/windows (WinUI 3 / React Native Windows)
+# deliverable target on pull requests modifying Windows assets.
+
+on:
+  pull_request:
+    paths:
+      - 'apps/windows/**'
+      - '.github/workflows/windows-compile.yml'
+
+concurrency:
+  group: windows-compile-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  compile-windows:
+    name: Compile Windows App (WinUI 3 / RNW)
+    runs-on: windows-2022
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          npm ci --legacy-peer-deps --no-audit --no-fund
+
+      - name: Verify RNW layout
+        shell: pwsh
+        run: |
+          $rootRnw = "node_modules/react-native-windows/package.json"
+          $appRnw = "apps/windows/node_modules/react-native-windows/package.json"
+          if (Test-Path $rootRnw) {
+            Write-Host "Root RNW exists"
+          }
+          if (-not (Test-Path $appRnw) -and (Test-Path $rootRnw)) {
+            New-Item -ItemType Directory -Force -Path "apps/windows/node_modules" | Out-Null
+            Copy-Item -Recurse -Force "node_modules/react-native-windows" "apps/windows/node_modules/react-native-windows"
+            Write-Host "Copied root RNW to apps/windows"
+          }
+          if (Test-Path "node_modules/react-native/package.json") {
+            if (-not (Test-Path "apps/windows/node_modules/react-native/package.json")) {
+              Copy-Item -Recurse -Force "node_modules/react-native" "apps/windows/node_modules/react-native" -ErrorAction SilentlyContinue
+            }
+          }
+
+      - name: Restore NuGet packages
+        shell: pwsh
+        run: |
+          $sln = "apps/windows/windows/HazardNet.sln"
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $msbuildPath = $null
+          if (Test-Path $vswhere) {
+            $msbuildPath = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe | Select-Object -First 1
+          }
+          if (-not $msbuildPath -or -not (Test-Path $msbuildPath)) {
+            $msbuildPath = "msbuild"
+          }
+          & $msbuildPath "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:minimal
+          if ($LASTEXITCODE -ne 0) { throw "NuGet restore failed with exit code $LASTEXITCODE" }
+
+      - name: Compile Windows Solution
+        shell: pwsh
+        working-directory: apps/windows
+        run: |
+          npx react-native run-windows --release --no-launch --no-deploy --no-packager --logging --arch x64
+          if ($LASTEXITCODE -ne 0) { throw "Windows compile failed with exit code $LASTEXITCODE" }

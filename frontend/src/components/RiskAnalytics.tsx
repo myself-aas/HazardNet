@@ -19,6 +19,7 @@ import {
   Pie,
   Cell
 } from 'recharts';
+import { APPLE_NEUTRAL } from '@hazardnet/design-system';
 
 interface District {
   id: string;
@@ -293,25 +294,25 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
               data={trendDataToUse}
               margin={{ top: 10, right: 20, left: -10, bottom: 0 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={APPLE_NEUTRAL['20']} vertical={false} />
               <XAxis
                 dataKey="year"
-                stroke="#6e6e73"
+                stroke={APPLE_NEUTRAL['50']}
                 fontSize={12}
                 tickLine={false}
-                axisLine={{ stroke: '#d2d2d7' }}
+                axisLine={{ stroke: APPLE_NEUTRAL['30'] }}
               />
               <YAxis
-                stroke="#6e6e73"
+                stroke={APPLE_NEUTRAL['50']}
                 fontSize={12}
                 tickLine={false}
-                axisLine={{ stroke: '#d2d2d7' }}
+                axisLine={{ stroke: APPLE_NEUTRAL['30'] }}
                 unit={metricMode === 'severity' ? '%' : ''}
                 domain={metricMode === 'severity' ? [0, 100] : [0, 'auto']}
               />
               <Tooltip content={<CustomDarkTooltip />} />
               <Legend
-                wrapperStyle={{ paddingTop: '12px', fontSize: '12px', color: '#1d1d1f' }}
+                wrapperStyle={{ paddingTop: '12px', fontSize: '12px', color: APPLE_NEUTRAL['90'] }}
               />
 
               {visibleRegions.map((region) => (

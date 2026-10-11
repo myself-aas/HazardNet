@@ -1746,20 +1746,20 @@ caption {
     margin: 20mm 15mm; /* Top/Bottom: 20mm, Left/Right; 15mm (A4 Standard) */
     @bottom-left {
       content: "HazardNet Bangladesh • Emergency Directive Handout";
-      font-family: "Times New Roman", Times, serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       font-size: 8.5pt;
       font-weight: 600;
       color: var(--ap-n-60);
     }
     @bottom-center {
       content: "HazardNet Bangladesh. Not an official warning service.";
-      font-family: "Times New Roman", Times, serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       font-size: 8pt;
       color: var(--ap-n-40);
     }
     @bottom-right {
       content: "Page " counter(page) " of " counter(pages);
-      font-family: "Times New Roman", Times, serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       font-size: 9pt;
       font-weight: 800;
       color: var(--ap-n-90);
@@ -1781,14 +1781,14 @@ caption {
     box-shadow: none !important;
   }
 
-  /* 3. Base Document Typography & Clean Contrast (Times New Roman 12pt Official Standard) */
+  /* 3. Base Document Typography & Clean Contrast (Standard 12pt Document) */
   html,
   body,
   .print-district-brief {
     background-color: #ffffff !important;
     background: #ffffff !important;
     color: var(--ap-n-90) !important;
-    font-family: "Times New Roman", Times, serif !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
     font-size: 12pt !important;
     line-height: 1.5 !important;
     margin: 0 !important;
@@ -1808,7 +1808,7 @@ caption {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) rotate(-32deg);
-    font-family: "Times New Roman", Times, serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     font-size: 20pt;
     font-weight: 900;
     letter-spacing: 0.14em;

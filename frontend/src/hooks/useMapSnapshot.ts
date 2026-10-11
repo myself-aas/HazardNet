@@ -3,6 +3,7 @@ import html2canvas from 'html2canvas-pro';
 import toast from 'react-hot-toast';
 import L from 'leaflet';
 import { iconMarkup } from '../lib/iconMarkup';
+import { APPLE_FONT_STACK } from '@hazardnet/design-system';
 
 export interface UseMapSnapshotOptions {
   exportScale?: number;
@@ -119,7 +120,7 @@ export function useMapSnapshot(
                     border: 2px solid #333333;
                     border-radius: 20px;
                     padding: 16px 20px;
-                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                    font-family: ${APPLE_FONT_STACK};
                     box-shadow: 0 25px 30px -5px rgba(0,0,0,0.7);
                     display: flex;
                     align-items: center;
@@ -155,7 +156,7 @@ export function useMapSnapshot(
                             VERIFIED SNAPSHOT
                           </span>
                         </div>
-                        <h2 style="font-size: 18px; font-weight: 900; color: #ffffff; margin: 4px 0 0 0; letter-spacing: -0.02em;">
+                        <h2 style="font-size: 20px; font-weight: 900; color: #ffffff; margin: 4px 0 0 0; letter-spacing: -0.02em;">
                           ${escapedTitle}
                         </h2>
                         <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px; font-size: 12px; color: #d2d2d7;">
@@ -192,7 +193,7 @@ export function useMapSnapshot(
                     border: 1.5px solid #333333;
                     border-radius: 16px;
                     padding: 12px 16px;
-                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                    font-family: ${APPLE_FONT_STACK};
                     box-shadow: 0 20px 25px -5px rgba(0,0,0,0.6);
                     font-size: 12px;
                     display: flex;

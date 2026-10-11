@@ -113,17 +113,6 @@ export const LIVE_LAYERS: LiveLayerDef[] = [
     lowBandwidthDefaultOff: true,
     caption: 'Near-real-time satellite estimate, not gauge data',
   },
-  {
-    id: 'overlay-wind',
-    section: 'overlays',
-    name: 'Wind field (10 m)',
-    icon: 'air',
-    kind: 'toggle',
-    creditIds: ['windGfs', 'windEcmwf'],
-    freshness: { cadence: '6 h' },
-    lowBandwidthDefaultOff: true,
-    caption: 'Model forecast · one field, animated',
-  },
 ];
 
 /** Hazard filter chips reuse the HAZARD_LAYERS palette via the panel. */

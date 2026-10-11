@@ -465,7 +465,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
             <OfflineBadge />
             <button
               onClick={() => setActiveView('settings')}
-              className={`px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 rounded-md sm:rounded-lg border text-xs font-extrabold transition-all duration-200 flex items-center gap-1.5 sm:gap-2 min-h-[40px] sm:min-h-[44px] md:min-h-[48px] cursor-pointer ${
+              className={`px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 rounded-md sm:rounded-lg border text-xs font-extrabold transition-all duration-200 flex items-center gap-1.5 sm:gap-2 min-h-[44px] md:min-h-[48px] cursor-pointer ${
                 activeView === 'settings'
                   ? 'bg-carbon-90 text-ap-on-inverse border-carbon-90 ring-2 ring-carbon-90/30'
                   : 'bg-carbon-10 hover:bg-carbon-20 text-carbon-80 border-carbon-20 hover:scale-[1.02]'
@@ -494,12 +494,12 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 docType: 'AI_Intelligence_Report',
                 documentType: 'Multi-Hazard AI Intelligence Report',
               }}
-              className="h-[40px] sm:h-[44px] md:h-[48px] items-stretch rounded-md sm:rounded-lg overflow-hidden"
+              className="h-[44px] md:h-[48px] items-stretch rounded-md sm:rounded-lg overflow-hidden"
             />
 
             <button
               onClick={downloadReport}
-              className="px-2 sm:px-3.5 md:px-5 py-2 sm:py-2.5 md:py-3 bg-carbon-10 hover:bg-carbon-20 border border-carbon-20 text-carbon-80 font-bold text-xs sm:text-sm rounded-md sm:rounded-lg transition-all duration-200 flex items-center gap-1.5 active:scale-98 hover:scale-[1.02] min-h-[40px] sm:min-h-[44px] md:min-h-[48px] cursor-pointer"
+              className="px-2 sm:px-3.5 md:px-5 py-2 sm:py-2.5 md:py-3 bg-carbon-10 hover:bg-carbon-20 border border-carbon-20 text-carbon-80 font-bold text-xs sm:text-sm rounded-md sm:rounded-lg transition-all duration-200 flex items-center gap-1.5 active:scale-98 hover:scale-[1.02] min-h-[44px] md:min-h-[48px] cursor-pointer"
               title="Download CSV"
             >
               <MaterialIcon name="download" className="w-4 h-4 shrink-0" />
@@ -511,7 +511,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 if (selectedDistrict) runPrediction(selectedDistrict);
               }}
               disabled={loading}
-              className="px-3 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 bg-primary hover:bg-primary-strong text-ap-action-fg font-black text-xs sm:text-sm rounded-md sm:rounded-lg transition-all duration-200 flex items-center gap-1.5 sm:gap-2 disabled:opacity-50 active:scale-98 hover:scale-[1.02] min-h-[40px] sm:min-h-[44px] md:min-h-[48px] cursor-pointer touch-manipulation tap-target shrink-0"
+              className="px-3 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 bg-primary hover:bg-primary-strong text-ap-action-fg font-black text-xs sm:text-sm rounded-md sm:rounded-lg transition-all duration-200 flex items-center gap-1.5 sm:gap-2 disabled:opacity-50 active:scale-98 hover:scale-[1.02] min-h-[44px] md:min-h-[48px] cursor-pointer touch-manipulation tap-target shrink-0"
             >
               {loading ? (
                 <>

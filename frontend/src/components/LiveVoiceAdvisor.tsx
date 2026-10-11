@@ -31,16 +31,9 @@ interface LiveVoiceAdvisorProps {
   onClose?: () => void;
 }
 
-const BANGLADESH_DISTRICTS = [
-  'Sunamganj', 'Sylhet', 'Habiganj', 'Moulvibazar',
-  'Kurigram', 'Gaibandha', 'Bogura', 'Sirajganj', 'Jamalpur', 'Tangail',
-  'Satkhira', 'Khulna', 'Bagerhat', 'Cox\'s Bazar', 'Chattogram', 'Noakhali',
-  'Patuakhali', 'Bhola', 'Barishal', 'Barguna', 'Pirojpur', 'Jhalokati',
-  'Dhaka', 'Gazipur', 'Narayanganj', 'Narsingdi', 'Munshiganj', 'Manikganj',
-  'Mymensingh', 'Netrokona', 'Sherpur', 'Kishoreganj',
-  'Rajshahi', 'Naogaon', 'Natore', 'Chapai Nawabganj', 'Pabna',
-  'Rangpur', 'Dinajpur', 'Nilphamari', 'Lalmonirhat', 'Panchagarh', 'Thakurgaon'
-];
+import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
+
+const BANGLADESH_DISTRICTS = ALL_64_DISTRICTS.map((d) => d.name);
 
 export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
   initialDistrict = 'Sunamganj',
@@ -288,6 +281,15 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
       }
       if (mediaStreamRef.current) {
         mediaStreamRef.current.getTracks().forEach(t => t.stop());
+      }
+      if (processorRef.current) {
+        try {
+          processorRef.current.disconnect();
+        } catch {
+          // Ignore if already disconnected
+        }
+        processorRef.current.onaudioprocess = null;
+        processorRef.current = null;
       }
       if (inputAudioCtxRef.current && inputAudioCtxRef.current.state !== 'closed') {
         inputAudioCtxRef.current.close();

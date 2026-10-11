@@ -98,8 +98,10 @@ const LITERAL_FG = /^text-(?:white|black|carbon-black|carbon-90|ap-black|ap-ink)
 /** Fills whose true backdrop is not knowable from the class list. */
 const UNKNOWN_GROUND = /^(?:dark:)?bg-(?:transparent|(?:white|black|carbon-black)\/(?:[0-9]|1[0-9]|2[0-5]))$/;
 
-const files = execSync("find frontend/src -name '*.tsx' ! -path '*__tests__*'")
-  .toString().trim().split('\n').filter(Boolean);
+const files = execSync("git ls-files frontend/src")
+  .toString().trim().split(/\r?\n/)
+  .map(f => f.trim().replace(/\\/g, '/'))
+  .filter(f => f.endsWith('.tsx') && !f.includes('__tests__'));
 
 const problems = [];
 const add = (file, line, rule, detail, snippet, pair) =>

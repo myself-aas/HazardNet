@@ -7,10 +7,7 @@ name: Live Wind Update
 # rehearses the ladder on any branch.
 
 on:
-  schedule:
-    # Ten past every six hours: GFS f006 for the newest cycle is normally out
-    # by then, and the script climbs to whatever answers anyway.
-    - cron: '10 */6 * * *'
+  # The unbacked wind map layer has been retired; automated schedule disabled.
   workflow_dispatch: {}
 
 concurrency:

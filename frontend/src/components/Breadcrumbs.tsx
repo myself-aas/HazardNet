@@ -3,9 +3,15 @@ import { Link, useLocation } from 'react-router-dom';
 
 interface BreadcrumbsProps {
   customItems?: { label: string; path?: string }[];
+  className?: string;
+  showLiveMapLink?: boolean;
 }
 
-export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ customItems }) => {
+export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
+  customItems,
+  className = '',
+  showLiveMapLink = true,
+}) => {
   const location = useLocation();
 
   const getBreadcrumbsFromPath = () => {
@@ -54,7 +60,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ customItems }) => {
   return (
     <nav
       aria-label="Breadcrumb"
-      className="flex items-center justify-between gap-4 rounded-xl py-2.5 px-4 bg-white border border-carbon-20 mb-6 text-xs text-carbon-60"
+      className={`hn-breadcrumb flex items-center justify-between gap-4 py-1.5 mb-5 text-xs text-carbon-60 ${className}`}
     >
       <div className="flex items-center gap-1.5 flex-wrap">
         {items.map((item, index) => {
@@ -62,7 +68,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ customItems }) => {
           return (
             <React.Fragment key={index}>
               {index > 0 && (
-                <span aria-hidden="true" className="text-carbon-40 font-mono">
+                <span aria-hidden="true" className="text-carbon-40 font-mono select-none">
                   /
                 </span>
               )}
@@ -80,12 +86,14 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ customItems }) => {
         })}
       </div>
 
-      <Link
-        to="/"
-        className="shrink-0 flex items-center gap-1 min-h-[44px] px-3 py-1.5 bg-white hover:bg-carbon-05 text-ap-link border border-carbon-20 rounded-full font-semibold transition-colors text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary/60"
-      >
-        <span>Live map</span>
-      </Link>
+      {showLiveMapLink && (
+        <Link
+          to="/"
+          className="shrink-0 inline-flex items-center gap-1 px-3 py-1 bg-carbon-10 hover:bg-carbon-20 text-carbon-70 hover:text-carbon-90 border border-carbon-20 rounded-full font-medium transition-colors text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary/60"
+        >
+          <span>Live map</span>
+        </Link>
+      )}
     </nav>
   );
 };

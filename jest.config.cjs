@@ -58,15 +58,14 @@ module.exports = {
   // Cap worker parallelism: the API suites import the full Express app (heavy
   // babel transforms of ESM deps), and unbounded workers OOM small CI runners.
   maxWorkers: '50%',
-  // Coverage gate (QA-01). Floor set at the measured 2026-08-28 baseline
-  // (~32% statements) minus a small margin â€” ratchet upward as tests land.
+  // Coverage gate (QA-01). Ratcheted to current levels with a safety headroom margin.
   // Scope mirrors `npm test` (see collectCoverageFrom below).
   coverageThreshold: {
     global: {
-      statements: 32,
-      branches: 35,
-      functions: 30,
-      lines: 31,
+      statements: 62,
+      branches: 58,
+      functions: 62,
+      lines: 64,
     },
   },
   collectCoverageFrom: [

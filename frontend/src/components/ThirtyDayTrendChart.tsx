@@ -11,6 +11,7 @@ import {
   Legend,
   ReferenceLine
 } from 'recharts';
+import { MAP_CHART_PALETTE, APPLE_NEUTRAL } from '@hazardnet/design-system';
 
 interface ThirtyDayTrendChartProps {
   districtName?: string;
@@ -76,11 +77,11 @@ function generate30DayHistoricalData(districtId: string = 'kurigram') {
 }
 
 const HAZARD_PALETTE = {
-  'Monsoon Flood': { color: '#0066cc', gradientId: 'gradMonsoon' },
-  'Flash Flood': { color: '#1d7a3e', gradientId: 'gradFlash' },
-  'Tropical Cyclone': { color: '#8b0f3a', gradientId: 'gradCyclone' },
-  'Drought Stress': { color: '#8a5a00', gradientId: 'gradDrought' },
-  'Overall Severity': { color: '#0066cc', gradientId: 'gradOverall' }
+  'Monsoon Flood': { color: MAP_CHART_PALETTE.blue, gradientId: 'gradMonsoon' },
+  'Flash Flood': { color: MAP_CHART_PALETTE.green, gradientId: 'gradFlash' },
+  'Tropical Cyclone': { color: MAP_CHART_PALETTE.plum, gradientId: 'gradCyclone' },
+  'Drought Stress': { color: MAP_CHART_PALETTE.amber, gradientId: 'gradDrought' },
+  'Overall Severity': { color: MAP_CHART_PALETTE.blue, gradientId: 'gradOverall' }
 };
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -159,7 +160,7 @@ export const ThirtyDayTrendChart: React.FC<ThirtyDayTrendChartProps> = ({
             <button
               key={h}
               onClick={() => setSelectedHazard(h)}
-              className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all duration-200 min-h-[38px] cursor-pointer ${
+              className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all duration-200 min-h-[44px] cursor-pointer ${
                 selectedHazard === h
                   ? 'bg-primary text-ap-action-fg shadow-2xs scale-[1.02]'
                   : 'bg-carbon-05 text-carbon-60 hover:text-carbon-90 border border-carbon-20 hover:bg-carbon-10'
@@ -216,13 +217,13 @@ export const ThirtyDayTrendChart: React.FC<ThirtyDayTrendChartProps> = ({
               </linearGradient>
             </defs>
 
-            <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" vertical={false} />
-            <XAxis dataKey="date" stroke="#6e6e73" fontSize={12} tickLine={false} />
-            <YAxis stroke="#6e6e73" fontSize={12} tickLine={false} unit="%" domain={[0, 100]} />
+            <CartesianGrid strokeDasharray="3 3" stroke={APPLE_NEUTRAL['20']} vertical={false} />
+            <XAxis dataKey="date" stroke={APPLE_NEUTRAL['50']} fontSize={12} tickLine={false} />
+            <YAxis stroke={APPLE_NEUTRAL['50']} fontSize={12} tickLine={false} unit="%" domain={[0, 100]} />
             <Tooltip content={<CustomTooltip />} />
-            <Legend wrapperStyle={{ fontSize: '12px', color: '#5a5a5d', paddingTop: '8px' }} />
+            <Legend wrapperStyle={{ fontSize: '12px', color: APPLE_NEUTRAL['60'], paddingTop: '8px' }} />
 
-            <ReferenceLine y={75} stroke="#8b0f3a" strokeDasharray="3 3" label={{ value: 'Catastrophic Threshold (75%)', fill: '#8b0f3a', fontSize: 12, position: 'insideTopRight' }} />
+            <ReferenceLine y={75} stroke={MAP_CHART_PALETTE.plum} strokeDasharray="3 3" label={{ value: 'Catastrophic Threshold (75%)', fill: MAP_CHART_PALETTE.plum, fontSize: 12, position: 'insideTopRight' }} />
 
             {(selectedHazard === 'All' || selectedHazard === 'Monsoon Flood') && (
               <Area

@@ -24,9 +24,18 @@ export interface KaggleAdvisorySnapshot {
 const str = (v: unknown): string | null => (typeof v === 'string' && v.trim() ? v : null);
 
 export async function loadKaggleAdvisories(horizon: ForecastHorizon): Promise<KaggleAdvisorySnapshot> {
-  const res = await fetch(`/api/v1/kaggle/advisories?horizon=${encodeURIComponent(horizon)}`, {
+  let res = await fetch(`/api/v1/kaggle?horizon=${encodeURIComponent(horizon)}`, {
     cache: 'no-store',
-  });
+  }).catch(() => null);
+  if (!res || res.status === 404) {
+    const fallback = await fetch(`/api/v1/kaggle/advisories?horizon=${encodeURIComponent(horizon)}`, {
+      cache: 'no-store',
+    }).catch(() => null);
+    if (fallback) res = fallback;
+  }
+  if (!res) {
+    throw new Error('Kaggle advisory endpoint could not be reached');
+  }
   // 503 still carries a JSON body describing why there are no rows; read it either way.
   const body = (await res.json().catch(() => null)) as Record<string, unknown> | null;
   if (!body || typeof body !== 'object') {

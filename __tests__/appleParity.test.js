@@ -298,12 +298,12 @@ describe("the rules that make this Apple and not just 'a blue design system'", (
     const corrections = [...CSS.matchAll(/\.hover\\:([a-z0-9\\/-]+):hover/g)].map((m) =>
       m[1].replace(/\\/g, ''),
     );
-    const sources = execSync("find frontend/src -name '*.tsx' ! -path '*__tests__*'")
+    const files = execSync('git ls-files "frontend/src/**/*.tsx"')
       .toString()
       .trim()
-      .split('\n')
-      .map((f) => readFileSync(f, 'utf8'))
-      .join('\n');
+      .split(/\r?\n/)
+      .filter((f) => !f.includes('__tests__'));
+    const sources = files.map((f) => readFileSync(f, 'utf8')).join('\n');
 
     const unused = [...new Set(corrections)].filter(
       (utility) => !sources.includes(`hover:${utility}`),

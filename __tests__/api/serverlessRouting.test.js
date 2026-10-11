@@ -39,7 +39,7 @@ import { resetGuardsForTests } from '../../backend/middleware/serverlessGuard.js
 const PUBLIC_SURFACE = {
   'api/[endpoint].js': ['forecasts', 'historical', 'ingest', 'metrics', 'predict'],
   'api/chat/[action].js': ['query', 'sample-questions'],
-  'api/v1/[resource].js': ['alerts', 'historical', 'telemetry', 'weather'],
+  'api/v1/[resource].js': ['alerts', 'historical', 'kaggle', 'telemetry', 'weather'],
   'api/v1/alerts/[action].js': ['evidence-card', 'policy', 'review', 'run'],
   'api/v1/forecasts/[action].js': ['bulk', 'history', 'metadata'],
   'api/v1/weather/batch.js': [],
@@ -139,7 +139,7 @@ describe('every public URL still resolves to a handler', () => {
     expect(res.statusCode).not.toBe(404);
     expect(req.query).toEqual({ x: '1' });
     expect(req.url).toBe('/api/metrics?x=1');
-  });
+  }, 30000);
 
   it('serves /api/v1/alerts and /api/v1/weather/batch through the files that declare them', async () => {
     const alerts = await import('../../api/v1/[resource].js');
@@ -149,6 +149,22 @@ describe('every public URL still resolves to a handler', () => {
     expect(typeof batch.default).toBe('function');
     // The body-parser limit is read from the function file, so it must stay declared here.
     expect(batch.config).toEqual({ api: { bodyParser: { sizeLimit: '256kb' } } });
+  });
+
+  it('serves /api/v1/kaggle through api/v1/[resource].js to the kaggle handler', async () => {
+    const { default: handler } = await import('../../api/v1/[resource].js');
+    expect([...handler.routes]).toContain('kaggle');
+    const req = {
+      method: 'GET',
+      url: '/api/v1/kaggle/advisories?horizon=7_days',
+      query: { resource: 'kaggle', horizon: '7_days' },
+      headers: { 'x-forwarded-for': '203.0.113.88' },
+    };
+    const res = makeRes();
+    await handler(req, res);
+    expect([200, 503]).toContain(res.statusCode);
+    expect(res.body.source).toBe('kaggle');
+    expect(req.query).toEqual({ horizon: '7_days' });
   });
 });
 

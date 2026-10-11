@@ -189,8 +189,7 @@ function main() {
   };
 
   // Mirrored from backend/utils/forecastRow.js VALID_HAZARDS and
-  // scripts/physics_severity.py HAZARD_CLASSES; pinned by
-  // scripts/tests/test_model_claims.py so the three cannot drift.
+  // scripts/physics_severity.py HAZARD_CLASSES.
   const VALID_HAZARDS = new Set([
     'Cold Wave', 'Drought', 'Fire', 'Flash Flood',
     'Flood', 'Heat Wave', 'Severe Local Storm', 'Tropical Cyclone',
