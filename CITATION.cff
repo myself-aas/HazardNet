@@ -5,7 +5,8 @@ abstract: >-
   HazardNet publishes 7- and 15-day multi-hazard outlooks for the 64 districts of
   Bangladesh across eight hazard classes, with dual-track severity values and published
   provenance for every number. Model code, dataset collection procedures, training and
-  benchmarking are research-private; only results and outputs are public.
+  benchmarking are research-private; only results and outputs are public. Department of Agrometeorology, Bangladesh Agricultural University. Supervised by
+  Dr. Ahmed Khairul Hasan; co-supervised by Dr. Md. Rakib Hassan.
 type: Progressive WebApp
 authors:
   - family-names: Shuvo
