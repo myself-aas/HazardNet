@@ -168,14 +168,15 @@ export function parseAdvisoryCsv(text) {
 
 /** One HTTPS request to the Kaggle Dataset API. Never includes the key in an error. */
 export async function fetchAdvisoryFile(config, { fetchImpl = globalThis.fetch } = {}) {
-  if (!config.hasCredentials) {
-    throw new KaggleClientError('NO_CREDENTIALS', 'KAGGLE_USERNAME and KAGGLE_KEY are not set on the server');
+  const headers = { Accept: '*/*' };
+  if (config.hasCredentials) {
+    const auth = Buffer.from(`${config.username}:${config.key}`).toString('base64');
+    headers.Authorization = `Basic ${auth}`;
   }
-  const auth = Buffer.from(`${config.username}:${config.key}`).toString('base64');
   let res;
   try {
     res = await fetchImpl(datasetDownloadUrl(config), {
-      headers: { Authorization: `Basic ${auth}`, Accept: '*/*' },
+      headers,
       redirect: 'follow',
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
@@ -183,7 +184,10 @@ export async function fetchAdvisoryFile(config, { fetchImpl = globalThis.fetch }
     throw new KaggleClientError('NETWORK', `Could not reach the Kaggle Dataset API (${err.name || 'error'})`);
   }
   if (res.status === 401 || res.status === 403) {
-    throw new KaggleClientError('AUTH_FAILED', 'Kaggle rejected the server credentials', res.status);
+    const reason = config.hasCredentials
+      ? 'Kaggle rejected the server credentials'
+      : 'Kaggle requires authentication for this dataset (set KAGGLE_USERNAME and KAGGLE_KEY)';
+    throw new KaggleClientError('AUTH_FAILED', reason, res.status);
   }
   if (res.status === 404) {
     throw new KaggleClientError('NOT_FOUND', `Kaggle dataset or file not found: ${config.dataset} / ${config.fileName}`, 404);

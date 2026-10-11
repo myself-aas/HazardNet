@@ -174,14 +174,23 @@ describe('kaggleAdvisoryClient: configuration', () => {
 });
 
 describe('kaggleAdvisoryClient: requests', () => {
-  test('no credentials means no network call', async () => {
-    let calls = 0;
-    const fetchImpl = async () => { calls += 1; return response(200); };
-    await assert.rejects(
-      fetchAdvisoryFile(readKaggleConfig({}), { fetchImpl }),
-      (err) => err instanceof KaggleClientError && err.code === 'NO_CREDENTIALS',
-    );
-    assert.strictEqual(calls, 0);
+  test('unauthenticated request makes network call without Authorization header when credentials are unset', async () => {
+    let seen = null;
+    const csv = Buffer.from(makeCsv(), 'utf8');
+    const fetchImpl = async (url, init) => { seen = { url, init }; return response(200, csv); };
+    await fetchAdvisoryFile(readKaggleConfig({}), { fetchImpl });
+    assert.strictEqual(seen.init.headers.Authorization, undefined);
+    assert.ok(seen.url.startsWith('https://www.kaggle.com/api/v1/datasets/download/'));
+  });
+
+  test('unauthenticated 401 is reported as AUTH_FAILED without credentials', async () => {
+    const fetchImpl = async () => response(401);
+    await assert.rejects(fetchAdvisoryFile(readKaggleConfig({}), { fetchImpl }), (err) => {
+      assert.strictEqual(err.code, 'AUTH_FAILED');
+      assert.strictEqual(err.status, 401);
+      assert.ok(err.message.includes('Kaggle requires authentication'));
+      return true;
+    });
   });
 
   test('sends HTTP Basic auth built from the username and key', async () => {
@@ -347,13 +356,13 @@ describe('kaggleAdvisoryClient: snapshot cache', () => {
     assert.strictEqual(result.lastError.code, 'HTTP_ERROR');
   });
 
-  test('missing credentials with no cache is unavailable and never calls fetch', async () => {
-    let calls = 0;
+  test('unauthenticated fetch succeeds and caches fresh rows', async () => {
+    const csv = Buffer.from(makeCsv(), 'utf8');
     const config = readKaggleConfig({ KAGGLE_CACHE_FILE: tempCacheFile() });
-    const result = await getKaggleAdvisories({ config, fetchImpl: async () => { calls += 1; return response(200); }, now: Date.now() });
-    assert.strictEqual(calls, 0);
-    assert.strictEqual(result.status, 'unavailable');
-    assert.strictEqual(result.lastError.code, 'NO_CREDENTIALS');
+    const result = await getKaggleAdvisories({ config, fetchImpl: async () => response(200, csv), now: Date.now() });
+    assert.strictEqual(result.status, 'fresh');
+    assert.strictEqual(result.rows.length, DISTRICT_REGISTRY.length * 2);
+    assert.strictEqual(result.lastError, null);
   });
 
   test('a cache written by an earlier process is used as the stale fallback', async () => {

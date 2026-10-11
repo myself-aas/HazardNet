@@ -1,9 +1,12 @@
 {
-  "source": "scheduled production run",
-  "generated_at": "2026-09-16T03:14:42Z",
-  "prediction_date": "2026-09-16",
-  "row_count": 74,
-  "csv_sha256": "d84af80900f34743252774bc58a8d520b43a0508a12e7ac855e4e0cc0e1268ce",
+  "source": "Kaggle_Daily_Advisory (8-hazardnet-advisory)",
+  "data_source": "Kaggle_Daily_Advisory",
+  "generated_at": "2026-10-10T16:57:10.000Z",
+  "prediction_date": "2026-10-10",
+  "row_count": 128,
+  "csv_sha256": "995561f9dff27c84e34376651a6a0bd492c4a3a3cc0aade2cd6ae950687edda5",
+  "source_csv_sha256": "27f241e2fdbe499ead7a0ed729571867bb35aef11fce136baaab9c189a151613",
+  "model_version": "2.1.9+model.0bb5bdaf1789",
   "csv_path": "backend/data/forecasts/hazardnet_forecasts_latest.csv",
   "json_path": "backend/data/forecasts/hazardnet_forecasts_latest.json"
 }

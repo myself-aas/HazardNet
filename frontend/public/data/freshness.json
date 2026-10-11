@@ -1,21 +1,18 @@
 {
   "schema": "hazardnet-freshness/v1",
-  "built_at": "2026-10-10T17:30:42.705Z",
+  "built_at": "2026-10-11T03:40:30.192Z",
   "generated_by": "scripts/build_freshness_artifact.mjs",
   "what_this_is": "A derived statement about the committed data artifacts this deployment ships. It is not a live probe and it does not measure the running services — the site-health probe result it carries is whatever the last scheduled run published.",
   "overall": {
     "state": "failing",
     "counts": {
-      "fresh": 0,
-      "stale": 3,
+      "fresh": 3,
+      "stale": 0,
       "failing": 1,
       "missing": 0,
       "unknown": 0
     },
     "not_fresh": [
-      "forecast_ingest",
-      "forecast_snapshot",
-      "alert_engine",
       "site_probe"
     ]
   },
@@ -24,50 +21,50 @@
       "id": "forecast_ingest",
       "label": "Forecast ingest run",
       "artifact": "backend/data/forecasts/manifest.json",
-      "state": "stale",
-      "reason": "prediction_date 2026-09-16 is 593.5 h old (SLO 192 h)",
-      "generated_at": "2026-09-16T03:14:42Z",
-      "prediction_date": "2026-09-16",
-      "age_hours": 593.5,
-      "run_age_hours": 590.3,
+      "state": "fresh",
+      "reason": null,
+      "generated_at": "2026-10-10T16:57:10.000Z",
+      "prediction_date": "2026-10-10",
+      "age_hours": 27.7,
+      "run_age_hours": 10.7,
       "slo_hours": 192,
       "detail": {
-        "source": "scheduled production run",
-        "row_count": 74,
-        "csv_sha256": "d84af80900f34743252774bc58a8d520b43a0508a12e7ac855e4e0cc0e1268ce"
+        "source": "Kaggle_Daily_Advisory (8-hazardnet-advisory)",
+        "row_count": 128,
+        "csv_sha256": "995561f9dff27c84e34376651a6a0bd492c4a3a3cc0aade2cd6ae950687edda5"
       }
     },
     {
       "id": "forecast_snapshot",
       "label": "Website forecast snapshot",
       "artifact": "frontend/public/data/forecasts-latest.json",
-      "state": "stale",
-      "reason": "prediction_date 2026-09-16 is 593.5 h old (SLO 192 h)",
-      "generated_at": "2026-10-08T13:53:09.074Z",
-      "prediction_date": "2026-09-16",
-      "age_hours": 593.5,
-      "run_age_hours": 51.6,
+      "state": "fresh",
+      "reason": null,
+      "generated_at": "2026-10-11T03:36:00.578Z",
+      "prediction_date": "2026-10-10",
+      "age_hours": 27.7,
+      "run_age_hours": 0.1,
       "slo_hours": 192,
       "detail": {
         "schema": "hazardnet-forecast-snapshot/v2",
-        "source": "unspecified: built outside a workflow (no SNAPSHOT_SOURCE); the declared producer would have been hazardnet/forecast-pipeline"
+        "source": "Kaggle 8-hazardnet-advisory (daily ingestion pipeline)"
       }
     },
     {
       "id": "alert_engine",
       "label": "Alert snapshot",
       "artifact": "frontend/public/data/alerts-latest.json",
-      "state": "stale",
-      "reason": "the snapshot was built 51.6 h ago (SLO 48 h)",
-      "generated_at": "2026-10-08T13:53:09.936Z",
-      "age_hours": 51.6,
+      "state": "fresh",
+      "reason": null,
+      "generated_at": "2026-10-11T03:36:45.997Z",
+      "age_hours": 0.1,
       "slo_hours": 48,
       "detail": {
         "schema": "hazardnet-alerts/v1",
         "policy_version": "alert-policy/1.0.0",
-        "assessed": 74,
-        "published": 0,
-        "not_published": 74,
+        "assessed": 128,
+        "published": 116,
+        "not_published": null,
         "dropped_unpublished": 0
       }
     },
@@ -76,7 +73,7 @@
       "label": "Site-health probe (every 30 min)",
       "artifact": "data/site-health/latest.json",
       "generated_at": "2026-10-10T17:30:42Z",
-      "age_hours": 0,
+      "age_hours": 10.2,
       "slo_hours": 2,
       "detail": {
         "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/38072021257",
@@ -128,14 +125,14 @@
     }
   ],
   "coverage": {
-    "status": "partial",
+    "status": "complete",
     "requested_units": null,
-    "produced_units": 74,
+    "produced_units": 128,
     "units_per_horizon": {
-      "7_days": 25,
-      "15_days": 49
+      "7_days": 64,
+      "15_days": 64
     },
-    "districts_covered": 60,
+    "districts_covered": 64,
     "districts_expected": 64,
     "missing_district_ids": null,
     "missing_district_names": null,
@@ -146,8 +143,8 @@
     "skipped": []
   },
   "model": {
-    "model_version": null,
-    "stamped": false,
+    "model_version": "2.1.9+model.0bb5bdaf1789",
+    "stamped": true,
     "tensor_build_id": null,
     "pipeline_version": null,
     "run_id": null,
@@ -155,25 +152,22 @@
     "soil_channels_fabricated": null
   },
   "honesty": [
-    "model_version is null: the ingest pipeline does not stamp one yet, so nothing can be auto-published above WATCH and the alert engine records publication_blocked instead of issuing an alert (PRODUCT_SPEC §1.6).",
-    "the forecast run reports coverage status \"partial\": 60 of 64 districts have a row for at least one horizon.",
     "the run did not report which districts are missing, so this page cannot name them — absent is reported as absent, not as \"none\".",
-    "74 assessed district/horizon rows produced no published alert (§1.6 requires a model version the pipeline does not stamp yet); the batch reports them as not_published rather than dropping them silently.",
     "the most recent site-health probe failed: the deployed surface is not currently satisfying its own checks (see the probe run for which ones).",
     "forecast ages are measured from the date-granular prediction_date (UTC midnight), so they carry up to ±24 h of granularity."
   ],
   "inputs": {
     "forecast_snapshot": {
       "path": "frontend/public/data/forecasts-latest.json",
-      "generated_at": "2026-10-08T13:53:09.074Z"
+      "generated_at": "2026-10-11T03:36:00.578Z"
     },
     "forecast_manifest": {
       "path": "backend/data/forecasts/manifest.json",
-      "generated_at": "2026-09-16T03:14:42Z"
+      "generated_at": "2026-10-10T16:57:10.000Z"
     },
     "alerts_snapshot": {
       "path": "frontend/public/data/alerts-latest.json",
-      "generated_at": "2026-10-08T13:53:09.936Z"
+      "generated_at": "2026-10-11T03:36:45.997Z"
     },
     "site_probe": {
       "path": "data/site-health/latest.json",
