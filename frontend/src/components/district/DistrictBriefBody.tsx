@@ -65,17 +65,17 @@ export const DistrictBriefBody: React.FC = () => {
         <div className="flex items-center gap-1 min-w-max text-sm font-semibold">
           <span className="px-3 text-carbon-60 font-mono text-xs uppercase font-bold">Jump:</span>
           {[
-            { id: 'sec-exposure', label: 'Exposure', icon: <Users className="w-3.5 h-3.5" /> },
+            { id: 'sec-exposure', label: 'Local exposure', icon: <Users className="w-3.5 h-3.5" /> },
             { id: 'sec-hazard-trend', label: '7-day hazard trend', icon: <TrendingUp className="w-3.5 h-3.5" /> },
             { id: 'sec-weather', label: 'Live weather', icon: <Cloud className="w-3.5 h-3.5" /> },
             { id: 'sec-history', label: 'Historical events', icon: <History className="w-3.5 h-3.5" /> },
-            { id: 'sec-advisory', label: 'Generated advisory', icon: <Sparkles className="w-3.5 h-3.5" /> },
+            { id: 'sec-advisory', label: 'Advisory briefing', icon: <Sparkles className="w-3.5 h-3.5" /> },
             { id: 'appendix-a', label: 'Provenance', icon: <Cpu className="w-3.5 h-3.5" /> },
           ].map((sec) => (
             <button
               key={sec.id}
               onClick={() => scrollToSection(sec.id)}
-              className={`inline-flex min-h-[44px] items-center gap-2 px-3 py-2 cursor-pointer touch-manipulation ${
+              className={`inline-flex min-h-[44px] items-center gap-2 px-3.5 py-2 cursor-pointer touch-manipulation ${
                 activeSection === sec.id
                   ? 'bg-primary text-ap-action-fg font-semibold'
                   : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
@@ -91,10 +91,10 @@ export const DistrictBriefBody: React.FC = () => {
       {/* EXPOSURE: the pipeline does not publish these figures, so none are estimated here. */}
       <section id="sec-exposure" className="scroll-mt-[calc(var(--navbar-height)+8px)] space-y-4 pt-2">
         <div className="border-b border-carbon-20 pb-3">
-          <h2 className="text-lg font-bold text-carbon-90 tracking-tight">Exposure</h2>
+          <h2 className="text-lg font-bold text-carbon-90 tracking-tight">Local Exposure & Administrative Baselines</h2>
           <p className="text-sm text-carbon-60 max-w-prose">
             The forecast pipeline publishes severity, confidence and hazard class for each district and date.
-            It does not publish the figures below, so they are shown as not available rather than estimated.
+            Administrative field metrics (inundation area, vulnerable population, and emergency relief deployments) are coordinated by local authorities; HazardNet shows them as Not available rather than estimating unverified figures.
           </p>
         </div>
         <dl className="bg-white border border-carbon-20 rounded-xl px-5 sm:px-6">
@@ -138,21 +138,21 @@ export const DistrictBriefBody: React.FC = () => {
       <section id="sec-hazard-trend" className="scroll-mt-[calc(var(--navbar-height)+8px)] space-y-4 pt-4 pagination-protected">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-carbon-20 pb-3 gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="rounded-full w-8 h-8 bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
+            <div className="rounded-full w-8 h-8 bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700">
               <TrendingUp className="w-4 h-4" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-carbon-90 tracking-tight">Hazard Trend: 7-Day Risk Level Fluctuations</h2>
-              <p className="text-xs text-carbon-60">Longitudinal risk scoring and multi-hazard severity progression over the past week.</p>
+              <p className="text-xs text-carbon-60">Longitudinal risk scoring and multi-hazard severity progression over the forecast horizon.</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 bg-carbon-10 p-1 text-xs font-bold screen-only">
+          <div className="flex items-center gap-1.5 bg-carbon-10 p-1 rounded-xl text-xs font-semibold screen-only">
             {(['all', 'primary', 'comparison'] as const).map((mode) => (
               <button
                 key={mode}
                 onClick={() => setTrendViewMode(mode)}
-                className={`px-3 py-1 transition-all cursor-pointer capitalize ${
-                  trendViewMode === mode ? 'bg-white text-carbon-90 font-extrabold' : 'text-carbon-60 hover:text-carbon-black'
+                className={`min-h-[44px] px-3.5 py-2 rounded-lg transition-all cursor-pointer capitalize touch-manipulation ${
+                  trendViewMode === mode ? 'bg-white text-carbon-90 font-bold shadow-sm' : 'text-carbon-70 hover:text-carbon-90'
                 }`}
               >
                 {mode === 'all' ? 'All series' : mode === 'primary' ? 'Published severity' : 'Historical benchmarks'}
@@ -237,22 +237,22 @@ export const DistrictBriefBody: React.FC = () => {
       <section id="sec-advisory" className="scroll-mt-[calc(var(--navbar-height)+8px)] space-y-4 pt-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-carbon-20 pb-3">
           <div>
-            <h2 className="text-lg font-bold text-carbon-90 tracking-tight">Generated advisory</h2>
+            <h2 className="text-lg font-bold text-carbon-90 tracking-tight">Automated Advisory Briefing</h2>
             <p className="text-sm text-carbon-60 max-w-prose">
-              Drafted by an AI model from the published record for this district. It is not an official advisory.
+              Synthesized from published forecast records for agricultural planning. Official warnings come from BMD and FFWC.
             </p>
           </div>
           <button
             onClick={() => setShowLiveAiAdvisory(!showLiveAiAdvisory)}
             aria-expanded={showLiveAiAdvisory}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-all cursor-pointer screen-only self-start sm:self-auto ${
+            className={`inline-flex min-h-[44px] items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer touch-manipulation screen-only self-start sm:self-auto ${
               showLiveAiAdvisory
                 ? 'bg-amber-500 text-ap-on-sev'
                 : 'bg-white border border-carbon-20 text-carbon-70 hover:bg-carbon-05 hover:text-carbon-90'
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-            <span>{showLiveAiAdvisory ? 'Hide generated advisory' : 'Show generated advisory'}</span>
+            <Sparkles className="w-3.5 h-3.5 text-amber-700" />
+            <span>{showLiveAiAdvisory ? 'Hide Advisory Briefing' : 'View Advisory Briefing'}</span>
           </button>
         </div>
 
@@ -500,11 +500,11 @@ export const DistrictBriefBody: React.FC = () => {
 
                 {/* Filter by hazard */}
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-carbon-60 font-medium">Filter Hazard:</span>
+                  <span className="text-xs text-carbon-70 font-medium">Filter Hazard:</span>
                   <select
                     value={eventHazardFilter}
                     onChange={(e) => setEventHazardFilter(e.target.value)}
-                    className="py-1 px-2 text-xs border border-carbon-20 rounded-xl bg-carbon-05 text-carbon-80 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="min-h-[44px] py-2 px-3 text-xs border border-carbon-20 rounded-xl bg-carbon-05 text-carbon-80 focus:outline-none focus:ring-1 focus:ring-blue-500 touch-manipulation"
                   >
                     <option value="all">All Hazards ({climaticEventsData.totalEvents})</option>
                     {climaticEventsData.hazardBreakdown.map(h => (
@@ -525,8 +525,8 @@ export const DistrictBriefBody: React.FC = () => {
                     heading: event.date,
                     fields: [
                       { label: 'Hazard Type', value: event.hazard },
-                      { label: 'GLIDE ID', value: event.glide || '-' },
-                      { label: 'Severity', value: event.severity ? event.severity.toFixed(2) : '1.00' },
+                      { label: 'GLIDE Reference', value: event.glide || '-' },
+                      { label: 'Severity Index', value: event.severity ? event.severity.toFixed(2) : '1.00' },
                       { label: 'Description', value: event.desc || 'Disaster event logged' },
                       { label: 'Event ID', value: event.id },
                       { label: 'Coordinates', value: `${event.lat.toFixed(4)}, ${event.lng.toFixed(4)}` },
@@ -570,7 +570,7 @@ export const DistrictBriefBody: React.FC = () => {
                               <td className="p-2.5 text-right whitespace-nowrap">
                                 <button
                                   onClick={() => setExpandedHistoricalEventId(isExpanded ? null : event.id)}
-                                  className="text-blue-600 hover:text-blue-800 font-semibold text-xs cursor-pointer"
+                                  className="inline-flex min-h-[44px] items-center justify-end px-3 py-2 text-blue-700 hover:text-blue-900 font-semibold text-xs cursor-pointer touch-manipulation"
                                 >
                                   {isExpanded ? 'Collapse' : 'Expand'}
                                 </button>

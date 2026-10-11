@@ -56,40 +56,42 @@ export const DistrictForecastRecords: React.FC = () => {
       <section className="bg-white border border-carbon-20 rounded-xl p-4 sm:p-6 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-carbon-20 pb-4">
           <div>
-            <div className="text-xs font-mono font-bold text-amber-600 uppercase tracking-wider">
-              Published forecast records
+            <div className="text-xs font-mono font-bold text-amber-800 uppercase tracking-wider">
+              Verified Pipeline Output
             </div>
             <h2 className="text-xl font-black text-carbon-90 tracking-tight">
-              7-Day & 15-Day Forecast Records ({data.districtName})
+              Forecast Timeline: {data.districtName}
             </h2>
           </div>
-          {/* `flex-wrap`: the two horizon toggles plus "Download CSV" are ~357px, which is a
-              37px document overflow at 320px. They wrap rather than widen the page. */}
+          {/* Horizon toggles plus Download CSV */}
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setActiveTableHorizon('7_days')}
-              className={`min-h-[44px] px-4 py-2 text-sm font-semibold cursor-pointer touch-manipulation ${
+              aria-pressed={activeTableHorizon === '7_days'}
+              className={`min-h-[44px] px-4 py-2 text-sm font-semibold rounded-full cursor-pointer touch-manipulation transition-colors ${
                 activeTableHorizon === '7_days'
                   ? 'bg-primary text-ap-action-fg'
-                  : 'bg-carbon-10 hover:bg-carbon-20 text-carbon-70'
+                  : 'bg-carbon-10 hover:bg-carbon-20 text-carbon-80'
               }`}
             >
-              7-Day Forecast ({districtForecasts7D.length})
+              7-Day Outlook ({districtForecasts7D.length})
             </button>
             <button
               onClick={() => setActiveTableHorizon('15_days')}
-              className={`min-h-[44px] px-4 py-2 text-sm font-semibold cursor-pointer touch-manipulation ${
+              aria-pressed={activeTableHorizon === '15_days'}
+              className={`min-h-[44px] px-4 py-2 text-sm font-semibold rounded-full cursor-pointer touch-manipulation transition-colors ${
                 activeTableHorizon === '15_days'
                   ? 'bg-primary text-ap-action-fg'
-                  : 'bg-carbon-10 hover:bg-carbon-20 text-carbon-70'
+                  : 'bg-carbon-10 hover:bg-carbon-20 text-carbon-80'
               }`}
             >
-              15-Day Forecast ({districtForecasts15D.length})
+              15-Day Outlook ({districtForecasts15D.length})
             </button>
             <button
               onClick={handleDownloadTableCsv}
               title="Download specific 7 and 15-day hazard intelligence records as CSV"
-              className="inline-flex min-h-[44px] items-center gap-1.5 px-3.5 py-2 bg-primary text-ap-action-fg font-semibold text-sm cursor-pointer ml-1 touch-manipulation"
+              aria-label="Download forecast records as CSV"
+              className="inline-flex min-h-[44px] items-center gap-1.5 px-4 py-2 rounded-full bg-primary text-ap-action-fg font-semibold text-sm cursor-pointer ml-1 touch-manipulation"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Download CSV</span>
@@ -111,7 +113,7 @@ export const DistrictForecastRecords: React.FC = () => {
           <div className="rounded-xl bg-carbon-05 border border-carbon-20/80 p-4 sm:p-5 space-y-3">
             <div className="flex items-center justify-between">
               <div className="text-xs font-mono font-bold text-carbon-70 uppercase tracking-wider flex items-center gap-1.5">
-                <TrendingUp className="w-4 h-4 text-amber-600" />
+                <TrendingUp className="w-4 h-4 text-amber-700" />
                 <span>Hazard Progression Trend ({activeTableHorizon === '7_days' ? '7-Day' : '15-Day'} Horizon)</span>
               </div>
               <div className="text-xs font-mono text-carbon-60">Severity Index (%) vs Target Date</div>
@@ -165,7 +167,7 @@ export const DistrictForecastRecords: React.FC = () => {
 
         {loadingForecastTable ? (
           <div className="py-12 text-center text-carbon-60 font-mono text-sm animate-pulse">
-            Loading pipeline CSV forecast logs for {data.districtName}...
+            Loading pipeline forecast records for {data.districtName}...
           </div>
         ) : (
           <>
@@ -182,22 +184,22 @@ export const DistrictForecastRecords: React.FC = () => {
                   key: idx,
                   heading: row.target_date,
                   fields: [
-                    { label: 'Prediction', value: row.prediction_date },
+                    { label: 'Prediction Run', value: row.prediction_date },
                     { label: 'Hazard Type', value: row.hazard_type },
-                    { label: 'Tier', value: row.advisory_tier || '-' },
+                    { label: 'Advisory Tier', value: row.advisory_tier || '-' },
                     {
-                      label: 'Physics Sev.',
+                      label: 'Physics Baseline',
                       value: `${Math.round((row.physics_severity ?? row.severity_score) * 100)}%`,
                     },
                     {
-                      label: 'CNN Sev.',
+                      label: 'Model Score',
                       value:
                         row.model_severity !== undefined
                           ? `${Math.round(row.model_severity * 100)}%`
                           : `${Math.round(row.severity_score * 100)}%`,
                     },
                     {
-                      label: 'Final Sev.',
+                      label: 'Blended Severity',
                       value: row.final_severity !== undefined ? `${Math.round(row.final_severity * 100)}%` : '-',
                     },
                     { label: 'Confidence', value: `${Math.round(row.confidence * 100)}%` },
@@ -216,9 +218,9 @@ export const DistrictForecastRecords: React.FC = () => {
                     },
                     { label: 'Wind Max', value: row.wind_max_kmh !== undefined ? `${row.wind_max_kmh} km/h` : '-' },
                     {
-                      label: 'Top-3 %',
+                      label: 'Top Hazard Classes',
                       value: [row.prob_top1, row.prob_top2, row.prob_top3]
-                        .map((p) => (p === undefined ? '-' : `${Math.round(p * 100)}`))
+                        .map((p) => (p === undefined ? '-' : `${Math.round(p * 100)}%`))
                         .join(' / '),
                     },
                   ],
@@ -233,14 +235,14 @@ export const DistrictForecastRecords: React.FC = () => {
                     <th className="px-3.5 py-3">Prediction</th>
                     <th className="px-3.5 py-3">Hazard Type</th>
                     <th className="px-3.5 py-3">Tier</th>
-                    <th className="px-3.5 py-3">Physics Sev.</th>
-                    <th className="px-3.5 py-3">CNN Sev.</th>
-                    <th className="px-3.5 py-3">Final Sev.</th>
+                    <th className="px-3.5 py-3">Physics Baseline</th>
+                    <th className="px-3.5 py-3">Model Score</th>
+                    <th className="px-3.5 py-3">Blended Sev.</th>
                     <th className="px-3.5 py-3">Confidence</th>
                     <th className="px-3.5 py-3">Temp (Min/Max)</th>
                     <th className="px-3.5 py-3">Precip.</th>
                     <th className="px-3.5 py-3">Wind Max</th>
-                    <th className="px-3.5 py-3">Top-3 %</th>
+                    <th className="px-3.5 py-3">Top Hazard Classes</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-carbon-10">
@@ -287,7 +289,7 @@ export const DistrictForecastRecords: React.FC = () => {
                               {row.advisory_tier}
                             </span>
                           ) : (
-                            <span className="text-carbon-50" title="This row predates the advisory tier column">
+                            <span className="text-carbon-70" title="This row predates the advisory tier column">
                               —
                             </span>
                           )}

@@ -99,10 +99,10 @@ export const DistrictBriefHeader: React.FC = () => {
         />
 
         {/* Quick Navigation to Parent Division & Primary Hazard Dashboards */}
-        <div className="flex flex-wrap items-center gap-2 pt-1">
+        <div className="flex flex-wrap items-center gap-2.5 pt-1">
           <Link
             to={`/divisions/${(climaticEventsData?.division || data.division).toLowerCase()}`}
-            className="rounded-full inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 hover:text-blue-800 transition-colors cursor-pointer"
+            className="rounded-full inline-flex min-h-[44px] items-center gap-2 px-3.5 py-2 text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 hover:text-blue-800 transition-colors cursor-pointer touch-manipulation"
           >
             <MapPin className="w-3.5 h-3.5" />
             <span>{climaticEventsData?.division || data.division} Division Dashboard</span>
@@ -110,37 +110,40 @@ export const DistrictBriefHeader: React.FC = () => {
           </Link>
           <Link
             to={`/hazards/${(climaticEventsData?.primaryHazard || peakSeverityInfo?.hazard || 'flood').toLowerCase().replace(/\s+/g, '-')}`}
-            className="rounded-full inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 hover:text-amber-900 transition-colors cursor-pointer"
+            className="rounded-full inline-flex min-h-[44px] items-center gap-2 px-3.5 py-2 text-xs font-semibold bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100 hover:text-amber-950 transition-colors cursor-pointer touch-manipulation"
           >
             <AlertTriangle className="w-3.5 h-3.5" />
             <span>{climaticEventsData?.primaryHazard || peakSeverityInfo?.hazard || 'Hazard'} analytics</span>
             <ExternalLink className="w-3 h-3" />
           </Link>
           {climaticEventsData && (
-            <span className="rounded-full inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-carbon-10 text-carbon-70 border border-carbon-20">
-              <History className="w-3.5 h-3.5 text-carbon-60" />
+            <span className="rounded-full inline-flex min-h-[44px] items-center gap-2 px-3.5 py-2 text-xs font-medium bg-carbon-10 text-carbon-80 border border-carbon-20">
+              <History className="w-3.5 h-3.5 text-carbon-70" />
               <span>{climaticEventsData.totalEvents} recorded historical events (2000–2026)</span>
             </span>
           )}
         </div>
 
         {peakSeverityInfo ? (
-          <div className="rounded-xl bg-carbon-05 border border-carbon-20 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="rounded-xl bg-carbon-05 border border-carbon-20 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <div className="text-carbon-60 font-semibold uppercase tracking-wider text-xs">Peak date in the published record</div>
-              <div className="text-carbon-90 font-bold text-sm sm:text-base">
+              <div className="text-carbon-70 font-semibold uppercase tracking-wider text-xs">Peak Forecast Date</div>
+              <div className="text-carbon-90 font-bold text-sm sm:text-base mt-0.5">
                 <span>{peakSeverityInfo.peakDate}</span>
-                <span className="ml-2 font-mono">{Math.round(peakSeverityInfo.peakScore * 100)}% severity</span>
+                <span className="ml-2 font-mono tabular-nums text-carbon-80">({Math.round(peakSeverityInfo.peakScore * 100)}% severity index)</span>
               </div>
             </div>
             <div className="flex items-center gap-6 sm:border-l sm:border-carbon-20 sm:pl-6">
               <div>
-                <div className="text-carbon-60 font-semibold uppercase tracking-wider text-xs">Hazard</div>
-                <div className="text-carbon-90 font-bold text-sm">{peakSeverityInfo.hazard}</div>
+                <div className="text-carbon-70 font-semibold uppercase tracking-wider text-xs">Primary Hazard</div>
+                <div className="text-carbon-90 font-bold text-sm mt-0.5">{peakSeverityInfo.hazard}</div>
               </div>
               <div>
-                <div className="text-carbon-60 font-semibold uppercase tracking-wider text-xs">Confidence score (uncalibrated)</div>
-                <div className="text-carbon-90 font-bold text-sm">{Math.round(peakSeverityInfo.confidence * 100)}%</div>
+                <div className="text-carbon-70 font-semibold uppercase tracking-wider text-xs">Model Confidence</div>
+                <div className="text-carbon-90 font-bold text-sm mt-0.5 font-mono tabular-nums">
+                  {Math.round(peakSeverityInfo.confidence * 100)}%
+                  <span className="text-xs text-carbon-60 font-sans font-normal ml-1">(uncalibrated)</span>
+                </div>
               </div>
             </div>
           </div>
@@ -151,35 +154,30 @@ export const DistrictBriefHeader: React.FC = () => {
         )}
 
         {/* Consolidated Metadata Block (Two-Column Layout) */}
-        <div className="rounded-xl grid grid-cols-1 sm:grid-cols-2 gap-4 bg-carbon-05 border border-carbon-20/90 p-4 text-sm">
+        <div className="rounded-xl grid grid-cols-1 sm:grid-cols-2 gap-4 bg-carbon-05 border border-carbon-20/90 p-4 sm:p-5 text-sm">
           {/* Column 1: Hazard Sub-type & Regional Ingestion */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-carbon-60 font-medium">Hazard Category:</span>
+              <span className="text-carbon-70 font-medium">Hazard Category:</span>
               <strong className="font-bold text-carbon-90">{peakSeverityInfo?.hazard ?? 'Not in current run'}</strong>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-carbon-60 font-medium">Administrative Division:</span>
+              <span className="text-carbon-70 font-medium">Administrative Division:</span>
               <strong className="font-bold text-carbon-90">{data.division} Division</strong>
             </div>
           </div>
 
           {/* Column 2: Geospatial Center, Elevation & Live Telemetry Link */}
-          <div className="space-y-1.5 sm:pl-4 sm:border-l sm:border-carbon-20 flex flex-col justify-between">
-            <div className="space-y-1.5">
+          <div className="space-y-2 sm:pl-4 sm:border-l sm:border-carbon-20 flex flex-col justify-between">
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-carbon-60 font-medium">Geospatial Datum:</span>
-                <span className="font-mono font-bold text-carbon-90">
+                <span className="text-carbon-70 font-medium">Coordinates:</span>
+                <span className="font-mono font-bold text-carbon-90 tabular-nums">
                   {district.lat.toFixed(4)}°N, {district.lng.toFixed(4)}°E
                 </span>
               </div>
-              {/* `flex-wrap` + `break-all`: the printed brief carries the full URL, and on a
-                  375px viewport the label and the unbroken URL cannot share a line — this row was
-                  the 20px of document-level horizontal overflow the E2E suite caught on
-                  /forecast/district/dhaka. The URL must stay readable, so it wraps rather than
-                  being truncated. */}
               <div className="flex flex-wrap items-center justify-between gap-1">
-                <span className="text-carbon-60 font-medium">Interactive Dashboard:</span>
+                <span className="text-carbon-70 font-medium">Interactive Dashboard:</span>
                 <a
                   href={`https://www.hazardnet.live/forecast/district/${districtId}`}
                   target="_blank"
@@ -193,7 +191,7 @@ export const DistrictBriefHeader: React.FC = () => {
             </div>
 
             <div className="pt-2 border-t border-carbon-20 flex items-center justify-between">
-              <span className="text-[8pt] text-carbon-60 font-mono">Open on a phone:</span>
+              <span className="text-xs text-carbon-60 font-mono">Open on mobile device:</span>
               <PrintQrCode
                 url={`https://www.hazardnet.live/forecast/district/${districtId}`}
                 districtOrSector={data.districtName}

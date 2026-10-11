@@ -62,9 +62,10 @@ export const DistrictBriefActions: React.FC = () => {
         {/* Left: Back to National Overview + District Switcher Dropdown */}
         <div className="flex flex-wrap items-center gap-3">
           <button
-            onClick={() => navigate('/')}
-            className="inline-flex min-h-[44px] items-center gap-2 px-3 py-2 bg-white border border-carbon-20 rounded-full text-carbon-70 hover:bg-carbon-05 hover:text-carbon-90 text-sm font-semibold cursor-pointer group touch-manipulation"
+            onClick={() => navigate('/live')}
+            className="inline-flex min-h-[44px] items-center gap-2 px-3.5 py-2 bg-white border border-carbon-20 rounded-full text-carbon-70 hover:bg-carbon-05 hover:text-carbon-90 text-sm font-semibold cursor-pointer group touch-manipulation"
             title="Return to Bangladesh National Overview Map"
+            aria-label="Return to Bangladesh National Overview Map"
           >
             <ArrowLeft className="w-4 h-4 text-carbon-60 group-hover:-translate-x-0.5 transition-transform" />
             <span>National Map</span>
@@ -74,11 +75,13 @@ export const DistrictBriefActions: React.FC = () => {
           <div className="relative">
             <button
               onClick={() => setDistrictDropdownOpen(!districtDropdownOpen)}
-              className="inline-flex min-h-[44px] items-center gap-2.5 px-3 py-2 bg-white border border-carbon-20 rounded-full text-carbon-90 hover:border-carbon-30 text-sm font-semibold cursor-pointer touch-manipulation"
+              className="inline-flex min-h-[44px] items-center gap-2.5 px-4 py-2 bg-white border border-carbon-20 rounded-full text-carbon-90 hover:border-carbon-30 text-sm font-semibold cursor-pointer touch-manipulation"
+              aria-expanded={districtDropdownOpen}
+              aria-label={`Current district: ${data.districtName}. Select to switch district.`}
             >
-              <MapPin className="w-3.5 h-3.5 text-amber-600" />
+              <MapPin className="w-3.5 h-3.5 text-amber-700" />
               <span>
-                Switch District: <strong className="text-carbon-90">{data.districtName}</strong>
+                District: <strong className="text-carbon-90">{data.districtName}</strong>
               </span>
               <ChevronDown
                 className={`w-3.5 h-3.5 text-carbon-60 transition-transform ${districtDropdownOpen ? 'rotate-180' : ''}`}
@@ -99,10 +102,10 @@ export const DistrictBriefActions: React.FC = () => {
                     <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-carbon-60" />
                     <input
                       type="text"
-                      placeholder="Search 64 districts or division..."
+                      placeholder="Search 64 districts or divisions..."
                       value={searchDistrict}
                       onChange={(e) => setSearchDistrict(e.target.value)}
-                      className="w-full rounded-full pl-8 pr-3 py-1.5 text-xs bg-carbon-05 border border-carbon-20 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                      className="w-full rounded-full pl-8 pr-3 min-h-[44px] text-xs bg-carbon-05 border border-carbon-20 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                       autoFocus
                     />
                   </div>
@@ -119,22 +122,22 @@ export const DistrictBriefActions: React.FC = () => {
                             setSearchDistrict('');
                             navigate(`/forecast/district/${d.id}`);
                           }}
-                          className={`w-full flex items-center justify-between p-2 text-xs transition-colors cursor-pointer ${
+                          className={`w-full min-h-[44px] flex items-center justify-between px-3 py-2.5 text-xs rounded-lg transition-colors cursor-pointer touch-manipulation ${
                             d.id === districtId
                               ? 'bg-amber-50 text-amber-950 font-bold'
                               : 'hover:bg-carbon-05 text-carbon-70'
                           }`}
                         >
                           <div className="flex items-center gap-2">
-                            <span className="font-medium">{d.name}</span>
+                            <span className="font-semibold text-carbon-90">{d.name}</span>
                             <span className="text-xs text-carbon-60">({d.division})</span>
                           </div>
                           <span
-                            className={`text-xs px-2 py-0.5 rounded-full font-mono font-bold ${
+                            className={`text-xs px-2.5 py-0.5 rounded-full font-mono font-bold tabular-nums ${
                               d.risk === 'High'
                                 ? 'bg-rose-100 text-rose-700'
                                 : d.risk === 'Moderate'
-                                  ? 'bg-amber-100 text-amber-700'
+                                  ? 'bg-amber-100 text-amber-800'
                                   : 'bg-carbon-10 text-carbon-80'
                             }`}
                           >
@@ -150,28 +153,28 @@ export const DistrictBriefActions: React.FC = () => {
           </div>
         </div>
 
-        {/* Right: Executive Action Controls.
-            `flex-wrap`: bookmark + share + PDF + JSON is ~357px of controls, which is a 37px
-            document overflow at 320px if they are forced onto one line. They wrap instead. */}
+        {/* Right: Executive Action Controls. */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* Bookmark / Watchlist */}
+          {/* Bookmark / Saved Districts */}
           <button
             onClick={handleToggleSave}
-            title={saved ? 'District Saved to Watchlist' : 'Add District to Watchlist'}
-            className={`min-h-[44px] min-w-[44px] border flex items-center justify-center cursor-pointer touch-manipulation ${
+            title={saved ? 'Remove from My Districts' : 'Save to My Districts'}
+            aria-label={saved ? 'Remove district from My Districts' : 'Save district to My Districts'}
+            className={`min-h-[44px] min-w-[44px] rounded-full border flex items-center justify-center cursor-pointer touch-manipulation transition-colors ${
               saved
                 ? 'bg-carbon-05 border-carbon-20 text-carbon-90'
                 : 'bg-white border-carbon-20 text-carbon-60 hover:bg-carbon-05 hover:text-carbon-90'
             }`}
           >
-            {saved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
+            {saved ? <BookmarkCheck className="w-4 h-4 text-amber-700" /> : <Bookmark className="w-4 h-4" />}
           </button>
 
           {/* Share Intelligence Briefing */}
           <button
             onClick={handleShareAlert}
-            title="Copy Executive Intelligence Briefing"
-            className="inline-flex min-h-[44px] items-center gap-2 px-3 py-2 bg-white border border-carbon-20 rounded-full text-carbon-70 hover:bg-carbon-05 hover:text-carbon-90 text-sm font-semibold cursor-pointer touch-manipulation"
+            title="Copy district intelligence brief"
+            aria-label="Copy district intelligence brief to clipboard"
+            className="inline-flex min-h-[44px] items-center gap-2 px-3.5 py-2 bg-white border border-carbon-20 rounded-full text-carbon-70 hover:bg-carbon-05 hover:text-carbon-90 text-sm font-semibold cursor-pointer touch-manipulation"
           >
             <Share2 className="w-4 h-4 text-blue-600" />
             <span className="hidden md:inline">{copiedAlert ? 'Copied Brief' : 'Share Brief'}</span>
@@ -181,7 +184,8 @@ export const DistrictBriefActions: React.FC = () => {
             type="button"
             onClick={handlePrintBrief}
             title="Print this district brief (HTML print is the primary export)"
-            className="inline-flex min-h-[44px] items-center gap-2 px-3 py-2 bg-primary text-ap-action-fg text-sm font-semibold cursor-pointer touch-manipulation"
+            aria-label="Print this district brief"
+            className="inline-flex min-h-[44px] items-center gap-2 px-3.5 py-2 rounded-full bg-primary text-ap-action-fg text-sm font-semibold cursor-pointer touch-manipulation"
           >
             <Printer className="w-4 h-4" />
             <span>Print brief</span>
@@ -207,7 +211,6 @@ export const DistrictBriefActions: React.FC = () => {
               documentType: 'District brief',
             }}
           />
-
         </div>
       </div>
     </>
