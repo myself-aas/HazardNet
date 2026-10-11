@@ -196,7 +196,7 @@ describe('motion contract — every spring is critically damped', () => {
   it('has no under-damped spring left outside those two places', () => {
     const violations = [];
     for (const file of walk(SRC)) {
-      const rel = relative(ROOT, file);
+      const rel = relative(ROOT, file).replace(/\\/g, '/');
       if (isTest(relative(SRC, file)) || SPRING_EXEMPT.some((p) => rel.startsWith(p))) continue;
       const body = stripComments(readFileSync(file, 'utf8'));
       for (const block of body.matchAll(/\{[^{}]*stiffness[^{}]*\}/g)) {

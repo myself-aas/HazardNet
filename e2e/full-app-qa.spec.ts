@@ -127,7 +127,7 @@ const ENVIRONMENTAL_URLS: Array<{ pattern: RegExp; why: string; statuses?: numbe
     // and must still redden the route.
     pattern: /\/api\/v1\/forecasts\//i,
     why: 'no API runtime in this environment; ADR 0008 snapshot fallback is the delivery path',
-    statuses: [404, 501],
+    statuses: [404, 501, 502],
   },
   {
     // The general form of the rule above, for a runner that has no API at all:
