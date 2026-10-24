@@ -1,6 +1,6 @@
 {
   "schema": "hazardnet-freshness/v1",
-  "built_at": "2026-10-18T01:53:36.171Z",
+  "built_at": "2026-10-24T07:28:01.234Z",
   "generated_by": "scripts/build_freshness_artifact.mjs",
   "what_this_is": "A derived statement about the committed data artifacts this deployment ships. It is not a live probe and it does not measure the running services — the site-health probe result it carries is whatever the last scheduled run published.",
   "overall": {
@@ -25,11 +25,11 @@
       "label": "Forecast ingest run",
       "artifact": "backend/data/forecasts/manifest.json",
       "state": "stale",
-      "reason": "prediction_date 2026-10-10 is 193.9 h old (SLO 192 h)",
+      "reason": "prediction_date 2026-10-10 is 343.5 h old (SLO 192 h)",
       "generated_at": "2026-10-10T16:57:10.000Z",
       "prediction_date": "2026-10-10",
-      "age_hours": 193.9,
-      "run_age_hours": 176.9,
+      "age_hours": 343.5,
+      "run_age_hours": 326.5,
       "slo_hours": 192,
       "detail": {
         "source": "Kaggle_Daily_Advisory (8-hazardnet-advisory)",
@@ -42,11 +42,11 @@
       "label": "Website forecast snapshot",
       "artifact": "frontend/public/data/forecasts-latest.json",
       "state": "stale",
-      "reason": "prediction_date 2026-10-10 is 193.9 h old (SLO 192 h)",
+      "reason": "prediction_date 2026-10-10 is 343.5 h old (SLO 192 h)",
       "generated_at": "2026-10-11T03:36:00.578Z",
       "prediction_date": "2026-10-10",
-      "age_hours": 193.9,
-      "run_age_hours": 166.3,
+      "age_hours": 343.5,
+      "run_age_hours": 315.9,
       "slo_hours": 192,
       "detail": {
         "schema": "hazardnet-forecast-snapshot/v2",
@@ -58,9 +58,9 @@
       "label": "Alert snapshot",
       "artifact": "frontend/public/data/alerts-latest.json",
       "state": "stale",
-      "reason": "the snapshot was built 166.3 h ago (SLO 48 h)",
+      "reason": "the snapshot was built 315.9 h ago (SLO 48 h)",
       "generated_at": "2026-10-11T03:36:45.997Z",
-      "age_hours": 166.3,
+      "age_hours": 315.9,
       "slo_hours": 48,
       "detail": {
         "schema": "hazardnet-alerts/v1",
@@ -75,33 +75,33 @@
       "id": "site_probe",
       "label": "Site-health probe (every 30 min)",
       "artifact": "data/site-health/latest.json",
-      "generated_at": "2026-10-18T01:53:36Z",
+      "generated_at": "2026-10-24T07:28:01Z",
       "age_hours": 0,
       "slo_hours": 2,
       "detail": {
-        "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/39088097649",
+        "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/40074214540",
         "site_url": "https://hazardnet.live",
-        "passed": 0,
-        "failed": 7,
+        "passed": 6,
+        "failed": 1,
         "checks": [
           {
             "id": "homepage",
-            "outcome": "failure",
+            "outcome": "success",
             "detail": null
           },
           {
             "id": "deep_links",
-            "outcome": "failure",
+            "outcome": "success",
             "detail": null
           },
           {
             "id": "security_headers",
-            "outcome": "failure",
+            "outcome": "success",
             "detail": null
           },
           {
             "id": "sitemap",
-            "outcome": "failure",
+            "outcome": "success",
             "detail": null
           },
           {
@@ -111,20 +111,20 @@
           },
           {
             "id": "status_page",
-            "outcome": "failure",
+            "outcome": "success",
             "detail": null
           },
           {
             "id": "content_pages",
-            "outcome": "failure",
+            "outcome": "success",
             "detail": null
           }
         ]
       },
       "state": "failing",
       "outcome": "fail",
-      "reason": "the last probe run reported 7 failed check(s): homepage, deep_links, security_headers, sitemap, forecast_data, status_page, content_pages",
-      "ran_at": "2026-10-18T01:53:36Z"
+      "reason": "the last probe run reported 1 failed check(s): forecast_data",
+      "ran_at": "2026-10-24T07:28:01Z"
     }
   ],
   "coverage": {
@@ -174,7 +174,7 @@
     },
     "site_probe": {
       "path": "data/site-health/latest.json",
-      "ran_at": "2026-10-18T01:53:36Z"
+      "ran_at": "2026-10-24T07:28:01Z"
     }
   }
 }

@@ -1,29 +1,29 @@
 {
   "schema": "hazardnet-site-probe/v1",
-  "ran_at": "2026-10-18T01:53:36Z",
-  "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/39088097649",
+  "ran_at": "2026-10-24T07:28:01Z",
+  "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/40074214540",
   "site_url": "https://hazardnet.live",
-  "edge_challenged": true,
+  "edge_challenged": false,
   "outcome": "fail",
   "checks": [
     {
       "id": "homepage",
-      "outcome": "failure",
+      "outcome": "success",
       "detail": null
     },
     {
       "id": "deep_links",
-      "outcome": "failure",
+      "outcome": "success",
       "detail": null
     },
     {
       "id": "security_headers",
-      "outcome": "failure",
+      "outcome": "success",
       "detail": null
     },
     {
       "id": "sitemap",
-      "outcome": "failure",
+      "outcome": "success",
       "detail": null
     },
     {
@@ -33,12 +33,12 @@
     },
     {
       "id": "status_page",
-      "outcome": "failure",
+      "outcome": "success",
       "detail": null
     },
     {
       "id": "content_pages",
-      "outcome": "failure",
+      "outcome": "success",
       "detail": null
     }
   ]
