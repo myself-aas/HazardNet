@@ -1,6 +1,6 @@
 {
   "schema": "hazardnet-freshness/v1",
-  "built_at": "2026-10-24T07:28:01.234Z",
+  "built_at": "2026-10-24T16:07:25.221Z",
   "generated_by": "scripts/build_freshness_artifact.mjs",
   "what_this_is": "A derived statement about the committed data artifacts this deployment ships. It is not a live probe and it does not measure the running services — the site-health probe result it carries is whatever the last scheduled run published.",
   "overall": {
@@ -25,11 +25,11 @@
       "label": "Forecast ingest run",
       "artifact": "backend/data/forecasts/manifest.json",
       "state": "stale",
-      "reason": "prediction_date 2026-10-10 is 343.5 h old (SLO 192 h)",
+      "reason": "prediction_date 2026-10-10 is 352.1 h old (SLO 192 h)",
       "generated_at": "2026-10-10T16:57:10.000Z",
       "prediction_date": "2026-10-10",
-      "age_hours": 343.5,
-      "run_age_hours": 326.5,
+      "age_hours": 352.1,
+      "run_age_hours": 335.2,
       "slo_hours": 192,
       "detail": {
         "source": "Kaggle_Daily_Advisory (8-hazardnet-advisory)",
@@ -42,11 +42,11 @@
       "label": "Website forecast snapshot",
       "artifact": "frontend/public/data/forecasts-latest.json",
       "state": "stale",
-      "reason": "prediction_date 2026-10-10 is 343.5 h old (SLO 192 h)",
+      "reason": "prediction_date 2026-10-10 is 352.1 h old (SLO 192 h)",
       "generated_at": "2026-10-11T03:36:00.578Z",
       "prediction_date": "2026-10-10",
-      "age_hours": 343.5,
-      "run_age_hours": 315.9,
+      "age_hours": 352.1,
+      "run_age_hours": 324.5,
       "slo_hours": 192,
       "detail": {
         "schema": "hazardnet-forecast-snapshot/v2",
@@ -58,9 +58,9 @@
       "label": "Alert snapshot",
       "artifact": "frontend/public/data/alerts-latest.json",
       "state": "stale",
-      "reason": "the snapshot was built 315.9 h ago (SLO 48 h)",
+      "reason": "the snapshot was built 324.5 h ago (SLO 48 h)",
       "generated_at": "2026-10-11T03:36:45.997Z",
-      "age_hours": 315.9,
+      "age_hours": 324.5,
       "slo_hours": 48,
       "detail": {
         "schema": "hazardnet-alerts/v1",
@@ -75,14 +75,14 @@
       "id": "site_probe",
       "label": "Site-health probe (every 30 min)",
       "artifact": "data/site-health/latest.json",
-      "generated_at": "2026-10-24T07:28:01Z",
+      "generated_at": "2026-10-24T16:07:25Z",
       "age_hours": 0,
       "slo_hours": 2,
       "detail": {
-        "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/40074214540",
+        "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/40110065784",
         "site_url": "https://hazardnet.live",
-        "passed": 6,
-        "failed": 1,
+        "passed": 5,
+        "failed": 2,
         "checks": [
           {
             "id": "homepage",
@@ -96,7 +96,7 @@
           },
           {
             "id": "security_headers",
-            "outcome": "success",
+            "outcome": "failure",
             "detail": null
           },
           {
@@ -123,8 +123,8 @@
       },
       "state": "failing",
       "outcome": "fail",
-      "reason": "the last probe run reported 1 failed check(s): forecast_data",
-      "ran_at": "2026-10-24T07:28:01Z"
+      "reason": "the last probe run reported 2 failed check(s): security_headers, forecast_data",
+      "ran_at": "2026-10-24T16:07:25Z"
     }
   ],
   "coverage": {
@@ -174,7 +174,7 @@
     },
     "site_probe": {
       "path": "data/site-health/latest.json",
-      "ran_at": "2026-10-24T07:28:01Z"
+      "ran_at": "2026-10-24T16:07:25Z"
     }
   }
 }
