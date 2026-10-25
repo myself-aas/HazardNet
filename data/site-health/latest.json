@@ -1,7 +1,7 @@
 {
   "schema": "hazardnet-site-probe/v1",
-  "ran_at": "2026-10-24T16:07:25Z",
-  "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/40110065784",
+  "ran_at": "2026-10-25T15:10:57Z",
+  "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/40205696590",
   "site_url": "https://hazardnet.live",
   "edge_challenged": false,
   "outcome": "fail",
@@ -28,7 +28,7 @@
     },
     {
       "id": "forecast_data",
-      "outcome": "failure",
+      "outcome": "success",
       "detail": null
     },
     {
