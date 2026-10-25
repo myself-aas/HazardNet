@@ -1,11 +1,15 @@
 import fs from 'node:fs';
-import { execSync } from 'node:child_process';
 import path from 'node:path';
+import { execSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
-const distIndex = path.resolve(process.cwd(), 'frontend', 'dist', 'index.html');
+const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const distIndex = path.join(root, 'frontend', 'dist', 'index.html');
+
 if (!fs.existsSync(distIndex)) {
-  console.log('[dev] Frontend build missing. Building assets...');
-  execSync('npm run build:frontend', { stdio: 'inherit' });
+  console.log('[ensure-frontend] Building frontend assets...');
+  execSync('npm run build:frontend', { stdio: 'inherit', cwd: root });
+  console.log('[ensure-frontend] Frontend built successfully.');
 } else {
-  console.log('[dev] Frontend assets ready in frontend/dist');
+  console.log('[ensure-frontend] Frontend assets are present.');
 }

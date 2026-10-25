@@ -170,7 +170,7 @@ jobs:
           FETCHED: ${{ steps.fetch-advisory.outputs.fetched }}
           FRESH: ${{ steps.fetch-advisory.outputs.fresh }}
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON || secrets.FIREBASE_SERVICE_ACCOUNT }}
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
         run: |
           set -euo pipefail
@@ -192,8 +192,10 @@ jobs:
           fi
 
           INGEST_FIRESTORE_FLAG=""
-          if [ -n "${FIREBASE_SERVICE_ACCOUNT:-}" ] || [ -n "${FIREBASE_PROJECT_ID:-}" ]; then
+          if node -e "import('./backend/forecastPersistence.js').then(({ validateServiceAccountEnv }) => { const res = validateServiceAccountEnv(); if (!res.valid) { console.log('[ingest] Firestore pre-flight check: ' + res.reason); process.exit(1); } console.log('[ingest] Firestore credentials verified via ' + res.source + ' (project: ' + res.projectId + ')'); })"; then
             INGEST_FIRESTORE_FLAG="--ingest-firestore"
+          else
+            echo "::warning::[ingest] Valid Firebase service account JSON not configured; proceeding with static snapshot generation only."
           fi
 
           echo "[ingest] Executing process_advisory_ingest.mjs..."

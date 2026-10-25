@@ -16,7 +16,7 @@
  * legend lie about the imagery underneath it.
  */
 
-import { APPLE_COLORS, APPLE_NEUTRAL, APPLE_SEVERITY } from './apple';
+import { APPLE_COLORS, APPLE_NEUTRAL, APPLE_SEVERITY } from './apple.ts';
 
 /** Surfaces, rules and text — every value is the token, not a copy of it. */
 export const MAP_CHROME = {

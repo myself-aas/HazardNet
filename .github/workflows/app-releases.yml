@@ -6,8 +6,9 @@
 #              (apps/windows, React Native for Windows / WinUI)
 #
 # Triggers
+#   * push to `main` branch        -> builds React Native Android APK & publishes GitHub Release `v<mobile_version>-<sha>`
 #   * push of a tag matching `v*`  -> assets are attached to that release
-#   * manual "Run workflow"        -> a (pre-)release is created automatically,
+#   * manual "Run workflow"        -> a release is created automatically,
 #     named from the app versions + commit SHA
 #
 # Repository secrets (all optional but recommended):
@@ -29,8 +30,10 @@ on:
       prerelease:
         description: 'Mark the created release as pre-release'
         type: boolean
-        default: true
+        default: false
   push:
+    branches:
+      - main
     tags:
       - 'v*'
 
@@ -61,13 +64,16 @@ jobs:
           set -euo pipefail
           MOBILE_VER="$(node -p "require('./apps/mobile/app.json').expo.version")"
           WINDOWS_VER="$(node -p "require('./apps/windows/package.json').version")"
-          if [ "${{ github.event_name }}" = "push" ]; then
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref_type }}" = "tag" ]; then
             TAG="${GITHUB_REF_NAME}"
+            PRERELEASE="false"
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            TAG="v${MOBILE_VER}-${GITHUB_SHA::8}"
             PRERELEASE="false"
           else
             TAG="v${MOBILE_VER}-apps-${GITHUB_SHA::8}"
             PRERELEASE="${{ inputs.prerelease }}"
-            [ -n "${PRERELEASE}" ] || PRERELEASE="true"
+            [ -n "${PRERELEASE}" ] || PRERELEASE="false"
           fi
           {
             echo "tag=${TAG}"
@@ -144,6 +150,11 @@ jobs:
           git add logs/
           git commit -m "ci logs npm android ${{ github.run_id }}" || true
           git push origin ci-logs-${{ github.run_id }}-npm-android --force || true
+
+      - name: Run React Native mobile shell & manifest verification
+        run: |
+          set -euo pipefail
+          npx jest __tests__/phase2MobileShell.test.js
 
       - name: Prebuild Android (Expo)
         working-directory: apps/mobile
@@ -480,32 +491,48 @@ jobs:
           git commit -m "ci logs android ${{ github.run_id }}" || true
           git push origin ci-logs-${{ github.run_id }}-android --force || true
 
-      - name: Stage artifact
+      - name: Stage artifact & generate SHA-256 checksum
         if: success()
         run: |
           set -euo pipefail
           mkdir -p dist
+          APK_NAME="HazardNet-mobile-v${{ needs.meta.outputs.mobile_version }}-android.apk"
           cp "apps/mobile/android/app/build/outputs/apk/release/app-release.apk" \
-             "dist/HazardNet-mobile-v${{ needs.meta.outputs.mobile_version }}-android.apk"
+             "dist/${APK_NAME}"
+          (cd dist && sha256sum "${APK_NAME}" > "${APK_NAME}.sha256")
           ls -lh dist
+          cat "dist/${APK_NAME}.sha256"
 
-      - name: Publish to GitHub Release
+      - name: Upload Android APK workflow artifact
+        if: success()
+        uses: actions/upload-artifact@v6
+        with:
+          name: android-release-apk
+          path: |
+            dist/*.apk
+            dist/*.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish Android APK to GitHub Release
         if: success()
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.meta.outputs.tag }}
-          name: HazardNet Apps ${{ needs.meta.outputs.tag }}
+          name: HazardNet Release ${{ needs.meta.outputs.tag }}
           body: |
-            Native app binaries for HazardNet (mobile Android + Windows desktop).
+            Native app binaries for HazardNet (React Native Android mobile + Windows desktop).
 
-            - **Android:** `HazardNet-mobile-v<version>-android.apk` — signed release APK (see workflow for signing details).
-            - **Windows:** `HazardNet-windows-v<version>-x64.msix` — packaged x64 app (double-click to install on Windows 10/11), plus the unpacked `HazardNet-windows-v<version>-x64.exe`.
+            - **Android:** `HazardNet-mobile-v${{ needs.meta.outputs.mobile_version }}-android.apk` — signed release APK with `.sha256` checksum.
+            - **Windows:** `HazardNet-windows-v${{ needs.meta.outputs.windows_version }}-x64.msix` — packaged x64 app (double-click to install on Windows 10/11), plus the unpacked `HazardNet-windows-v${{ needs.meta.outputs.windows_version }}-x64.exe`.
 
-            Built by the `App Releases (Android APK / Windows MSIX)` workflow from `${{ github.sha }}`.
+            Built automatically from branch/ref `${{ github.ref_name }}` (`${{ github.sha }}`).
           prerelease: ${{ fromJSON(needs.meta.outputs.prerelease) }}
+          generate_release_notes: true
           fail_on_unmatched_files: true
           files: |
             dist/*.apk
+            dist/*.sha256
 
   windows-build:
     name: Build Windows x64

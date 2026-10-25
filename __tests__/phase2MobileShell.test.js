@@ -77,3 +77,33 @@ describe('Phase 2 — mobile primitives, on the Apple design system', () => {
     expect(sheet.props.handleTouchArea).toBe(48);
   });
 });
+
+describe('Phase 2 — Automated Android APK Build & Release on Push to main', () => {
+  it('configures .github/workflows/app-releases.yml to build and release the React Native Android APK on every push to main', () => {
+    const workflowPath = join(process.cwd(), '.github/workflows/app-releases.yml');
+    expect(existsSync(workflowPath)).toBe(true);
+    const workflow = readFileSync(workflowPath, 'utf8');
+
+    expect(workflow).toMatch(/push:\s+branches:\s+-\s+main/);
+    expect(workflow).toContain('npx expo prebuild --platform android --no-install --clean');
+    expect(workflow).toContain('./gradlew assembleRelease');
+    expect(workflow).toContain('HazardNet-mobile-v${{ needs.meta.outputs.mobile_version }}-android.apk');
+    expect(workflow).toContain('uses: softprops/action-gh-release@v3');
+  });
+
+  it('configures .github/workflows/android_release.yml to build React Native Android APK + AAB and publish a GitHub Release on push to main', () => {
+    const androidReleasePath = join(process.cwd(), '.github/workflows/android_release.yml');
+    expect(existsSync(androidReleasePath)).toBe(true);
+    const workflow = readFileSync(androidReleasePath, 'utf8');
+
+    expect(workflow).toMatch(/push:\s+branches:\s+-\s+main/);
+    expect(workflow).toContain('npx expo prebuild --platform android --no-install --clean');
+    expect(workflow).toContain('./gradlew assembleRelease bundleRelease');
+    expect(workflow).toContain('HazardNet-mobile-v${{ steps.meta.outputs.mobile_version }}-android.apk');
+    expect(workflow).toContain('HazardNet-mobile-v${{ steps.meta.outputs.mobile_version }}-android.aab');
+    expect(workflow).toContain('SHA256SUMS.txt');
+    expect(workflow).toContain('uses: softprops/action-gh-release@v3');
+  });
+});
+
+

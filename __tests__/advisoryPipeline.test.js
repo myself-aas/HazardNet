@@ -21,10 +21,11 @@ import {
   mapAdvisoryRows,
   forecastRowsToCsv,
 } from '../backend/utils/advisoryMapper.js';
-import { validateAdvisoryCsv } from '../scripts/validate_advisory_csv.mjs';
-import { resolveCanonicalModelVersion } from '../scripts/process_advisory_ingest.mjs';
+import { validateAdvisoryCsv, parseCsv } from '../scripts/validate_advisory_csv.mjs';
+import { resolveCanonicalModelVersion, processAdvisoryIngest } from '../scripts/process_advisory_ingest.mjs';
 import { buildFreshnessArtifact } from '../scripts/build_freshness_artifact.mjs';
 import { rehearseAlertEngine } from '../scripts/rehearse_alert_engine.mjs';
+import { validateServiceAccountEnv } from '../backend/forecastPersistence.js';
 
 /**
  * Generate a synthetic 128-row valid CSV for testing.
@@ -425,5 +426,69 @@ describe('Phase A End-to-End Pipeline & Snapshot Integration (TRD §4.4, §4.5)'
       fs.rmSync(tempDir, { recursive: true, force: true });
     }
   });
+
+  test('processAdvisoryIngest degrades gracefully when FIREBASE_PROJECT_ID is set without service account JSON', async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const os = await import('node:os');
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hazardnet-graceful-skip-'));
+    try {
+      const generatedAt = new Date(Date.now() - 1 * 3600 * 1000).toISOString();
+      const inputCsvPath = path.join(tempDir, 'input_advisories.csv');
+      fs.writeFileSync(inputCsvPath, makeValidSampleAdvisoryCsv({ generated_at: generatedAt }), 'utf8');
+
+      const mockEnv = { FIREBASE_PROJECT_ID: 'hazardnet-prod' };
+      const preFlight = validateServiceAccountEnv(mockEnv);
+      assert.strictEqual(preFlight.valid, false);
+
+      const result = await processAdvisoryIngest(inputCsvPath, {
+        rootDir: tempDir,
+        ingestFirestore: true,
+        env: mockEnv,
+      });
+
+      assert.strictEqual(result.rowCount, 128);
+      assert.strictEqual(result.firestore.status, 'skipped');
+      assert.ok(fs.existsSync(path.join(tempDir, 'backend/data/forecasts/manifest.json')));
+      assert.ok(fs.existsSync(path.join(tempDir, 'backend/data/forecasts/hazardnet_forecasts_latest.csv')));
+      assert.ok(fs.existsSync(path.join(tempDir, 'backend/data/forecasts/hazardnet_forecasts_latest.json')));
+      assert.ok(fs.existsSync(path.join(tempDir, 'frontend/public/data/forecasts-latest.json')));
+    } finally {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test('processAdvisoryIngest degrades gracefully when Firestore transaction fails at runtime', async () => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const os = await import('node:os');
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hazardnet-graceful-degrade-'));
+    try {
+      const generatedAt = new Date(Date.now() - 1 * 3600 * 1000).toISOString();
+      const inputCsvPath = path.join(tempDir, 'input_advisories.csv');
+      fs.writeFileSync(inputCsvPath, makeValidSampleAdvisoryCsv({ generated_at: generatedAt }), 'utf8');
+
+      const failingDb = {
+        collection: () => ({}),
+        runTransaction: async () => {
+          throw new Error('Could not load the default credentials');
+        },
+      };
+
+      const result = await processAdvisoryIngest(inputCsvPath, {
+        rootDir: tempDir,
+        ingestFirestore: true,
+        db: failingDb,
+      });
+
+      assert.strictEqual(result.rowCount, 128);
+      assert.strictEqual(result.firestore.status, 'degraded');
+      assert.ok(result.firestore.error.includes('Could not load the default credentials'));
+      assert.ok(fs.existsSync(path.join(tempDir, 'frontend/public/data/forecasts-latest.json')));
+    } finally {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
 });
+
 

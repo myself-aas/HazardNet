@@ -18,7 +18,7 @@
  * React is NOT a dependency of this entry point.
  */
 
-export * from './apple';
-export * from './appleNative';
-export * from './mapPalette';
-export * from './icons';
+export * from './apple.ts';
+export * from './appleNative.ts';
+export * from './mapPalette.ts';
+export * from './icons.ts';

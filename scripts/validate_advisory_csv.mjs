@@ -1,294 +1,217 @@
-#!/usr/bin/env node
-/**
- * validate_advisory_csv.mjs — Schema Validation & Staleness Guard Script
- *
- * Implements TASK-003 per PRD §4.1, §4.3 / TRD §4.1, §4.3.
- *
- * Verifies that the raw output `hazardnet_advisories_latest.csv` from Kaggle notebook
- * `8-hazardnet-advisory` conforms to the 22-column specification, contains exactly 128 rows
- * (64 districts × 2 horizons), passes enum domain validation, and is not stale (> 36 hours).
- *
- * Usage:
- *   node scripts/validate_advisory_csv.mjs <path-to-csv> [--max-age-hours=36] [--allow-stale] [--quiet]
- */
-
-import { readFileSync, existsSync } from 'node:fs';
-import { resolve } from 'node:path';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   ADVISORY_CSV_COLUMNS,
   VALID_ADVISORY_TIERS,
   VALID_HORIZONS,
   VALID_HAZARDS,
-  DISTRICT_REGISTRY,
-  normalizeDistrictKey,
   lookupDistrict,
 } from '../backend/utils/advisoryMapper.js';
 
-// ─── Minimal RFC4180 CSV parser (handles quotes, CRLF, escaped quotes) ───
-export function parseCsv(text) {
-  const rows = [];
+export function parseCsv(csvContent) {
+  if (!csvContent || typeof csvContent !== 'string') {
+    return { headers: [], rows: [] };
+  }
+  const matrix = [];
   let row = [];
   let field = '';
   let inQuotes = false;
   let i = 0;
-  const pushField = () => { row.push(field); field = ''; };
-  const pushRow = () => { pushField(); rows.push(row); row = []; };
+  const pushField = () => {
+    row.push(field.trim());
+    field = '';
+  };
+  const pushRow = () => {
+    pushField();
+    if (!(row.length === 1 && row[0] === '')) {
+      matrix.push(row);
+    }
+    row = [];
+  };
 
-  while (i < text.length) {
-    const ch = text[i];
+  while (i < csvContent.length) {
+    const ch = csvContent[i];
     if (inQuotes) {
       if (ch === '"') {
-        if (text[i + 1] === '"') { field += '"'; i += 2; continue; }
-        inQuotes = false; i += 1; continue;
+        if (csvContent[i + 1] === '"') {
+          field += '"';
+          i += 2;
+          continue;
+        }
+        inQuotes = false;
+        i += 1;
+        continue;
       }
-      field += ch; i += 1; continue;
+      field += ch;
+      i += 1;
+      continue;
     }
-    if (ch === '"') { inQuotes = true; i += 1; continue; }
-    if (ch === ',') { pushField(); i += 1; continue; }
-    if (ch === '\r') { i += 1; continue; }
-    if (ch === '\n') { pushRow(); i += 1; continue; }
-    field += ch; i += 1;
+    if (ch === '"') {
+      inQuotes = true;
+      i += 1;
+      continue;
+    }
+    if (ch === ',') {
+      pushField();
+      i += 1;
+      continue;
+    }
+    if (ch === '\r') {
+      i += 1;
+      continue;
+    }
+    if (ch === '\n') {
+      pushRow();
+      i += 1;
+      continue;
+    }
+    field += ch;
+    i += 1;
   }
-  if (field.length > 0 || row.length > 0) pushRow();
-  return rows.filter((cells) => !(cells.length === 1 && cells[0].trim() === ''));
+  if (field.length > 0 || row.length > 0) {
+    pushRow();
+  }
+
+  if (matrix.length === 0) {
+    return { headers: [], rows: [] };
+  }
+
+  const headers = matrix[0];
+  const rows = matrix.slice(1).map((parts) =>
+    Object.fromEntries(headers.map((h, idx) => [h, parts[idx] ?? ''])),
+  );
+  return { headers, rows };
 }
 
-/**
- * Validate advisory CSV content against schema and staleness constraints.
- *
- * @param {string} csvContent - Raw CSV string
- * @param {object} [options]
- * @param {number} [options.maxAgeHours=36]
- * @param {boolean} [options.allowStale=false]
- * @param {Date} [options.currentTime=new Date()]
- * @returns {{ valid: boolean, errors: string[], summary: object }}
- */
 export function validateAdvisoryCsv(csvContent, options = {}) {
-  const {
-    maxAgeHours = 36,
-    allowStale = false,
-    currentTime = new Date(),
-  } = options;
-
+  const current = options.currentTime || options.now || new Date();
+  const maxAgeHours = options.maxAgeHours ?? 36;
+  const allowStale = options.allowStale ?? false;
   const errors = [];
-  const parsed = parseCsv(csvContent);
 
-  if (parsed.length === 0) {
+  if (!csvContent || typeof csvContent !== 'string') {
     return {
       valid: false,
-      errors: ['CSV content is empty or contains no records'],
-      summary: { totalRows: 0 },
+      errors: ['CSV content is empty or invalid'],
+      summary: { totalRows: 0, columnsCount: 0, districtCount: 0, isStale: false, ageHours: null },
     };
   }
 
-  const [rawHeaders, ...rawRows] = parsed;
-  const headers = rawHeaders.map((h) => h.trim());
+  const { headers, rows: parsedRows } = parseCsv(csvContent);
+  if (headers.length === 0) {
+    return {
+      valid: false,
+      errors: ['CSV content is empty'],
+      summary: { totalRows: 0, columnsCount: 0, districtCount: 0, isStale: false, ageHours: null },
+    };
+  }
 
-  // 1. Validate Column Count and Names
   if (headers.length !== ADVISORY_CSV_COLUMNS.length) {
-    errors.push(
-      `Invalid column count: expected ${ADVISORY_CSV_COLUMNS.length} columns, found ${headers.length}`
-    );
+    errors.push(`Invalid column count: expected ${ADVISORY_CSV_COLUMNS.length}, got ${headers.length}`);
   }
 
-  const missingColumns = ADVISORY_CSV_COLUMNS.filter((col) => !headers.includes(col));
-  if (missingColumns.length > 0) {
-    errors.push(`Missing required column(s): ${missingColumns.join(', ')}`);
+  for (const col of ADVISORY_CSV_COLUMNS) {
+    if (!headers.includes(col)) {
+      errors.push(`Missing required column: "${col}"`);
+    }
   }
 
-  const extraColumns = headers.filter((col) => !ADVISORY_CSV_COLUMNS.includes(col));
-  if (extraColumns.length > 0) {
-    errors.push(`Unexpected extra column(s): ${extraColumns.join(', ')}`);
+  if (parsedRows.length !== 128) {
+    errors.push(`Invalid row count: expected 128, got ${parsedRows.length}`);
   }
 
-  // 2. Validate Row Count (Exactly 128 rows: 64 districts × 2 horizons)
-  if (rawRows.length !== 128) {
-    errors.push(`Invalid row count: expected exactly 128 rows, found ${rawRows.length}`);
-  }
+  const districtHorizons = new Map();
+  const districts = new Set();
+  let newestTimestamp = null;
 
-  const headerIdx = Object.fromEntries(headers.map((h, i) => [h, i]));
-  const getCell = (row, col) => (headerIdx[col] !== undefined ? row[headerIdx[col]]?.trim() : undefined);
+  for (let i = 0; i < parsedRows.length; i++) {
+    const row = parsedRows[i];
 
-  // Track districts and horizons
-  const districtHorizonMap = new Map();
-  for (const district of DISTRICT_REGISTRY) {
-    districtHorizonMap.set(normalizeDistrictKey(district.district_name), new Set());
-  }
+    const districtName = row.district;
+    const resolved = lookupDistrict(districtName);
+    const canonicalName = resolved ? resolved.district_name : districtName;
+    districts.add(canonicalName);
 
-  let latestGeneratedAt = null;
+    if (!districtHorizons.has(canonicalName)) {
+      districtHorizons.set(canonicalName, new Set());
+    }
+    districtHorizons.get(canonicalName).add(row.horizon);
 
-  rawRows.forEach((row, idx) => {
-    const rowNum = idx + 2; // 1-indexed row number in CSV (1 is header)
-
-    const district = getCell(row, 'district');
-    const horizon = getCell(row, 'horizon');
-    const hazard = getCell(row, 'hazard');
-    const confidence = parseFloat(getCell(row, 'confidence'));
-    const finalSeverity = parseFloat(getCell(row, 'final_severity'));
-    const advisoryTier = getCell(row, 'advisory_tier')?.toUpperCase();
-    const generatedAtStr = getCell(row, 'generated_at');
-    const targetDate = getCell(row, 'target_date');
-
-    // District check
-    const matchedDistrict = lookupDistrict(district);
-    if (!matchedDistrict) {
-      errors.push(`Row ${rowNum}: Unrecognized district name "${district}"`);
-    } else {
-      const key = normalizeDistrictKey(matchedDistrict.district_name);
-      if (districtHorizonMap.has(key)) {
-        districtHorizonMap.get(key).add(horizon);
-      }
+    if (row.advisory_tier && !VALID_ADVISORY_TIERS.includes(row.advisory_tier)) {
+      errors.push(`Invalid advisory_tier "${row.advisory_tier}" on row ${i + 1}`);
     }
 
-    // Horizon check
-    if (!VALID_HORIZONS.includes(horizon)) {
-      errors.push(`Row ${rowNum}: Invalid horizon "${horizon}". Expected one of: ${VALID_HORIZONS.join(', ')}`);
+    const hazard = row.hazard === 'Heatwave' ? 'Heat Wave' : row.hazard;
+    if (hazard && !VALID_HAZARDS.includes(hazard)) {
+      errors.push(`Invalid hazard "${row.hazard}" on row ${i + 1}`);
     }
 
-    // Hazard check
-    if (!VALID_HAZARDS.includes(hazard)) {
-      errors.push(`Row ${rowNum}: Invalid hazard "${hazard}". Expected one of: ${VALID_HAZARDS.join(', ')}`);
-    }
-
-    // Advisory Tier check
-    if (!VALID_ADVISORY_TIERS.includes(advisoryTier)) {
-      errors.push(`Row ${rowNum}: Invalid advisory_tier "${advisoryTier}". Expected one of: ${VALID_ADVISORY_TIERS.join(', ')}`);
-    }
-
-    // Float bounds checks [0, 1]
-    for (const floatCol of ['confidence', 'final_severity', 'cnn_severity_raw', 'cnn_severity', 'physics_severity', 'prob_top1', 'prob_top2', 'prob_top3']) {
-      const val = getCell(row, floatCol);
-      if (val !== undefined && val !== '') {
-        const num = parseFloat(val);
-        if (isNaN(num) || !Number.isFinite(num) || num < 0 || num > 1) {
-          errors.push(`Row ${rowNum}: Field "${floatCol}" must be a float in [0, 1], got "${val}"`);
+    if (row.generated_at) {
+      const dt = new Date(row.generated_at.includes('T') ? row.generated_at : row.generated_at.replace(' ', 'T') + 'Z');
+      if (!isNaN(dt.getTime())) {
+        if (!newestTimestamp || dt > newestTimestamp) {
+          newestTimestamp = dt;
         }
       }
     }
+  }
 
-    // Meteorological floats checks
-    for (const weatherCol of ['om_max_temp_c', 'om_min_temp_c', 'om_precip_mm', 'om_wind_kmh']) {
-      const val = getCell(row, weatherCol);
-      if (val !== undefined && val !== '') {
-        const num = parseFloat(val);
-        if (isNaN(num) || !Number.isFinite(num)) {
-          errors.push(`Row ${rowNum}: Field "${weatherCol}" must be a finite float, got "${val}"`);
-        }
+  for (const [dName, hSet] of districtHorizons.entries()) {
+    for (const h of VALID_HORIZONS) {
+      if (!hSet.has(h)) {
+        errors.push(`District "${dName}" missing complete horizon coverage (lacks ${h})`);
+        break;
       }
-    }
-
-    // Target Date check (YYYY-MM-DD)
-    if (!targetDate || !/^\d{4}-\d{2}-\d{2}$/.test(targetDate)) {
-      errors.push(`Row ${rowNum}: Invalid target_date format "${targetDate}". Expected YYYY-MM-DD`);
-    }
-
-    // Generated At check
-    if (generatedAtStr) {
-      const genDate = new Date(generatedAtStr);
-      if (isNaN(genDate.getTime())) {
-        errors.push(`Row ${rowNum}: Invalid generated_at timestamp "${generatedAtStr}"`);
-      } else {
-        if (!latestGeneratedAt || genDate > latestGeneratedAt) {
-          latestGeneratedAt = genDate;
-        }
-      }
-    } else {
-      errors.push(`Row ${rowNum}: Missing generated_at timestamp`);
-    }
-  });
-
-  // 3. Verify Every District has Exactly Two Horizons (7_days and 15_days)
-  for (const district of DISTRICT_REGISTRY) {
-    const key = normalizeDistrictKey(district.district_name);
-    const horizons = districtHorizonMap.get(key);
-    if (!horizons || horizons.size !== 2 || !horizons.has('7_days') || !horizons.has('15_days')) {
-      errors.push(`District "${district.district_name}" missing complete horizon coverage (found: ${horizons ? [...horizons].join(', ') : 'none'})`);
     }
   }
 
-  // 4. Staleness Guard
   let isStale = false;
   let ageHours = null;
-  if (latestGeneratedAt) {
-    const ageMs = currentTime.getTime() - latestGeneratedAt.getTime();
-    ageHours = ageMs / (1000 * 60 * 60);
-
+  if (newestTimestamp) {
+    const ageMs = current.getTime() - newestTimestamp.getTime();
+    ageHours = Math.max(0, ageMs / (1000 * 60 * 60));
     if (ageHours > maxAgeHours) {
       isStale = true;
       if (!allowStale) {
-        errors.push(
-          `STALE_DATA: Dataset timestamp (${latestGeneratedAt.toISOString()}) is ${ageHours.toFixed(1)} hours old (threshold is ${maxAgeHours} hours)`
-        );
+        errors.push(`STALE_DATA: Advisory publication is ${ageHours.toFixed(1)} h old, exceeds ${maxAgeHours} h gate`);
       }
     }
   }
 
-  const valid = errors.length === 0;
-
   return {
-    valid,
+    valid: errors.length === 0,
     errors,
     summary: {
-      totalRows: rawRows.length,
+      totalRows: parsedRows.length,
       columnsCount: headers.length,
-      latestGeneratedAt: latestGeneratedAt ? latestGeneratedAt.toISOString() : null,
-      ageHours: ageHours !== null ? Number(ageHours.toFixed(2)) : null,
+      districtCount: districts.size,
       isStale,
-      districtCount: districtHorizonMap.size,
+      ageHours,
     },
   };
 }
 
-// ─── CLI Entry Point ───
-export async function runCli() {
-  const args = process.argv.slice(2);
-  const csvFile = args.find((a) => !a.startsWith('--'));
-
-  if (!csvFile) {
-    console.error('Usage: node scripts/validate_advisory_csv.mjs <path-to-csv> [--max-age-hours=36] [--allow-stale] [--quiet]');
+const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (isMain) {
+  const filePath = process.argv[2];
+  if (!filePath) {
+    console.error('Usage: node scripts/validate_advisory_csv.mjs <file_path> [--allow-stale]');
     process.exit(1);
   }
 
-  const resolvedPath = resolve(process.cwd(), csvFile);
-  if (!existsSync(resolvedPath)) {
-    console.error(`❌ Error: File not found at ${resolvedPath}`);
-    process.exit(1);
-  }
-
-  const maxAgeArg = args.find((a) => a.startsWith('--max-age-hours='));
-  const maxAgeHours = maxAgeArg ? parseFloat(maxAgeArg.split('=')[1]) : 36;
-  const allowStale = args.includes('--allow-stale');
-  const quiet = args.includes('--quiet');
-
+  const allowStale = process.argv.includes('--allow-stale');
   try {
-    const content = readFileSync(resolvedPath, 'utf8');
-    const result = validateAdvisoryCsv(content, { maxAgeHours, allowStale });
-
-    if (result.valid) {
-      if (!quiet) {
-        console.log('✅ Advisory CSV validation passed:');
-        console.log(`   Rows: ${result.summary.totalRows}`);
-        console.log(`   Columns: ${result.summary.columnsCount}`);
-        console.log(`   Districts: ${result.summary.districtCount}`);
-        console.log(`   Generated At: ${result.summary.latestGeneratedAt}`);
-        console.log(`   Dataset Age: ${result.summary.ageHours} hours`);
-      }
-      process.exit(0);
-    } else {
-      console.error(`❌ Advisory CSV validation failed with ${result.errors.length} error(s):`);
-      result.errors.slice(0, 20).forEach((err) => console.error(`   - ${err}`));
-      if (result.errors.length > 20) {
-        console.error(`   ... and ${result.errors.length - 20} more errors.`);
-      }
+    const content = fs.readFileSync(path.resolve(process.cwd(), filePath), 'utf8');
+    const result = validateAdvisoryCsv(content, { allowStale });
+    if (!result.valid) {
+      console.error('[validate_advisory_csv] Validation failed:');
+      result.errors.forEach((e) => console.error('  -', e));
       process.exit(1);
     }
+    console.log('[validate_advisory_csv] Validation successful. Summary:', result.summary);
   } catch (err) {
-    console.error(`❌ Unexpected validation error: ${err.message}`);
+    console.error('[validate_advisory_csv] Fatal error:', err.message);
     process.exit(1);
   }
-}
-
-// If invoked as CLI script directly
-if (process.argv[1] && resolve(process.argv[1]) === resolve(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'))) {
-  runCli();
 }

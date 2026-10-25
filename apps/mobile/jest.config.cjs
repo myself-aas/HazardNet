@@ -4,7 +4,11 @@
  * Run from repo root: npx jest --config apps/mobile/jest.config.cjs
  */
 
+const fs = require('fs');
 const path = require('path');
+
+const localReact = path.resolve(__dirname, 'node_modules/react');
+const localRtr = path.resolve(__dirname, 'node_modules/react-test-renderer');
 
 module.exports = {
   rootDir: path.resolve(__dirname),
@@ -14,7 +18,7 @@ module.exports = {
     '@testing-library/react-native/extend-expect',
   ],
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@react-native-async-storage/async-storage|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|react-native-gesture-handler|react-native-reanimated|@shopify/flash-list|@tanstack/.*))',
+    'node_modules/(?!(?:\\.bun/[^/]+/node_modules/)?((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@react-native-async-storage/async-storage|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|react-native-gesture-handler|react-native-reanimated|@shopify/flash-list|@tanstack/.*))',
   ],
   testPathIgnorePatterns: ['/node_modules/', '/dist/', '/.expo/', '/.turbo/'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
@@ -23,10 +27,10 @@ module.exports = {
   // version with React Native's v26 copy and crashed before any native tests could run.
   moduleDirectories: ['node_modules'],
   moduleNameMapper: {
-    // Keep renderer, testing library and app components on Expo's pinned React 18.2 instance.
-    // The web workspace uses React 18.3.1, so relying on workspace hoisting causes invalid hooks.
-    '^react$': '<rootDir>/node_modules/react',
-    '^react-test-renderer$': '<rootDir>/node_modules/react-test-renderer',
+    // Keep renderer, testing library and app components on Expo's pinned React 18.2 instance
+    // when present locally, falling back to hoisted root node_modules when deduplicated.
+    '^react$': fs.existsSync(localReact) ? localReact : '<rootDir>/../../node_modules/react',
+    '^react-test-renderer$': fs.existsSync(localRtr) ? localRtr : '<rootDir>/../../node_modules/react-test-renderer',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@hazardnet/core$': '<rootDir>/../../packages/core/src/index.ts',
     '^@hazardnet/core/(.*)$': '<rootDir>/../../packages/core/src/$1',

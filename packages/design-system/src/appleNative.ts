@@ -27,7 +27,7 @@ import {
   APPLE_SPACE,
   APPLE_TOUCH,
   APPLE_TYPE,
-} from './apple';
+} from './apple.ts';
 
 /* ────────────────────────────────────────────────────────────────────────────
    Colour

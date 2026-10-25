@@ -1,60 +1,141 @@
 #!/usr/bin/env node
 /**
- * CLI runner for ingesting forecast CSV into Firebase Firestore.
- * Usage: node scripts/ingest_forecast_csv.mjs <path-to-csv> [--mode=replace|append] [--strict=true|false]
+ * ingest_forecast_csv.mjs
+ *
+ * Reads the mapped forecast CSV (default: backend/data/forecasts/hazardnet_forecasts_latest.csv),
+ * validates calibration/schema fields, checks Firebase service account credentials via
+ * validateServiceAccountEnv(), and persists the batch into Firestore atomically.
+ *
+ * By default in CI pipelines, missing or unreachable Firestore credentials degrade
+ * gracefully with a structured warning unless `--strict` or `FIRESTORE_INGEST_STRICT=true`
+ * is specified.
  */
-
 import fs from 'node:fs';
 import path from 'node:path';
-import { ingestForecastCsv } from '../backend/utils/csvIngestion.js';
+import { fileURLToPath } from 'node:url';
+import { parseCsv } from './validate_advisory_csv.mjs';
+import { persistForecasts, validateServiceAccountEnv } from '../backend/forecastPersistence.js';
 
-async function main() {
-  const args = process.argv.slice(2);
-  const csvPath = args.find((a) => !a.startsWith('--'));
+const NUMERIC_FIELDS = [
+  'district_id',
+  'latitude',
+  'longitude',
+  'severity_score',
+  'final_severity',
+  'model_severity',
+  'model_severity_raw',
+  'physics_severity',
+  'confidence',
+  'confidence_raw',
+  'confidence_calibrated',
+  'temperature_max',
+  'temperature_min',
+  'precipitation_mm',
+  'wind_max_kmh',
+  'prob_top1',
+  'prob_top2',
+  'prob_top3',
+];
 
-  if (!csvPath) {
-    console.error('Usage: node scripts/ingest_forecast_csv.mjs <path-to-csv> [--mode=replace|append]');
-    process.exit(1);
+export function coerceForecastCsvRow(rawRow) {
+  const row = { ...rawRow };
+  for (const field of NUMERIC_FIELDS) {
+    if (row[field] !== undefined && row[field] !== '') {
+      const parsed = Number(row[field]);
+      if (Number.isFinite(parsed)) {
+        row[field] = parsed;
+      }
+    } else {
+      delete row[field];
+    }
   }
+  if (row.physics_override !== undefined) {
+    row.physics_override =
+      row.physics_override === true ||
+      row.physics_override === 'true' ||
+      row.physics_override === 'True' ||
+      row.physics_override === '1';
+  }
+  return row;
+}
+
+export async function ingestForecastCsv(
+  csvPath = 'backend/data/forecasts/hazardnet_forecasts_latest.csv',
+  options = {},
+) {
+  const {
+    allowUncalibrated = true,
+    strict = process.env.FIRESTORE_INGEST_STRICT === 'true',
+    env = process.env,
+    db = undefined,
+  } = options;
 
   const resolvedPath = path.resolve(process.cwd(), csvPath);
   if (!fs.existsSync(resolvedPath)) {
-    console.error(`❌ Error: CSV file not found at ${resolvedPath}`);
-    process.exit(1);
+    throw new Error(`Forecast CSV not found at ${resolvedPath}`);
   }
 
-  const modeArg = args.find((a) => a.startsWith('--mode='));
-  const mode = modeArg ? modeArg.split('=')[1] : 'replace';
+  const content = fs.readFileSync(resolvedPath, 'utf8');
+  const { rows: rawRows } = parseCsv(content);
+  if (rawRows.length === 0) {
+    throw new Error(`Forecast CSV is empty: ${resolvedPath}`);
+  }
 
-  const strictArg = args.find((a) => a.startsWith('--strict='));
-  const strict = strictArg ? strictArg.split('=')[1] !== 'false' : true;
+  const rows = rawRows.map(coerceForecastCsvRow);
+  if (!allowUncalibrated) {
+    const uncalibrated = rows.filter(
+      (r) => r.confidence_calibrated === undefined && r.confidence === undefined,
+    );
+    if (uncalibrated.length > 0) {
+      throw new Error(`Refusing to ingest ${uncalibrated.length} rows without calibrated confidence`);
+    }
+  }
 
-  console.log(`📥 Ingesting forecast CSV: ${resolvedPath} (mode: ${mode}, strict: ${strict})`);
+  const predictionDate = rows[0]?.prediction_date || null;
+
+  if (!db) {
+    const preFlight = validateServiceAccountEnv(env);
+    if (!preFlight.valid) {
+      const msg = `Skipping Firestore persistence: ${preFlight.reason}`;
+      if (strict) {
+        throw new Error(msg);
+      }
+      console.warn(`::warning::[ingest_forecast_csv] ${msg}`);
+      return { status: 'skipped', reason: preFlight.reason, written: 0, predictionDate };
+    }
+  }
 
   try {
-    const csvContent = fs.readFileSync(resolvedPath, 'utf-8');
-    const result = await ingestForecastCsv(csvContent, { mode, strict });
-
-    console.log(`✅ CSV Ingestion Successful!`);
-    console.log(`   Total Rows Read: ${result.totalRows}`);
-    console.log(`   Valid Rows: ${result.validRows}`);
-    console.log(`   Records Written: ${result.written}`);
-    console.log(`   Prediction Date: ${result.predictionDate}`);
-    console.log(`   Store Backend: ${result.storeMode}`);
-    console.log(`   Duration: ${result.durationMs}ms`);
-
-    if (result.validationErrors && result.validationErrors.length > 0) {
-      console.warn(`⚠️ ${result.validationErrors.length} validation warning(s):`);
-      result.validationErrors.slice(0, 5).forEach((err) => {
-        console.warn(`   Row ${err.row}: ${err.error}`);
-      });
-    }
-
-    process.exit(0);
+    const result = await persistForecasts(rows, predictionDate, db);
+    console.log(
+      `[ingest_forecast_csv] Persisted ${result.written} forecast rows for prediction_date=${predictionDate}`,
+    );
+    return { status: 'persisted', written: result.written, predictionDate };
   } catch (err) {
-    console.error(`❌ CSV Ingestion Failed: ${err.message}`);
-    process.exit(1);
+    if (strict) {
+      throw err;
+    }
+    console.warn(
+      `::warning::[ingest_forecast_csv] Firestore write degraded gracefully (${err.message}). Static snapshots remain authoritative.`,
+    );
+    return { status: 'degraded', error: err.message, written: 0, predictionDate };
   }
 }
 
-main();
+const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (isMain) {
+  const args = process.argv.slice(2);
+  const csvArg = args.find((a) => !a.startsWith('--'));
+  const allowUncalibrated = args.includes('--allow-uncalibrated');
+  const strict = args.includes('--strict') || process.env.FIRESTORE_INGEST_STRICT === 'true';
+
+  ingestForecastCsv(csvArg, { allowUncalibrated, strict })
+    .then((res) => {
+      console.log('[ingest_forecast_csv] Result:', JSON.stringify(res));
+      process.exit(0);
+    })
+    .catch((err) => {
+      console.error('[ingest_forecast_csv] Fatal error:', err.message);
+      process.exit(1);
+    });
+}
