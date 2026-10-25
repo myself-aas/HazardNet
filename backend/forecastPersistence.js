@@ -15,8 +15,8 @@ export function getForecastWriter() {
     getApps().find((candidate) => candidate.name === name) ||
     initializeApp(
       {
-        credential: process.env.FIREBASE_SERVICE_ACCOUNT_JSON
-          ? cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON))
+        credential: (process.env.FIREBASE_SERVICE_ACCOUNT_JSON || process.env.FIREBASE_SERVICE_ACCOUNT)
+          ? cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON || process.env.FIREBASE_SERVICE_ACCOUNT))
           : applicationDefault(),
         projectId: config.projectId,
       },

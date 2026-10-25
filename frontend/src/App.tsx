@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'r
 import { AnimatePresence, useReducedMotion, LazyMotion, domAnimation } from 'framer-motion';
 import { Interactive } from './components/interactive/Interactive';
 import { useWebFrame, interpolate, Easing } from './lib/motion-interpolate';
-import { Analytics } from '@vercel/analytics/react';
+const Analytics = () => null;
 import { AuthProvider, useAuth } from './context/AuthContext';
 import SignUpPage from './pages/SignUpPage';
 import LoginPage from './pages/LoginPage';

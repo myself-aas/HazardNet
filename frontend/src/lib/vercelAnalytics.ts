@@ -41,4 +41,4 @@
  * Vercel's debug script during development. The flag is injected by the
  * `define` block in frontend/vite.config.ts as a boolean literal.
  */
-export const vercelAnalyticsEnabled: boolean = import.meta.env.VITE_VERCEL_ANALYTICS === true;
+export const vercelAnalyticsEnabled: boolean = false;
