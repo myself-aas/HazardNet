@@ -12,6 +12,8 @@
  * console, it is intentionally not surfaced here.
  */
 
+import { firebaseConfig } from './config';
+
 /** Firebase OAuth provider ids exposed by HazardNet. */
 export type OAuthProviderId = 'google' | 'github';
 
@@ -163,7 +165,7 @@ export function describeOAuthError(rawError: unknown): OAuthErrorExplanation {
   if (text.includes('invalid-credential') && (text.includes('provider') || text.includes('idp') || text.includes('github') || text.includes('google'))) {
     return {
       title: 'Provider configuration mismatch',
-      hint: 'The OAuth client ID/secret in Firebase does not match the provider’s developer app. For GitHub: check that the callback URL is https://hazardnet-aas48424.firebaseapp.com/__/auth/handler and the client secret is current. For Google: ensure the OAuth consent screen is configured.',
+      hint: `The OAuth client ID/secret in Firebase does not match the provider’s developer app. For GitHub: check that the callback URL is https://${firebaseConfig.authDomain}/__/auth/handler and the client secret is current. For Google: ensure the OAuth consent screen is configured.`,
     };
   }
   if (text.includes('auth/invalid-credential') || text.includes('wrong-password') || text.includes('invalid login credentials') || text.includes('user-not-found')) {

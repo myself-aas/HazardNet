@@ -2,14 +2,15 @@
  * Live wind field client (Phase E, 2026-10-05).
  *
  * The wind field arrives as a small committed artifact, `frontend/public/data/
- * live/wind.json`, produced every six hours by the Live Wind Update workflow
- * (decision point E.1: the GFS/ECMWF GRIB decode runs on GitHub's runners with
- * real tooling, not in a serverless function — the plan's sanctioned
- * "pre-decode in a scheduled Action" path, GEV's bundled-artifact idea applied
- * to derived data). The ladder the workflow climbs — GFS → ECMWF → keep the
- * previous artifact — shows up here as fresh / stale / unavailable, and the
- * chip grammar says which: a forecast is labelled a forecast, with its issue
- * and valid times advertised, never implied to be an observation.
+ * live/wind.json`, produced every six hours by the Live Wind Update workflow.
+ * Rewired 2026-10-26 (decision point E.2): the field now comes from Open-Meteo
+ * (https://open-meteo.com — keyless, CC BY 4.0), asking one request for the 10 m
+ * wind on the artifact's own 1° lattice; the retired GFS/ECMWF GRIB decode ladder
+ * was runner-side tooling for no product gain while Open-Meteo is already this
+ * repo's weather source. The `gfs` / `ecmwf` model labels remain accepted so an
+ * old artifact still parses, but the fresh chip labels the Open-Meteo forecast
+ * as itself: a forecast is labelled a forecast, with its issue and valid times
+ * advertised, never implied to be an observation.
  *
  * Honesty rules inherited from `lib/freshness.ts` (the Phase 7 artifact
  * client): an unrecognised schema is not rendered, and a missing artifact is
@@ -22,7 +23,7 @@ export const WIND_SCHEMA = 'hazardnet-wind/v1';
 /** The workflow runs every 6 h; one missed run stays fresh, two do not. */
 export const WIND_FRESH_SLO_HOURS = 9;
 
-export type WindModel = 'gfs' | 'ecmwf';
+export type WindModel = 'open-meteo' | 'gfs' | 'ecmwf'; // gfs/ecmwf: legacy artifacts only
 
 export interface WindGrid {
   lon_min: number;
@@ -71,7 +72,7 @@ export function parseWindArtifact(raw: unknown): WindArtifact | null {
   if (raw.schema !== WIND_SCHEMA) return null;
 
   const generatedAt = stringOrNull(raw.generated_at);
-  const model = raw.model === 'gfs' || raw.model === 'ecmwf' ? raw.model : null;
+  const model = raw.model === 'open-meteo' || raw.model === 'gfs' || raw.model === 'ecmwf' ? raw.model : null;
   const modelName = stringOrNull(raw.model_name);
   const issueTime = stringOrNull(raw.issue_time);
   const validTime = stringOrNull(raw.valid_time);

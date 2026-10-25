@@ -123,10 +123,11 @@ describe('the front door', () => {
     renderPage();
 
     const strip = await screen.findByTestId('front-door-status-strip');
-    // The alert artifact this deployment ships publishes nothing and says why. Awaited,
-    // because the strip reads the snapshot over fetch and renders its reading state first.
-    expect(await within(strip).findByText(/No alert is published at the moment of this read/)).toBeInTheDocument();
-    expect(within(strip).getByText(/withheld 74 of them from publication/)).toBeInTheDocument();
+    // The alert artifact this deployment ships publishes 106 WATCH advisories (128
+    // assessed, no publication gate blocked any). Awaited, because the strip reads the
+    // snapshot over fetch and renders its reading state first.
+    expect(await within(strip).findByText(/Advisories are active/)).toBeInTheDocument();
+    expect(within(strip).getByText(/106 district advisories are published at WATCH or above/)).toBeInTheDocument();
 
     // The run card moved to /last-run on 2026-10-05: the hero reaches it as a hyperlink,
     // and the card itself is no longer part of this page.
@@ -251,7 +252,9 @@ describe('the front door', () => {
     // The strip follows the page into Bengali, digits included — awaited, because it reads
     // the alert artifact over fetch and renders its "reading" state until that resolves.
     const strip = screen.getByTestId('front-door-status-strip');
-    expect(await within(strip).findByText(/৭৪টি প্রকাশ থেকে বিরত রাখা হয়েছে/)).toBeInTheDocument();
+    expect(await within(strip).findByText(/সতর্কবার্তা সক্রিয়/)).toBeInTheDocument();
+    // Bengali verdict body with Bengali digits — the artifact's 106 published advisories.
+    expect(within(strip).getByText(/১০৬টি জেলার সতর্কবার্তা/)).toBeInTheDocument();
   });
 
   it('falls back to English field by field when the Bengali block is incomplete', () => {
@@ -267,7 +270,7 @@ describe('the front door', () => {
     await screen.findByTestId('front-door-status-strip');
     // Awaited on the trust strip's coverage figure: the run card that used to carry it
     // moved to /last-run, and this asserts the page's own live data has landed.
-    await waitFor(() => expect(english.container.textContent).toMatch(/60 of 64 districts/));
+    await waitFor(() => expect(english.container.textContent).toMatch(/64 of 64 districts/));
     expect(await axe(english.container)).toHaveNoViolations();
 
     // Unmounted before the second render: two mounted front doors would share every id and
@@ -280,7 +283,7 @@ describe('the front door', () => {
         <FrontDoor />
       </MemoryRouter>,
     );
-    await waitFor(() => expect(bengali.container.textContent).toMatch(/৬৪টির মধ্যে ৬০টি জেলা/));
+    await waitFor(() => expect(bengali.container.textContent).toMatch(/৬৪টির মধ্যে ৬৪টি জেলা/));
     expect(await axe(bengali.container)).toHaveNoViolations();
   });
 

@@ -367,9 +367,13 @@ function main() {
     } else {
       const cut = tierForRow(row);
       if (cut) {
-        row.advisory_tier = cut.tier;
-        row.advisory_tier_source = cut.source;
-        row.requires_review = requiresReview(cut.tier);
+        // tierForRow returns { advisory_tier, advisory_tier_source, requires_review } —
+        // read those names verbatim. (An earlier revision read cut.tier/cut.source and
+        // silently stamped undefined on every row; advisoryTierStamp.test.js exists
+        // because of exactly that misread.)
+        row.advisory_tier = cut.advisory_tier;
+        row.advisory_tier_source = cut.advisory_tier_source;
+        row.requires_review = cut.requires_review;
       }
     }
 

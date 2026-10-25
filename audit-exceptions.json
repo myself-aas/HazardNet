@@ -1,5 +1,5 @@
 {
-  "_comment": "Accepted-risk exceptions for the `node scripts/npm-audit-ci.mjs` CI gate (replaces bare `npm audit --audit-level=high`, which can never pass while these unfixable transitive advisories exist). Every entry MUST carry an expiry \u2014 the gate fails on expired entries to force re-review. List advisories by GHSA id (stable across versions); the gate fails closed on ANY unlisted high/critical advisory.",
+  "_comment": "Accepted-risk exceptions for the `node scripts/npm-audit-ci.mjs` CI gate (replaces bare `npm audit --audit-level=high`, which can never pass while these unfixable transitive advisories exist). Every entry MUST carry an expiry — the gate fails on expired entries to force re-review. List advisories by GHSA id (stable across versions); the gate fails closed on ANY unlisted high/critical advisory.",
   "exceptions": [
     {
       "ghsa": "GHSA-27p8-2357-5qqv",
@@ -245,6 +245,13 @@
       "severity": "high",
       "reason": "The npm registry currently has no braces release beyond affected 3.0.3; npm's suggested Expo 57 fix is a breaking major upgrade from Expo 51. This is a build/CLI dependency path, not the web/API runtime. Re-review after upstream publishes a patched release.",
       "expires": "2026-10-17"
+    },
+    {
+      "ghsa": "GHSA-mrhx-c7xc-m3w5",
+      "package": "zod",
+      "severity": "high",
+      "reason": "Memory-exhaustion DoS requires an attacker to push oversized constrained collections through a zod-parsed payload; every zod parse sits behind the 10mb body limit and the 20/min AI rate bucket, and the only fix is zod 4.x — a semver-major migration (3.25.76 is the last 3.x) across packages/core contracts and packages/api. Migration tracked as a follow-up after the CI repair batch; this window is deliberately short.",
+      "expires": "2026-11-15"
     }
   ]
 }

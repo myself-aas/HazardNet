@@ -1,0 +1,41 @@
+{
+  "ok": true,
+  "rows": 3,
+  "generated_at": "2026-09-16T00:00:00.000Z",
+  "policy": { "version": "alert-policy/1.0.0" },
+  "alerts": [
+    {
+      "id": "sample-published-watch-bagerhat",
+      "state": "PUBLISHED",
+      "level": "WATCH",
+      "district_id": 40,
+      "district_name": "Bagerhat",
+      "hazard_type": "Flash Flood",
+      "horizon": "7_days",
+      "headline": "Watch: flash-flood conditions possible in Bagerhat (sample fixture)",
+      "published_at": "2026-09-16T00:05:00.000Z",
+      "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline)."
+    },
+    {
+      "id": "sample-published-watch-bandarban",
+      "state": "PUBLISHED",
+      "level": "WATCH",
+      "district_id": 64,
+      "district_name": "Bandarban",
+      "hazard_type": "Tropical Cyclone",
+      "horizon": "7_days",
+      "headline": "Watch: cyclonic conditions possible in Bandarban (sample fixture)",
+      "published_at": "2026-09-16T00:05:00.000Z"
+    },
+    {
+      "id": "sample-draft-sunamganj",
+      "state": "DRAFT",
+      "level": "WARNING",
+      "district_id": 22,
+      "district_name": "Sunamganj",
+      "hazard_type": "Fire",
+      "horizon": "15_days",
+      "headline": "Draft rows must never reach the public snapshot (sample fixture)"
+    }
+  ]
+}

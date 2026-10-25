@@ -98,6 +98,12 @@ export const DISTRICT_ALIASES = {
   netrakona: 'netrokona',
   nawabganj: 'chapainawabganj',
   brahamanbaria: 'brahmanbaria',
+  // Present in the forecast CSV from the 2026-10-24 publishing run onward: the upstream
+  // pipeline now emits the districts' post-rename spellings, while the app keeps the older
+  // ids because they are URL segments (see bangladeshDistricts.ts, the comment above
+  // `jessore`: "the id stays 'jessore' because it is the URL segment").
+  barishal: 'barisal',
+  jashore: 'jessore',
 };
 
 /* ─────────────────────────────── small helpers ─────────────────────────────── */
@@ -152,8 +158,8 @@ export function matchKey(name) {
 /**
  * The district table lives in a TypeScript module the app renders. Parsing it here (rather
  * than duplicating 64 rows into a second source of truth) keeps one list; the parse is strict
- * and `scripts/tests/test_content_engine.py` fails if it ever stops seeing all 64 districts or
- * if the ids diverge from the app.
+ * and `__tests__/contentEngine.test.js` fails if it ever stops seeing all 64 districts or if
+ * the ids diverge from the app (the old pytest fixture-parity guard left with the Python stack).
  */
 export function parseDistrictTable(source) {
   const start = source.indexOf('ALL_64_DISTRICTS');

@@ -89,7 +89,7 @@ describe('the CLI', () => {
     const dir = mkdtempSync(join(tmpdir(), 'alert-snapshot-'));
     const out = join(dir, 'alerts-latest.json');
     const log = run([
-      '--in', 'scripts/tests/fixtures/alerts/alert-run.sample.json', '--out', out,
+      '--in', 'scripts/fixtures/alerts/alert-run.sample.json', '--out', out,
     ]);
     const snapshot = JSON.parse(readFileSync(out, 'utf8'));
     expect(log).toMatch(/2 published alert\(s\)/);
@@ -101,8 +101,8 @@ describe('the CLI', () => {
   it('refuses to replace a non-empty snapshot with an empty run', () => {
     const dir = mkdtempSync(join(tmpdir(), 'alert-snapshot-'));
     const out = join(dir, 'alerts-latest.json');
-    run(['--in', 'scripts/tests/fixtures/alerts/alert-run.sample.json', '--out', out]);
-    expect(() => run(['--in', 'scripts/tests/fixtures/alerts/empty-run.sample.json', '--out', out]))
+    run(['--in', 'scripts/fixtures/alerts/alert-run.sample.json', '--out', out]);
+    expect(() => run(['--in', 'scripts/fixtures/alerts/empty-run.sample.json', '--out', out]))
       .toThrow();
     // The good snapshot is still there, unchanged.
     expect(JSON.parse(readFileSync(out, 'utf8')).alerts).toHaveLength(2);
@@ -111,8 +111,8 @@ describe('the CLI', () => {
   it('accepts an empty result when the caller says it is deliberate', () => {
     const dir = mkdtempSync(join(tmpdir(), 'alert-snapshot-'));
     const out = join(dir, 'alerts-latest.json');
-    run(['--in', 'scripts/tests/fixtures/alerts/alert-run.sample.json', '--out', out]);
-    run(['--in', 'scripts/tests/fixtures/alerts/empty-run.sample.json', '--out', out, '--allow-empty']);
+    run(['--in', 'scripts/fixtures/alerts/alert-run.sample.json', '--out', out]);
+    run(['--in', 'scripts/fixtures/alerts/empty-run.sample.json', '--out', out, '--allow-empty']);
     expect(JSON.parse(readFileSync(out, 'utf8')).alerts).toEqual([]);
   });
 

@@ -485,7 +485,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
                   <span>Ink-Saver Mode</span>
                 </span>
                 <span className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded ${
-                  inkSaver ? 'bg-amber-200 text-amber-900' : 'bg-carbon-20 text-carbon-60'
+                  inkSaver ? 'bg-amber-200 text-amber-900' : 'bg-carbon-20 text-carbon-70'
                 }`}>
                   {inkSaver ? 'ON' : 'OFF'}
                 </span>
