@@ -34,7 +34,7 @@ Versions marked *(installed)* were read from `node_modules` after `npm install
 | Install quirk | `legacy-peer-deps=true` is repo-wide, and CI installs with `--legacy-peer-deps` | `.npmrc`, `ci.yml` |
 | Web build system | Vite (root `^8.3.0`, frontend `^8.3.0`) + `@vitejs/plugin-react` + `@tailwindcss/vite` + `vite-plugin-pwa` | `frontend/vite.config.ts`, `frontend/package.json` |
 | Server build system | None — the Express backend and `serverless/` handlers run source ESM directly | `package.json` `scripts.start` = `node backend/server.js` |
-| Mobile build system | Expo SDK **51.0.39** *(installed)* / React Native **0.74.5** (`expo prebuild` → Gradle) | `apps/mobile/package.json`, `app-releases.yml` |
+| Mobile build system | Expo SDK **51.0.39** *(installed)* / React Native **0.74.5** (`expo prebuild` → Gradle) | `apps/mobile/package.json`, `.github/workflow-templates/hazardnet-mobile-android-release.yml` |
 | Desktop build system | `react-native-windows` → MSBuild/WinUI 3 on `windows-2022`, packaged as MSIX | `apps/windows/package.json`, `.github/workflows/app-releases.yml`, `.github/workflows/windows-compile.yml` |
 | Python runtime | **None exercised.** The pytest pipeline suite (`scripts/tests/`, 8 `.py` + 1 `.mjs`, 122 tests) and `scripts/requirements-pipeline.txt` were **deleted** between `b321083f` and HEAD, but `ci.yml`'s `test-pipeline-scripts` job still runs `python -m pytest scripts/tests -q` — a guaranteed failure (CONCERNS §1) | `ci.yml:213,221`, `test -e scripts/tests` → ABSENT |
 

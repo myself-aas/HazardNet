@@ -2,8 +2,12 @@ name: Site Health Probe
 
 # External black-box probe for the production deployment (monitoring gap
 # closure): every 30 minutes, verify the site renders and the forecast API
-# serves data no older than 10 days. Failures are visible in Actions (and can
-# be wired to Slack/email via the notify step's webhook inputs).
+# serves data no older than 10 days. Failures are visible in Actions as a red
+# scheduled run; a green-or-red digest cannot be pushed anywhere from here —
+# the ops notification wiring is the inert template
+# `.github/workflow-templates/hazardnet-ops-slack-notify.yml` (retired
+# 2026-10-26; the repository has no SLACK_WEBHOOK_URL secret and the payload
+# builder never POSTed, so it only ever reported itself as successful).
 
 on:
   schedule:
@@ -272,18 +276,38 @@ jobs:
           fi
           if [ -z "$HEADERS" ]; then
             echo "::error::no HTTP response headers from $FINAL_URL — the site did not answer the header probe"
+            echo "detail=no-response" >> "$GITHUB_OUTPUT"
             exit 1
           fi
+
+          # Which host answered? This is the only probe that says anything about
+          # the deployment's own configuration, so record the fingerprint of the
+          # thing it measured. Measured 2026-10-26 (docs/audits/2026-10-26-live-security-headers.md):
+          # the answers on hazardnet.live carry `server: cloudflare` and none of
+          # `x-fh-requested-host` / `x-served-by` / `x-vercel-id`, and the two
+          # headers they do carry (nosniff, referrer-policy) are a subset of the
+          # repo's set — i.e. the host answering the domain is not applying any
+          # of `firebase.json` / `vercel.json` / `frontend/vercel.json`.
+          FINGERPRINT=$(grep -iE '^(server|x-fh-requested-host|x-served-by|x-vercel-id|x-vercel-cache|via):' <<< "$HEADERS" | paste -sd ' | ' - || true)
+          echo "[headers] answering host: ${FINGERPRINT:-no identifying header}"
+          LAST_MODIFIED=$(grep -iE '^last-modified:' <<< "$HEADERS" | head -1 | sed 's/^[^:]*: *//' || true)
+          if [ -n "$LAST_MODIFIED" ]; then
+            echo "[headers] deployment last-modified: $LAST_MODIFIED"
+          fi
+
           FAILED=0
+          MISSING=()
           require () {
             local name="$1" needle="${2:-}"
             if ! grep -qi "^$name:" <<< "$HEADERS"; then
               echo "::error::missing header: $name"
+              MISSING+=("$name")
               FAILED=1
               return
             fi
             if [ -n "$needle" ] && ! grep -qi "^$name:.*$needle" <<< "$HEADERS"; then
               echo "::error::$name does not contain '$needle'"
+              MISSING+=("$name(:'$needle')")
               FAILED=1
               return
             fi
@@ -294,6 +318,36 @@ jobs:
           require 'x-content-type-options' 'nosniff'
           require 'referrer-policy'
           require 'permissions-policy'
+
+          # Publish what is missing, not just that something is. `latest.json` used to
+          # carry `detail: null` for every check, so a red run and the committed
+          # artifact both said "security_headers: failure" and nothing else — triage
+          # had to open the step log (which GitHub did not always serve) to learn
+          # which of the five headers was absent.
+          if [ "$FAILED" = "0" ]; then
+            echo "detail=all 5 headers present" >> "$GITHUB_OUTPUT"
+          else
+            DETAIL="missing or wrong: $(IFS=,; echo "${MISSING[*]}")"
+            if [ -n "$LAST_MODIFIED" ]; then
+              DETAIL="$DETAIL (deployment last-modified $LAST_MODIFIED)"
+            fi
+            echo "detail=$DETAIL" >> "$GITHUB_OUTPUT"
+            echo "::error::security-header gap — $DETAIL. The header set is declared in firebase.json, vercel.json and frontend/vercel.json; whichever host answers $SITE_URL must be redeployed with it (or the headers added at the edge). docs/audits/2026-10-26-live-security-headers.md"
+            {
+              echo ""
+              echo "> ## ⚠️ security headers: $DETAIL"
+              echo ">"
+              echo "> Answering host: \`${FINGERPRINT:-no identifying header}\`"
+              echo ">"
+              echo "> The requirement set is 5 headers (HSTS with includeSubDomains, CSP with"
+              echo "> \`frame-ancestors 'none'\`, \`X-Content-Type-Options: nosniff\`,"
+              echo "> \`Referrer-Policy\`, \`Permissions-Policy\`). The repo declares all five in"
+              echo "> \`firebase.json\`, \`vercel.json\` and \`frontend/vercel.json\`, so this is a"
+              echo "> deployment/edge gap, not a source gap: see"
+              echo "> \`docs/audits/2026-10-26-live-security-headers.md\` (measured) and"
+              echo "> docs/ops/owner-actions.md Action 17."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
           exit "$FAILED"
 
       # Sitemap honesty: a sitemap that lists URLs the deployment does not serve
@@ -542,6 +596,7 @@ jobs:
           OUT_HOMEPAGE: ${{ steps.homepage.outcome }}
           OUT_DEEP_LINKS: ${{ steps.deep_links.outcome }}
           OUT_SECURITY_HEADERS: ${{ steps.security_headers.outcome }}
+          OUT_SECURITY_HEADERS_DETAIL: ${{ steps.security_headers.outputs.detail }}
           OUT_SITEMAP: ${{ steps.sitemap.outcome }}
           OUT_FORECAST_DATA: ${{ steps.forecast_data.outcome }}
           OUT_STATUS_PAGE: ${{ steps.status_page.outcome }}
@@ -558,6 +613,7 @@ jobs:
             --arg homepage "$OUT_HOMEPAGE" \
             --arg deep_links "$OUT_DEEP_LINKS" \
             --arg security_headers "$OUT_SECURITY_HEADERS" \
+            --arg security_headers_detail "$OUT_SECURITY_HEADERS_DETAIL" \
             --arg sitemap "$OUT_SITEMAP" \
             --arg forecast_data "$OUT_FORECAST_DATA" \
             --arg status_page "$OUT_STATUS_PAGE" \
@@ -572,7 +628,8 @@ jobs:
               checks: [
                 { id: "homepage", outcome: $homepage, detail: null },
                 { id: "deep_links", outcome: $deep_links, detail: null },
-                { id: "security_headers", outcome: $security_headers, detail: null },
+                { id: "security_headers", outcome: $security_headers,
+                  detail: (if $security_headers_detail == "" then null else $security_headers_detail end) },
                 { id: "sitemap", outcome: $sitemap, detail: null },
                 { id: "forecast_data", outcome: $forecast_data, detail: null },
                 { id: "status_page", outcome: $status_page, detail: null },
@@ -694,7 +751,19 @@ jobs:
             exit 0
           fi
           if [ "$OUTCOME" != "pass" ]; then
+            # Name every failing check and its recorded detail. The old message said only
+            # "outcome=fail", so a red run (and the committed artifact, whose checks all
+            # carried `detail: null`) sent triage to the step log for the actual reason.
+            FAILED_SUMMARY=$(jq -r '.checks[] | select(.outcome != "success")
+              | "  - \(.id): \(.outcome)\(if .detail then " — " + .detail else "" end)"' \
+              data/site-health/latest.json || true)
             echo "::error::One or more site-health probes failed (outcome=$OUTCOME). See data/site-health/latest.json."
+            printf '%s\n' "$FAILED_SUMMARY"
+            {
+              echo ""
+              echo "- **failing checks** (outcome=$OUTCOME):"
+              printf '%s\n' "$FAILED_SUMMARY"
+            } >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
           echo "All 7 site-health probes passed."

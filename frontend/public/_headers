@@ -1,0 +1,44 @@
+# Cloudflare Pages / Workers static-asset headers for HazardNet
+#
+# Format: https://developers.cloudflare.com/pages/configuration/headers/
+# (`/*` = every path; rules are indented two spaces below their matcher.)
+#
+# WHY THIS FILE EXISTS
+#   firebase.json, vercel.json and frontend/vercel.json each declare the same
+#   security policy, but none of them is read by a Cloudflare deployment: the
+#   host answering https://hazardnet.live on 2026-10-26 sends X-Content-Type-Options
+#   and Referrer-Policy and NOT Strict-Transport-Security, Content-Security-Policy
+#   or Permissions-Policy (measured in docs/audits/2026-10-26-live-security-headers.md),
+#   with no origin fingerprint at all. Cloudflare serves `_headers` from the asset
+#   root, so this file is the fourth — and, for that deployment, the only
+#   effective — declaration of the policy. It is copied verbatim into dist/ by
+#   Vite (publicDir), which is why it lives in frontend/public/.
+#
+#   __tests__/securityHeadersParity.test.js pins every value here to
+#   frontend/vercel.json, so the copies cannot drift.
+#
+# NOTE: `Strict-Transport-Security` is ignored by Cloudflare on some plan tiers
+# (it is controlled by SSL/TLS -> Edge Certificates -> HSTS). The line is kept so
+# the file states the full policy; if the probe still reports HSTS missing after
+# a Cloudflare deploy, that switch is the reason, not this file.
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  Permissions-Policy: camera=(), microphone=(), geolocation=(self), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-QZKLQT1GBKDcqB1F1KXYUlwpbx51AmTDaGZhplnAaFU=' https://www.gstatic.com https://apis.google.com https://www.googletagmanager.com https://www.google.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://www.gstatic.com; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https: wss: https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://*.google.com https://*.gstatic.com https://*.github.com https://api.github.com https://github.com; frame-src 'self' https: https://*.firebaseapp.com https://accounts.google.com https://github.com https://*.github.com; worker-src 'self' blob:; media-src 'self' blob:; manifest-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://*.firebaseapp.com https://accounts.google.com https://github.com https://*.github.com; upgrade-insecure-requests
+
+# Long-lived hashed build assets (matches the Vercel/Firebase rule).
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The service worker must never be served stale.
+/serviceWorker.js
+  Cache-Control: no-cache
+
+# Forecast/freshness snapshots revalidate on every request.
+/data/*
+  Cache-Control: public, max-age=0, must-revalidate

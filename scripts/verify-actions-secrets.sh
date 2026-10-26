@@ -61,6 +61,18 @@ SECRETS_CATALOG=(
   "CODECOV_TOKEN|opt|ci (test-backend, test-frontend)|Codecov upload (warn-only if absent)"
   # Benchmarking
   "BENCH_URL|opt|scripts/bench-predict.mjs|Latency benchmark target; default http://127.0.0.1:3001"
+  # Site-health probe authentication (docs/ops/owner-actions.md Action 18)
+  "SITE_PROBE_TOKEN|opt|site-health|Shared secret the probe sends as x-hazardnet-probe; needs the matching Cloudflare WAF skip rule"
+  # Daily advisory ingest (Kaggle CLI)
+  "KAGGLE_USERNAME|opt|daily_advisory_ingest|Kaggle account the advisory dataset is published under"
+  "KAGGLE_KEY|opt|daily_advisory_ingest|Kaggle API key for that account"
+  # Ingest-triggered Vercel deploy (the step exits 0 when unset)
+  "VERCEL_TOKEN|opt|daily_advisory_ingest|Vercel deploy token; unset means 'rely on the GitHub push trigger'"
+  "VERCEL_ORG_ID|opt|daily_advisory_ingest|Vercel org id (with VERCEL_TOKEN / VERCEL_PROJECT_ID)"
+  "VERCEL_PROJECT_ID|opt|daily_advisory_ingest|Vercel project id for the production deployment"
+  # Firebase aliases consumed by the ingest / verify workflows
+  "FIREBASE_SERVICE_ACCOUNT|opt|daily_advisory_ingest|Legacy alias mapped onto FIREBASE_SERVICE_ACCOUNT_JSON"
+  "FIREBASE_SERVICE_ACCOUNT_JSON|opt|daily_advisory_ingest|Service-account JSON for Firestore writes from the ingest"
 )
 
 # ── Helpers ────────────────────────────────────────────────────────────────
@@ -119,7 +131,14 @@ for entry in "${SECRETS_CATALOG[@]}"; do
 
     # Extra sanity checks for well-known secret shapes.
     case "$name" in
+      SITE_PROBE_TOKEN)
+        # docs/ops/owner-actions.md Action 18: `openssl rand -hex 32`. Anything
+        # else (quotes, a trailing newline, base64) breaks the `header = "..."`
+        # line the site-health probe writes into its curl config, which would
+        # make every probe request fail to authenticate rather than fail loudly
+        # here.
         if ! [[ "$val" =~ ^[a-f0-9]{30,}$ ]]; then
+          printf "        ${YELLOW}⚠  SITE_PROBE_TOKEN is not lowercase hex (openssl rand -hex 32) — the probe's curl config may not parse it${NC}\n"
         fi
         ;;
       HAZARDNET_API_URL)

@@ -5,8 +5,13 @@
  *
  * The headers are declared four times — the root `vercel.json` (the deployed a-facing
  * surface), `frontend/vercel.json` (frontend-project scope), `firebase.json` (the surface
- * that actually answers `hazardnet.live` since the deployment moved to Firebase Hosting) and
- * `backend/server.js` (helmet, for the self-hosted/Docker deployment). They drifted before:
+ * that answered `hazardnet.live` while the deployment was Firebase Hosting) and
+ * `backend/server.js` (helmet, for the self-hosted/Docker deployment). A fifth copy,
+ * `frontend/public/_headers`, is the Cloudflare one: measured on 2026-10-26, the host
+ * answering `hazardnet.live` sends none of `firebase.json`'s policy beyond `nosniff` and
+ * `Referrer-Policy` and identifies itself only as Cloudflare
+ * (docs/audits/2026-10-26-live-security-headers.md), so the Cloudflare static-asset header
+ * file is the only one that can take effect there. They drifted before:
  * the CSP was added to a config that was not the one serving production.
  *
  * The Firebase copy is the one that drifted silently for real. On 2026-10-04 the live site
@@ -266,6 +271,58 @@ describe('security header parity', () => {
       expect(headers['Content-Security-Policy']).toContain(INLINE_THEME_SCRIPT_HASH);
     }
     expect(cspDirectivesFromString().scriptSrc).toContain(INLINE_THEME_SCRIPT_HASH);
+  });
+
+  /**
+   * The Cloudflare copy (`frontend/public/_headers`) has a different syntax from JSON: a
+   * matcher line, then indented `Name: value` lines. Cloudflare serves it from the asset
+   * root, and Vite copies `frontend/public/` into `dist/` verbatim, so it lands next to
+   * `index.html` where Cloudflare looks for it.
+   *
+   * It is parsed here rather than eyeballed because a header file that Cloudflare cannot
+   * parse fails silently — the deployment then serves the origin's headers, which is the
+   * state this file exists to end.
+   */
+  it('declares the same policy in the Cloudflare _headers file', () => {
+    const raw = readFileSync(join(root, 'frontend/public/_headers'), 'utf8');
+
+    /** matcher -> { header: value }, ignoring `#` comments and blank lines. */
+    const parseHeadersFile = (text) => {
+      const rules = {};
+      let current = null;
+      for (const line of text.split('\n')) {
+        if (!line.trim() || line.trim().startsWith('#')) continue;
+        if (!/^\s/.test(line)) {
+          current = line.trim();
+          rules[current] = {};
+          continue;
+        }
+        const match = /^\s+([A-Za-z0-9-]+):\s*(.+)$/.exec(line);
+        expect(current).not.toBeNull();
+        expect(match).not.toBeNull();
+        rules[current][match[1]] = match[2].trim();
+      }
+      return rules;
+    };
+
+    const rules = parseHeadersFile(raw);
+    const all = rules['/*'];
+    expect(all).toBeDefined();
+
+    // Same literal values as `frontend/vercel.json` — the frontend-project surface whose
+    // build this file ships inside.
+    for (const header of EXPECTED) {
+      expect(all[header]).toBe(frontendHeaders[header]);
+    }
+
+    // The cache rules the Cloudflare deployment would otherwise lose.
+    expect(rules['/assets/*']).toEqual(
+      expect.objectContaining({ 'Cache-Control': 'public, max-age=31536000, immutable' })
+    );
+    expect(rules['/serviceWorker.js']).toEqual(expect.objectContaining({ 'Cache-Control': 'no-cache' }));
+    expect(rules['/data/*']).toEqual(
+      expect.objectContaining({ 'Cache-Control': 'public, max-age=0, must-revalidate' })
+    );
   });
 
   /**

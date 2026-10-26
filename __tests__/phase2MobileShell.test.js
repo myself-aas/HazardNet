@@ -78,32 +78,73 @@ describe('Phase 2 — mobile primitives, on the Apple design system', () => {
   });
 });
 
-describe('Phase 2 — Automated Android APK Build & Release on Push to main', () => {
-  it('configures .github/workflows/app-releases.yml to build and release the React Native Android APK on every push to main', () => {
-    const workflowPath = join(process.cwd(), '.github/workflows/app-releases.yml');
-    expect(existsSync(workflowPath)).toBe(true);
-    const workflow = readFileSync(workflowPath, 'utf8');
+describe('Phase 2 — Android release pipeline is preserved as a template, not a live workflow', () => {
+  // Retired 2026-10-26. The pipeline itself is unchanged — what changed is where it
+  // lives. `Android Release (React Native APK & AAB)` (run 40253981974) failed in
+  // "Build signed Release APK & AAB via Gradle" on every push to `main`, there was no
+  // `ANDROID_KEYSTORE_*` signing material in the repository to publish with, and the
+  // same build existed a second time as the `android-apk` job of app-releases.yml. Both
+  // live copies are gone; the complete pipeline is inert under
+  // `.github/workflow-templates/`, one copy, with its restoration steps in the header.
+  const androidTemplatePath = join(
+    process.cwd(),
+    '.github/workflow-templates/hazardnet-mobile-android-release.yml'
+  );
 
-    expect(workflow).toMatch(/push:\s+branches:\s+-\s+main/);
-    expect(workflow).toContain('npx expo prebuild --platform android --no-install --clean');
-    expect(workflow).toContain('./gradlew assembleRelease');
-    expect(workflow).toContain('HazardNet-mobile-v${{ needs.meta.outputs.mobile_version }}-android.apk');
-    expect(workflow).toContain('uses: softprops/action-gh-release@v3');
+  it('keeps no Android release workflow in .github/workflows', () => {
+    for (const retired of ['android_release.yml', 'android-release.yml']) {
+      expect(existsSync(join(process.cwd(), '.github/workflows', retired))).toBe(false);
+    }
   });
 
-  it('configures .github/workflows/android_release.yml to build React Native Android APK + AAB and publish a GitHub Release on push to main', () => {
-    const androidReleasePath = join(process.cwd(), '.github/workflows/android_release.yml');
-    expect(existsSync(androidReleasePath)).toBe(true);
-    const workflow = readFileSync(androidReleasePath, 'utf8');
+  it('preserves the APK + AAB pipeline in .github/workflow-templates (inert by design)', () => {
+    expect(existsSync(androidTemplatePath)).toBe(true);
+    const template = readFileSync(androidTemplatePath, 'utf8');
 
-    expect(workflow).toMatch(/push:\s+branches:\s+-\s+main/);
-    expect(workflow).toContain('npx expo prebuild --platform android --no-install --clean');
-    expect(workflow).toContain('./gradlew assembleRelease bundleRelease');
-    expect(workflow).toContain('HazardNet-mobile-v${{ steps.meta.outputs.mobile_version }}-android.apk');
-    expect(workflow).toContain('HazardNet-mobile-v${{ steps.meta.outputs.mobile_version }}-android.aab');
-    expect(workflow).toContain('SHA256SUMS.txt');
-    expect(workflow).toContain('uses: softprops/action-gh-release@v3');
+    // A template is inert only because GitHub ignores this directory — say so in the
+    // file, so nobody copies the header away without reading why it is here.
+    expect(template).toContain('TEMPLATE — NOT A LIVE WORKFLOW');
+    expect(template).toContain('.github/workflow-templates/');
+
+    // The pipeline itself must survive the move intact: the exact build commands and
+    // release assets the live workflow produced, plus the signing-secret names a
+    // restore needs.
+    expect(template).toContain('npx expo prebuild --platform android --no-install --clean');
+    expect(template).toContain('./gradlew assembleRelease bundleRelease');
+    expect(template).toContain('HazardNet-mobile-v${{ steps.meta.outputs.mobile_version }}-android.apk');
+    expect(template).toContain('HazardNet-mobile-v${{ steps.meta.outputs.mobile_version }}-android.aab');
+    expect(template).toContain('SHA256SUMS.txt');
+    expect(template).toContain('uses: softprops/action-gh-release@v3');
+    for (const secret of [
+      'ANDROID_KEYSTORE_BASE64',
+      'ANDROID_KEYSTORE_PASSWORD',
+      'ANDROID_KEY_ALIAS',
+      'ANDROID_KEY_PASSWORD',
+    ]) {
+      expect(template).toContain(secret);
+    }
+  });
+
+  it('parks the Windows release in .github/workflow-templates too, and leaves no live app-release workflow', () => {
+    // Windows was retired in the same pass — for a different reason: run 40253981990 failed
+    // in "Build Windows x64" with no secret involved, on a windows-2022 runner held for up
+    // to 90 minutes per push.
+    for (const retired of ['app-releases.yml', 'android_release.yml']) {
+      expect(existsSync(join(process.cwd(), '.github/workflows', retired))).toBe(false);
+    }
+
+    const windowsTemplate = readFileSync(
+      join(process.cwd(), '.github/workflow-templates/hazardnet-windows-msix-release.yml'),
+      'utf8'
+    );
+    expect(windowsTemplate).toContain('TEMPLATE — NOT A LIVE WORKFLOW');
+    expect(windowsTemplate).toContain('windows-build:');
+    expect(windowsTemplate).toContain('npx react-native run-windows');
+    expect(windowsTemplate).toContain('uses: softprops/action-gh-release@v3');
+    expect(windowsTemplate).toContain('Push logs on failure');
+
+    // No Android build or signing material rides along with the Windows pipeline.
+    expect(windowsTemplate).not.toContain('npx expo prebuild');
+    expect(windowsTemplate).not.toMatch(/secrets\.ANDROID_/);
   });
 });
-
-

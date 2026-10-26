@@ -1,0 +1,372 @@
+# =============================================================================
+# TEMPLATE — NOT A LIVE WORKFLOW.
+#
+# GitHub Actions only executes files in `.github/workflows/`. This file lives in
+# `.github/workflow-templates/` and is therefore inert: it does not run, it does
+# not occupy a windows-2022 runner for up to 90 minutes on every push to `main`,
+# and it cannot publish a release.
+#
+# Why it was retired (measured, not assumed)
+#   * "Build Windows x64" failed on every push to `main` — the last run before
+#     retirement, 40253981990, failed in that job while `Resolve release metadata`
+#     passed and `Publish Windows artifacts` was skipped, so the `windows-release`
+#     job could never run.
+#   * It needs no repository secrets, so "add the missing secret" was not the fix;
+#     the React Native for Windows build itself fails and the failure cannot be
+#     reproduced or iterated on from this repository's CI alone.
+#   * It duplicated the compile-only signal `windows-compile.yml` is meant to give
+#     (docs/ops/owner-actions.md Action 14).
+#
+# To re-enable, when the RNW build is fixed:
+#   1. Copy this file back to `.github/workflows/windows-msix-release.yml`.
+#   2. Run it with `workflow_dispatch` and watch "Build Windows x64"; only then
+#      restore the `push` trigger.
+#   3. Confirm the release body and tag name are still what the Download Center
+#      expects (v<windows-version>-windows-<sha>).
+#
+# The pipeline itself is unchanged from the live workflow: install workspace
+# dependencies, restore NuGet, `npx react-native run-windows --release --no-launch
+# --no-deploy --no-packager`, stage HazardNet.exe + the .appx renamed .msix, then
+# publish with softprops/action-gh-release. The `Push logs on failure` steps are
+# kept as they were — they were the only way to see what the Windows build said.
+# =============================================================================
+#
+# HazardNet Windows MSIX release (React Native for Windows)
+#
+# Triggers
+#   * push to `main` branch        -> builds the Windows app & publishes GitHub Release `v<windows_version>-windows-<sha>`
+#   * push of a tag matching `v*`  -> assets are attached to that release
+#   * manual "Run workflow"        -> a release is created automatically,
+#     named from the app version + commit SHA
+#
+# No repository secrets are required: the Windows build is unsigned and
+# publishes with the runner's own `GITHUB_TOKEN`.
+#
+# See docs/APP_RELEASES.md for the operator guide.
+
+name: App Releases (Windows MSIX)
+
+on:
+  workflow_dispatch:
+    inputs:
+      prerelease:
+        description: 'Mark the created release as pre-release'
+        type: boolean
+        default: false
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: app-releases-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  meta:
+    name: Resolve release metadata
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+      windows_version: ${{ steps.meta.outputs.windows_version }}
+      prerelease: ${{ steps.meta.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: meta
+        run: |
+          set -euo pipefail
+          WINDOWS_VER="$(node -p "require('./apps/windows/package.json').version")"
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref_type }}" = "tag" ]; then
+            TAG="${GITHUB_REF_NAME}"
+            PRERELEASE="false"
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            TAG="v${WINDOWS_VER}-windows-${GITHUB_SHA::8}"
+            PRERELEASE="false"
+          else
+            TAG="v${WINDOWS_VER}-windows-${GITHUB_SHA::8}"
+            PRERELEASE="${{ inputs.prerelease }}"
+            [ -n "${PRERELEASE}" ] || PRERELEASE="false"
+          fi
+          {
+            echo "tag=${TAG}"
+            echo "windows_version=${WINDOWS_VER}"
+            echo "prerelease=${PRERELEASE}"
+          } >> "${GITHUB_OUTPUT}"
+
+  # The Android APK job that used to sit here was retired on 2026-10-26 — it was a
+  # duplicate of the (also retired) `.github/workflows/android_release.yml` pipeline,
+  # and both failed in the Gradle step on every push to `main` while this repository
+  # had no `ANDROID_KEYSTORE_*` signing secrets. The complete APK + AAB release
+  # pipeline is preserved as an inert template in
+  # `.github/workflow-templates/hazardnet-mobile-android-release.yml`, with the
+  # re-enable steps documented there and in docs/APP_RELEASES.md.
+
+  windows-build:
+    name: Build Windows x64
+    needs: meta
+    runs-on: windows-2022
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install workspace dependencies
+        shell: pwsh
+        run: |
+          Write-Host "Node $(node -v) npm $(npm -v)"
+          New-Item -ItemType Directory -Force -Path "C:\tmp" | Out-Null
+          New-Item -ItemType Directory -Force -Path "C:\tmp\ci-logs" | Out-Null
+          npm install --no-audit --no-fund 2>&1 | Tee-Object -FilePath "C:\tmp\npm-ci.log"
+          $exit = $LASTEXITCODE
+          Write-Host "npm install exit $exit"
+          if (Test-Path "C:\tmp\npm-ci.log") {
+            Write-Host "=== npm-ci.log tail ==="
+            Get-Content "C:\tmp\npm-ci.log" | Select-Object -Last 300 | Write-Host
+          } else {
+            Write-Host "No npm-ci.log found at C:\tmp"
+            Get-ChildItem "C:\tmp" -ErrorAction SilentlyContinue | Format-Table Name, Length | Out-String | Write-Host
+          }
+          if ($exit -ne 0) { throw "npm install failed $exit" }
+          Write-Host "npm install succeeded"
+
+      - name: Push npm logs on failure
+        if: failure()
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path C:\tmp\ci-logs | Out-Null
+          if (Test-Path "C:\tmp\npm-ci.log") { Copy-Item "C:\tmp\npm-ci.log" "C:\tmp\ci-logs\npm-ci-${{ github.run_id }}.log" -Force }
+          else { "no npm log" | Set-Content "C:\tmp\ci-logs\npm-ci-${{ github.run_id }}.log" }
+          git config user.name "ci-logs-bot"
+          git config user.email "ci-logs@example.com"
+          git checkout --orphan "ci-logs-${{ github.run_id }}-npm-windows"
+          git rm -rf . 2>$null; $null = $?
+          New-Item -ItemType Directory -Force -Path logs | Out-Null
+          Copy-Item "C:\tmp\ci-logs\*" logs\ -ErrorAction SilentlyContinue
+          git add logs/
+          git commit -m "ci logs npm windows ${{ github.run_id }}" 2>$null; $null = $?
+          git push origin "ci-logs-${{ github.run_id }}-npm-windows" --force 2>&1 | Write-Host
+
+      - name: Verify RNW layout
+        shell: pwsh
+        run: |
+          Write-Host "=== Checking RNW ==="
+          $rootRnw = "node_modules/react-native-windows/package.json"
+          $appRnw = "apps/windows/node_modules/react-native-windows/package.json"
+          if (Test-Path $rootRnw) { Write-Host "Root RNW"; Get-Content $rootRnw | Select-String '"version"' | Select-Object -First 1 }
+          if (Test-Path $appRnw) { Write-Host "App RNW exists" } else {
+            if (Test-Path $rootRnw) {
+              New-Item -ItemType Directory -Force -Path "apps/windows/node_modules" | Out-Null
+              Copy-Item -Recurse -Force "node_modules/react-native-windows" "apps/windows/node_modules/react-native-windows"
+              Write-Host "Copied root RNW to app"
+            }
+          }
+          if (Test-Path "node_modules/react-native/package.json") {
+            if (-not (Test-Path "apps/windows/node_modules/react-native/package.json")) {
+              Copy-Item -Recurse -Force "node_modules/react-native" "apps/windows/node_modules/react-native" -ErrorAction SilentlyContinue
+            }
+          }
+          Get-Content "apps/windows/windows/HazardNet.sln" | Select-Object -First 30 | Write-Host
+          Select-String -Path "apps/windows/windows/HazardNet.sln" -Pattern "react-native-windows" | Select-Object -First 10 | Write-Host
+          $sln = Get-Content "apps/windows/windows/HazardNet.sln" -Raw
+          $rootExists = Test-Path "node_modules/react-native-windows/Folly/Folly.vcxproj"
+          $appExists = Test-Path "apps/windows/node_modules/react-native-windows/Folly/Folly.vcxproj"
+          Write-Host "rootExists $rootExists appExists $appExists"
+          if (-not $rootExists -and $appExists) {
+            $sln = $sln -replace "\.\.\\\.\.\\\.\.\\node_modules\\react-native-windows", "..\node_modules\react-native-windows"
+            Set-Content -Path "apps/windows/windows/HazardNet.sln" -Value $sln -NoNewline
+          }
+          if (-not $appExists -and $rootExists) {
+            $sln = $sln -replace "\.\.\\node_modules\\react-native-windows", "..\..\..\node_modules\react-native-windows"
+            Set-Content -Path "apps/windows/windows/HazardNet.sln" -Value $sln -NoNewline
+          }
+          Write-Host "=== App.windows.tsx ==="
+          Get-Content "apps/windows/App.windows.tsx" | Select-Object -First 20 | Write-Host
+          npx react-native config 2>&1 | Select-Object -First 50 | Write-Host
+
+      - name: Sync app version into Package.appxmanifest
+        shell: pwsh
+        run: |
+          $ver = "${{ needs.meta.outputs.windows_version }}"
+          if ($ver -match '^\d+\.\d+\.\d+$') { $ver4 = "$ver.0" } else { $ver4 = "$ver.0" }
+          if ($ver -match '^\d+\.\d+\.\d+\.\d+$') { $ver4 = $ver }
+          Write-Host "Version $ver4"
+          $manifest = "apps/windows/windows/HazardNet/Package.appxmanifest"
+          $content = Get-Content $manifest -Raw
+          $content = $content -replace 'Version="\d+\.\d+\.\d+\.\d+"', "Version=""$ver4"""
+          Set-Content -Path $manifest -Value $content -NoNewline
+
+      - name: Restore NuGet packages
+        shell: pwsh
+        run: |
+          $sln = "apps/windows/windows/HazardNet.sln"
+          Write-Host "Restoring $sln"
+          New-Item -ItemType Directory -Force -Path "C:\tmp\ci-logs" | Out-Null
+          # Find MSBuild via vswhere
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $msbuildPath = $null
+          if (Test-Path $vswhere) {
+            $msbuildPath = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe | Select-Object -First 1
+            Write-Host "vswhere msbuild: $msbuildPath"
+          }
+          if (-not $msbuildPath -or -not (Test-Path $msbuildPath)) {
+            $msbuildPath = "msbuild"
+          }
+          Write-Host "Using msbuild: $msbuildPath"
+          Write-Host "MSBuild version:"
+          try { & $msbuildPath -version 2>&1 | Write-Host } catch { Write-Host "msbuild -version failed: $_" }
+          Write-Host "dotnet info:"
+          try { dotnet --info 2>&1 | Select-Object -First 30 | Write-Host } catch { Write-Host "dotnet --info failed" }
+          Write-Host "Solution exists: $(Test-Path $sln)"
+          Get-ChildItem "apps/windows/windows/HazardNet" | Format-Table Name, Length | Out-String | Write-Host
+          Write-Host "Running msbuild restore..."
+          $restoreLog = "C:\tmp\restore.log"
+          if (Test-Path $restoreLog) { Remove-Item $restoreLog -Force }
+          try {
+            & $msbuildPath "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:minimal 2>&1 | Out-File -FilePath $restoreLog -Encoding utf8
+            $exit = $LASTEXITCODE
+          } catch {
+            Write-Host "Exception running msbuild: $_"
+            $_ | Out-File $restoreLog -Append
+            $exit = 1
+          }
+          Write-Host "msbuild exit $exit"
+          if (Test-Path $restoreLog) {
+            Write-Host "=== $restoreLog ==="
+            Get-Content $restoreLog | Write-Host
+            Copy-Item $restoreLog "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log" -Force
+          } else {
+            Write-Host "No $restoreLog created!"
+            "No log created" | Out-File "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log"
+          }
+          if ($exit -ne 0) {
+            Write-Host "Retrying with detailed verbosity..."
+            $detailedLog = "C:\tmp\restore-detailed.log"
+            try {
+              & $msbuildPath "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:detailed 2>&1 | Out-File -FilePath $detailedLog -Encoding utf8
+              if (Test-Path $detailedLog) {
+                Get-Content $detailedLog | Select-Object -Last 1000 | Write-Host
+                Copy-Item $detailedLog "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}-detailed.log" -Force -ErrorAction SilentlyContinue
+              }
+            } catch {
+              Write-Host "Detailed restore also failed: $_"
+            }
+            throw "Restore failed $exit"
+          }
+
+      - name: Build Release (x64)
+        shell: pwsh
+        working-directory: apps/windows
+        run: |
+          npx react-native run-windows --release --no-launch --no-deploy --no-packager --logging --arch x64 2>&1 | Tee-Object -FilePath build.log
+          $exit = $LASTEXITCODE
+          Write-Host "Build exit $exit"
+          if (Test-Path build.log) {
+            Get-Content build.log | Select-Object -Last 800 | Write-Host
+          }
+          if ($exit -ne 0) { throw "Build failed $exit" }
+
+      - name: Push logs on failure
+        if: failure()
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path C:\tmp\ci-logs | Out-Null
+          Write-Host "=== Collecting logs ==="
+          Get-ChildItem "C:\tmp" -Filter "*.log" -ErrorAction SilentlyContinue | Format-Table Name, Length | Out-String | Write-Host
+          if (Test-Path "C:\tmp\restore.log") {
+            Copy-Item "C:\tmp\restore.log" "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log" -Force
+            Write-Host "Copied C:\tmp\restore.log"
+          }
+          $foundRestore = Get-ChildItem -Path . -Filter "restore.log" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($foundRestore) {
+            Copy-Item $foundRestore.FullName "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}-found.log" -Force
+            Write-Host "Found restore.log at $($foundRestore.FullName)"
+          }
+          if (-not (Test-Path "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log")) {
+            if (Test-Path restore.log) {
+              Copy-Item restore.log "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log" -Force
+              Write-Host "Copied ./restore.log"
+            } else {
+              "No restore.log found - listing files" | Set-Content "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log"
+              Get-ChildItem -Path . -Filter "*.log" -Recurse -ErrorAction SilentlyContinue | Format-Table FullName, Length | Out-String | Add-Content "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log"
+            }
+          }
+          $foundBuild = Get-ChildItem -Path . -Filter "build.log" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($foundBuild) { Copy-Item $foundBuild.FullName "C:\tmp\ci-logs\windows-build-${{ github.run_id }}.log" -Force }
+          elseif (Test-Path "apps/windows/build.log") { Copy-Item "apps/windows/build.log" "C:\tmp\ci-logs\windows-build-${{ github.run_id }}.log" -Force }
+          elseif (Test-Path "C:\tmp\build.log") { Copy-Item "C:\tmp\build.log" "C:\tmp\ci-logs\windows-build-${{ github.run_id }}.log" -Force }
+          else { "No build.log" | Set-Content "C:\tmp\ci-logs\windows-build-${{ github.run_id }}.log" }
+          Get-ChildItem "apps/windows/windows/HazardNet" -ErrorAction SilentlyContinue | Out-String | Set-Content "C:\tmp\ci-logs\windows-dir-${{ github.run_id }}.txt"
+          Get-ChildItem "C:\tmp\ci-logs" | Format-Table Name, Length | Out-String | Write-Host
+          git config user.name "ci-logs-bot"
+          git config user.email "ci-logs@example.com"
+          git checkout --orphan "ci-logs-${{ github.run_id }}-windows"
+          git rm -rf . 2>$null; $null = $?
+          New-Item -ItemType Directory -Force -Path logs | Out-Null
+          Copy-Item "C:\tmp\ci-logs\*" logs\ -ErrorAction SilentlyContinue
+          git add logs/
+          git commit -m "ci logs windows ${{ github.run_id }}" 2>$null; $null = $?
+          git push origin "ci-logs-${{ github.run_id }}-windows" --force 2>&1 | Write-Host
+
+      - name: Stage artifacts
+        if: success()
+        shell: pwsh
+        run: |
+          $out = "apps/windows/windows/HazardNet/Build/Release"
+          New-Item -ItemType Directory -Force -Path "dist" | Out-Null
+          $ver = "${{ needs.meta.outputs.windows_version }}"
+          if (Test-Path "$out/HazardNet.exe") {
+            Copy-Item "$out/HazardNet.exe" "dist/HazardNet-windows-v$ver-x64.exe"
+          } else {
+            $exe = Get-ChildItem "$out" -Filter "HazardNet.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($exe) { Copy-Item $exe.FullName "dist/HazardNet-windows-v$ver-x64.exe" } else { throw "HazardNet.exe not found" }
+          }
+          $appx = Get-ChildItem "$out" -Filter "*.appx" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($appx) { Copy-Item $appx.FullName "dist/HazardNet-windows-v$ver-x64.msix" }
+          Get-ChildItem "dist" | Format-Table Name, Length
+
+      - uses: actions/upload-artifact@v6
+        if: success()
+        with:
+          name: windows-dist
+          path: dist/
+          if-no-files-found: error
+
+  windows-release:
+    name: Publish Windows artifacts
+    needs: [meta, windows-build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: windows-dist
+          path: dist
+
+      - name: Publish to GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ needs.meta.outputs.tag }}
+          name: HazardNet Windows ${{ needs.meta.outputs.tag }}
+          body: |
+            Windows desktop binaries for HazardNet.
+
+            - **Windows:** `HazardNet-windows-v<version>-x64.msix` — packaged x64 app (double-click to install on Windows 10/11), plus the unpacked `HazardNet-windows-v<version>-x64.exe`.
+
+            Built by the HazardNet Windows MSIX release workflow from `${{ github.sha }}`.
+            Android binaries are not published from this repository right now — see
+            `.github/workflow-templates/hazardnet-mobile-android-release.yml`.
+          prerelease: ${{ fromJSON(needs.meta.outputs.prerelease) }}
+          fail_on_unmatched_files: true
+          files: |
+            dist/*

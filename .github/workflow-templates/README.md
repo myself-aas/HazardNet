@@ -13,6 +13,15 @@ their exact layouts are unknown, so every template is parameterized with
 documented placeholder paths and explicit configuration variables instead of
 assuming build files that only exist in those repositories.
 
+Two kinds of file live here:
+
+- **Product-repo templates** — parameterized pipelines for the sibling product
+  repositories (rows 1–5 below).
+- **Retired pipelines** — complete workflows that used to run in *this*
+  repository and were moved here intact because they cannot work yet (rows 6–7).
+  Their headers carry the restore checklist; they are inert for the same reason
+  as everything else in this directory.
+
 | Template | Intended product | Platform / toolchain | Publishes to |
 | --- | --- | --- | --- |
 | `hazardnet-field-agent-android.yml` | Android field agent app | Linux, Gradle (JDK/Temurin) | GitHub Releases (APK/AAB) |
@@ -20,6 +29,9 @@ assuming build files that only exist in those repositories.
 | `hazardnet-daemon-cli-linux.yml` | Headless daemon & CLI | Linux, CMake or build script | GitHub Releases (tar.gz archives) |
 | `hazardnet-python-package.yml` | Python package | Linux, pip/build/twine | PyPI **and** GitHub Releases (sdist/wheel) |
 | `hazardnet-npm-package.yml` | npm package | Linux, Node/npm | npm registry **and** GitHub Releases (tarball) |
+| `hazardnet-mobile-android-release.yml` | **HazardNet's own** `apps/mobile` Android app (retired from `main` 2026-10-26) | Linux, Expo prebuild + Gradle | GitHub Releases (APK + AAB + `SHA256SUMS.txt`) |
+| `hazardnet-windows-msix-release.yml` | **HazardNet's own** `apps/windows` desktop app (retired from `main` 2026-10-26) | Windows, RNW / MSBuild | GitHub Releases (MSIX + EXE) |
+| `hazardnet-ops-slack-notify.yml` | **HazardNet's own** ops reporting (retired from `daily_advisory_ingest.yml` 2026-10-26) | Linux, Node | Slack `#hazardnet-ops` (once a POST is added) |
 
 ---
 
@@ -272,6 +284,43 @@ publishes with provenance under the computed dist-tag.
 
 Artifacts: `npm-package` (tarball + `pack-manifest.json`); release on tags:
 npm publish **and** GitHub Release with the tarball + `SHA256SUMS.txt`.
+
+### 6. HazardNet mobile Android release (retired pipeline, `hazardnet-mobile-android-release.yml`)
+
+The complete React Native Android release that used to run as
+`.github/workflows/android_release.yml` on every push to `main`: Expo prebuild,
+the SDK 51 / AGP 8 Gradle compatibility patches, `./gradlew assembleRelease
+bundleRelease`, APK + AAB staging with `SHA256SUMS.txt`, and a
+`softprops/action-gh-release@v3` publication.
+
+Retired because it failed in the Gradle step on every push to `main`
+(run 40253981974), the same build existed a second time as the `android-apk`
+job of `app-releases.yml`, and the repository has no signing material. The
+restore checklist is in the file header; in short: add
+`ANDROID_KEYSTORE_BASE64` / `ANDROID_KEYSTORE_PASSWORD` /
+`ANDROID_KEY_ALIAS` / `ANDROID_KEY_PASSWORD`, copy the file back to
+`.github/workflows/`, and verify the Gradle step with a `workflow_dispatch`
+run before re-enabling the `push` trigger.
+
+### 7. HazardNet Windows MSIX release (retired pipeline, `hazardnet-windows-msix-release.yml`)
+
+The WinUI/RNW packaging pipeline that used to run as
+`.github/workflows/app-releases.yml`: npm install with the monorepo hoisting
+fixes, RNW layout verification, NuGet restore, `npx react-native run-windows
+--release --no-launch --no-deploy --no-packager`, `.exe` + `.appx`→`.msix`
+staging, and publication via `softprops/action-gh-release`. It needs no secrets,
+so it is not a credentials problem: the build itself failed on every push to
+`main` (run 40253981990, job *Build Windows x64*) while occupying a
+`windows-2022` runner for up to 90 minutes. Restore steps are in the file header.
+
+### 8. Ops Slack notify (retired pipeline, `hazardnet-ops-slack-notify.yml`)
+
+The `Dispatch Operational Monitoring & Slack Alert` step that used to close the
+ingest job, promoted to a `workflow_call` reusable workflow. Retired because
+`SLACK_WEBHOOK_URL` does not exist and because `scripts/notify_ops.mjs` builds a
+Block Kit payload and logs it without ever POSTing — so the step reported
+success for a notification that could not happen. Restoring it means adding that
+POST (or a Slack API call) first; the file header carries the call snippet.
 
 ## Tag conventions
 

@@ -256,14 +256,16 @@ jobs:
           echo "[deploy] Triggering Vercel deployment..."
           npx --yes vercel deploy --prod --token="$VERCEL_TOKEN"
 
-      - name: Dispatch Operational Monitoring & Slack Alert
-        if: always()
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
-          node scripts/notify_ops.mjs \
-            --status="${{ job.status }}" \
-            --channel="#hazardnet-ops" \
-            --manifest="backend/data/forecasts/manifest.json" \
-            --snapshot="frontend/public/data/forecasts-latest.json" \
-            --run-url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+      # Retired 2026-10-26: the trailing "Dispatch Operational Monitoring & Slack
+      # Alert" step used to sit here. It is now the inert template
+      # `.github/workflow-templates/hazardnet-ops-slack-notify.yml`.
+      #
+      # Two reasons, both measured rather than assumed:
+      #   * The repository has no `SLACK_WEBHOOK_URL` secret, so the step could
+      #     never deliver anything.
+      #   * It would not have delivered anything if it had: `scripts/notify_ops.mjs`
+      #     builds the Block Kit payload and logs `Slack payload prepared for
+      #     #hazardnet-ops`, but never POSTs to the webhook. The step was green on
+      #     every run — including failing ones — while reporting nothing.
+      # The payload builder and its unit tests stay in the tree; only the wiring
+      # moved. Restoration steps are in the template header.

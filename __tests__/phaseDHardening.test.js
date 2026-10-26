@@ -175,10 +175,43 @@ describe('TASK-014: Operational Monitoring & Slack Alerts (TRD §8.3, §11)', ()
     assert.ok(failHeader.text.text.includes('Incident'), 'Header text must indicate incident');
   });
 
-  test('daily_advisory_ingest.yml invokes scripts/notify_ops.mjs for Slack alert', () => {
-    const workflowPath = path.resolve(process.cwd(), '.github', 'workflows', 'daily_advisory_ingest.yml');
-    const workflowContent = fs.readFileSync(workflowPath, 'utf8');
-    assert.ok(workflowContent.includes('scripts/notify_ops.mjs'), 'Workflow must execute scripts/notify_ops.mjs');
-    assert.ok(workflowContent.includes('--channel="#hazardnet-ops"'), 'Workflow must target #hazardnet-ops');
+  test('the Slack ops wiring is a template, and the ingest workflow no longer pretends to notify', () => {
+    // Retired 2026-10-26. The step was green on every run for two independent reasons:
+    // there is no SLACK_WEBHOOK_URL secret, and notify_ops.mjs never POSTs the payload
+    // it builds (it logs `Slack payload prepared for …` and stops). Keeping it in a live
+    // workflow therefore reported a notification that could not happen. The wiring is
+    // preserved, inert, with the restoration steps in its header — including the one
+    // that matters: add the POST.
+    const templatePath = path.resolve(
+      process.cwd(),
+      '.github',
+      'workflow-templates',
+      'hazardnet-ops-slack-notify.yml'
+    );
+    const template = fs.readFileSync(templatePath, 'utf8');
+    assert.ok(template.includes('TEMPLATE — NOT A LIVE WORKFLOW'), 'Template must declare itself inert');
+    assert.ok(template.includes('scripts/notify_ops.mjs'), 'Template must execute scripts/notify_ops.mjs');
+    assert.ok(template.includes('SLACK_WEBHOOK_URL'), 'Template must document the webhook secret');
+    assert.ok(
+      template.includes('never POSTs to Slack'),
+      'Template must record why the step was a no-op, so a restore fixes it'
+    );
+
+    const ingestPath = path.resolve(process.cwd(), '.github', 'workflows', 'daily_advisory_ingest.yml');
+    const ingest = fs.readFileSync(ingestPath, 'utf8');
+    // The header comment may still *name* the script (it explains where the wiring went);
+    // what must be gone is an invocation of it, and the channel flag only it used.
+    assert.ok(
+      !/run:[\s\S]{0,400}notify_ops\.mjs/.test(ingest),
+      'daily_advisory_ingest.yml must not run a notifier that cannot deliver'
+    );
+    assert.ok(
+      !ingest.includes('--channel="#hazardnet-ops"'),
+      'daily_advisory_ingest.yml must not target a Slack channel'
+    );
+    assert.ok(
+      !/secrets\.SLACK_WEBHOOK_URL/.test(ingest),
+      'daily_advisory_ingest.yml must not require SLACK_WEBHOOK_URL'
+    );
   });
 });

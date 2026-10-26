@@ -1,0 +1,108 @@
+# =============================================================================
+# TEMPLATE — NOT A LIVE WORKFLOW.
+#
+# GitHub Actions only executes files in `.github/workflows/`. This file lives in
+# `.github/workflow-templates/` and is therefore inert: it does not run, and it
+# requires no `SLACK_WEBHOOK_URL` secret.
+#
+# What it preserves
+#   The "Dispatch Operational Monitoring & Slack Alert" step that ran at the end
+#   of `daily_advisory_ingest.yml` (job `ingest`, step `if: always()`) until
+#   2026-10-26. It was retired from `main` because the repository has no
+#   `SLACK_WEBHOOK_URL` secret, and because of what the step actually did:
+#   `scripts/notify_ops.mjs` *builds* the Block Kit payload and logs that it was
+#   prepared — it never POSTs to Slack. So each ingest run reported the step as
+#   green while nothing was ever delivered, and the only visible effect was a
+#   secret the owner had to create for a no-op. The script, its payload builder
+#   and its unit tests stay in the tree (`scripts/notify_ops.mjs`,
+#   `__tests__/phaseDHardening.test.js`); only the workflow wiring moved here.
+#
+# To re-enable, once you actually want ops notifications:
+#   1. Decide the delivery path. `scripts/notify_ops.mjs` currently stops at
+#      "payload prepared"; a webhook POST (or a Slack API call with a bot token)
+#      has to be added to it — otherwise restoring this workflow only restores
+#      the no-op.
+#   2. Copy this file to `.github/workflows/ops-slack-notify.yml` and add
+#      `SLACK_WEBHOOK_URL` (Settings -> Secrets and variables -> Actions).
+#   3. Call it from the pipeline it should report on, as the last step of the
+#      job so it runs on failure too:
+#
+#          - name: Notify ops (Slack)
+#            if: always()
+#            uses: ./.github/workflows/ops-slack-notify.yml
+#            with:
+#              status: ${{ job.status }}
+#            secrets: inherit
+#
+#      (`secrets: inherit` is what passes `SLACK_WEBHOOK_URL` to the reusable
+#      workflow; it is not available to a `workflow_call` callee otherwise.)
+#   4. Verify with a forced failure on a scratch branch: a red run must produce a
+#      red "Incident" card in `#hazardnet-ops`, and the step must not fail the
+#      pipeline when the webhook is unreachable.
+# =============================================================================
+
+name: Ops Slack Notify (template)
+
+on:
+  # Reusable: called from another workflow (see the snippet in the header).
+  workflow_call:
+    inputs:
+      status:
+        description: 'Job status to report (success | failure | cancelled)'
+        required: false
+        type: string
+        default: success
+      channel:
+        description: 'Slack channel the report is addressed to'
+        required: false
+        type: string
+        default: '#hazardnet-ops'
+    secrets:
+      SLACK_WEBHOOK_URL:
+        required: false
+  # Manual: build the payload by hand against the current committed artifacts.
+  workflow_dispatch:
+    inputs:
+      status:
+        description: 'Status to report'
+        required: false
+        type: string
+        default: success
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    name: Report pipeline outcome
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+
+      # The notify step never needs dependencies: notify_ops.mjs imports only
+      # node:fs / node:path / node:url, so a job that reports on a build must not
+      # be able to fail because the build's dependency tree moved.
+      - name: Build the ops report
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          REPORT_STATUS: ${{ inputs.status || 'success' }}
+          REPORT_CHANNEL: ${{ inputs.channel || '#hazardnet-ops' }}
+        shell: bash
+        run: |
+          set -uo pipefail
+          if [ -z "${SLACK_WEBHOOK_URL:-}" ]; then
+            echo "::notice::SLACK_WEBHOOK_URL is not configured — building the payload only (nothing is delivered)."
+          fi
+          node scripts/notify_ops.mjs \
+            --status="$REPORT_STATUS" \
+            --channel="$REPORT_CHANNEL" \
+            --manifest="backend/data/forecasts/manifest.json" \
+            --snapshot="frontend/public/data/forecasts-latest.json" \
+            --run-url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

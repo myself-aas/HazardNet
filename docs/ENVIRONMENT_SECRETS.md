@@ -23,7 +23,7 @@ to one (or more) of them:
 | Surface | Where it is set | Consumed by |
 | --- | --- | --- |
 | **A. Vercel project environment** | vercel.com → Project → Settings → Environment Variables (or `vercel env add`) | the serverless functions in `api/` + `backend/` at runtime, and the Vite build that produces `frontend/dist` |
-| **B. GitHub Actions secrets/variables** | github.com → repo → Settings → Secrets and variables → Actions (or `gh secret set`) | the workflows in `.github/workflows/` (`ci.yml`, `verify-secrets.yml`, `site-health.yml`, `Firebase-Store-Verify.yml`, `app-releases.yml`) |
+| **B. GitHub Actions secrets/variables** | github.com → repo → Settings → Secrets and variables → Actions (or `gh secret set`) | the workflows in `.github/workflows/` (`ci.yml`, `verify-secrets.yml`, `site-health.yml`, `Firebase-Store-Verify.yml`, `daily_advisory_ingest.yml`, `live-wind-update.yml`, `windows-compile.yml`, `secret-rotation-audit.yml`) |
 | **C. Local `.env`** | `cp .env.example .env` in the repo root, then fill values (never committed) | local dev servers, local rebuilds of the snapshots (`node scripts/build_forecast_snapshot.mjs`, …) |
 
 **Golden rules**
@@ -242,8 +242,11 @@ npx web-push generate-vapid-keys
 - `WEB_PUSH_CONTACT` → a `mailto:` address the push service can contact, e.g.
   `mailto:admin@hazardnet.live`
 
-**Android signing (`app-releases.yml`)** — optional; if unset, the workflow signs the
-APK with a throw-away CI keystore (installable but not updatable). For a stable key:
+**Android signing** — needed only when the Android release pipeline is restored
+from `.github/workflow-templates/hazardnet-mobile-android-release.yml` (it was
+retired from `.github/workflows/` on 2026-10-26 and no live workflow reads these
+secrets). If unset, the restored workflow signs the APK with a throw-away CI
+keystore (installable but not updatable). For a stable key:
 
 ```bash
 keytool -genkeypair -v -keystore keystore.jks -alias hazardnet \
@@ -359,12 +362,18 @@ legacy** after the research-tooling cleanup:
 | `HAZARDNET_API_URL` / `HAZARDNET_API_KEY` | secret | only with an ingest API | `site-health.yml` probes, ingest push | §1.9 |
 | `EE_SERVICE_ACCOUNT_JSON` | secret | legacy/optional | verify catalog only | §1.9 |
 | `BENCH_URL` | secret | no (inert) | legacy bench | leave unset |
-| `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | secrets | optional | `app-releases.yml` APK signing | §1.7 |
+| `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | secrets | no (template only) | Android template, not a live workflow | §1.7 |
+| `SITE_PROBE_TOKEN` | secret | recommended | `site-health.yml` sends it as `x-hazardnet-probe`; needs the matching Cloudflare WAF skip rule | `openssl rand -hex 32` |
+| `KAGGLE_USERNAME` / `KAGGLE_KEY` | secrets | yes, for a green ingest | `daily_advisory_ingest.yml` Kaggle CLI | §1.5 |
+| `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` | secrets | optional | ingest-triggered Vercel deploy (step exits 0 when unset) | §1.4 |
+| `SLACK_WEBHOOK_URL` | secret | no (template only) | `.github/workflow-templates/hazardnet-ops-slack-notify.yml` | — |
 | `API_METADATA_URL` | **variable** | recommended | `site-health.yml` metadata probe | your live URL |
 | `PUSH_TO_API` | **variable** | optional | master switch for ingest push | `false` unless an ingest API exists |
 
-Test-only dummies (`secrets.FOO`, `secrets.X` in `verify-secrets.yml`) exist to prove
-the checker works — never set them in the real repo settings.
+`verify-secrets.yml` is a manual diagnostic (`Actions → Verify GitHub Actions
+Secrets → Run workflow`): it fails when a secret a workflow needs is missing or
+malformed, and it also fails when a workflow starts referencing a secret the
+check itself does not list. It never prints a value.
 
 ---
 
@@ -373,7 +382,7 @@ the checker works — never set them in the real repo settings.
 | Do this | With these |
 | --- | --- |
 | **Vercel → Environment Variables** | `GEMINI_API_KEY`, `GEMINI_API_KEY_BACKUP`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `HUGGINGFACE_API_KEY`, `BACKEND_API_KEY`, `FIREBASE_SERVICE_ACCOUNT_JSON`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `WEB_PUSH_CONTACT`, `FRONTEND_ORIGIN`, all `VITE_*` from §2.2, optional flags (`CSP_ENFORCE`, `ALERT_*`, timeouts) |
-| **GitHub → Secrets** | `GEMINI_API_KEY`, `BACKEND_API_KEY`, `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, `CODECOV_TOKEN`, optional: `HAZARDNET_API_URL`, `HAZARDNET_API_KEY`, `EE_SERVICE_ACCOUNT_JSON`, `ANDROID_KEYSTORE_*` |
+| **GitHub → Secrets** | `GEMINI_API_KEY`, `BACKEND_API_KEY`, `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, `CODECOV_TOKEN`, optional: `HAZARDNET_API_URL`, `HAZARDNET_API_KEY`, `EE_SERVICE_ACCOUNT_JSON`, `SITE_PROBE_TOKEN`, `KAGGLE_USERNAME`, `KAGGLE_KEY`, `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` (`ANDROID_KEYSTORE_*` only if the Android template is restored) |
 | **GitHub → Variables** | `API_METADATA_URL`, `PUSH_TO_API` |
 | **Local `.env` (from `.env.example`)** | everything you need for local runs; `vercel env pull .env.local` is the easiest way to populate it |
 
