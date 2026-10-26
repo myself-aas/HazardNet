@@ -29,6 +29,9 @@ permissions:
 
 env:
   SITE_URL: https://hazardnet.live
+  # The hostname the sitemap, the canonical tags and security.txt all name. It must answer
+  # with the same deployment as SITE_URL — see the "Probe the canonical www host" step.
+  CANONICAL_URL: https://www.hazardnet.live
   MAX_DATA_AGE_DAYS: '10'
   # Use a browser-like signature for probe requests so edge bot defenses do not
   # challenge the health checks themselves.
@@ -585,6 +588,42 @@ jobs:
           [ "$FAILED" = "0" ] && echo "✅ generated content paths are served with their own bodies (prerendered HTML / JSON artifact)"
           exit "$FAILED"
 
+      # The canonical host, probed on its own. Every `<link rel="canonical">`, the whole
+      # sitemap (103 URLs) and security.txt's `Canonical:` name www.hazardnet.live, so a
+      # deployment that answers on the apex and not on www is a site that search engines and
+      # the status page treat as canonical while it fails to load. Measured 2026-10-26, the
+      # day both hostnames were CNAMEd to the Pages project: the apex served the new build and
+      # www answered Cloudflare 522 until the custom domain finished issuing. This step exists
+      # so that gap is a red run rather than something a reader has to notice.
+      - name: Probe the canonical www host
+        id: canonical_host
+        continue-on-error: true
+        shell: bash
+        run: |
+          CODE=$(curl -sS -o /tmp/www.html -w '%{http_code}' --max-time 30 \
+            -A "$PROBE_USER_AGENT" -H 'Accept: text/html' "$CANONICAL_URL/" 2>/dev/null) || CODE=000
+          echo "canonical host HTTP $CODE ($CANONICAL_URL/)"
+          case "$CODE" in
+            200)
+              if grep -qiE 'hazardnet|__vite__|react' /tmp/www.html; then
+                echo "✅ the canonical host serves the app shell"
+                echo "detail=" >> "$GITHUB_OUTPUT"
+              else
+                echo "::error::$CANONICAL_URL answered 200 but the body is not the app"
+                head -c 300 /tmp/www.html
+                exit 1
+              fi
+              ;;
+            522|523|524)
+              echo "::error::$CANONICAL_URL answered HTTP $CODE (Cloudflare could not reach the origin). Add www.hazardnet.live as a custom domain on the Pages project — docs/ops/deployment.md §4, docs/ops/owner-actions.md Action 20."
+              exit 1
+              ;;
+            *)
+              echo "::error::$CANONICAL_URL answered HTTP $CODE — the canonical hostname in the sitemap, canonical tags and security.txt is not serving"
+              exit 1
+              ;;
+          esac
+
       # The result is published in two forms: a machine-readable record the status
       # page reads, and a run artifact. Neither invents a pass: the outcomes are
       # read back from the steps themselves.
@@ -601,6 +640,7 @@ jobs:
           OUT_FORECAST_DATA: ${{ steps.forecast_data.outcome }}
           OUT_STATUS_PAGE: ${{ steps.status_page.outcome }}
           OUT_CONTENT_PAGES: ${{ steps.content_pages.outcome }}
+          OUT_CANONICAL_HOST: ${{ steps.canonical_host.outcome }}
           OUT_EDGE_CHALLENGED: ${{ steps.edge_challenge.outputs.challenged }}
         run: |
           set -uo pipefail
@@ -618,13 +658,14 @@ jobs:
             --arg forecast_data "$OUT_FORECAST_DATA" \
             --arg status_page "$OUT_STATUS_PAGE" \
             --arg content_pages "$OUT_CONTENT_PAGES" \
+            --arg canonical_host "$OUT_CANONICAL_HOST" \
             '{
               schema: "hazardnet-site-probe/v1",
               ran_at: $ran_at,
               run_url: $run_url,
               site_url: $site_url,
               edge_challenged: ($edge_challenged == "1"),
-              outcome: (if ([$homepage, $deep_links, $security_headers, $sitemap, $forecast_data, $status_page, $content_pages] | all(. == "success")) then "pass" else "fail" end),
+              outcome: (if ([$homepage, $deep_links, $security_headers, $sitemap, $forecast_data, $status_page, $content_pages, $canonical_host] | all(. == "success")) then "pass" else "fail" end),
               checks: [
                 { id: "homepage", outcome: $homepage, detail: null },
                 { id: "deep_links", outcome: $deep_links, detail: null },
@@ -633,7 +674,8 @@ jobs:
                 { id: "sitemap", outcome: $sitemap, detail: null },
                 { id: "forecast_data", outcome: $forecast_data, detail: null },
                 { id: "status_page", outcome: $status_page, detail: null },
-                { id: "content_pages", outcome: $content_pages, detail: null }
+                { id: "content_pages", outcome: $content_pages, detail: null },
+                { id: "canonical_host", outcome: $canonical_host, detail: null }
               ]
             }' > data/site-health/latest.json
           # Rebuild the derived artifact so the published page quotes this run.
