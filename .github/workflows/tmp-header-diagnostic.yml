@@ -1,0 +1,40 @@
+name: TMP Header Diagnostic
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v7
+      - name: Collect live headers
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p /tmp/diag
+          {
+            echo "### GET https://hazardnet.live/ (follow redirects, dump all hops)"
+            curl -sS -L -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36' \
+              -D - -o /dev/null --max-redirs 5 --max-time 30 https://hazardnet.live/ 2>&1 | tr -d '\r'
+            echo
+            echo "### GET https://www.hazardnet.live/"
+            curl -sS -L -D - -o /dev/null --max-redirs 5 --max-time 30 https://www.hazardnet.live/ 2>&1 | tr -d '\r'
+            echo
+            echo "### apk/other: /status"
+            curl -sS -L -D - -o /dev/null --max-redirs 5 --max-time 30 https://hazardnet.live/status 2>&1 | tr -d '\r'
+          } > /tmp/diag/headers.txt
+          cp /tmp/diag/headers.txt "diag-headers-${GITHUB_RUN_ID}.txt"
+      - name: Publish dump to the branch
+        shell: bash
+        run: |
+          set -uo pipefail
+          git config user.name "diag-bot"
+          git config user.email "diag@example.com"
+          git add diag-headers-*.txt
+          git commit -m "diag: live header dump ${GITHUB_RUN_ID}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
