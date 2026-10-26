@@ -56,6 +56,15 @@ jobs:
               grep -iE '^(server|x-vercel-id|x-fh-requested-host|x-served-by|via|x-cache|age):' /tmp/h.txt | tr -d '\r' | paste -sd' | ' - || true
               sleep 1
             done
+            echo
+            echo "### Firebase Hosting default domain (origin, no Cloudflare)"
+            curl -sS -L -D - -o /dev/null --max-redirs 5 --max-time 30 https://hazardnet-aas48424.web.app/ 2>&1 | tr -d '\r' | head -40
+            echo
+            echo "### Firebase Hosting .firebaseapp.com"
+            curl -sS -L -D - -o /dev/null --max-redirs 5 --max-time 30 https://hazardnet-aas48424.firebaseapp.com/ 2>&1 | tr -d '\r' | head -40
+            echo
+            echo "### origin freshness built_at (web.app)"
+            curl -sS -L --max-redirs 5 --max-time 30 https://hazardnet-aas48424.web.app/data/freshness.json 2>&1 | head -c 400
           } > /tmp/diag/headers.txt
           rm -f diag-headers-*.txt
           cp /tmp/diag/headers.txt "diag-headers-${GITHUB_RUN_ID}.txt"
