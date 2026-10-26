@@ -231,11 +231,9 @@ const countsOrNull = (value: unknown): Record<string, number> | null => {
   return Object.keys(out).length > 0 ? out : null;
 };
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null;
+const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
 
-const asString = (value: unknown): string | null =>
-  typeof value === 'string' && value.length > 0 ? value : null;
+const asString = (value: unknown): string | null => (typeof value === 'string' && value.length > 0 ? value : null);
 
 const asNumber = (value: unknown): number | null =>
   typeof value === 'number' && Number.isFinite(value) ? value : null;
@@ -302,7 +300,7 @@ export function parseAlertsPayload(payload: unknown): {
   if (droppedUnpublished > 0) {
     warnings.push(
       `${droppedUnpublished} non-published alert(s) were present in the payload and were dropped ` +
-      '(only PUBLISHED alerts may be shown publicly)',
+        '(only PUBLISHED alerts may be shown publicly)',
     );
   }
   if (missingDisclaimer > 0) {
@@ -445,31 +443,59 @@ export async function loadAlerts(options: LoadAlertsOptions = {}): Promise<Alert
     return { ...EMPTY_RESULT, fetched_at, error: 'no fetch implementation available' };
   }
 
+  /** Set when the live API answered, but with nothing in it: an empty ledger, not an error. */
+  let apiAnsweredEmpty = false;
+
   if (!offlineFirst) {
     try {
       const { payload, stale } = await fetchJson(ALERTS_API_URL, { fetcher, timeoutMs, signal });
       const parsed = parseAlertsPayload(payload);
-      const warnings = [...parsed.warnings];
-      if (stale) {
-        warnings.push(
-          'the alert payload was served from this device\'s offline cache; it is the last copy ' +
-          'that was fetched while online',
-        );
+      const apiCounts = isRecord(payload) ? countsOrNull(payload.counts) : null;
+
+      /* An answer has to *state* something to be usable. A `200` carrying no published alert
+         and no level ledger is not a quiet day: it is a live endpoint with nothing behind it.
+
+         Measured 2026-10-26, and it cost a false alarm on the front door. `www.hazardnet.live`
+         is served by Vercel, whose `/api/v1/alerts` function answers
+         `{count: 0, state_counts: {}, alerts: []}` because no alert store is wired to that
+         deployment — while the committed snapshot on the same host holds 106 published
+         advisories. `hazardnet.live` is served by Cloudflare Pages, which has no serverless
+         function at all, so its API call 404s and the loader correctly fell through to the
+         snapshot. Two hostnames, one build, two different answers about the weather.
+
+         Returning here would have reported the empty API as the truth: with no `counts` in
+         the payload, the strip called the artifact unreadable; with `counts`, it would have
+         said nothing was published. Neither is a statement the data supports, so an empty
+         answer falls through to the snapshot below and the divergence is reported as a
+         warning rather than resolved silently. */
+      const statesLedger = parsed.alerts.length > 0 || apiCounts !== null;
+
+      if (statesLedger) {
+        const warnings = [...parsed.warnings];
+        if (stale) {
+          warnings.push(
+            "the alert payload was served from this device's offline cache; it is the last copy " +
+              'that was fetched while online',
+          );
+        }
+        return {
+          ...parsed,
+          warnings,
+          policy: parsePolicyPayload(isRecord(payload) ? payload.policy : null),
+          source: stale ? 'cache' : 'api',
+          generated_at: asString(isRecord(payload) ? payload.generated_at : null),
+          assessed: isRecord(payload) ? numberOrNull(payload.assessed) : null,
+          counts: apiCounts,
+          not_published: isRecord(payload)
+            ? numberOrNull((payload.counts as Record<string, unknown> | undefined)?.not_published)
+            : null,
+          error: null,
+          fetched_at,
+        };
       }
-      return {
-        ...parsed,
-        warnings,
-        policy: parsePolicyPayload(isRecord(payload) ? payload.policy : null),
-        source: stale ? 'cache' : 'api',
-        generated_at: asString(isRecord(payload) ? payload.generated_at : null) || fetched_at,
-        assessed: isRecord(payload) ? numberOrNull(payload.assessed) : null,
-        counts: isRecord(payload) ? countsOrNull(payload.counts) : null,
-        not_published: isRecord(payload)
-          ? numberOrNull((payload.counts as Record<string, unknown> | undefined)?.not_published)
-          : null,
-        error: null,
-        fetched_at,
-      };
+
+      apiAnsweredEmpty = true;
+      errors.push('live API: answered with no published alert and no level ledger');
     } catch (error) {
       errors.push(`live API: ${(error as Error).message}`);
     }
@@ -480,10 +506,16 @@ export async function loadAlerts(options: LoadAlertsOptions = {}): Promise<Alert
     const parsed = parseAlertsPayload(payload);
     const snapshot = isRecord(payload) ? (payload as AlertsSnapshot) : {};
     const warnings = [...parsed.warnings];
+    if (apiAnsweredEmpty) {
+      warnings.push(
+        'the live API answered with no published alert and no level ledger; this read is the ' +
+          `committed snapshot, which carries ${parsed.alerts.length}`,
+      );
+    }
     if (snapshot.schema && snapshot.schema !== ALERTS_SNAPSHOT_SCHEMA) {
       warnings.push(
         `snapshot schema ${snapshot.schema} does not match ${ALERTS_SNAPSHOT_SCHEMA}; ` +
-        'the page may be rendering an older contract',
+          'the page may be rendering an older contract',
       );
     }
     return {
@@ -491,7 +523,10 @@ export async function loadAlerts(options: LoadAlertsOptions = {}): Promise<Alert
       warnings,
       policy: parsePolicyPayload(snapshot.policy),
       source: 'snapshot',
-      generated_at: asString(snapshot.generated_at) || fetched_at,
+      /* Deliberately *not* `|| fetched_at`. `fetched_at` is when this browser asked; presenting
+         it as the run's generation time invents an age, and the front door renders that age as
+         "Updated 0 h", which reads as "this was read moments ago". Absent stays absent. */
+      generated_at: asString(snapshot.generated_at),
       assessed: numberOrNull(snapshot.assessed),
       counts: countsOrNull(snapshot.counts),
       not_published: numberOrNull(snapshot.counts?.not_published),
@@ -509,8 +544,11 @@ export async function loadAlerts(options: LoadAlertsOptions = {}): Promise<Alert
  * there are no alerts to show). Falls back to the snapshot's embedded copy.
  */
 export async function loadAlertPolicy(options: LoadAlertsOptions = {}): Promise<AlertPolicyView | null> {
-  const { fetcher = typeof fetch === 'function' ? fetch : (undefined as unknown as typeof fetch),
-    timeoutMs = 6000, signal } = options;
+  const {
+    fetcher = typeof fetch === 'function' ? fetch : (undefined as unknown as typeof fetch),
+    timeoutMs = 6000,
+    signal,
+  } = options;
   if (typeof fetcher === 'function') {
     try {
       const { payload } = await fetchJson(ALERTS_POLICY_URL, { fetcher, timeoutMs, signal });

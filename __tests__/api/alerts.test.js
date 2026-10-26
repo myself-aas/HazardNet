@@ -185,6 +185,9 @@ describe('GET /api/v1/alerts', () => {
     expect(res.status).toBe(200);
     expect(res.body.states_visible).toEqual(['PUBLISHED']);
     expect(res.body.count).toBe(1);
+    // The level ledger the web client reads. `state_counts` counts lifecycle states, which is
+    // not the same question, and an answer with neither was read as an unreadable artifact.
+    expect(res.body.counts).toEqual({ WATCH: 1 });
     expect(res.body.alerts[0].level).toBe('WATCH');
     expect(res.body.alerts[0].district_name).toBe('Dhaka');
     expect(res.body.alerts[0].evidence.model.confidence_published)

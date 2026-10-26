@@ -75,6 +75,17 @@ export interface LiveStatusStripProps {
   loading: boolean;
   error: string | null;
   coverage: FreshnessCoverage | null;
+  /**
+   * True only when *nothing* could be read — the loader's `source === 'none'`, i.e. both the
+   * live API and the committed snapshot failed.
+   *
+   * Not `counts === null`, which is what this component used to test. A readable answer can
+   * legitimately carry no level ledger (an empty live API, a snapshot written by an older
+   * builder), and calling that "the alerts artifact could not be read" told a reader the file
+   * was missing when the truth was that the publisher had nothing to report. The two are
+   * different sentences and only one of them is alarming.
+   */
+  readFailed: boolean;
   /** Retry handler wired to alerts refresh (audit #2: error recovery). */
   onRetry?: () => void;
 }
@@ -96,6 +107,7 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
   loading,
   error,
   coverage,
+  readFailed,
   onRetry,
 }) => {
   const { t, formatNumber, isBengali } = useI18n();
@@ -110,9 +122,8 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
      the error the honesty rules are written against. The max of the two is safe in both
      directions: the counts state the ledger, and an alert the list actually carries must
      never be rendered as unpublished. */
-  const publishableInCounts = counts !== null && counts !== undefined
-    ? ((counts.WATCH ?? 0) + (counts.WARNING ?? 0) + (counts.SEVERE ?? 0))
-    : 0;
+  const publishableInCounts =
+    counts !== null && counts !== undefined ? (counts.WATCH ?? 0) + (counts.WARNING ?? 0) + (counts.SEVERE ?? 0) : 0;
   const published = Math.max(publishableInCounts, alerts.length);
   const ageHours = ageHoursFrom(generatedAt);
   const coverageText =
@@ -168,7 +179,7 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
         assessed={assessed}
         withheld={withheld}
         loading={loading}
-        unread={!loading && counts === null}
+        unread={!loading && readFailed}
         generatedAt={generatedAt}
       />
 
@@ -180,7 +191,7 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
           </p>
           {loading && <p className="text-xs text-carbon-60">{t('frontdoor.strip.reading')}</p>}
 
-          {!loading && counts === null && (
+          {!loading && readFailed && (
             <div className="flex flex-wrap items-center gap-3">
               <p className="text-xs leading-relaxed text-carbon-70">{t('frontdoor.strip.unreadable')}</p>
               {onRetry && (
@@ -193,6 +204,12 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
                 </button>
               )}
             </div>
+          )}
+
+          {/* Read successfully, but the answer carried no level ledger: say that, rather than
+              borrowing the alarm of an unreadable file. */}
+          {!loading && !readFailed && counts === null && (
+            <p className="text-xs leading-relaxed text-carbon-70">{t('frontdoor.strip.noLedger')}</p>
           )}
 
           {!loading && counts !== null && (

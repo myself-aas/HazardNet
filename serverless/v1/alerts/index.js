@@ -94,11 +94,24 @@ export default async function handler(req, res) {
     const view = alerts.map((alert) => publicAlertView(alert, {
       includeReviewerContact: privileged,
     }));
+    /* The level ledger, in the shape the web client reads from the committed snapshot.
+       `state_counts` answers a different question (how many rows sit in each lifecycle state,
+       including the ones nobody may see) and the client has no use for it. Without `counts`,
+       an empty-but-successful answer was indistinguishable from an unreadable artifact — see
+       `loadAlerts` in frontend/src/lib/alerts.ts, and the 2026-10-26 www.hazardnet.live
+       incident it documents. */
+    const counts = view.reduce((acc, alert) => {
+      const level = String(alert.level || '');
+      if (level) acc[level] = (acc[level] || 0) + 1;
+      return acc;
+    }, {});
+
     res.setHeader('Cache-Control', privileged ? 'no-store' : 'public, max-age=60');
     return res.status(200).json({
       generated_at: new Date().toISOString(),
       policy_version: policy.version,
       count: view.length,
+      counts,
       state_counts: stateCounts(alerts),
       states_visible: privileged ? 'all' : ['PUBLISHED'],
       filters: {
