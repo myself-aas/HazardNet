@@ -196,7 +196,7 @@ remains the notebook's, not the pipeline's.
 
 | | |
 |---|---|
-| **Status** | Open — added 2026-10-02 |
+| **Status** | Open — added 2026-10-02; **plan rewritten 2026-10-26** (the paid sink was withdrawn). |
 | **Why** | `POST /api/v1/telemetry` (added with `@hazardnet/analytics`) validates batches and emits them to the platform log, then acknowledges. Nothing persists them. That was deliberate: an unauthenticated endpoint writing to Firestore is a data-integrity, privacy and cost decision, not a technical one. |
 | **Do** | **Workers Analytics Engine — no drain, no warehouse.** Replace the `console.log(JSON.stringify({tag: 'analytics', …}))` in `serverless/v1/telemetry.js:136` with `env.ANALYTICS.writeDataPoint({…})` and bind the dataset (`binding = "ANALYTICS"`, `dataset = "hazardnet_telemetry"`). Query it with SQL from the dashboard or the SQL API. Set `VITE_ANALYTICS_ENABLED=true` in the Pages **Production** environment only, never Preview. **Blocked on hosting**: the endpoint is served by `api/`, which has no host today (`docs/ops/deployment.md` §7) — this lands after the first Action 21 endpoint ports, not before it. |
 | **Verify** | Load the site with the flag on, watch a batch arrive at `/api/v1/telemetry` (204), and read the same `session` back in a dashboard query. |
