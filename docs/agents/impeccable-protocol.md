@@ -263,6 +263,10 @@ what is explicitly **not** in scope. No code before that exists.
   backlog. It works the whole path — flow, layout, type, colour, imagery, interaction,
   state, content, code — and it **closes** the snapshot when the issues are resolved. Polish
   is not a synonym for "final look"; it is the phase where the last 10% is paid for.
+  *Local convention:* snapshots are kept as dated archives rather than deleted by
+  `critique-storage close`, because the ledger reads them to show which surfaces have been
+  reviewed. A closed P1 is recorded in the commit that closes it and in the next snapshot's
+  score, not by removing the record of the run that found it.
 
 ### 2.9–2.12 Reaudit, Deploy, Production, Maintain
 
