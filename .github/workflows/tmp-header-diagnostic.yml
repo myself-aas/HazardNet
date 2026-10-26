@@ -39,6 +39,23 @@ jobs:
             echo
             echo "### /.well-known/security.txt"
             curl -sS -L -D - --max-redirs 5 --max-time 30 https://hazardnet.live/.well-known/security.txt 2>&1 | head -c 600 | tr -d '\r'
+            echo
+            echo "### DNS"
+            (command -v dig >/dev/null && { dig +short hazardnet.live A; dig +short hazardnet.live CNAME; dig +short www.hazardnet.live; dig +short hazardnet.live TXT; }) || echo "no dig"
+            (getent hosts hazardnet.live || true)
+            getent hosts www.hazardnet.live || true
+            echo
+            echo "### DoH JSON"
+            curl -sS --max-time 20 'https://cloudflare-dns.com/dns-query?name=hazardnet.live&type=CNAME' -H 'accept: application/dns-json' || true
+            echo
+            echo "### 5x GET / status+headers digest"
+            for i in 1 2 3 4 5; do
+              printf 'try %s: ' "$i"
+              curl -sS -o /dev/null -D /tmp/h.txt -L --max-time 20 https://hazardnet.live/ || true
+              head -1 /tmp/h.txt | tr -d '\r'
+              grep -iE '^(server|x-vercel-id|x-fh-requested-host|x-served-by|via|x-cache|age):' /tmp/h.txt | tr -d '\r' | paste -sd' | ' - || true
+              sleep 1
+            done
           } > /tmp/diag/headers.txt
           rm -f diag-headers-*.txt
           cp /tmp/diag/headers.txt "diag-headers-${GITHUB_RUN_ID}.txt"
