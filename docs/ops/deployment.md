@@ -146,7 +146,7 @@ that does not answer is to make it answer.
 | `hazardnet.live` DNS | `CNAME hazardnet.pages.dev` (proxied) — owner's change, 11:17:31 |
 | `www.hazardnet.live` DNS | `CNAME hazardnet.pages.dev` (proxied) — same export |
 | `https://hazardnet.live/` | redirects to `www.hazardnet.live` (the apex request resolves to the www URL) |
-| `https://www.hazardnet.live/` | **HTTP 522** — Cloudflare could not reach the origin (Ray `a50a1ae77d27c6e3`) |
+| `https://www.hazardnet.live/` | **HTTP 522** — Cloudflare could not reach the origin (Ray `a50a1ae77d27c6e3`, re-checked later the same day: still 522, Ray `a50a2c01bab9475a`). **The canonical host is down, not slow.** |
 | `https://hazardnet.live/data/freshness.json` | `built_at 2026-10-26T06:31:52Z`, 4/4 sources `fresh`, probe 7/7 |
 
 **To apply — this is the one blocker:** add `www.hazardnet.live` as a **custom domain on the
