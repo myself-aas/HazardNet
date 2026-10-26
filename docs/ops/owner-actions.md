@@ -347,7 +347,10 @@ needs a paid runtime, so no part of it should acquire one by accident.
 
 ### The free allowances that actually bind
 
-Verified from Cloudflare's docs on 2026-10-26 unless marked *stated*.
+Read from Cloudflare's pricing and limits pages on 2026-10-26 where the row is marked **✓**.
+The others are as stated in the 2026-10-26 memo and are worth confirming in the dashboard before
+anything is designed around them — a wrong allowance is the one kind of error this file cannot
+detect.
 
 | Service | Free allowance | The cap that bites |
 |---|---|---|
@@ -356,8 +359,8 @@ Verified from Cloudflare's docs on 2026-10-26 unless marked *stated*.
 | R2 | 10 GB storage, 1M writes, 10M reads/month, no egress | Nothing near-term. This is why snapshots belong in R2 and not Firestore. |
 | KV | 100k reads/day, **1k writes/day** | Writes. Never use KV as a counter. |
 | D1 | 5 GB, 5M row reads/day | — |
-| Analytics Engine | 100k data points written/day, 10k read queries/day, 3-month retention | Retention: anything needing longer history aggregates to R2 first. |
-| Rate limiting rules | **1 rule**, `Path` only, IP counting, 10 s period, 10 s mitigation | **One rule.** Point it at the most-abused path. |
+| Analytics Engine **✓** | 100k data points written/day, 10k read queries/day, 3-month retention, ≤ 250 writes/invocation | Retention: anything needing longer history aggregates to R2 first. |
+| Rate limiting rules **✓** | **1 rule**, `Path` field only, IP counting, 10 s counting period, 10 s mitigation | **One rule.** Point it at the most-abused path. |
 | Cron Triggers | free | — |
 | GitHub Actions | **unlimited on public repos**; private = 2,000 min/month, ×2 Windows, ×10 macOS | Repo visibility. `myself-aas/HazardNet` is **public** (`isPrivate: false`, GitHub API, 2026-10-26), so Action 14's `windows-2022` PR job and Action 3's emulator job cost nothing. Making the repo private turns both into a recurring bill. |
 | Firestore Spark | 1 GiB, 50k reads/day, 20k writes/day *(stated 2026-10-26 — confirm the project is on **Spark, not Blaze**)* | Reads. Action 10's `publicProfiles` mirror is a cost control as well as a privacy fix. If the project is on Blaze, set a $0 budget alert with a hard cap. |

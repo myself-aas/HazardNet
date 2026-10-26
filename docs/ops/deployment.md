@@ -226,13 +226,15 @@ one by accident. The binding rule lives in `docs/ops/owner-actions.md` **§ Cost
 
 | Service | Free allowance | What actually binds |
 |---|---|---|
+<!-- ✓ = re-read from Cloudflare's pricing/limits pages on 2026-10-26; the rest are as published,
+     and a wrong allowance here is the one error this table cannot catch for you. -->
 | Pages (static) | unlimited requests and bandwidth, **500 builds/month** | builds — see below |
 | Pages Functions | 100,000 requests/day, **10 ms CPU** | CPU; reads and proxies only (Action 21) |
 | R2 | 10 GB, 1M writes / 10M reads per month, no egress | nothing near-term; snapshots belong here, not Firestore |
 | KV | 100k reads/day, **1k writes/day** | writes — never a counter |
 | D1 | 5 GB, 5M row reads/day | — |
-| Analytics Engine | 100k data points/day, 10k queries/day, 3-month retention | retention (Action 12) |
-| Rate limiting rules | **1 rule**, `Path` only, 10 s period | one rule, one path (Action 8) |
+| Analytics Engine ✓ | 100k data points/day, 10k queries/day, 3-month retention | retention (Action 12) |
+| Rate limiting rules ✓ | **1 rule**, `Path` only, 10 s period | one rule, one path (Action 8) |
 | GitHub Actions | unlimited on public repos | **repo visibility** — `myself-aas/HazardNet` is public, so the Windows PR job and the emulator job are free |
 
 ### The build budget was being spent by the monitor
