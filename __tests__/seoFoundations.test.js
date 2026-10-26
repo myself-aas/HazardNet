@@ -39,6 +39,18 @@ if (!built) {
 }
 
 const readDist = (relative) => readFileSync(join(dist, relative), 'utf8');
+
+/** The committed publication index's coverage counts (the ledger the pages are built from). */
+function contentIndexCounts() {
+  const index = JSON.parse(
+    readFileSync(join(frontend, 'public/data/content-index.json'), 'utf8'),
+  );
+  return {
+    districts_total: index.counts.districts,
+    districts_with_outlook: index.counts.districts_with_outlook,
+    districts_without_outlook: index.counts.districts_without_outlook,
+  };
+}
 const routes = built
   ? JSON.parse(readFileSync(join(frontend, 'src/content/generated-routes.json'), 'utf8')).routes
   : [];
@@ -113,7 +125,15 @@ maybe('the generated pages', () => {
 
   it('says plainly when a district has no outlook instead of implying one', () => {
     const uncovered = routes.filter((route) => route.robots.startsWith('noindex'));
-    expect(uncovered.length).toBeGreaterThan(0);
+    // The 2026-10-11 forecast run left 4 districts uncovered, and this guard pinned that
+    // era as ">0 uncovered". The 2026-10-24 regeneration covers all 64 — so the contract
+    // here is not "some district is uncovered today" (a data fact that moves with the
+    // artifacts) but "whenever a district is uncovered, its page says so honestly", plus
+    // the arithmetic proving the content index's coverage counts describe these routes.
+    const coverage = contentIndexCounts();
+    expect(coverage.districts_with_outlook + coverage.districts_without_outlook)
+      .toBe(coverage.districts_total);
+    expect(uncovered.length).toBe(coverage.districts_without_outlook);
     for (const route of uncovered) {
       const html = readDist(join(route.path.replace(/^\//, ''), 'index.html'));
       expect(html).toContain('carries no row');
