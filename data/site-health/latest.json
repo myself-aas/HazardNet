@@ -1,7 +1,7 @@
 {
   "schema": "hazardnet-site-probe/v1",
-  "ran_at": "2026-10-26T13:41:22Z",
-  "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/40332731887",
+  "ran_at": "2026-10-26T19:37:56Z",
+  "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/40388413095",
   "site_url": "https://hazardnet.live",
   "edge_challenged": false,
   "outcome": "fail",
@@ -39,6 +39,11 @@
     {
       "id": "content_pages",
       "outcome": "success",
+      "detail": null
+    },
+    {
+      "id": "canonical_host",
+      "outcome": "failure",
       "detail": null
     }
   ]
