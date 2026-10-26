@@ -156,7 +156,7 @@ export const DRAWER_SECTIONS: NavSection[] = [
     category: 'Data',
     icon: 'analytics',
     items: [
-      { id: 'lookup', title: 'Lookup', path: '/upload', icon: 'cloud_upload' },
+      { id: 'lookup', title: 'Lookup', path: '/upload', icon: 'search' },
       { id: 'accuracy', title: 'Accuracy', path: '/model-performance', icon: 'monitoring' },
       { id: 'metrics', title: 'Model metrics', path: '/analytics/model-metrics', icon: 'query_stats' },
       { id: 'pipeline', title: 'Pipeline', path: '/analytics/pipeline-status', icon: 'alt_route' },

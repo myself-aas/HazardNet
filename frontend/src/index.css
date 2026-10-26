@@ -130,6 +130,19 @@ summary:focus-visible {
   font-variant-numeric: tabular-nums;
 }
 
+/* Hero text tiers — see the `--hero-text-*` tokens above for why these are classes. */
+.hero-text-strong {
+  color: var(--hero-text-strong);
+}
+
+.hero-text-body {
+  color: var(--hero-text-body);
+}
+
+.hero-text-meta {
+  color: var(--hero-text-meta);
+}
+
 .hn-hud-surface {
   background-color: var(--ap-tile-1);
   border-color: var(--ap-separator-opaque);
@@ -140,6 +153,16 @@ summary:focus-visible {
 :root {
   --hero-glow-blur-primary: 90px;
   --hero-glass-blur: 8px;
+  /* The hero's small print sits over a photograph, so its contrast is a function of the
+     scrim and the text alpha rather than of a token pair, and no static token check could
+     see it. These four values are the contract: `__tests__/heroContrast.test.js` composites
+     them over a white photograph (the brightest thing any image can produce) and fails
+     below 4.5:1 for the 12px and 16px tiers. Weakening the scrim or either text alpha
+     without re-measuring is what that test exists to prevent. */
+  --hero-scrim: rgba(0, 0, 0, 0.65);
+  --hero-text-strong: rgba(255, 255, 255, 0.97);
+  --hero-text-body: rgba(255, 255, 255, 0.9);
+  --hero-text-meta: rgba(255, 255, 255, 0.78);
   --control-min-size: var(--ap-touch-min);
   --navbar-height: calc(3.5rem + env(safe-area-inset-top, 0px));
 }

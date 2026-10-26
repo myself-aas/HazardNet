@@ -86,6 +86,20 @@ describe('Impeccable protocol — routes and surface briefs', () => {
     expect(snapshot).toMatch(/max_score: 40/);
   });
 
+  test('every Operate surface carries a review snapshot', () => {
+    // The Review phase rolled out Operate-first (protocol §5): the surfaces a visitor uses
+    // under time pressure. Losing one of these snapshots means `polish` has no backlog for
+    // that surface, so the ledger has to notice.
+    const operate = report.surfaces.filter((s) => s.mode === 'Operate');
+    expect(operate.length).toBeGreaterThanOrEqual(7);
+    for (const surface of operate) {
+      expect({ surface: surface.surface, critique: surface.critique }).toEqual({
+        surface: surface.surface,
+        critique: expect.any(String),
+      });
+    }
+  });
+
   test('the check exits zero on a clean ledger', () => {
     expect(() =>
       execFileSync(process.execPath, ['scripts/protocol.mjs', '--check'], {

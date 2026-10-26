@@ -182,7 +182,7 @@ const PublicProfilePage: React.FC = () => {
           <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white text-carbon-60">
             <MaterialIcon name="person" size={26} />
           </span>
-          <h1 className="mt-4 text-lg font-bold text-carbon-90">
+          <h1 className="mt-4 text-ap-lead font-bold leading-[1.2] tracking-tight text-carbon-90">
             {state === 'offline' ? `@${username} hasn’t synced yet` : `@${username} isn’t on HazardNet… yet`}
           </h1>
           <p className="mx-auto mt-1.5 max-w-sm text-base leading-[1.62] text-carbon-60">
@@ -206,7 +206,7 @@ const PublicProfilePage: React.FC = () => {
           <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white text-carbon-60">
             <MaterialIcon name="lock" size={24} />
           </span>
-          <h1 className="mt-4 text-lg font-bold text-carbon-90">This profile is private</h1>
+          <h1 className="mt-4 text-ap-lead font-bold leading-[1.2] tracking-tight text-carbon-90">This profile is private</h1>
           <p className="mx-auto mt-1.5 max-w-sm text-base leading-[1.62] text-carbon-60">
             @{username} keeps their details visible only to themselves.
           </p>

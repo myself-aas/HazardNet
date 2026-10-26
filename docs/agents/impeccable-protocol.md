@@ -183,10 +183,14 @@ Scoring is out of 40 across the heuristic table; the snapshot carries `total_sco
 `max_score`, `p0_count`, `p1_count` and a content fingerprint so `polish` can tell the
 assessed bytes from later edits. First run for a target has no trend — say so.
 
-**In this repo:** one snapshot per surface, at `.impeccable/critique/`. Fifteen surfaces, one
-seeded (`front-door`), fourteen tracked as debt with `npx impeccable critique --target
-frontend/src/pages/<Page>.tsx` as the closing command. Review is the phase that most resists
-automation, so it is scheduled, not skipped.
+**In this repo:** one snapshot per surface, at `.impeccable/critique/`. Eight of fifteen are
+reviewed — the front door and all seven Operate surfaces — and the remaining seven are
+tracked as debt with `npx impeccable critique --target frontend/src/pages/<Page>.tsx` as the
+closing command. Every one of the eight is a degraded run and says so in its first line: the
+harness this repository is developed in exposes no sub-agent tool and no browser, so
+Assessment A and Assessment B ran sequentially in one context. That is a weaker critique
+than the skill specifies and it is labelled, not hidden. Review is the phase that most
+resists automation, so it is scheduled, not skipped.
 
 ### 2.2 Audit — `audit`
 
@@ -477,19 +481,19 @@ npm run protocol:ledger    # rewrite docs/design/protocol-ledger.md
 four promises: every non-redirect route is claimed by exactly one brief, every brief route
 still exists in the router, every brief declares a mode the skill recognises, and every
 surface reports whether a review snapshot exists. Current state — 15 surfaces, 66 public
-routes, 66 claimed, 3 redirects, **1 of 15 surfaces reviewed**:
+routes, 66 claimed, 3 redirects, **8 of 15 surfaces reviewed**:
 
 | Surface | Mode | Routes | Review |
 |---|---|---|---|
-| `front-door` | Persuade | 1 | 32/40, 2 P1 — `.impeccable/critique/2026-10-26T03-37-17Z__frontend-src-pages-frontdoor-tsx.md` |
+| `front-door` | Persuade | 1 | 32/40, 2 P1 |
+| `live-map` | Operate | 4 | 28/40, 2 P1 |
+| `forecast-console` | Operate | 6 | 31/40, 1 P1 |
+| `alerts-advisories` | Operate | 4 | 33/40, 1 P1 |
+| `upload` | Operate | 1 | 32/40, 1 P1 |
+| `auth` | Operate | 6 | 34/40, 0 P1 |
+| `account` | Operate | 3 | 31/40, 1 P1 |
+| `not-found` | Operate | catch-all | 30/40, 2 P1 |
 | `about-legal` | Persuade | 6 | — |
-| `live-map` | Operate | 4 | — |
-| `forecast-console` | Operate | 6 | — |
-| `alerts-advisories` | Operate | 4 | — |
-| `upload` | Operate | 1 | — |
-| `auth` | Operate | 6 | — |
-| `account` | Operate | 3 | — |
-| `not-found` | Operate | catch-all | — |
 | `hazards` | Read | 2 | — |
 | `districts-divisions` | Read | 5 | — |
 | `archive-history` | Read | 7 | — |

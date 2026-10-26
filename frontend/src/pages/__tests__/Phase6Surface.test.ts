@@ -60,10 +60,12 @@ describe('Phase 6 surface contracts (§14.3 / §14.7 / §14.8)', () => {
   describe('404', () => {
     const notFound = read('pages', 'NotFoundPage.tsx');
 
-    it('offers 44px home and live links on 404', () => {
+    it('offers home and live links on 404 through the system button', () => {
       expect(notFound).toMatch(/to="\/"/);
       expect(notFound).toMatch(/to="\/live"/);
-      expect(notFound).toMatch(/min-h-\[44px\]/);
+      // `.ap-btn` carries the 44px touch minimum (`--ap-touch-min` under `pointer: coarse`),
+      // the focus ring and the press scale; hand-rolled buttons had none of the three.
+      expect(notFound).toMatch(/ap-btn ap-btn-secondary/);
       expect(notFound).toMatch(/text-ap-lead/);
     });
   });

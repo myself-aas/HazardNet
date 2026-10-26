@@ -197,12 +197,13 @@ describe('the front door', () => {
     expect(hero.querySelector('[data-testid="last-run-visual"]')).toBeNull();
     expect(Array.from(hero.querySelectorAll('a[href="/last-run"]')).length).toBeGreaterThanOrEqual(1);
 
-    // One flat scrim over the photograph. It was a `from-black/70 to-black/60` gradient, which
-    // put the authority sentence at the weak end of its own surface (2.45:1 over a bright frame
-    // at the old `to-black/35`); a single `bg-carbon-black/65` clears that everywhere on the card.
+    // One flat scrim over the photograph, and since the 2026-10-26 critique it is a token
+    // rather than a utility class: `--hero-scrim` is what `__tests__/heroContrast.test.js`
+    // composites over a white photograph to prove the small print clears 4.5:1.
     const card = hero.querySelector('h1')!.closest('div') as HTMLElement;
-    expect(card.className).toContain('bg-carbon-black/65');
+    expect(card.style.background).toContain('var(--hero-scrim)');
     expect(card.className).not.toMatch(/from-black\//);
+    expect(card.className).not.toContain('bg-carbon-black/65');
 
     // One primary action in the hero, and it is the navigation one. The other two destinations
     // are text links (the 2026-10-03 audit's L-P1-1: three equal-weight buttons read as none).

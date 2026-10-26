@@ -199,6 +199,27 @@ function critiqueSnapshots() {
   return readdirSync(CRITIQUE_DIR).filter((f) => f.endsWith('.md'));
 }
 
+/** Score and priority counts out of a snapshot's front matter, for the ledger row. */
+function snapshotMeta(file) {
+  try {
+    const head = readFileSync(join(CRITIQUE_DIR, file), 'utf8').split('---')[1] || '';
+    const field = (name) => {
+      const m = head.match(new RegExp(`^${name}:\\s*(.+)$`, 'm'));
+      return m ? m[1].trim() : null;
+    };
+    const total = Number(field('total_score'));
+    const max = Number(field('max_score'));
+    return {
+      total: Number.isFinite(total) ? total : null,
+      max: Number.isFinite(max) ? max : null,
+      p1: Number(field('p1_count')) || 0,
+      degraded: /DEGRADED: single-context/.test(readFileSync(join(CRITIQUE_DIR, file), 'utf8')),
+    };
+  } catch {
+    return null;
+  }
+}
+
 /* ─────────────────────────── the pass ─────────────────────────── */
 
 function build() {
@@ -252,10 +273,15 @@ function build() {
     // A `*` brief catches everything it catches; that is not a claim on 66 routes, so the
     // count only includes routes the brief names specifically.
     const specific = brief.routes.filter((r) => r !== '*');
-    const claimed = publicRoutes.filter(
-      (r) => r.surfaces?.includes(brief.surface) && specific.some((p) => patternCovers(p, r.path)),
-    );
-    const pages = [...new Set(claimed.map((r) => r.page).filter(Boolean))];
+    const matching = publicRoutes.filter((r) => r.surfaces?.includes(brief.surface));
+    const claimed = matching.filter((r) => specific.some((p) => patternCovers(p, r.path)));
+    // A `*` brief claims no route specifically, but it owns the catch-all route itself —
+    // not every route the wildcard also matches, which would hand it another surface's page
+    // and another surface's review score.
+    const owned = claimed.length
+      ? claimed
+      : matching.filter((r) => brief.routes.includes('*') && r.path === '*');
+    const pages = [...new Set(owned.map((r) => r.page).filter(Boolean))];
     const snapshot = pages.map((p) => snapshots.find((s) => s.includes(slugify(p)))).find(Boolean) || null;
     return {
       surface: brief.surface,
@@ -264,6 +290,7 @@ function build() {
       claimedRoutes: claimed.length,
       pages,
       critique: snapshot,
+      critiqueMeta: snapshot ? snapshotMeta(snapshot) : null,
       brief: brief.path,
     };
   });
@@ -285,6 +312,9 @@ function build() {
   };
 }
 
+const score = (meta) =>
+  !meta || meta.total == null ? (meta ? 'yes' : '—') : `${meta.total}/${meta.max ?? 40}`;
+
 const report = build();
 const errors = report.findings.filter((f) => f.severity === 'error');
 const warnings = report.findings.filter((f) => f.severity === 'warn');
@@ -299,11 +329,11 @@ if (flag('--json')) {
       `${report.counts.critiques}/${report.counts.surfaces} review snapshots`,
   );
   console.log('');
-  console.log(`  ${pad('surface', 22)}${pad('mode', 10)}${pad('routes', 8)}${pad('critique', 12)}brief`);
+  console.log(`  ${pad('surface', 22)}${pad('mode', 10)}${pad('routes', 8)}${pad('review', 12)}brief`);
   for (const s of report.surfaces) {
     console.log(
       `  ${pad(s.surface, 22)}${pad(s.mode || '—', 10)}${pad(s.claimedRoutes || '—', 8)}` +
-        `${pad(s.critique ? 'yes' : '—', 12)}${s.brief}`,
+        `${pad(score(s.critiqueMeta), 12)}${s.brief}`,
     );
   }
   const unclaimed = report.routes.filter((r) => !r.surfaces?.length);
@@ -340,10 +370,12 @@ if (ledgerPath) {
       `${report.counts.publicRoutes} public routes (${report.counts.claimed} claimed), ` +
       `${report.counts.redirects} redirects, ${report.counts.critiques} review snapshots.`,
     '',
-    '| Surface | Mode | Routes claimed | Review snapshot | Brief |',
-    '|---|---|---|---|---|',
+    '| Surface | Mode | Routes claimed | Review score | Priority issues | Brief |',
+    '|---|---|---|---|---|---|',
     ...report.surfaces.map(
-      (s) => `| \`${s.surface}\` | ${s.mode || '—'} | ${s.claimedRoutes} | ${s.critique ? 'yes' : 'no'} | \`${s.brief}\` |`,
+      (s) =>
+        `| \`${s.surface}\` | ${s.mode || '—'} | ${s.claimedRoutes} | ${score(s.critiqueMeta)} | ` +
+        `${s.critiqueMeta?.p1 ? `${s.critiqueMeta.p1} P1` : '—'} | \`${s.brief}\` |`,
     ),
     '',
     '## Routes',
