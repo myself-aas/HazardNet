@@ -282,7 +282,9 @@ and `TRD.md`.
 #### TASK-014: Operational Monitoring & Slack Alerts `(Done)`
 - **Type**: DevOps · **Effort**: 6h · **Dependencies**: TASK-007, TASK-009, TASK-010, TASK-020
 - **Assigned Agent**: `devops-agent`
-- **Files**: `scripts/notify_ops.mjs`, `.github/workflows/daily_advisory_ingest.yml`
+- **Files**: `scripts/notify_ops.mjs`, `.github/workflow-templates/hazardnet-ops-slack-notify.yml`
+  (the live wiring in `daily_advisory_ingest.yml` was retired 2026-10-26: the
+  payload builder never POSTs and no webhook secret exists)
 - **Acceptance Criteria**:
   1. Pipeline success webhook dispatches summary (row count, tier distribution, ingestion duration) to Slack `#hazardnet-ops`.
   2. Pipeline failure or staleness > 36h triggers incident notification (Slack + email).

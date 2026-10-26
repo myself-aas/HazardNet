@@ -62,7 +62,8 @@ Kaggle notebook (out of repo)
   -> git commit + git push (backend/data/forecasts/, forecasts-latest.json,
                             alerts-latest.json, freshness.json)
   -> npx vercel deploy --prod   (only if artifacts changed AND VERCEL_TOKEN is set)
-  -> scripts/notify_ops.mjs -> Slack #hazardnet-ops   (if: always())
+  -> (retired 2026-10-26) scripts/notify_ops.mjs -> Slack #hazardnet-ops
+     wiring now lives in .github/workflow-templates/hazardnet-ops-slack-notify.yml
 ```
 
 State at HEAD: **the pipeline is producing again.** Latest committed run:
@@ -324,7 +325,7 @@ There is no message broker. The asynchronous surface is:
 | WebSocket | `backend/routes/liveVoice.js` `setupLiveVoiceWebSocket` (`ws`) | client upgrade on the self-host runtime only |
 | Web Push | `backend/routes/push.js` + `backend/utils/vapid.js` (`web-push`, VAPID) | subscriber-triggered |
 | Alert delivery channels | `backend/alerts/channels/{sms.js,telegram.js}` | alert lifecycle; configured but with no live subscribers (`SECURITY.md`) |
-| Slack ops notification | `scripts/notify_ops.mjs` (`SLACK_WEBHOOK_URL`) | `if: always()` at the end of the ingest job |
+| Slack ops notification | `scripts/notify_ops.mjs` (`SLACK_WEBHOOK_URL`) | **Retired 2026-10-26** — the step could not deliver (no secret, and the script never POSTs), so it moved to `.github/workflow-templates/hazardnet-ops-slack-notify.yml` |
 | Analytics beacon | `packages/analytics/src/streaming.ts` → `POST /api/v1/telemetry` | batched, one retry then drop, `sendBeacon` on unload; **off unless `VITE_ANALYTICS_ENABLED=true` — and its sink `serverless/v1/telemetry.js` is deleted at HEAD** |
 
 ### Failure modes and resilience posture

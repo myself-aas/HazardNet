@@ -10,7 +10,13 @@
  *   1. Every `.github/workflows/*.yml` must PARSE as YAML.
  *   2. No workflow may use the `secrets` context in ANY `if:` — job-level or step-level.
  *      GitHub rejects the whole file either way; gate on a resolved step output instead.
- *   3. `ci.yml` structural invariants the deleted pytest suite also pinned:
+ *   3. Retired pipelines parked in `.github/workflow-templates/` must still PARSE and
+ *      must say, in their own header, that they are templates. GitHub ignores that
+ *      directory, which is exactly why a template that no longer parses would rot
+ *      silently until somebody copied it back into `.github/workflows/` — where the
+ *      whole workflow file is rejected with zero jobs. The header check pins the one
+ *      thing a reader needs to know before copying: this file does not run today.
+ *   4. `ci.yml` structural invariants the deleted pytest suite also pinned:
  *      a. the backend jest step passes no bare positional selector (`npx jest … 'src'`
  *         silently re-scopes coverage — `--testPathIgnorePatterns` is array-valued and
  *         swallows following args), b. the model-version handshake step exists,
@@ -19,13 +25,14 @@
  * Run: `node scripts/check-workflows.mjs`
  */
 
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { load as parseYaml } from 'js-yaml';
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const WORKFLOWS = join(ROOT, '.github/workflows');
+const TEMPLATES = join(ROOT, '.github/workflow-templates');
 
 const files = readdirSync(WORKFLOWS)
   .filter((f) => /\.ya?ml$/.test(f))
@@ -79,6 +86,41 @@ if (failures.length) {
   console.error(`\n[workflows] FAIL:`);
   for (const f of failures) console.error(`  ✗ ${f}`);
   process.exit(1);
+}
+
+/* ─── retired pipelines in .github/workflow-templates/ ─── */
+
+// Two kinds of file live here: parameterized product-repo templates and pipelines
+// retired from this repository. Both are inert; both must stay loadable.
+if (existsSync(TEMPLATES)) {
+  const templateFiles = readdirSync(TEMPLATES)
+    .filter((f) => /\.ya?ml$/.test(f))
+    .sort();
+  if (templateFiles.length === 0) {
+    failures.push('.github/workflow-templates exists but has no .yml template');
+  }
+  for (const file of templateFiles) {
+    const source = readFileSync(join(TEMPLATES, file), 'utf8');
+    let doc;
+    try {
+      doc = parseYaml(source);
+    } catch (error) {
+      failures.push(`workflow-templates/${file}: does not parse as YAML — ${error.message.split('\n')[0]}`);
+      continue;
+    }
+    if (!doc || typeof doc !== 'object' || !doc.jobs) {
+      failures.push(`workflow-templates/${file}: parses but has no jobs map`);
+      continue;
+    }
+    if (!/workflow-templates/.test(source)) {
+      failures.push(
+        `workflow-templates/${file}: does not name the directory it lives in — say in the header that it is inert`,
+      );
+    }
+    console.log(
+      `[workflows] workflow-templates/${file}: parses, ${Object.keys(doc.jobs).length} job(s), declared inert`,
+    );
+  }
 }
 
 /* ─── ci.yml structural invariants (old test_workflows.py pins) ─── */
@@ -152,8 +194,10 @@ if (!needs.includes('test-pipeline-scripts')) {
 }
 
 if (failures.length) {
-  console.error(`\n[workflows] FAIL (ci.yml structure):`);
+  console.error(`\n[workflows] FAIL (templates / ci.yml structure):`);
   for (const f of failures) console.error(`  ✗ ${f}`);
   process.exit(1);
 }
-console.log(`[workflows] OK: ${files.length} workflow files loadable, secrets-safe; ci.yml invariants hold`);
+console.log(
+  `[workflows] OK: ${files.length} workflow files loadable, secrets-safe; templates loadable; ci.yml invariants hold`,
+);

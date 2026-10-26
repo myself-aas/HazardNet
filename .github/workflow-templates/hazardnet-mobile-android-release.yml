@@ -1,10 +1,48 @@
 # =============================================================================
+# TEMPLATE — NOT A LIVE WORKFLOW.
+#
+# GitHub Actions only executes files in `.github/workflows/`. This file lives in
+# `.github/workflow-templates/` and is therefore inert: it does not run, it does
+# not consume minutes, and it cannot publish a release. It records the complete
+# React Native Android release pipeline that was retired from `main` on
+# 2026-10-26 because the repository has no Android signing secrets yet.
+#
+# Why it was retired (measured, not assumed)
+#   * Android Release (React Native APK & AAB): run 40253981974 failed in
+#     "Build signed Release APK & AAB via Gradle (`gradlew`)" — the Gradle step
+#     the whole job exists for — on every push to `main`, so every push to `main`
+#     carried a red run that could not be fixed from CI alone.
+#   * The same build also existed a second time, duplicated, as the `android-apk`
+#     job of `.github/workflows/app-releases.yml`.
+#   * Without `ANDROID_KEYSTORE_*` secrets there is no Play-ready artifact to
+#     publish, so the release half of the pipeline could only ever produce
+#     throw-away CI-signed APKs.
+#
+# To re-enable, when the four signing secrets below exist:
+#   1. Copy this file back to `.github/workflows/mobile-android-release.yml`.
+#   2. Add the secrets (Settings -> Secrets and variables -> Actions, or better,
+#      a protected `release` environment):
+#        ANDROID_KEYSTORE_BASE64    base64 -w0 release.keystore
+#        ANDROID_KEYSTORE_PASSWORD  keystore password
+#        ANDROID_KEY_ALIAS          key alias inside the keystore
+#        ANDROID_KEY_PASSWORD       key password
+#   3. Check the Gradle step on a `workflow_dispatch` run before re-enabling the
+#      `push` trigger: that is where run 40253981974 failed, and the failure was
+#      inside `./gradlew assembleRelease bundleRelease`, not in the surrounding
+#      plumbing.
+#
+# The two triggers below are kept exactly as the retired live workflow had them
+# so that a restored copy behaves identically. If you would rather not publish a
+# release on every push to `main`, drop the `push.branches` trigger and keep the
+# tag + dispatch triggers.
+# =============================================================================
+#
 # HazardNet React Native Android Build & Release Workflow
 #
-# Automatically builds the signed React Native Android application (APK + AAB)
-# from `apps/mobile` using Expo Prebuild + Gradle (`./gradlew assembleRelease`
-# and `./gradlew bundleRelease`) on every push to `main`, and publishes a
-# GitHub Release with the compiled binaries and SHA-256 checksums.
+# Builds the signed React Native Android application (APK + AAB) from
+# `apps/mobile` using Expo Prebuild + Gradle (`./gradlew assembleRelease` and
+# `./gradlew bundleRelease`) and publishes a GitHub Release with the compiled
+# binaries and SHA-256 checksums.
 #
 # Optional Repository Secrets for Production Play Store Signing:
 #   - ANDROID_KEYSTORE_BASE64
@@ -12,7 +50,7 @@
 #   - ANDROID_KEY_ALIAS (or ANDROID_KEYSTORE_ALIAS)
 #   - ANDROID_KEY_PASSWORD
 # When omitted, the workflow generates a deterministic valid CI signing keystore
-# so every push to `main` produces an installable signed APK and AAB.
+# so a run produces an installable signed APK and AAB.
 # =============================================================================
 
 name: Android Release (React Native APK & AAB)

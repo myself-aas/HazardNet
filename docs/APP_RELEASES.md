@@ -10,15 +10,26 @@ HazardNet ships two native clients that live in the `apps/` workspace:
 This repository stores **source only** — no compiled binaries are committed.
 Executables are produced by CI and published to
 [GitHub Releases](https://github.com/myself-aas/HazardNet/releases) by the
-`App Releases (Android APK / Windows MSIX)` workflow
+`App Releases (Windows MSIX)` workflow
 (`.github/workflows/app-releases.yml`).
+
+> **Android is currently a template, not a live pipeline** (retired 2026-10-26).
+> `Android Release (React Native APK & AAB)` and the `android-apk` job of
+> `app-releases.yml` are gone from `.github/workflows/`; the complete APK + AAB
+> pipeline is preserved — inert — in
+> `.github/workflow-templates/hazardnet-mobile-android-release.yml`. Reasons and
+> restoration steps: [§ Android is a template](#android-is-a-template-right-now)
+> below.
 
 ## Where the executables come from
 
-- **Android APK** — `apps/mobile` is an Expo app. CI runs `expo prebuild`
-  (generating the `android/` Gradle project from `app.json` + `eas.json`) and
-  then `./gradlew assembleRelease`. The `android/` and `ios/` directories are
-  generated artifacts and are git-ignored by design.
+- **Android APK / AAB** — *not published from this repository right now.* The
+  pipeline is `apps/mobile` (an Expo app): `expo prebuild` generates the
+  `android/` Gradle project from `app.json` + `eas.json`, then
+  `./gradlew assembleRelease bundleRelease` builds the artifacts. It lives in
+  `.github/workflow-templates/hazardnet-mobile-android-release.yml` until the
+  signing secrets exist. The `android/` and `ios/` directories are generated
+  artifacts and are git-ignored by design.
 - **Windows MSIX/EXE** — `apps/windows/windows/` is a **committed** Visual
   Studio solution (React Native for Windows). CI restores NuGet, builds
   `Release|x64` with the JS bundle embedded (Hermes bytecode), and uploads
@@ -28,8 +39,9 @@ Executables are produced by CI and published to
 
 1. Go to the [Releases page](https://github.com/myself-aas/HazardNet/releases).
 2. Download the asset for your platform:
-   - `HazardNet-mobile-v<version>-android.apk`
    - `HazardNet-windows-v<version>-x64.msix` (or the unpacked `.exe`)
+   - `HazardNet-mobile-v<version>-android.apk` — only on releases published before
+     2026-10-26, or after the Android template is restored
 3. Install:
    - **Android:** enable "install unknown apps", tap the `.apk`.
    - **Windows:** double-click the `.msix` (signed with a self-signed CI
@@ -37,18 +49,44 @@ Executables are produced by CI and published to
 
 ## Triggering a build
 
-- **Tag a release:** `git tag v2.3.0 && git push origin v2.3.0` — CI builds
-  both apps and attaches the artifacts to that tag's release.
-- **Manual:** Actions → *App Releases (Android APK / Windows MSIX)* →
-  *Run workflow*. A (pre-)release named
-  `v<mobile-version>-apps-<short-sha>` is created.
+- **Tag a release:** `git tag v2.3.0 && git push origin v2.3.0` — CI builds the
+  Windows app and attaches the artifacts to that tag's release.
+- **Manual:** Actions → *App Releases (Windows MSIX)* → *Run workflow*. A
+  (pre-)release named `v<windows-version>-windows-<short-sha>` is created.
+- **Android:** copy the template back into `.github/workflows/` first (see
+  below); it keeps its own trigger set and publishes
+  `v<mobile-version>-android-<short-sha>`.
+
+## Android is a template right now
+
+Two workflows used to build the Android app on every push to `main`, and both
+were red for the same reason:
+
+| Retired workflow | Failing step (measured) |
+| --- | --- |
+| `Android Release (React Native APK & AAB)` (`.github/workflows/android_release.yml`) | *Build signed Release APK & AAB via Gradle (`gradlew`)* — run 40253981974 |
+| `Build Android APK` (`.github/workflows/app-releases.yml`, job `android-apk`) | the same Gradle build, duplicated |
+
+The repository has no `ANDROID_KEYSTORE_*` secrets, so there is no Play-ready
+artifact to publish; without them the workflow could only ever emit a
+throw-away CI-signed APK. The complete pipeline (Expo prebuild → Gradle →
+APK + AAB → `SHA256SUMS.txt` → GitHub Release) is preserved verbatim in
+`.github/workflow-templates/hazardnet-mobile-android-release.yml`, whose header
+carries the restore checklist. In short:
+
+1. Create the four secrets below.
+2. Copy the template to `.github/workflows/mobile-android-release.yml`.
+3. Run it once with `workflow_dispatch` and watch the Gradle step — that is
+   where run 40253981974 failed — before re-enabling its `push` trigger.
 
 ## Android signing (repository secrets)
 
-The Expo/React Native template signs release APKs with the **debug**
-keystore. CI overrides this with `apps/mobile/ci-signing.gradle`, which loads
-a keystore from `keystore.properties`. To sign with a real, reusable key, set
-these repository secrets (Settings → Secrets and variables → Actions):
+These are needed only when the Android template is restored (they are no longer
+referenced by any live workflow). The Expo/React Native template signs release
+APKs with the **debug** keystore; CI overrides this with
+`apps/mobile/ci-signing.gradle`, which loads a keystore from
+`keystore.properties`. To sign with a real, reusable key, set these repository
+secrets (Settings → Secrets and variables → Actions):
 
 | Secret | Value |
 | --- | --- |
