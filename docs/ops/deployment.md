@@ -216,3 +216,50 @@ uninstall/disconnect step; there is no file in this repository that can do it.
 If you find a Vercel or Firebase-Hosting instruction anywhere — a doc, a comment, a script — it
 is stale. Either delete it or point it here. Dated audits under `docs/audits/` are history and
 may keep naming both; anything in a setup guide, runbook or config is not.
+
+## 9. What this costs — free tier only
+
+The deployment is $0 and must stay that way. The architecture already fits: the expensive compute
+is in GitHub Actions and the Kaggle notebook, the site is static HTML, and the API surface is thin
+reads over a committed snapshot. Nothing here needs a paid runtime, so nothing here should acquire
+one by accident. The binding rule lives in `docs/ops/owner-actions.md` **§ Cost constraints**.
+
+| Service | Free allowance | What actually binds |
+|---|---|---|
+<!-- ✓ = re-read from Cloudflare's pricing/limits pages on 2026-10-26; the rest are as published,
+     and a wrong allowance here is the one error this table cannot catch for you. -->
+| Pages (static) | unlimited requests and bandwidth, **500 builds/month** | builds — see below |
+| Pages Functions | 100,000 requests/day, **10 ms CPU** | CPU; reads and proxies only (Action 21) |
+| R2 | 10 GB, 1M writes / 10M reads per month, no egress | nothing near-term; snapshots belong here, not Firestore |
+| KV | 100k reads/day, **1k writes/day** | writes — never a counter |
+| D1 | 5 GB, 5M row reads/day | — |
+| Analytics Engine ✓ | 100k data points/day, 10k queries/day, 3-month retention | retention (Action 12) |
+| Rate limiting rules ✓ | **1 rule**, `Path` only, 10 s period | one rule, one path (Action 8) |
+| GitHub Actions | unlimited on public repos | **repo visibility** — `myself-aas/HazardNet` is public, so the Windows PR job and the emulator job are free |
+
+### The build budget was being spent by the monitor
+
+Measured from this repository on 2026-10-26: **75 of the 195 commits to `main` in the previous 30
+days were site-health probe commits** — 52 in October alone, against a 500-build monthly
+allowance. That is 38% of every commit to `main`, and in October alone about a tenth of the month's
+build allowance spent re-publishing one monitoring file — a cost that scales with the probe's
+flappiness, not with the site's traffic.
+
+Two guards, both required, both now in place:
+
+1. **`[skip ci]` on the probe commit** (`.github/workflows/site-health.yml`, added 2026-10-26).
+   Pages skips a deployment when the commit message carries `[CI Skip]`, `[CI-Skip]`, `[Skip CI]`,
+   `[Skip-CI]` or `[CF-Pages-Skip]` — case-insensitive, so `[skip ci]` matches. This works even if
+   someone later clears the watch-path list in the dashboard, which is why it is the first guard.
+2. **Watch paths excluding `data/site-health/**`** (§2) — the dashboard-side guard, and the one that
+   cannot be bypassed from the repository.
+
+The probe also only commits when a check's state actually changes, so a steady site produces no
+commits at all. Note what this means for the **deploy trigger**: because Pages honours the same skip
+token, a probe commit (and an artifact commit) is *not* a deploy. That is why the ingest job posts
+the deploy hook explicitly (§4).
+
+**Verify it after the first probe run past 2026-10-26:** Workers & Pages → hazardnet → Deployments
+should show *"Deploy skipped"* (or no entry) for the `chore(ops): site-health probe …` commit, not a
+successful build. The last build burned by the old behaviour was `d2fd9d9` (13:41Z on 2026-10-26),
+which predates the token.
