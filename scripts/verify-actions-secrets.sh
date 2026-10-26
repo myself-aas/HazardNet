@@ -63,6 +63,11 @@ SECRETS_CATALOG=(
   "BENCH_URL|opt|scripts/bench-predict.mjs|Latency benchmark target; default http://127.0.0.1:3001"
   # Site-health probe authentication (docs/ops/owner-actions.md Action 18)
   "SITE_PROBE_TOKEN|opt|site-health|Shared secret the probe sends as x-hazardnet-probe; needs the matching Cloudflare WAF skip rule"
+  # Cloudflare Pages deploy path (docs/ops/deployment.md)
+  "CF_PAGES_DEPLOY_HOOK|opt|daily_advisory_ingest|Deploy-hook URL that triggers the Pages production build after an artifact commit; unset means the ingest fails loudly at that step"
+  "CLOUDFLARE_API_TOKEN|opt|manual wrangler fallback|Scoped token (Pages:Edit) for direct-upload deploys; never needed by a workflow in this repo"
+  "CLOUDFLARE_ACCOUNT_ID|opt|manual wrangler fallback|Account id for wrangler / the Pages dashboard API"
+  "CLOUDFLARE_PAGES_PROJECT|opt|manual wrangler fallback|Pages project name (the deploy hook's target)"
   # Daily advisory ingest (Kaggle CLI)
   "KAGGLE_USERNAME|opt|daily_advisory_ingest|Kaggle account the advisory dataset is published under"
   "KAGGLE_KEY|opt|daily_advisory_ingest|Kaggle API key for that account"

@@ -78,10 +78,27 @@ needs its own host (`backend/` on a container, or `api/**` on a Node-function ho
    Cloudflare's own beacon and needs no script tag, no module and no environment variable
    in this repository.
 
-**Verify the deploy, not the dashboard:** `curl -sSI https://hazardnet.live/` must show
-the security headers from `frontend/public/_headers`, and
-`curl -s https://hazardnet.live/data/freshness.json` must quote the build the last ingest
-produced. `docs/ops/deployment.md` has the full checklist.
+**Verify the deploy, not the dashboard:** `curl -sSI https://www.hazardnet.live/` must show
+the six headers from `frontend/public/_headers`, `https://hazardnet.live/` must 301 to it, and
+`curl -s https://www.hazardnet.live/data/freshness.json` must quote the build the last ingest
+produced. `docs/ops/deployment.md` §4 has the full checklist.
+
+#### 1.1.1 Deploy credentials (all live in GitHub, none in the repo)
+
+| Name | Where it is created | What it does | Rotation |
+| --- | --- | --- | --- |
+| `CF_PAGES_DEPLOY_HOOK` | Pages → project → Settings → **Builds & deployments → Deploy hooks** (branch `main`) | The ingest job's commits carry `[skip ci]`, which Pages honours, so the push alone does **not** rebuild the site. The job POSTs this URL to start the production build — and fails loudly if it is unset or non-2xx | delete the hook = rotation (§`CF_PAGES_DEPLOY_HOOK` in `docs/ops/secret-rotation.md`) |
+| `CLOUDFLARE_API_TOKEN` | My Profile → **API Tokens** → *Edit Cloudflare Pages* template | Manual `wrangler pages deploy` fallback and `wrangler pages deployment list` during an incident. **No workflow uses it** | 90 days |
+| `CLOUDFLARE_ACCOUNT_ID` | dashboard URL / **Workers & Pages → Overview** | Account scope for the two commands above | with the token |
+| `CLOUDFLARE_PAGES_PROJECT` | the project's name (`hazardnet`) | Which project those commands target | with the token |
+
+Do not create a token with zone or DNS scopes for this: a deploy fallback that can rewrite DNS
+is an over-privileged credential parked in a repository setting.
+
+**Production and Preview are separate scopes.** A variable added under Production is invisible
+to a preview deployment and vice versa, and this applies to the `VITE_*` values too (they are
+baked in at build time, so a preview build with no `VITE_FIREBASE_*` renders a broken auth
+surface). Add every variable to **both** unless §2.2 says otherwise.
 
 ### 1.2 Firebase — Auth, Firestore, push (FCM)
 
@@ -372,6 +389,10 @@ that carries `BACKEND_API_KEY` has published it to a build log for no benefit.
 | `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | secrets | no (template only) | Android template, not a live workflow | §1.7 |
 | `SITE_PROBE_TOKEN` | secret | recommended | `site-health.yml` sends it as `x-hazardnet-probe`; needs the matching Cloudflare WAF skip rule | `openssl rand -hex 32` |
 | `KAGGLE_USERNAME` / `KAGGLE_KEY` | secrets | yes, for a green ingest | `daily_advisory_ingest.yml` Kaggle CLI | §1.5 |
+| `CF_PAGES_DEPLOY_HOOK` | secret | **yes for a live ingest** | `daily_advisory_ingest.yml` deploy trigger | §1.1.1 |
+| `CLOUDFLARE_API_TOKEN` | secret | no (manual fallback) | `wrangler pages deploy` by hand | §1.1.1 |
+| `CLOUDFLARE_ACCOUNT_ID` | secret | no (manual fallback) | `wrangler` targeting | §1.1.1 |
+| `CLOUDFLARE_PAGES_PROJECT` | secret | no (manual fallback) | `wrangler` targeting | §1.1.1 |
 | `SLACK_WEBHOOK_URL` | secret | no (template only) | `.github/workflow-templates/hazardnet-ops-slack-notify.yml` | — |
 | `API_METADATA_URL` | **variable** | recommended | `site-health.yml` metadata probe | your live URL |
 | `PUSH_TO_API` | **variable** | optional | master switch for ingest push | `false` unless an ingest API exists |
@@ -387,7 +408,8 @@ check itself does not list. It never prints a value.
 
 | Do this | With these |
 | --- | --- |
-| **Cloudflare Pages → Variables and Secrets** | all `VITE_*` from §2.2 and nothing else |
+| **Cloudflare Pages → Variables and Secrets** (Production **and** Preview) | all `VITE_*` from §2.2, plus `NODE_VERSION=20`; nothing else |
+| **Cloudflare Pages → Deploy hook → GitHub secret** | `CF_PAGES_DEPLOY_HOOK` (§1.1.1) |
 | **API host → environment** (§2.1) | `GEMINI_API_KEY`, `GEMINI_API_KEY_BACKUP`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `HUGGINGFACE_API_KEY`, `BACKEND_API_KEY`, `FIREBASE_SERVICE_ACCOUNT_JSON`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `WEB_PUSH_CONTACT`, `FRONTEND_ORIGIN`, optional flags (`CSP_ENFORCE`, `ALERT_*`, timeouts) |
 | **GitHub → Secrets** | `GEMINI_API_KEY`, `BACKEND_API_KEY`, `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, `CODECOV_TOKEN`, optional: `HAZARDNET_API_URL`, `HAZARDNET_API_KEY`, `EE_SERVICE_ACCOUNT_JSON`, `SITE_PROBE_TOKEN`, `KAGGLE_USERNAME`, `KAGGLE_KEY` (`ANDROID_KEYSTORE_*` only if the Android template is restored) |
 | **GitHub → Variables** | `API_METADATA_URL`, `PUSH_TO_API` |
@@ -472,7 +494,7 @@ curl -s localhost:3001/api/v1/forecasts/metadata | head
 
 | Platform | Provides | Plan | $0? | Card required? | Hard limits to know |
 | --- | --- | --- | --- | --- | --- |
-| Cloudflare Pages | static hosting, CDN, TLS, `_headers`/`_redirects`, Web Analytics | Free | yes | **No** | 500 builds/month; 20,000 files and 25 MiB per file per deployment; **no serverless functions on the static deploy** |
+| Cloudflare Pages | static hosting, CDN, TLS, `_headers`/`_redirects`, deploy hooks, Web Analytics | Free | yes | **No** | 500 builds/month; 20,000 files and 25 MiB per file in a deployment; **no serverless functions on a static deploy** (a Function would make every request an invocation) |
 | Firebase | Auth, Firestore, FCM | Spark | yes | **No** | daily Firestore quotas; **do not enable Cloud Storage (needs paid Blaze)** |
 | Google AI Studio | Gemini API key | free tier | yes | **No** | per-minute/per-day request caps on Flash-class models |
 | Groq | OpenAI-compatible LLM API | free tier | yes | **No** | ~30 req/min + daily token caps |

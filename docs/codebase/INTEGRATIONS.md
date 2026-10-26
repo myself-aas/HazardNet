@@ -200,8 +200,8 @@ needs `@firebase/rules-unit-testing` plus a Java-backed emulator that CI does no
   `backend/middleware/{serverlessGuard.js,firebaseAuth.js,cors.js,rateLimit.js,requestId.js}`
 - `packages/api/src/{client,retry,endpoints,errors}.ts`, `packages/analytics/src/streaming.ts`
 - `frontend/src/lib/{config.ts,forecasts.ts,gibs.ts,oauthProviders.ts,glide.ts,downloadChannels.ts}`
-- `firestore.rules` (308 lines), `firebase.json`, `.firebaserc`,
-  `frontend/public/{_headers,_redirects}`
+- `firestore.rules` (308 lines), `firebase.json` (Firestore only — the `hosting` block was
+  retired 2026-10-26), `.firebaserc`, `frontend/public/{_headers,_redirects}`
 - `.env.example` (38 vars, all empty), `docs/ENVIRONMENT_SECRETS.md`,
   `docs/ops/secret-rotation.md`, `data/security/secret-rotation.json`
 - `monitoring/{prometheus.yml,alerts.yml,grafana-dashboard.json,README.md}`, `MONITORING_SETUP_GUIDE.md`
@@ -257,6 +257,8 @@ five LLM providers → heuristic; Firestore → committed snapshot → (tests on
 wind-artifact ladder (GFS → ECMWF) was retired with the layer. The hosting question is settled
 as of 2026-10-26: **one Cloudflare Pages deployment answers both `hazardnet.live` and
 `www.hazardnet.live`** (`docs/ops/deployment.md`), the Vercel configuration is deleted, and
-`firebase.json` remains configured but unhosted. Every tracked file that treats
+`firebase.json` now carries only the Firestore config (its `hosting` block was retired on
+2026-10-26, after measuring that `hazardnet-aas48424.web.app` still served the 2026-09-24
+build — `docs/ops/owner-actions.md` Action 22). Every tracked file that treats
 `https://www.hazardnet.live` as canonical is therefore pointing at a hostname that serves the
 same deployment as the apex.

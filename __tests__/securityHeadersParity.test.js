@@ -3,14 +3,19 @@
  *
  * The places that describe the same security policy must agree.
  *
- * Since 2026-10-26 there are three of them, and the deployment target is Cloudflare Pages:
+ * Since 2026-10-26 there are two, and the deployment target is Cloudflare Pages:
  *
- *   · `frontend/public/_headers` — the Cloudflare copy, and the one that takes effect;
- *   · `firebase.json` — the Firebase Hosting copy, kept correct for whoever deploys it next;
+ *   · `frontend/public/_headers` — the ONLY copy read by the deployment (Pages serves it
+ *     from the asset root), pinned to `backend/security/csp.js` and to helmet;
  *   · `backend/server.js` — helmet, for the self-hosted/Docker deployment.
  *
- * They used to be four, and the root/frontend `vercel.json` pair was among them. Both were
- * deleted with the rest of the Vercel deployment (`docs/ops/deployment.md`). The copies
+ * They used to be four. The root/frontend `vercel.json` pair was deleted with the rest of
+ * the Vercel deployment, and the Firebase Hosting block was retired the same day: the
+ * `hazardnet-aas48424.web.app` origin was measured still serving the **2026-09-24** build
+ * (`data/freshness.json` `built_at 2026-09-24T20:35:20Z`, 0 published alerts, 7/7 probe
+ * checks failing), so keeping a second hosting policy "correct" was maintaining drift for a
+ * deployment nobody wanted. `docs/ops/owner-actions.md` Action 22 tracks disabling it in the
+ * console. The copies
  * drifted for real before: on 2026-10-04 the live site answered with only `Referrer-Policy`,
  * `X-Content-Type-Options` and `X-Frame-Options`, because the config serving production was
  * the one nobody had updated. This suite makes that drift visible in CI rather than only in a
@@ -20,6 +25,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { CSP } from '../backend/security/csp.js';
 
 const root = process.cwd();
 const readJson = (rel) => JSON.parse(readFileSync(join(root, rel), 'utf8'));
@@ -75,48 +81,80 @@ describe('redirects', () => {
   it('does not rewrite unknown URLs onto the indexable homepage', () => {
     expect(redirects).not.toMatch(/^\/\*\s+\/index\.html/m);
   });
+
+  /* The site's primary read path is `/data/*.json` (ADR 0008) and `/api/*` belongs to a host
+     this repository does not run. No rule may come between a request for either and its
+     answer, and — because a `_redirects` rule that matches an existing asset can shadow it —
+     no rule may name them at all. Asserted here rather than expressed as a `404` rule in the
+     file itself, for the reason given in `_redirects`. */
+  it('carries no rule that can intercept /api/ or /data/', () => {
+    const rules = redirects
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line && !line.startsWith('#'));
+    for (const rule of rules) {
+      expect(rule).not.toMatch(/^\/(api|data)\//);
+      expect(rule).not.toMatch(/\s\/(api|data)\//);
+    }
+  });
 });
 
 describe('security header parity', () => {
-  const firebaseHeaders = headerMap(readJson('firebase.json').hosting);
   const server = readText('backend/server.js');
 
-  const EXPECTED = [
-    'Content-Security-Policy',
-    'X-Content-Type-Options',
-    'X-Frame-Options',
-    'Referrer-Policy',
-    'Permissions-Policy',
-    'Strict-Transport-Security',
-  ];
+  /* The five headers every public response must carry, with the exact value the policy
+     requires. Written as a table rather than a list of names because "the header is present"
+     was never the failure mode: on 2026-10-04 the live host answered with a weaker
+     `Referrer-Policy` and no CSP at all, and a presence check would have passed. */
+  const EXPECTED = {
+    'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
+    'Content-Security-Policy': CSP,
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=(self), payment=(), usb=()',
+  };
 
-  it('the Cloudflare _headers file sets every expected header for all paths', () => {
-    for (const header of EXPECTED) {
-      expect(cloudflareHeaders[header]).toBeTruthy();
+  it('the Cloudflare _headers file sets every required header for all paths', () => {
+    for (const [header, value] of Object.entries(EXPECTED)) {
+      expect(`${header}: ${cloudflareHeaders[header]}`).toBe(`${header}: ${value}`);
     }
   });
 
-  it('the Firebase Hosting config sets every expected header for all paths', () => {
-    // Kept correct even though Pages answers today: whoever deploys to Firebase next must
-    // not inherit the 2026-10-04 gap that this repo already paid for once.
-    for (const header of EXPECTED) {
-      expect(firebaseHeaders[header]).toBeTruthy();
+  /* Cloudflare's parser is line-based: one rule per matcher, one `key: value` per line, a
+     2,000-character limit per line and 100 rules per file. A CSP wrapped across two lines, or
+     an overlong line, does not fail the deploy — the file simply stops applying, and the site
+     serves the origin's headers. Both are silent failures, so both are asserted. */
+  it('stays inside the limits Cloudflare Pages will actually parse', () => {
+    const lines = readText('frontend/public/_headers').split('\n');
+    expect(lines.length).toBeLessThanOrEqual(100);
+    for (const line of lines) {
+      expect(line.length).toBeLessThanOrEqual(2000);
     }
+    // One physical line per header: the CSP must not be folded.
+    const cspLines = lines.filter((line) => line.includes('Content-Security-Policy:'));
+    expect(cspLines).toHaveLength(1);
   });
 
-  it('serves an identical browser policy from both static hosts', () => {
-    for (const header of EXPECTED) {
-      // Firebase Hosting cannot interpolate or share a value, so it must carry the same
-      // literal string; `csp.js` equality below pins the absolute truth for the CSP itself.
-      expect(firebaseHeaders[header]).toBe(cloudflareHeaders[header]);
-    }
+  /* An all-origin source turns the policy into decoration. `https:` IS deliberately present —
+     the client talks to several third-party APIs (Open-Meteo, ipapi.co, Firebase RTDB, the
+     GitHub API) and a static CSP cannot know their hostnames at build time — but a bare `*`
+     or a `data:`/`blob:` script source never appears. */
+  it('never falls back to a bare wildcard source', () => {
+    expect(cloudflareHeaders['Content-Security-Policy']).not.toMatch(/\s\*(\s|;|$)/);
+    const scriptSrc = /script-src([^;]*)/.exec(cloudflareHeaders['Content-Security-Policy'])[1];
+    expect(scriptSrc).not.toMatch(/https?:\s/);
+  });
+
+  /* The Firebase Hosting block was removed on 2026-10-26 (see the file comment). Pinned as a
+     fact so nobody restores a second static-host policy by accident: with one deployment there
+     is one place headers can be declared, and this suite is what keeps it honest. */
+  it('declares no second static-host policy', () => {
+    expect(readJson('firebase.json')).not.toHaveProperty('hosting');
   });
 
   it('keeps HSTS preload-eligible (includeSubDomains + preload + long max-age)', () => {
-    for (const value of [
-      cloudflareHeaders['Strict-Transport-Security'],
-      firebaseHeaders['Strict-Transport-Security'],
-    ]) {
+    for (const value of [cloudflareHeaders['Strict-Transport-Security']]) {
       expect(value).toMatch(/includeSubDomains/);
       expect(value).toMatch(/preload/);
       const maxAge = Number(/max-age=(\d+)/.exec(value)[1]);
@@ -125,10 +163,7 @@ describe('security header parity', () => {
   });
 
   it('keeps the CSP enforcing, and locks down the dangerous directives', () => {
-    for (const value of [
-      cloudflareHeaders['Content-Security-Policy'],
-      firebaseHeaders['Content-Security-Policy'],
-    ]) {
+    for (const value of [cloudflareHeaders['Content-Security-Policy']]) {
       expect(value).not.toMatch(/Content-Security-Policy-Report-Only/i);
       expect(value).toContain("default-src 'self'");
       expect(value).toContain("object-src 'none'");
@@ -190,9 +225,8 @@ describe('security header parity', () => {
     expect(csp).toContain('https://github.com');
   });
 
-  it('is the same string in the shared module, both configs and helmet', async () => {
+  it('is the same string in the shared module, the served file and helmet', async () => {
     const {
-      CSP,
       cspDirectivesFromString,
       AUTH_SCRIPT_ORIGINS,
       ANALYTICS_SCRIPT_ORIGINS,
@@ -201,7 +235,6 @@ describe('security header parity', () => {
 
     // One source of truth: every host config carries exactly the canonical string.
     expect(cloudflareHeaders['Content-Security-Policy']).toBe(CSP);
-    expect(firebaseHeaders['Content-Security-Policy']).toBe(CSP);
 
     // helmet runs the parsed canonical policy, so the self-hosted deployment cannot drift.
     const directives = cspDirectivesFromString();
@@ -264,7 +297,7 @@ describe('security header parity', () => {
     expect(INLINE_THEME_SCRIPT_HASH).toBe(`'sha256-${digest}'`);
 
     // A correct constant that no surface ships is still a blocked script.
-    for (const headers of [cloudflareHeaders, firebaseHeaders]) {
+    for (const headers of [cloudflareHeaders]) {
       expect(headers['Content-Security-Policy']).toContain(INLINE_THEME_SCRIPT_HASH);
     }
     expect(cspDirectivesFromString().scriptSrc).toContain(INLINE_THEME_SCRIPT_HASH);

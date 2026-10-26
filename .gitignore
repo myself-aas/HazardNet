@@ -120,3 +120,11 @@ skills-lock.json
 # Impeccable: per-developer hook consent and local overrides (not shared)
 .impeccable/config.local.json
 .impeccable/*.cache.json
+
+# Cloudflare / wrangler local state. `.dev.vars` holds local secrets for `wrangler pages dev`
+# and must never be committed (the Cloudflare counterpart of `.env`); `.wrangler/` is the
+# CLI's cache. Neither is used by the deployment — the Git integration builds from the
+# repository — so these are developer conveniences only (docs/ops/deployment.md §4).
+.dev.vars
+.dev.vars.*
+.wrangler/

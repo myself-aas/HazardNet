@@ -18,14 +18,9 @@ concurrency:
   group: site-health-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  # `write` for exactly one step: publishing the machine-readable probe result
-  # (data/site-health/latest.json + the derived freshness artifact) that the
-  # /status page renders. Everything else in this workflow only reads. If the
-  # repository's workflow permissions are set to read-only, the publish step
-  # degrades to a warning and the result is still uploaded as an artifact —
-  # see docs/ops/owner-actions.md, Action 9.
-  contents: write
+# No file-level permissions block: the default is read-only, and the single job below asks
+# for `contents: write` so it can publish one file. A file-level `write` would grant the same
+# scope to every present and future job in this workflow.
 
 env:
   SITE_URL: https://hazardnet.live
@@ -54,6 +49,14 @@ env:
 jobs:
   probe:
     runs-on: ubuntu-latest
+    permissions:
+      # `write` for exactly one step: publishing the machine-readable probe result
+      # (data/site-health/latest.json + the derived freshness artifact) that the
+      # /status page renders. Every other step in this job only reads. If the
+      # repository's workflow permissions are set to read-only, the publish step
+      # degrades to a warning and the result is still uploaded as an artifact —
+      # see docs/ops/owner-actions.md, Action 9.
+      contents: write
     timeout-minutes: 10
 
     steps:
@@ -243,7 +246,7 @@ jobs:
 
       # Security-header probe (SEC-03/SEC-04). The policy is declared for the
       # Cloudflare Pages deployment in `frontend/public/_headers`, for the
-      # Firebase Hosting deployment in `firebase.json`, and for the self-hosted
+      # an earlier Firebase Hosting deployment, and for the self-hosted
       # backend by helmet (backend/server.js); if the one that applies to
       # production is not among the copies you updated, the headers disappear
       # silently. That is what this probe caught on 2026-10-04, when the domain
@@ -289,7 +292,8 @@ jobs:
           # (`server: cloudflare`) in front of Cloudflare Pages, whose `_headers`
           # file is the policy this step checks. `x-fh-requested-host` would mean
           # Firebase Hosting answered instead — a different config in this repo,
-          # so the probe then measures `firebase.json`, not `_headers`.
+          # so the probe would be measuring a host this repository no longer configures
+          # (the Hosting block was retired; Action 22 disables the site).
           FINGERPRINT=$(grep -iE '^(server|x-fh-requested-host|x-served-by|cf-ray|via):' <<< "$HEADERS" | paste -sd ' | ' - || true)
           echo "[headers] answering host: ${FINGERPRINT:-no identifying header}"
           LAST_MODIFIED=$(grep -iE '^last-modified:' <<< "$HEADERS" | head -1 | sed 's/^[^:]*: *//' || true)
@@ -315,11 +319,30 @@ jobs:
             fi
             echo "✅ $name"
           }
+          # Six headers, and — for the five that carry a policy — the value, not just the
+          # presence. A presence-only probe is how the 2026-10-04 drift stayed invisible: the
+          # host answered with *a* Referrer-Policy and no CSP at all, which "is the header
+          # there?" reported as green.
           require 'strict-transport-security' 'includeSubDomains'
           require 'content-security-policy' "frame-ancestors 'none'"
+          require 'content-security-policy' "object-src 'none'"
           require 'x-content-type-options' 'nosniff'
-          require 'referrer-policy'
-          require 'permissions-policy'
+          require 'x-frame-options' 'DENY'
+          require 'referrer-policy' 'strict-origin-when-cross-origin'
+          require 'permissions-policy' 'geolocation=(self)'
+
+          # The deployment that answers is Cloudflare Pages (docs/ops/deployment.md). If the
+          # response is not Cloudflare-fronted, the headers above were measured on *some*
+          # origin — worth a warning, not a failure: the site can legitimately sit behind an
+          # extra proxy. `x-fh-requested-host` would mean the retired Firebase origin answered.
+          if ! grep -qiE '^(server: *cloudflare|cf-ray:)' <<< "$HEADERS"; then
+            echo "::warning::no Cloudflare fingerprint (server: cloudflare / cf-ray) on the answer — the headers above may describe a different origin than the Pages deployment"
+          fi
+          if grep -qi '^x-fh-requested-host:' <<< "$HEADERS"; then
+            echo "::error::Firebase Hosting answered instead of Cloudflare Pages — the retired origin is still serving hazardnet-aas48424 (docs/ops/owner-actions.md Action 22)"
+            FAILED=1
+            MISSING+=("answered-by-firebase-hosting")
+          fi
 
           # Publish what is missing, not just that something is. `latest.json` used to
           # carry `detail: null` for every check, so a red run and the committed
@@ -745,7 +768,14 @@ jobs:
 
           OUTCOME=$(jq -r '.outcome' data/site-health/latest.json)
           git pull --rebase --autostash origin main || true
-          git commit -m "chore(ops): site-health probe ${OUTCOME} $(date -u +%Y-%m-%dT%H:%MZ)"
+          # `[skip ci]` is load-bearing. The site is built by Cloudflare Pages on every push
+          # to `main`, and Pages honours the same skip tokens, so a probe commit without it
+          # would redeploy the whole site every time a check changed state — turning a
+          # monitoring loop into a deploy loop. The build watch paths
+          # (`data/site-health/**` excluded, docs/ops/deployment.md §2) are the second guard;
+          # this is the first, and it is the one that works even if someone clears the
+          # watch-path list in the dashboard.
+          git commit -m "chore(ops): site-health probe ${OUTCOME} $(date -u +%Y-%m-%dT%H:%MZ) [skip ci]"
           # HEAD:main rather than a bare `git push`: a scheduled run checks the ref
           # out at a sha, and pushing a detached HEAD without an explicit refspec
           # fails with "You are not currently on a branch" even when the token has

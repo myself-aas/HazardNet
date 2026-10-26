@@ -111,8 +111,8 @@ commit-message conventions from earlier maps **cannot be re-measured**.
     `src/firebase.ts` (an unused second project) is the cautionary tale."*
     (`frontend/src/lib/config.ts`)
   - The CSP lives in `backend/security/csp.js` so the self-host deployment cannot drift from
-    the static hosts' copies — `frontend/public/_headers` (Cloudflare, the one that is served)
-    and `firebase.json` (`backend/server.js`, `__tests__/securityHeadersParity.test.js`).
+    the one static-host copy — `frontend/public/_headers`, which Cloudflare serves — and helmet
+    (`backend/server.js`, `__tests__/securityHeadersParity.test.js`).
 
 ### 4) Error and Logging Conventions
 

@@ -65,18 +65,24 @@ describe('the Cloudflare Pages deployment never serves model artifacts', () => {
   });
 });
 
-describe('Firebase Hosting never serves model artifacts', () => {
-  test('hosting root is the built frontend and no rule names an artifact', () => {
+describe('no second static-host config can serve model artifacts', () => {
+  /* Firebase Hosting used to be the second root, and this suite pinned its `public` field.
+     The block was retired on 2026-10-26 (`firebase.json` keeps only `firestore`), so the
+     invariant inverts: there must be exactly one static-host declaration in the repository —
+     Cloudflare's `_headers`/`_redirects`/build output — and `firebase.json` must not name a
+     document root at all. If a hosting block ever comes back, it has to come back with a
+     root assertion here, and that is the point. */
+  test('firebase.json declares no hosting block', () => {
     const config = readJson('firebase.json');
-    const hosting = config.hosting;
-    expect(hosting).toBeTruthy();
-    const sites = Array.isArray(hosting) ? hosting : [hosting];
+    expect(config).not.toHaveProperty('hosting');
+    // The rest of the file is still live: Firestore rules are deployed from it.
+    expect(config).toHaveProperty('firestore');
+  });
 
-    for (const site of sites) {
-      expect(site.public).toBe('frontend/dist');
-      for (const rule of routeStrings(site)) {
-        expect(rule).not.toMatch(ARTIFACT);
-      }
+  test('no json config in the repository names a document root other than the build output', () => {
+    for (const rel of ['firebase.json']) {
+      const raw = readText(rel);
+      expect(raw).not.toMatch(/"public"\s*:/);
     }
   });
 });

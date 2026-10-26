@@ -84,8 +84,8 @@ monthly scheduled check (`.github/workflows/secret-rotation-audit.yml`).
 Recorded here so a reporter can check whether a control is deliberate before testing it:
 
 - **Security headers** — one canonical CSP (`backend/security/csp.js`) applied by
-  `frontend/public/_headers` (the copy Cloudflare serves), by `firebase.json`, and by helmet
-  in the self-hosted deployment; HSTS with
+  `frontend/public/_headers` — the only copy the deployment reads — and by helmet in the
+  self-hosted deployment; HSTS with
   `includeSubDomains; preload`; `X-Content-Type-Options`, `X-Frame-Options: DENY`,
   `Referrer-Policy`, `Permissions-Policy`, COOP.
 - **Rate limiting** — per-instance buckets on every Node-function handler

@@ -55,6 +55,36 @@ becomes a failure instead of a warning.
 - `HAZARDNET_API_KEY` is the same shape pointing at an external ingest API: rotate at the API
   end first, then update GitHub.
 
+### CLOUDFLARE_API_TOKEN
+
+Cloudflare dashboard → **My Profile → API Tokens → Create Token**, using the *Edit Cloudflare
+Pages* template (scope: the account + the Pages project). Nothing in CI uses it — it exists for
+the manual `wrangler pages deploy` fallback and for `wrangler pages deployment list` during an
+incident, so it is deliberately not mapped into any workflow.
+
+- Store it in **GitHub → Secrets** as `CLOUDFLARE_API_TOKEN`, next to `CLOUDFLARE_ACCOUNT_ID`
+  and `CLOUDFLARE_PAGES_PROJECT` (neither is sensitive; they are secrets only because they live
+  in the same place).
+- Rotate by creating the new token **before** deleting the old one, then run one manual
+  `npx wrangler pages deployment list` with the new value to prove it works.
+- The token must not carry DNS or zone-admin scopes. If it does, it is over-privileged for a
+  deploy fallback — recreate it from the template.
+
+### CF_PAGES_DEPLOY_HOOK
+
+Pages → the project → **Settings → Builds & deployments → Deploy hooks → Add** (branch: `main`).
+
+- The URL is the credential: anyone holding it can start a production build. Store it as the
+  repository secret `CF_PAGES_DEPLOY_HOOK` and nowhere else.
+- **Deleting the hook is the rotation** — create a new one, replace the secret, then delete the
+  old hook. There is no "value" to re-issue.
+- Verify with the ingest job (`Actions → Daily Advisory Ingest → Run workflow`): the
+  *Trigger Cloudflare Pages Production Deployment* step must print a 2xx. A 404 means the hook
+  was deleted; an unset secret fails the job with the dashboard path in the message.
+- Leaked? Delete the hook first, then the secret. The failure mode of a stolen hook is a build,
+  not a breach — but a build runs the repository's build command, so treat it as a code-execution
+  surface for anything reachable from the build environment.
+
 ### Provider API keys
 
 Create the replacement in the provider console, set it in **the API host's environment**,

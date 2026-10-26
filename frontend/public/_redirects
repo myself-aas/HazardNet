@@ -9,7 +9,7 @@
 # file from the asset root; Vite copies it verbatim into `dist/` because it
 # lives in `frontend/public/`.
 #
-# Deliberately absent: a catch-all `/* /index.html 200` rewrite.
+# Deliberately absent #1: `/* /index.html 200`.
 #
 # The prerenderer emits a real HTML file per route (frontend/scripts/prerender.mjs),
 # so known URLs are files and never need a rewrite. An unknown URL falls to
@@ -19,5 +19,14 @@
 # crawler is told not to index it. A `/* /index.html 200` rule would undo that:
 # every unknown URL would answer 200 with the indexable homepage, which is the
 # soft-404 case __tests__/seoFoundations.test.js exists to prevent.
+#
+# Deliberately absent #2: `/api/* /404.html 404` and `/data/* /404.html 404` guards.
+# They read as defence-in-depth, but they are the opposite: `/data/*.json` is the site's
+# primary read path (ADR 0008) and every route is a real file, so a rule that matches
+# those paths can shadow a file that exists. Pages resolves an existing asset first, and
+# a path with no asset already lands on 404.html — the guard rules add a way to break
+# `/data/` and buy nothing. The invariant they were meant to protect ("no rule may
+# swallow /api/* or /data/*") is asserted directly in
+# __tests__/securityHeadersParity.test.js instead of encoded as a rule.
 
 /documentation  /docs  301

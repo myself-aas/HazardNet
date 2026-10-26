@@ -1578,7 +1578,7 @@ defined by `ADVISORY_CSV_COLUMNS` in the backend:
 ### 27.1 Security
 
 - **CSP Headers:** Single source of truth, parity-verified across
-  `frontend/public/_headers`, `firebase.json`, and Express middleware. Ad-network
+  `frontend/public/_headers` and Express middleware. Ad-network
   `script-src` allowlist removed.
 - **Security Headers Parity:** Automated test suite verifies
   consistency across all deployment targets.

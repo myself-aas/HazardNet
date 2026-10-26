@@ -178,7 +178,7 @@ npm run check:bundle    # gzip budget: 800 KiB/chunk, 1600 KiB total
 | `.env.example` | 38 documented variables, all committed **empty** |
 | `firebase-applet-config.json`, `firebase-blueprint.json` | Firebase **web** config (public by design) + hosting blueprint |
 | `.firebaserc` | project alias `default: hazardnet-aas48424` |
-| `firebase.json` | Hosting headers/rewrites for the Firebase deploy path |
+| `firebase.json` | Firestore config only — the Hosting block was retired 2026-10-26 (Action 22) |
 | `frontend/public/_headers` + `frontend/public/_redirects` | the Cloudflare Pages deploy path (the only one): security policy, cache rules, the one legacy redirect. CSP duplicated from `backend/security/csp.js` and pinned by `__tests__/securityHeadersParity.test.js` |
 | `firestore.rules` | 308 lines of collection rules |
 | `Models/VERSION.json` + `Models/REGISTRY.json` | model-artifact handshake (sha256 + version) |
@@ -253,7 +253,7 @@ production misconfig) from `warnings`, non-fatally so local dev still boots.
 | Local dev | Vite `:3000`, proxies `/api`,`/metrics`,`/health` → `:3001` | Express (`backend/server.js`) | `FORECAST_STORE_MEMORY=true` or Firestore | Report-Only (`cspEnforce` false) |
 | Local prod-like | Express `:3000` serving `frontend/dist` | Express | Firestore | Enforcing (`NODE_ENV=production`) |
 | Cloudflare Pages | `hazardnet.live` **and** `www.hazardnet.live` — one deployment | **none** — static only, so `/api/**` is 404 and the front door reads the committed snapshots | committed JSON snapshots (Firestore is unreachable from the site) | `frontend/public/_headers`, enforcing |
-| Firebase Hosting | *(not deployed)* | none — static only | committed JSON snapshots | `firebase.json` headers |
+| Firebase Hosting | *(retired — config deleted, site to be disabled: Action 22)* | none | the 2026-09-24 build, still publicly served at `hazardnet-aas48424.web.app` | its old `firebase.json` headers, no longer declared |
 | GitHub Actions | n/a | n/a | commits `backend/data/forecasts/**` + `frontend/public/data/**` — **pipeline resumed: latest ingest 2026-10-24, `prediction_date 2026-10-24`, 128 rows, snapshot built 2026-10-25T10:49Z** | n/a |
 
 ### Process-manager / container posture

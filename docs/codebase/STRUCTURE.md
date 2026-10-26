@@ -48,7 +48,7 @@ git ls-files '<dir>' | sort              # one subtree
 | `package.json` | workspaces, ~40 scripts, root runtime deps, `engines.node >=20` |
 | `package-lock.json` | **a 41-line stub at HEAD** — 3 `packages` entries; `npm ci` fails (CONCERNS §1) |
 | `frontend/public/_headers` / `frontend/public/_redirects` | the Cloudflare Pages config that is actually served: full CSP + security policy, cache rules, one legacy redirect. Copied verbatim into `dist/` by Vite |
-| `firebase.json` / `.firebaserc` / `firestore.rules` | the Firebase Hosting path and 308 lines of collection rules |
+| `firebase.json` / `.firebaserc` / `firestore.rules` | Firestore config, project alias, and 308 lines of collection rules (no Hosting block since 2026-10-26) |
 | `jest.config.cjs` / `jest.setup.ts` / `babel.config.cjs` | the root test project and its transform |
 | `playwright.config.ts` / `playwright.qa.config.ts` | E2E, plus a sandbox variant that drives an npm-published Chromium |
 | `eslint.config.js` / `.prettierrc` / `.npmrc` | flat lint config, formatter, `legacy-peer-deps=true` |
