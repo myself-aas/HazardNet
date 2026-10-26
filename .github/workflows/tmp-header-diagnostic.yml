@@ -30,7 +30,17 @@ jobs:
             echo
             echo "### apk/other: /status"
             curl -sS -L -D - -o /dev/null --max-redirs 5 --max-time 30 https://hazardnet.live/status 2>&1 | tr -d '\r'
+            echo
+            echo "### body of / (first 1200 bytes)"
+            curl -sS -L --max-redirs 5 --max-time 30 https://hazardnet.live/ 2>&1 | head -c 1200
+            echo
+            echo "### /data/freshness.json"
+            curl -sS -L -D - --max-redirs 5 --max-time 30 https://hazardnet.live/data/freshness.json 2>&1 | head -c 1200 | tr -d '\r'
+            echo
+            echo "### /.well-known/security.txt"
+            curl -sS -L -D - --max-redirs 5 --max-time 30 https://hazardnet.live/.well-known/security.txt 2>&1 | head -c 600 | tr -d '\r'
           } > /tmp/diag/headers.txt
+          rm -f diag-headers-*.txt
           cp /tmp/diag/headers.txt "diag-headers-${GITHUB_RUN_ID}.txt"
       - name: Publish dump to the branch
         shell: bash
