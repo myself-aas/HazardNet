@@ -1,0 +1,116 @@
+### GET https://hazardnet.live/ (follow redirects, dump all hops)
+HTTP/2 200 
+date: Mon, 26 Oct 2026 01:42:26 GMT
+content-type: text/html; charset=utf-8
+x-content-type-options: nosniff
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=hwKjVoc0lO24HXpuc%2FWJ9Yg0gUK45zkeymCgdibe6uAmCvwehrQJzGqNE%2Bf7WFqQaY9lLWfXiXfGUSLx%2FTJs%2BjKEbfc%2Fl3XjjzZGvLnzCJ3L1zHBxdYEFsy1S1WFeKZaTA%3D%3D"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+access-control-allow-origin: *
+cache-control: public, max-age=0, must-revalidate
+referrer-policy: strict-origin-when-cross-origin
+server: cloudflare
+cf-cache-status: DYNAMIC
+cf-ray: a505c3af2d52cba7-LAX
+alt-svc: h3=":443"; ma=86400
+
+
+### GET https://www.hazardnet.live/
+HTTP/2 403 
+date: Mon, 26 Oct 2026 01:42:26 GMT
+content-type: text/html; charset=UTF-8
+content-length: 5248
+accept-ch: Sec-CH-UA-Bitness, Sec-CH-UA-Arch, Sec-CH-UA-Full-Version, Sec-CH-UA-Mobile, Sec-CH-UA-Model, Sec-CH-UA-Platform-Version, Sec-CH-UA-Full-Version-List, Sec-CH-UA-Platform, Sec-CH-UA, UA-Bitness, UA-Arch, UA-Full-Version, UA-Mobile, UA-Model, UA-Platform-Version, UA-Platform, UA
+cf-mitigated: challenge
+content-security-policy: default-src 'none'; script-src 'nonce-P4IHzgCUgJRA8JePNgvVg4' 'unsafe-eval' https://challenges.cloudflare.com; script-src-attr 'none'; style-src 'unsafe-inline'; img-src 'self' https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; frame-src 'self' https://challenges.cloudflare.com blob:; child-src 'self' https://challenges.cloudflare.com blob:; worker-src blob:; form-action http: https:; base-uri 'self'
+server: cloudflare
+critical-ch: Sec-CH-UA-Bitness, Sec-CH-UA-Arch, Sec-CH-UA-Full-Version, Sec-CH-UA-Mobile, Sec-CH-UA-Model, Sec-CH-UA-Platform-Version, Sec-CH-UA-Full-Version-List, Sec-CH-UA-Platform, Sec-CH-UA, UA-Bitness, UA-Arch, UA-Full-Version, UA-Mobile, UA-Model, UA-Platform-Version, UA-Platform, UA
+cross-origin-embedder-policy: require-corp
+cross-origin-opener-policy: same-origin
+cross-origin-resource-policy: same-origin
+origin-agent-cluster: ?1
+permissions-policy: accelerometer=(),camera=(),clipboard-read=(),clipboard-write=(),geolocation=(),gyroscope=(),hid=(),magnetometer=(),microphone=(),payment=(),publickey-credentials-get=(),screen-wake-lock=(),serial=(),sync-xhr=(),usb=(),xr-spatial-tracking=*
+referrer-policy: same-origin
+server-timing: chlray;desc="a505c3b0ce23f50e"
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=Rify%2FYLUpJ%2BO2IhuWGRwDib5unYpHIAoYrdBzUqnRTPTTVi%2FOkGrikBiMiIxqxs81oRv%2F8sidEkzEJOKhHfDiXWEJjuxYzTdjOUJeayiFF7E7rS%2BmTPtAkb5HynZLxxOw%2BN3SA4%3D"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+cf-ray: a505c3b0ce23f50e-LAX
+alt-svc: h3=":443"; ma=86400
+
+
+### apk/other: /status
+HTTP/2 403 
+date: Mon, 26 Oct 2026 01:42:26 GMT
+content-type: text/html; charset=UTF-8
+content-length: 5262
+accept-ch: Sec-CH-UA-Bitness, Sec-CH-UA-Arch, Sec-CH-UA-Full-Version, Sec-CH-UA-Mobile, Sec-CH-UA-Model, Sec-CH-UA-Platform-Version, Sec-CH-UA-Full-Version-List, Sec-CH-UA-Platform, Sec-CH-UA, UA-Bitness, UA-Arch, UA-Full-Version, UA-Mobile, UA-Model, UA-Platform-Version, UA-Platform, UA
+cf-mitigated: challenge
+content-security-policy: default-src 'none'; script-src 'nonce-75Xmoj2QMhmTQ4yPNuouBF' 'unsafe-eval' https://challenges.cloudflare.com; script-src-attr 'none'; style-src 'unsafe-inline'; img-src 'self' https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; frame-src 'self' https://challenges.cloudflare.com blob:; child-src 'self' https://challenges.cloudflare.com blob:; worker-src blob:; form-action http: https:; base-uri 'self'
+server: cloudflare
+critical-ch: Sec-CH-UA-Bitness, Sec-CH-UA-Arch, Sec-CH-UA-Full-Version, Sec-CH-UA-Mobile, Sec-CH-UA-Model, Sec-CH-UA-Platform-Version, Sec-CH-UA-Full-Version-List, Sec-CH-UA-Platform, Sec-CH-UA, UA-Bitness, UA-Arch, UA-Full-Version, UA-Mobile, UA-Model, UA-Platform-Version, UA-Platform, UA
+cross-origin-embedder-policy: require-corp
+cross-origin-opener-policy: same-origin
+cross-origin-resource-policy: same-origin
+origin-agent-cluster: ?1
+permissions-policy: accelerometer=(),camera=(),clipboard-read=(),clipboard-write=(),geolocation=(),gyroscope=(),hid=(),magnetometer=(),microphone=(),payment=(),publickey-credentials-get=(),screen-wake-lock=(),serial=(),sync-xhr=(),usb=(),xr-spatial-tracking=*
+referrer-policy: same-origin
+server-timing: chlray;desc="a505c3b13b2b13aa"
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=P3WYF9c%2FkFzMiVFxyUazYcrmBpxcPOxHbPOF%2FgWzrF0Id595C8WUg7D0LhD8gELI5xYiUwzvPkKzB2MJbufBVsO9IjxzwdYck3l%2B2WKs4HMJXVxEFm3tPNjhhKnNMyHhcA%3D%3D"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+cf-ray: a505c3b13b2b13aa-LAX
+alt-svc: h3=":443"; ma=86400
+
+
+### body of / (first 1200 bytes)
+<!DOCTYPE html><html lang="en-US"><head><title>Just a moment...</title><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=Edge"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="content-security-policy" content="default-src &#39;none&#39;; script-src &#39;nonce-hJW1kUtNrMe3rEFUSIBsBS&#39; &#39;unsafe-eval&#39; https://challenges.cloudflare.com; script-src-attr &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;self&#39; https://challenges.cloudflare.com; connect-src &#39;self&#39; https://challenges.cloudflare.com; frame-src &#39;self&#39; https://challenges.cloudflare.com blob:; child-src &#39;self&#39; https://challenges.cloudflare.com blob:; worker-src blob:; form-action http: https:; base-uri &#39;self&#39;"><style>*{box-sizing:border-box;margin:0;padding:0}html{line-height:1.15;-webkit-text-size-adjust:100%;color:#313131;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"}body{displa
+### /data/freshness.json
+HTTP/2 403 
+date: Mon, 26 Oct 2026 01:42:26 GMT
+content-type: text/html; charset=UTF-8
+content-length: 5323
+accept-ch: Sec-CH-UA-Bitness, Sec-CH-UA-Arch, Sec-CH-UA-Full-Version, Sec-CH-UA-Mobile, Sec-CH-UA-Model, Sec-CH-UA-Platform-Version, Sec-CH-UA-Full-Version-List, Sec-CH-UA-Platform, Sec-CH-UA, UA-Bitness, UA-Arch, UA-Full-Version, UA-Mobile, UA-Model, UA-Platform-Version, UA-Platform, UA
+cf-mitigated: challenge
+content-security-policy: default-src 'none'; script-src 'nonce-kKauhHjeeTln00CDz9g6AF' 'unsafe-eval' https://challenges.cloudflare.com; script-src-attr 'none'; style-src 'unsafe-inline'; img-src 'self' https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com; frame-src 'self' https://challenges.cloudflare.com blob:; child-src 'self' https://challenges.cloudflare.com blob:; worker-src blob:; form-action http: https:; base-uri 'self'
+server: cloudflare
+critical-ch: Sec-CH-UA-Bitness, Sec-CH-UA-Arch, Sec-CH-UA-Full-Version, Sec-CH-UA-Mobile, Sec-CH-UA-Model, Sec-CH-UA-Platform-Version, Sec-CH-UA-Full-Version-List, Sec-CH-UA-Platform, Sec-CH-UA, UA-Bitness, UA-Arch, UA-Full-Version, UA-Mobile, UA-Model, UA-Platform-Version, UA-Platfor
+### /.well-known/security.txt
+HTTP/2 200 
+date: Mon, 26 Oct 2026 01:42:27 GMT
+content-type: text/plain; charset=utf-8
+content-length: 403
+x-content-type-options: nosniff
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=324YObcWfc9yHyiRvh7lXaKvMmanTJHkS9aCml4k0G7y%2FtXs0p7AmnpwAKkVxAHM3zFnu1sGq9TsmMqcZ9Gh0vNQfq5u68V8u78%2B9snAO%2BVpFJlzABY36PkVyuTKk5pOdQ%3D%3D"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+access-control-allow-origin: *
+cache-control: public, max-age=0, must-revalidate
+etag: "7e52c94cd17d3139ab642b81d1e21bd1"
+refer
+### DNS
+172.67.203.38
+104.21.74.134
+172.67.203.38
+104.21.74.134
+"google-site-verification=ShFEVGilppyzzCTlKCu5E2QX4sfKyM_eE78VuncD4X4"
+"hosting-site=hazardnet-aas48424"
+"v=spf1 -all"
+2606:4700:3035::ac43:cb26 hazardnet.live
+2606:4700:3033::6815:4a86 hazardnet.live
+2606:4700:3033::6815:4a86 www.hazardnet.live
+2606:4700:3035::ac43:cb26 www.hazardnet.live
+
+### DoH JSON
+{"Status":0,"TC":false,"RD":true,"RA":true,"AD":false,"CD":false,"Question":[{"name":"hazardnet.live","type":5}],"Authority":[{"name":"hazardnet.live","type":6,"TTL":1800,"data":"evan.ns.cloudflare.com. dns.cloudflare.com. 2418338061 10000 2400 604800 1800"}]}
+### 5x GET / status+headers digest
+try 1: HTTP/2 403 
+server: cloudflare
+try 2: HTTP/2 403 
+server: cloudflare
+try 3: HTTP/2 403 
+server: cloudflare
+try 4: HTTP/2 403 
+server: cloudflare
+try 5: HTTP/2 403 
+server: cloudflare
