@@ -33,5 +33,6 @@ groups:
           description: >-
             No forecast-age samples for 30m. Either nothing has ever been
             ingested, the forecast store is unreadable (the gauge is reset on
-            lookup failure), or the /metrics target is down. Note: a Vercel
-            deployment only emits this series via /api/metrics — scrape it too.
+            lookup failure), or the /metrics target is down. Note: a
+            Node-function deployment only emits this series via /api/metrics —
+            scrape it too, wherever that API is hosted.

@@ -5,7 +5,7 @@
  *
  * Row selection and envelope are shared with the Express twin
  * (backend/routes/kaggle.js) so the two runtimes answer identically. Deployed through
- * api/v1/[resource].js; see docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget.
+ * api/v1/[resource].js; see docs/codebase/ARCHITECTURE.md#the-node-function-surface-api.
  */
 
 import { guardRequest } from '../../backend/middleware/serverlessGuard.js';

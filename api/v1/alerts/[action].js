@@ -1,5 +1,5 @@
 /**
- * Vercel Serverless Function — the alert actions.
+ * Node Serverless Function — the alert actions.
  *
  * GET  /api/v1/alerts/evidence-card?id=<alert-id>   evidence card for one alert
  * GET  /api/v1/alerts/policy                        effective policy (overrides + defaults)
@@ -7,9 +7,8 @@
  * POST /api/v1/alerts/run                           run the detector pipeline
  *
  * All four handlers live in `serverless/v1/alerts/` (not scanned for functions), so the
- * alert family costs one function instead of four — Vercel's Hobby plan allows 12 per
- * deployment (docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget), and the count is enforced by
- * scripts/check-vercel-functions.mjs.
+ * alert family is one entry point instead of four
+ * (docs/codebase/ARCHITECTURE.md#the-node-function-surface-api).
  *
  * `policy` is intentionally first in the load order of the family's docs: it is the
  * dependency-free entry (no store, no auth) and the one the uptime probe hits.

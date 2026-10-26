@@ -55,7 +55,6 @@ frontend/assets/hero-section/*.mp4
 .idea/
 .pytest_cache/
 .venv/
-.vercel
 .vscode/
 .vs/
 *.vsidx

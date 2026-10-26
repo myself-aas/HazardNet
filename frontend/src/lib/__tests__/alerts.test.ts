@@ -146,10 +146,10 @@ describe('loadAlerts', () => {
     expect(result.error).toContain('live API');
   });
 
-  /* Measured on 2026-10-26: www.hazardnet.live is served by Vercel, whose /api/v1/alerts
-     answers 200 with `{count: 0, state_counts: {}, alerts: []}` because nothing is wired
-     behind it, while the snapshot committed to the same deployment holds the published
-     advisories. The loader used to return that empty answer as the truth, so the front door
+  /* Measured on 2026-10-26, while www.hazardnet.live was still answered by the legacy host
+     (it now CNAMEs to the Cloudflare Pages project): that host's /api/v1/alerts replied 200
+     with `{count: 0, state_counts: {}, alerts: []}` because nothing was wired behind it, while
+     the snapshot committed to the same deployment held the published advisories. The loader used to return that empty answer as the truth, so the front door
      reported "the alerts artifact could not be read" on a deployment that was shipping 106
      advisories. An answer that states no ledger is not an answer. */
   it('falls through to the snapshot when the live API answers with an empty ledger', async () => {

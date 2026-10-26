@@ -66,10 +66,6 @@ SECRETS_CATALOG=(
   # Daily advisory ingest (Kaggle CLI)
   "KAGGLE_USERNAME|opt|daily_advisory_ingest|Kaggle account the advisory dataset is published under"
   "KAGGLE_KEY|opt|daily_advisory_ingest|Kaggle API key for that account"
-  # Ingest-triggered Vercel deploy (the step exits 0 when unset)
-  "VERCEL_TOKEN|opt|daily_advisory_ingest|Vercel deploy token; unset means 'rely on the GitHub push trigger'"
-  "VERCEL_ORG_ID|opt|daily_advisory_ingest|Vercel org id (with VERCEL_TOKEN / VERCEL_PROJECT_ID)"
-  "VERCEL_PROJECT_ID|opt|daily_advisory_ingest|Vercel project id for the production deployment"
   # Firebase aliases consumed by the ingest / verify workflows
   "FIREBASE_SERVICE_ACCOUNT|opt|daily_advisory_ingest|Legacy alias mapped onto FIREBASE_SERVICE_ACCOUNT_JSON"
   "FIREBASE_SERVICE_ACCOUNT_JSON|opt|daily_advisory_ingest|Service-account JSON for Firestore writes from the ingest"

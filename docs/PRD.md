@@ -250,7 +250,7 @@ require research-private material to be published.
 │       ├─ Write to backend/data/forecasts/ + manifest.json           │
 │       ├─ Build static snapshot (forecasts-latest.json)              │
 │       ├─ Ingest into Firestore forecast store                       │
-│       └─ Deploy frontend bundle (Vercel)                            │
+│       └─ Pages builds on push to main (no deploy step)              │
 │                                                                      │
 │  Frontend (Live)                                                     │
 │       ├─ Firestore real-time listener (primary data source)         │
@@ -308,8 +308,8 @@ on:
   workflow_dispatch: {}    # Manual trigger for recovery
 ```
 
-Required secrets: `KAGGLE_USERNAME`, `KAGGLE_KEY`,
-`FIREBASE_SERVICE_ACCOUNT`, `VERCEL_TOKEN`.
+Required secrets: `KAGGLE_USERNAME`, `KAGGLE_KEY`, `FIREBASE_SERVICE_ACCOUNT`. No deploy
+secret exists: Cloudflare Pages builds `main` on push.
 
 ### 4.5 Historical Hazard Data Pipeline & Static Bundling
 
@@ -347,7 +347,7 @@ client-side filtering and rich interactive graphs without server latency:
                │ HTTPS/JSON
 ┌──────────────▼─────────────────────────────────────────────┐
 │ API LAYER                                                   │
-│ Vercel serverless (primary) + Express backend (self-host)  │
+│ Node functions (`api/**`) or Express (self-host)           │
 │ /api/v1/forecasts /alerts /historical /advisory /weather    │
 │ Auth: JWT + RBAC (public/analyst/reviewer/admin)           │
 │ Rate limiting, audit logging                               │
@@ -768,7 +768,8 @@ Total project wall-clock ≈ 12–14 working days for one engineer.
   in Kaggle secrets.
 - **Firebase/Firestore**: forecast store, real-time listeners, auth.
   Requires `FIREBASE_SERVICE_ACCOUNT` secret.
-- **Vercel**: frontend deployment. Requires `VERCEL_TOKEN` secret.
+- **Cloudflare Pages**: the frontend deployment (`docs/ops/deployment.md`). No secret and no
+  CLI: the Git push is the trigger.
 - **Version coupling**: the daily pipeline writes a `manifest.json` with
   `csv_sha256`, `prediction_date`, and `row_count`. API startup with
   mismatched artifact versions → startup failure with diff report.

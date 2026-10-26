@@ -4,10 +4,10 @@
  * The AI Advisor widget (frontend/src/components/ChatBot.tsx) calls
  * `/api/chat/query` + `/api/chat/sample-questions`. Those routes only existed
  * on the Express backend (`backend/routes/chat.js`), which is NOT what serves
- * the Vercel deployment — so every message in production hit a 404 (HTML) and
+ * the deployed host — so every message in production hit a 404 (HTML) and
  * the widget replied "There was an error communicating with the AI" for every
  * message. This module holds the implementation ONCE so the Express route and
- * the Vercel serverless functions (serverless/chat/query.js,
+ * the Node serverless functions (serverless/chat/query.js,
  * serverless/chat/sample-questions.js) behave identically by construction — the same
  * split backend/utils/forecastServe.js already uses for the forecast API.
  */
@@ -63,7 +63,7 @@ YOUR RESPONSIBILITIES:
  * megabyte of text (cost, latency, prompt-injection surface) while the code still looked
  * bounded. Everything downstream of the sanitize block uses the sanitized values, and the
  * assembled prompt is capped as a whole — on BOTH transports, since the Express route and
- * the Vercel twin share this module.
+ * the Node-function twin share this module.
  */
 const MAX_QUERY_CHARS = 3000;
 const MAX_HISTORY_MESSAGE_CHARS = 1500;
@@ -125,9 +125,9 @@ export const SAMPLE_QUESTIONS = {
 
 /**
  * Transport-agnostic handlers for the two GET endpoints. Both the Express
- * router and the Vercel functions call these so the response bodies cannot
- * drift between deployments. sendJson() works on Express responses, Vercel's
- * @vercel/node responses, and plain http.ServerResponse alike.
+ * router and the Node functions call these so the response bodies cannot
+ * drift between deployments. sendJson() works on Express responses, Node function
+ * (req, res) responses, and plain http.ServerResponse alike.
  */
 function sendJson(res, status, body) {
   if (typeof res.status === 'function') res.status(status);
@@ -164,7 +164,7 @@ function getDistrictContacts(baseline) {
 
 /**
  * Execute one RAG retrieval + multi-tier AI generation turn.
- * POST /api/chat/query  (Express route + Vercel function both call this)
+ * POST /api/chat/query  (Express route + Node function both call this)
  *
  * @param {{query: string, district?: string, conversationHistory?: Array}} input
  * @returns {Promise<object>} JSON body identical to the historical contract:

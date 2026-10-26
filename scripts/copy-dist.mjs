@@ -1,7 +1,7 @@
 // Cross-platform build-output copy: frontend/dist -> dist (repo root).
-// Vercel's Output Directory is configured as "dist", while Vite (and the
-// backend static server / Firebase hosting) use "frontend/dist". This keeps
-// both locations in sync without platform-specific shell commands.
+// Cloudflare Pages publishes the root "dist" (see docs/ops/deployment.md), while
+// Vite, the backend static server and Firebase hosting use "frontend/dist".
+// This keeps both locations in sync without platform-specific shell commands.
 import { cpSync, existsSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

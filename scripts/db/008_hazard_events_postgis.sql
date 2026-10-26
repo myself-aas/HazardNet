@@ -34,7 +34,7 @@
 -- SCOPE / DEPENDENCIES
 -- --------------------
 --   * Requires PostGIS (like 003). Self-host / backend module per ADR 0003: the
---     Vercel serving path, the API and the frontend do not need it.
+--     serving path, the API and the frontend do not need it.
 --   * Uses public.adm3_boundaries (003) *when present* to derive district
 --     geometry. On a database without it the migration still applies; `geom`
 --     simply stays NULL and verify_hazard_events.sql reports it as a WARN.

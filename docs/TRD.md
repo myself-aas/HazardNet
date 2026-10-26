@@ -66,7 +66,7 @@ The end-to-end pipeline runs once per day with zero human intervention:
 │       ├─ Write to backend/data/forecasts/ + manifest.json           │
 │       ├─ Build static snapshot (forecasts-latest.json)              │
 │       ├─ Ingest into Firestore forecast store                       │
-│       └─ Deploy frontend bundle (Vercel)                            │
+│       └─ Pages builds on push to main (no deploy step)              │
 │                                                                      │
 │  Frontend (Live)                                                     │
 │       ├─ Firestore real-time listener (primary)                     │
@@ -506,7 +506,7 @@ Given  a fresh advisory CSV from Kaggle (< 2 hours old)
 When   the GitHub Actions daily workflow runs
 Then   the CSV is fetched, validated, and ingested
   And  the static snapshot is rebuilt
-  And  the Vercel deployment completes
+  And  the Cloudflare Pages build completes
   And  the live site shows the new prediction_date in the freshness badge
   And  total wall-clock time < 10 minutes
 ```
@@ -628,7 +628,7 @@ on:
 # 5. Build static snapshot (node scripts/build_forecast_snapshot.mjs)
 # 6. Ingest to Firestore (node scripts/ingest_forecast_csv.mjs)
 # 7. Commit updated data files (if changed)
-# 8. Trigger Vercel deployment
+# 8. Done — the push to main is the Cloudflare Pages build trigger
 ```
 
 ### 8.2 Secrets Required
@@ -638,7 +638,6 @@ on:
 | `KAGGLE_USERNAME` | Kaggle API auth for fetching notebook output |
 | `KAGGLE_KEY` | Kaggle API key |
 | `FIREBASE_SERVICE_ACCOUNT` | Firestore ingestion |
-| `VERCEL_TOKEN` | Trigger deployment |
 
 ### 8.3 Monitoring & Alerting
 

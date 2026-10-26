@@ -33,8 +33,8 @@ caught up with the forecast pipeline since 2026-10-11.
 | **Firebase Authentication** | Identity | Email/password + **Google** and **GitHub** OAuth; server-side verification via `firebase-admin` | Client: `VITE_FIREBASE_API_KEY` (public by design). Server: `FIREBASE_SERVICE_ACCOUNT_JSON` / `FIREBASE_PRIVATE_KEY` + `FIREBASE_CLIENT_EMAIL` | **high** | `frontend/src/lib/oauthProviders.ts`, `backend/middleware/firebaseAuth.js`, `frontend/src/context/AuthContext.tsx` |
 | **Cloud Firestore** | Database | Forecast store, profiles, users, connectors, blog articles, assessments, alerts | Service account (admin) or client SDK with `firestore.rules` (308 lines) | **high** | `backend/db.js`, `backend/forecastStore.js`, `firestore.rules` |
 | **Firebase Realtime Database** | Database | Presence / realtime status surface | `VITE_FIREBASE_DATABASE_URL` (`hazardnet-aas48424-default-rtdb`) | low | `frontend/src/lib/config.ts`, `frontend/src/components/FirebaseRealtimeStatus.tsx` |
-| **Vercel** | Hosting / serverless platform | The declared production deploy target (6 functions, `dist` output). Owner decision on record: deploys stay with Vercel and stay owner-run | `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` | **high** | `vercel.json`, `daily_advisory_ingest.yml` deploy step, `scripts/check-vercel-functions.mjs` |
-| **Firebase Hosting** | Hosting | The **other** deploy path (apex `hazardnet.live`) | Firebase project `hazardnet-aas48424` | **high** (contested; owner decision says Vercel) | `firebase.json`, `.firebaserc`, `docs/ops/owner-actions.md` |
+| **Cloudflare Pages** | Hosting (the only one) | Serves `dist/` for **both** `hazardnet.live` and `www.hazardnet.live` (both CNAME `hazardnet.pages.dev`). Static only: no functions, so `/api/**` is 404. Reads `_headers`, `_redirects` and `404.html` from the asset root | none — no token, no CLI; the Git push is the trigger. `VITE_*` build variables only | **high** | `docs/ops/deployment.md`, `frontend/public/_headers`, `frontend/public/_redirects`, `frontend/scripts/prerender.mjs` |
+| **Firebase Hosting** | Hosting (not deployed) | `firebase.json` is kept correct for anyone who deploys it, and the `hosting-site=hazardnet-aas48424` TXT record still exists in the zone. **Not a live target** since 2026-10-26 | Firebase project `hazardnet-aas48424` | low — inert | `firebase.json`, `.firebaserc`, `docs/ops/owner-actions.md` |
 | **Cloudflare** | CDN / WAF (in front of the site) | Edge in front of the live domain. **The probe passes now**: `edge_challenged: false` at the 2026-10-24 run (owner WAF skip rule in place, Action 18 closed) | n/a — configured in the Cloudflare console, not in this repo | **high** | `data/site-health/latest.json`, `site-health.yml` |
 | **Web Push (VAPID)** | Push | Browser push subscriptions and broadcast | `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY`, contact `WEB_PUSH_CONTACT` (defaults to `mailto:admin@hazardnet.org`) | medium | `backend/utils/vapid.js`, `backend/routes/push.js` |
 | **Telegram Bot API** | Messaging | Alert delivery channel | `TELEGRAM_BOT_TOKEN` + `TELEGRAM_ALERT_CHAT_ID` (or `TELEGRAM_CHAT_ID`); base overridable via `TELEGRAM_API_BASE`; 8 s timeout | low — **configured but with no live subscribers** | `backend/alerts/channels/telegram.js`, `SECURITY.md` |
@@ -43,7 +43,7 @@ caught up with the forecast pipeline since 2026-10-11.
 | **GitHub (API + Actions + Releases)** | Platform | CI, cron scheduling, artifact commits — APK/MSIX release assets are **retired to `.github/workflow-templates/` as of 2026-10-26** (both release workflows failed on every push to `main`) | `GITHUB_TOKEN` (workflow); `VITE_DOWNLOAD_GITHUB_OWNER` / `VITE_DOWNLOAD_REPO_ANDROID` for public download links | **high** | `.github/workflows/*.yml`, `frontend/src/lib/downloadChannels.ts`, `.github/workflow-templates/hazardnet-{mobile-android, windows-msix}-release.yml` |
 | **GLIDE / ReliefWeb / FAO GIEWS / WHO / IFRC GO / ADRC** | Reference links (not API calls) | Cross-references resolved into outbound URLs per event | None | low | `backend/utils/glideResolver.js`, `frontend/src/lib/glide.ts` |
 | **Bangladesh official sources** | Attribution / authority boundary | BMD, FFWC, DDM, DAE, MoDMR — cited, plus the 999 emergency instruction that must stay legible | None | **high** (a brand commitment, not a link) | `PRODUCT.md` §Brand Commitments |
-| **Vercel Analytics** | Analytics | `@vercel/analytics`, gated | `VITE_VERCEL_ANALYTICS` | low | `frontend/src/App.tsx`, `frontend/src/lib/vercelAnalytics.ts` |
+| **Cloudflare Web Analytics** | Analytics | Beacon injected by the edge; allowed in the CSP (`static.cloudflareinsights.com`). Nothing to enable in this repository | none | low | `frontend/public/_headers`, `docs/ENVIRONMENT_SECRETS.md` §1.1 |
 | **First-party telemetry** | Analytics | `POST /api/v1/telemetry` — **the sink handler (`serverless/v1/telemetry.js`) is deleted at HEAD**, so the beacon now posts to a per-route JSON 500 | none (unauthenticated; PII-shaped keys stripped client-side; DNT honoured) | low — off unless `VITE_ANALYTICS_ENABLED=true` | `packages/analytics/src/streaming.ts`, `api/v1/[resource].js`, `test -e serverless/v1/telemetry.js` → ABSENT |
 | **Prometheus + Grafana** | Observability | `/metrics` (self-host) and `/api/metrics` (**serverless metrics handler deleted at HEAD**) exposition via `prom-client`; a dashboard and alert rules are committed. `scripts/setup_monitoring.sh` **deleted** | none | low — must be run outside the repo | `backend/metrics.js`, `monitoring/{prometheus.yml,alerts.yml,grafana-dashboard.json,README.md}`, `MONITORING_SETUP_GUIDE.md` |
 | **`ipapi.co`** | IP geolocation | Browser-side fallback for a visitor's district | none | low — third-party, rate-limits shared CI egress and omits CORS headers; the E2E suite treats a blocked response as expected | `e2e/full-app-qa.spec.ts`, `frontend/src/services/geolocationService.ts` |
@@ -54,7 +54,7 @@ caught up with the forecast pipeline since 2026-10-11.
 |-------|------|--------------|----------|----------|
 | **Cloud Firestore** (named database id) | The live forecast store, plus `profiles`, `users`, `user_connectors`, `blog_articles`, `assessments`, `alerts`, and a catch-all `/{document=**}` rule | `backend/db.js` (client SDK, `setLogLevel('silent')`) → `backend/forecastStore.js` (singleton, `firestoreAvailable` flag) → `backend/forecastPersistence.js` (500-op transaction ceiling) | Falls back **silently** to the committed snapshot when unprovisioned/offline/0-records, so a Firestore outage looks like stale data, not an error. **Install-level note:** a fresh Node process cannot import the `firebase-admin`/`@google-cloud/firestore` stack at HEAD (`Cannot find module 'google-gax'`, measured by `__tests__/runtimeDependencies.test.js`) | `backend/db.js`, `backend/forecastStore.js`, `firestore.rules` |
 | **Committed JSON/CSV artifacts** | The **primary** delivery path for published numbers — **fresh at HEAD**: `backend/data/forecasts/manifest.json` (`prediction_date` **2026-10-24**, `row_count` **128**, model version stamped), snapshot rebuilt 2026-10-25T10:49Z with 64+64 rows. **Lagging**: `alerts-latest.json` (2026-10-11, 116 WATCH of 128 assessed) and `freshness.json` (built 2026-10-24T16:07Z, describing the superseded 2026-10-10 ingest as 352 h stale; its own step-consistency test fails at HEAD) | Written only by pipeline scripts in CI; read by the browser as static files and by `forecastStore.js` as a fallback | Ordering: the ingest commit landed after the day's freshness build, so freshness under-reports the state it ships with | those files, `__tests__/freshnessArtifact.test.js` (fails) |
-| **In-memory cache** | Open-Meteo point cache (15 min TTL), AI circuit-breaker state, the forecast-store singleton | `backend/utils/openMeteo.js`, `backend/utils/ai_fallback_engine.js`, `backend/forecastStore.js` | **Per-instance.** On Vercel each lambda has its own cache, so TTLs and breakers do not coordinate | those files |
+| **In-memory cache** | Open-Meteo point cache (15 min TTL), AI circuit-breaker state, the forecast-store singleton | `backend/utils/openMeteo.js`, `backend/utils/ai_fallback_engine.js`, `backend/forecastStore.js` | **Per-instance.** On a function host each instance has its own cache, so TTLs and breakers do not coordinate | those files |
 | **`FORECAST_STORE_MEMORY=true`** | Test/dev store | `backend/forecastStore.js` | Must never be set in production — it would serve an empty store | that file |
 | **Postgres / PostGIS (`scripts/db/*.sql`)** | DDL for `forecasts`, `adm3_spatial`, `user_dashboard`, `blog_articles` (RLS), `hazard_events` + `verify_*.sql` checks | **Nothing in the runtime connects to it** — no `pg`, `postgres`, `prisma`, `knex` or `sequelize` in any manifest | Reads as the live schema but is not deployed; `SECURITY.md` states plainly "the PostGIS event store is not deployed" | `scripts/db/README.md`, `scripts/db/*.sql`, `SECURITY.md` |
 | **AsyncStorage (mobile)** | Offline cache via TanStack `query-async-storage-persister`; saved places; settings | `apps/mobile/src/state/*.ts`, `packages/core/src/savedPlaces.ts` | Native-only; not exercised by the web suites | `apps/mobile/package.json` |
@@ -71,7 +71,8 @@ needs `@firebase/rules-unit-testing` plus a Java-backed emulator that CI does no
 
 ### 3) Secrets and Credentials Handling
 
-- **Credential sources:** environment variables only, in three places — Vercel project env,
+- **Credential sources:** environment variables only, in three places — the Cloudflare Pages
+  build variables (public `VITE_*` only) plus an API host's environment for runtime secrets,
   GitHub Actions secrets/variables, and a local `.env` (gitignored).
   `docs/ENVIRONMENT_SECRETS.md` is the setup guide; `.env.example` is the shape contract
   (**38 variables, all committed empty**). At HEAD the `npm run check:env` validator
@@ -135,7 +136,7 @@ needs `@firebase/rules-unit-testing` plus a Java-backed emulator that CI does no
     committed snapshot, and re-probes on later calls.
   - CORS: **fails closed** in production when `FRONTEND_ORIGIN` is unset.
   - API key: **fails closed** with 503 when `BACKEND_API_KEY` is unset.
-  - Rate limiting: **per-instance only** on Vercel — `serverlessGuard.js` states the effective
+  - Rate limiting: **per-instance only** on a function host — `serverlessGuard.js` states the effective
     ceiling is `limit × instances`, and that a shared counter (Upstash/Redis) is owner
     Action 8. Buckets by cost, not by route: `read 120/min`, `alerts 60/min`, `ai 20/min`,
     `pipeline 12/min` (**×10** with the pipeline key), `metrics 60/min`.
@@ -198,8 +199,9 @@ needs `@firebase/rules-unit-testing` plus a Java-backed emulator that CI does no
 - `backend/{db.js,forecastStore.js,forecastPersistence.js,metrics.js}`,
   `backend/middleware/{serverlessGuard.js,firebaseAuth.js,cors.js,rateLimit.js,requestId.js}`
 - `packages/api/src/{client,retry,endpoints,errors}.ts`, `packages/analytics/src/streaming.ts`
-- `frontend/src/lib/{config.ts,forecasts.ts,gibs.ts,oauthProviders.ts,glide.ts,downloadChannels.ts,vercelAnalytics.ts}`
-- `firestore.rules` (308 lines), `firebase.json`, `.firebaserc`, `vercel.json`, `frontend/vercel.json`
+- `frontend/src/lib/{config.ts,forecasts.ts,gibs.ts,oauthProviders.ts,glide.ts,downloadChannels.ts}`
+- `firestore.rules` (308 lines), `firebase.json`, `.firebaserc`,
+  `frontend/public/{_headers,_redirects}`
 - `.env.example` (38 vars, all empty), `docs/ENVIRONMENT_SECRETS.md`,
   `docs/ops/secret-rotation.md`, `data/security/secret-rotation.json`
 - `monitoring/{prometheus.yml,alerts.yml,grafana-dashboard.json,README.md}`, `MONITORING_SETUP_GUIDE.md`
@@ -244,7 +246,7 @@ not spend a provider at all. Grounding (search / Maps) is a separate path —
 | Pipeline (CI → API) | Bearer `BACKEND_API_KEY`, **timing-safe** comparison | `pipeline` bucket ×10 (120/min); fail-closed 503 when unset |
 | Alert duty officer | `ALERT_DUTY_OFFICERS` env allowlist + `backend/utils/alertAuth.js` | nothing above `WATCH` auto-publishes; `ALERT_AUTO_PUBLISH` / `ALERT_AUTO_PUBLISH_MINUTES` gate the rest. Governance per owner decision 2026-10-10: maintained and assigned by government/technical/admin officials |
 | Superadmin (blog studio) | `frontend/src/lib/superadmins.ts` + `RequireSuperAdmin` | write rules in `firestore.rules` |
-| Agent / MCP clients | RFC 9727 `Link: rel="api-catalog"` and `WWW-Authenticate: Bearer resource_metadata=…` advertised on **every** response; `.well-known/{oauth-protected-resource,oauth-authorization-server,openid-configuration,agent-card.json,agent-skills/*,mcp/*,ai-catalog.json,http-message-signatures-directory}` — `ai-catalog.json` is an **ARD 1.0** catalog (7 entries), validated by `__tests__/aiCatalog.test.js` | served by both runtimes and typed by `vercel.json` headers |
+| Agent / MCP clients | RFC 9727 `Link: rel="api-catalog"` and `WWW-Authenticate: Bearer resource_metadata=…` advertised on **every** response; `.well-known/{oauth-protected-resource,oauth-authorization-server,openid-configuration,agent-card.json,agent-skills/*,mcp/*,ai-catalog.json,http-message-signatures-directory}` — `ai-catalog.json` is an **ARD 1.0** catalog (7 entries), validated by `__tests__/aiCatalog.test.js` | served by both runtimes, and typed by `frontend/public/_headers` (static) / Express (self-host) |
 | Site-health probe | `x-hazardnet-probe: $SITE_PROBE_TOKEN` + the Cloudflare WAF skip rule (**in place — `edge_challenged: false` at the 2026-10-24 run**) | `data/site-health/latest.json` |
 
 ### Region / failover topology notes
@@ -252,7 +254,9 @@ not spend a provider at all. Grounding (search / Maps) is a separate path —
 There is no multi-region topology in the repository. The failover that exists is
 **provider-level and store-level**, not regional: Kaggle HTTP → Kaggle CLI → Kaggle kernel;
 five LLM providers → heuristic; Firestore → committed snapshot → (tests only) memory. The
-wind-artifact ladder (GFS → ECMWF) was retired with the layer. The one genuinely unresolved
-topology question is which platform serves the apex domain — Vercel (declared, owner-decided)
-and Firebase Hosting (configured) both exist; 63 tracked files treat
-`https://www.hazardnet.live` as canonical, which resolves and serves through Cloudflare.
+wind-artifact ladder (GFS → ECMWF) was retired with the layer. The hosting question is settled
+as of 2026-10-26: **one Cloudflare Pages deployment answers both `hazardnet.live` and
+`www.hazardnet.live`** (`docs/ops/deployment.md`), the Vercel configuration is deleted, and
+`firebase.json` remains configured but unhosted. Every tracked file that treats
+`https://www.hazardnet.live` as canonical is therefore pointing at a hostname that serves the
+same deployment as the apex.

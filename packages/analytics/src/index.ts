@@ -3,7 +3,7 @@
  *
  * This package has zero runtime dependencies on any analytics SDK. It defines
  * the canonical event names (re-exported from @hazardnet/core) and a Tracker
- * interface that each app implements with its backend of choice (Vercel
+ * interface that each app implements with its backend of choice (Cloudflare
  * Analytics on web, Firebase/Expo Analytics on mobile).
  *
  * Usage:
@@ -64,7 +64,7 @@ export function createNoopTracker(): Tracker {
 }
 
 /**
- * Compose multiple trackers into one (e.g., send to both Vercel and Sentry).
+ * Compose multiple trackers into one (e.g., send to both Cloudflare and Sentry).
  */
 export function composeTrackers(...trackers: Tracker[]): Tracker {
   return {

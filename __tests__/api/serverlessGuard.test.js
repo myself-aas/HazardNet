@@ -3,11 +3,11 @@
  *
  * Phase 6 (SEC-07): the serverless-suite guard.
  *
- * Production runs on Vercel functions, where the Express rate limiters never execute —
+ * The functions in `api/` run outside Express, where its rate limiters never execute —
  * so this suite tests the limiter that actually deploys, plus the invariant that keeps it
  * that way: a static scan asserts every deployed handler applies the guard. The handlers
  * live in `serverless/**` (the files under `api/` are the entry points that dispatch to
- * them — see docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget), so a new endpoint added without the guard
+ * them — see docs/codebase/ARCHITECTURE.md#the-node-function-surface-apis-)), so a new endpoint added without the guard
  * fails here rather than in production.
  */
 
@@ -177,7 +177,7 @@ describe('guardRequest', () => {
 describe('the deployed handler actually enforces it', () => {
   it('rate-limits /api/v1/alerts/policy through the real deployed entry point', async () => {
     const { default: handler } = await import('../../api/v1/alerts/[action].js');
-    // One request object per call, as Vercel gives each invocation: the entry point routes
+    // One request object per call, as a function host gives each invocation: the entry point routes
     // on the segment it finds, then removes it so the handler sees a clean query.
     const request = () => ({
       method: 'GET',

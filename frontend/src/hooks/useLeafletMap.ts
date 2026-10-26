@@ -46,7 +46,7 @@ export type MapLayerKey = keyof typeof MAP_LAYERS;
 
    which built two RegExp literals and made two passes over a 170-character string on every render
    of the map, including the renders the marker and tile effects trigger — for two strings that
-   cannot change (Vercel React guidance: `js-hoist-regexp`). The decode is a property of the data,
+   cannot change (React guidance: `js-hoist-regexp`). The decode is a property of the data,
    so it lives here, next to the data, and happens once at module load.
 
    The `/g` flag is safe at module scope: `String.prototype.replace` resets `lastIndex`, so a shared

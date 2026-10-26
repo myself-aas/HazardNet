@@ -67,7 +67,7 @@ always fine.
   but has no live subscribers yet, and the PostGIS event store is not deployed. Those are
   project-status issues, not vulnerabilities — they are described in the repo, and a
   report repeating them adds nothing.
-- Third-party services (Vercel, Firebase, weather service, processing) — report those
+- Third-party services (Cloudflare, Firebase, weather service, processing) — report those
   upstream.
 
 The open items above are tracked with owners and reproduction steps in
@@ -83,13 +83,15 @@ monthly scheduled check (`.github/workflows/secret-rotation-audit.yml`).
 
 Recorded here so a reporter can check whether a control is deliberate before testing it:
 
-- **Security headers** — one canonical CSP (`backend/security/csp.js`) applied by both
-  `vercel.json` configs and by helmet in the self-hosted deployment; HSTS with
+- **Security headers** — one canonical CSP (`backend/security/csp.js`) applied by
+  `frontend/public/_headers` (the copy Cloudflare serves), by `firebase.json`, and by helmet
+  in the self-hosted deployment; HSTS with
   `includeSubDomains; preload`; `X-Content-Type-Options`, `X-Frame-Options: DENY`,
   `Referrer-Policy`, `Permissions-Policy`, COOP.
-- **Rate limiting** — per-instance buckets on every serverless handler
-  (`backend/middleware/serverlessGuard.js`, since the Express limiters do not run on
-  Vercel) plus the Express limiters for the self-hosted deployment. Pipeline endpoints allow
+- **Rate limiting** — per-instance buckets on every Node-function handler
+  (`backend/middleware/serverlessGuard.js`, because the Express limiters do not run there)
+  plus the Express limiters for the self-hosted deployment. Neither runtime is hosted on the
+  public site today (`docs/ops/deployment.md`). Pipeline endpoints allow
   12/min anonymously and 120/min once the correct `BACKEND_API_KEY` is presented, so a
   chunked backfill is not rationed like a prober. A shared counter is an open item (owner
   Action 8); the current guarantee is honest about being per-instance.

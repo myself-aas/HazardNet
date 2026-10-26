@@ -3,7 +3,7 @@
 Covers the deployment guide's Phase 4 monitoring gap (see
 `docs/audits/2026-09-12-deployment-verification.md` §6 item 5): the
 `hazardnet_forecast_age_hours` gauge, Prometheus alert rules, and a Grafana
-dashboard — plus the Vercel-native alternative to running your own stack.
+dashboard — plus the hosted-collector alternative to running your own stack.
 
 ## The freshness SLO
 
@@ -37,7 +37,7 @@ Notes:
 
 | File | Purpose |
 |---|---|
-| `prometheus.yml` | Scrape configs for both targets (self-host Node server; Vercel function) + rule file reference |
+| `prometheus.yml` | Scrape configs for both targets (self-host Node server; Node function) + rule file reference |
 | `alerts.yml` | `HazardNetForecastStale` (> 192h) and `HazardNetForecastDataMissing` (absent 30m) |
 | `grafana-dashboard.json` | Importable dashboard: forecast age, API request rate, inference latency p95, model load time |
 
@@ -46,7 +46,7 @@ Notes:
 | Deployment | Endpoint | Exposed metrics |
 |---|---|---|
 | Node server (self-host) | `GET /metrics` | full set: forecast age + `api_requests_total`, `inference_latency_ms`, `model_load_time_ms`, etc. (`backend/metrics.js`) |
-| Vercel (primary, ADR 0003) | `GET /api/metrics` | stateless function: forecast-age gauge computed live from the store (per-instance counters would be meaningless across lambda instances — so nothing else is faked) |
+| Node function (`api/metrics.js`) | `GET /api/metrics` | stateless function: forecast-age gauge computed live from the store (per-instance counters would be meaningless across invocations — so nothing else is faked). **Not hosted today** — the public site is a static Cloudflare Pages deployment with no API (`docs/ops/deployment.md`). |
 
 Known unwired metrics on the Node server (kept for future use, no writers
 yet): `cache_hit_rate`, `severity_mae`, `prediction_accuracy_per_class`.
@@ -71,23 +71,27 @@ docker run -d --name grafana -p 3005:3000 grafana/grafana
 (Start the Node server with `npm start` — it must be reachable at the target
 configured in `prometheus.yml`.)
 
-### Vercel-native alternative (no self-hosted Prometheus)
+### Hosted-collector alternative (no self-hosted Prometheus)
 
-Vercel functions can't be scraped by a Prometheus running inside Vercel, so
-use an **external** collector pointed at the deployed endpoint:
+An API on a function host cannot be scraped by a Prometheus running inside that
+host, so use an **external** collector pointed at whatever endpoint answers:
 
 1. Grafana Cloud (free tier includes a Prometheus/agent) or any hosted
    Prometheus: add a scrape job with `scheme: https`, `metrics_path:
-   /api/metrics`, target `your-project.vercel.app` (template in
-   `prometheus.yml`), then load `alerts.yml` as a rule group and import the
-   dashboard.
+   /api/metrics`, target the API host (template in `prometheus.yml`), then load
+   `alerts.yml` as a rule group and import the dashboard.
 2. For pure uptime/alerting without metrics: point an uptime checker
    (Checkly, UptimeRobot, Grafana Synthetics) at `/health` (liveness) and
    `/api/metrics` (dependency health — it returns **503** when the forecast
    store is unreachable, so a store outage pages you).
-3. Vercel Observability (built-in function logs/metrics) covers
-   infrastructure-level signals but cannot compute the forecast-freshness SLO
-   — that's what `/api/metrics` is for.
+3. The hosting platform's own function logs/metrics cover infrastructure-level
+   signals but cannot compute the forecast-freshness SLO — that's what
+   `/api/metrics` is for.
+
+**Today there is nothing to scrape.** The public deployment is static
+(`docs/ops/deployment.md`): `hazardnet.live` serves `dist/` and answers `/api/*`
+with 404. This section documents the shape for when an API host exists; the
+site-health workflow, not Prometheus, is what watches the site today.
 
 ## Alert routing
 

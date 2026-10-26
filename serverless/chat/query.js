@@ -8,7 +8,7 @@
  * generic 500 with the message. Metered on the AI bucket — generation is the
  * expensive surface anonymous callers must not run away with.
  *
- * Deployed through api/chat/[action].js; see docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget.
+ * Deployed through api/chat/[action].js; see docs/codebase/ARCHITECTURE.md#the-node-function-surface-api.
  */
 
 import { guardRequest } from '../../backend/middleware/serverlessGuard.js';

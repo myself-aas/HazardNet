@@ -103,16 +103,16 @@ commit-message conventions from earlier maps **cannot be re-measured**.
 - **Extension policy:** ESM sources import each other **with the `.js` extension**
   (`import { corsMiddleware } from './middleware/cors.js'`, `backend/server.js`) — required by
   Node ESM. TypeScript sources omit extensions.
-- **Lazy-import discipline in `api/`:** specifiers must stay **literal** so Vercel's bundler can
-  trace them (`api/[endpoint].js` header, `serverless/dispatch.js`). **At HEAD 17 of the 18
-  literal specifiers point at deleted files** — the convention held; the targets did not
-  (CONCERNS §1).
+- **Lazy-import discipline in `api/`:** specifiers must stay **literal** so a bundler can trace
+  them (`api/[endpoint].js` header, `serverless/dispatch.js`). All 18 specifiers resolve;
+  `__tests__/api/serverlessRouting.test.js` fails if one does not.
 - **Config single-source rules, stated in-file:**
   - *"Do not introduce additional Firebase config literals elsewhere — the removed
     `src/firebase.ts` (an unused second project) is the cautionary tale."*
     (`frontend/src/lib/config.ts`)
   - The CSP lives in `backend/security/csp.js` so the self-host deployment cannot drift from
-    the two Vercel configs (`backend/server.js`).
+    the static hosts' copies — `frontend/public/_headers` (Cloudflare, the one that is served)
+    and `firebase.json` (`backend/server.js`, `__tests__/securityHeadersParity.test.js`).
 
 ### 4) Error and Logging Conventions
 
@@ -133,7 +133,7 @@ commit-message conventions from earlier maps **cannot be re-measured**.
 - **Logging style.**
   - **Bare `console.*` with a bracketed scope tag** is the one idiom that remains:
     `[config]`, `[AI Fallback Engine]`, `[check-bundle]`, `[fetch]`, `[ingest]`, `[deploy]`,
-    `[vercel-functions]`. Measured at HEAD across `backend/`, `serverless/`, `api/`,
+    `[copy-dist]`. Measured at HEAD across `backend/`, `serverless/`, `api/`,
     `scripts/`, `frontend/src/`: **135 `console.log`, 130 `console.error`, 104 `console.warn`,
     15 `console.info`**. `console.log` survives because `no-console` is off for those globs;
     only **7** `no-console` warnings remain repo-wide.

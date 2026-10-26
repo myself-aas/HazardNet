@@ -4,7 +4,7 @@ import cors from 'cors';
  * CORS allowlist (SEC-04).
  *
  * Origins come from FRONTEND_ORIGIN (comma-separated) plus the local-dev
- * loopbacks. Production fails CLOSED: when NODE_ENV/VERCEL_ENV indicates a
+ * loopbacks. Production fails CLOSED: when NODE_ENV/DEPLOY_ENV/CF_PAGES indicates a
  * production runtime and FRONTEND_ORIGIN is unset, cross-origin browser
  * requests are rejected instead of reflected (the legacy permissive mode
  * only survives for local development, where it preserves the old behavior).
@@ -14,7 +14,11 @@ import cors from 'cors';
  */
 
 export function isProductionEnv(env = process.env) {
-  return env.NODE_ENV === 'production' || env.VERCEL_ENV === 'production';
+  // Three signals, because the API is deployable three ways: a plain container (NODE_ENV),
+  // an operator-set marker (DEPLOY_ENV), and Cloudflare Pages Functions (CF_PAGES=1, which
+  // the platform sets itself). The Vercel marker that used to sit here was dropped with the
+  // rest of that deployment on 2026-10-26.
+  return env.NODE_ENV === 'production' || env.DEPLOY_ENV === 'production' || env.CF_PAGES === '1';
 }
 
 export function allowedOrigins(env = process.env) {

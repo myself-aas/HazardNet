@@ -2,7 +2,7 @@
  * Client-safe error responses (SEC-13).
  *
  * The 2026-09-17 live audit found raw error strings reaching API clients
- * (`{ error: err.message }`, `{ detail: dbErr.message }`) across the Vercel
+ * (`{ error: err.message }`, `{ detail: dbErr.message }`) across the Node
  * functions and several Express routes. Those messages carry internal
  * hostnames, driver text, file paths and occasionally query fragments — an
  * information-disclosure finding with no upside for the caller.

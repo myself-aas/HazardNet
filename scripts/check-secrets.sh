@@ -12,7 +12,7 @@
 # Audit 2026-09-18 (SEC-14) — the false negative this script shipped with:
 # the allowlist was tested against the whole `file:line:match` string, so the
 # path of any file whose *name* contained "example" was itself an allowlist hit.
-# Real provider keys (GROQ `gsk_…`, HuggingFace `hf_…`, Vercel `vcp_…`) sat in
+# Real provider keys (GROQ `gsk_…`, HuggingFace `hf_…`, Cloudflare `cf_…`) sat in
 # `.env.example` and the scan reported "✅ passed". The allowlist is now applied
 # to the matched value only — never to the path — and
 # `scripts/tests/test_secret_scan.py` pins both directions (a secret in a file

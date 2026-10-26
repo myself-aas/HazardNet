@@ -25,14 +25,16 @@ previous map's churn numbers cannot be re-measured from this clone.
      `secret-rotation-audit` monthly), tag/main-triggered release workflows
      (both retired 2026-10-26 — see `.github/workflow-templates/`), and dispatch-only ones
      (`verify-secrets`, `Firebase-Store-Verify`, and — at HEAD — `live-wind-update`).
-  3. The same API surface is implemented twice — Express (`backend/routes/**`) and Vercel
-     functions (`serverless/**`) — and parity is maintained by **sharing the logic modules**, not
-     by generating one from the other. **At HEAD this parity is severed**: 17 of 18 serverless
-     handler modules were deleted while the dispatchers and their tests still reference them
-     (see §5).
+  3. The same API surface is implemented twice — Express (`backend/routes/**`) and the Node
+     functions (`api/**` dispatching into `serverless/**`) — and parity is maintained by
+     **sharing the logic modules**, not by generating one from the other. The site itself is
+     served statically by Cloudflare Pages and runs no API at all (`docs/ops/deployment.md`);
+     the two runtimes are what a container or Workers deployment would serve.
 - **Primary constraints (all three shape the design visibly):**
-  - **Vercel Hobby: ≤12 Serverless Functions.** The entire `api/` ↔ `serverless/` split exists
-     for this. Measured **6/12** (`node scripts/check-vercel-functions.mjs`).
+  - **≤12 Serverless Functions (a plan limit of a host this repo no longer deploys to).** The
+     `api/` ↔ `serverless/` split exists for it: one entry point per URL *family*, measured
+     **6**. The limit is gone, the shape is kept — it is what keeps the handlers
+     platform-agnostic and shared with Express.
   - **`docs/PUBLICATION_POLICY.md` is binding:** model code, dataset collection, training,
      benchmarking and severity derivation are research-private. Inference therefore lives in a
      Kaggle notebook **outside this repository**; no ML framework appears in any manifest.
@@ -61,7 +63,7 @@ Kaggle notebook (out of repo)
   -> node --test __tests__/advisoryPipeline.test.js
   -> git commit + git push (backend/data/forecasts/, forecasts-latest.json,
                             alerts-latest.json, freshness.json)
-  -> npx vercel deploy --prod   (only if artifacts changed AND VERCEL_TOKEN is set)
+  -> Cloudflare Pages builds `main`   (no deploy step, no token: the push is the trigger)
   -> (retired 2026-10-26) scripts/notify_ops.mjs -> Slack #hazardnet-ops
      wiring now lives in .github/workflow-templates/hazardnet-ops-slack-notify.yml
 ```
@@ -96,7 +98,7 @@ outage.
 
 ```text
 GET /api/v1/forecasts/bulk
-  -> Vercel matches api/v1/forecasts/[action].js        (one of 6 functions)
+  -> the function host matches api/v1/forecasts/[action].js   (one of 6 entry points)
   -> serverless/dispatch.js: routeSegment(req,'action',table)
        path is the source of truth; ?action= is the fallback for direct invocation;
        BOTH are stripped before the handler runs
@@ -122,8 +124,8 @@ Step 4 is severed at HEAD for 17 of 18 handlers (CONCERNS §1).
 | `packages/api` | Typed client, endpoint table, retry, error normalisation | Business rules | `packages/api/src/{client,endpoints,retry,errors}.ts` |
 | `frontend/src/lib` | Framework-agnostic data access and derivations (52 modules + 33 co-located tests) | Components; hardcoded config (all of it is in `lib/config.ts`) | `frontend/src/lib/forecasts.ts`, `frontend/src/lib/config.ts` |
 | `frontend/src/{hooks,components,pages}` | React state, presentation, routing | Contract definitions, direct `fetch` of another layer's URL | `frontend/src/App.tsx`, `frontend/src/hooks/useForecasts.ts` |
-| `api/` | Six dispatcher entry points: route tables + literal dynamic imports | Handler logic (Vercel would count it as a function) | `api/[endpoint].js`, `api/v1/[resource].js` |
-| `serverless/` | The Vercel handlers — **at HEAD: only `dispatch.js` (86 L) and `v1/historical.js` survive of the original 20 files** | Being under `api/` | `find serverless -type f` |
+| `api/` | Six dispatcher entry points: route tables + literal dynamic imports | Handler logic (each file is one function on a function host) | `api/[endpoint].js`, `api/v1/[resource].js` |
+| `serverless/` | The platform-agnostic handlers — 20 modules, each also mounted by an Express router | Being under `api/` (which a function host scans) | `find serverless -type f` |
 | `backend/routes` + `backend/middleware` | Express HTTP surface: 11 route modules, 7 middlewares, `.well-known` endpoints | Duplicated serving logic — shared with serverless via `backend/utils/*` | `backend/server.js`, `git ls-files backend/routes` |
 | `backend/utils/forecastServe.js` | Query parsing, history windowing, CSV export — **the single implementation behind both runtimes** | Runtime-specific concerns | its own header comment ("byte-identical API behavior across runtimes") |
 | `backend/alerts/` | The alert engine: policy thresholds, assessment, calibration, digest, lifecycle (append-only), notify, report, store, and the SMS/Telegram channels | Auto-publishing above `WATCH` — a named duty officer must approve | `backend/alerts/lifecycle.js`, `backend/alerts/policy.js` |
@@ -135,7 +137,7 @@ Step 4 is severed at HEAD for 17 of 18 handlers (CONCERNS §1).
 
 | Pattern | Where found | Why it exists |
 |---------|-------------|---------------|
-| **Dispatcher / front-controller** | `serverless/dispatch.js` + all six `api/**` entry points | The 12-function budget: one function per URL *family*, dispatching to handlers Vercel never scans |
+| **Dispatcher / front-controller** | `serverless/dispatch.js` + all six `api/**` entry points | One function per URL *family*, dispatching to handlers a function host never scans — and a single place for the guard, the JSON 404 and the per-route 500 |
 | **Per-request lazy import with literal specifiers** | `api/[endpoint].js`, `api/v1/[resource].js`, `api/v1/alerts/[action].js`, `api/v1/forecasts/[action].js`, `api/chat/[action].js` | Fault isolation (a module-level throw must not fail the family) and cold start — the isolation works: at HEAD the deleted handlers 500 individually while `v1/historical` still resolves |
 | **Shared-module parity** | `backend/utils/forecastServe.js`, `backend/utils/chatService.js`, `backend/middleware/serverlessGuard.js` (imported by `serverless/dispatch.js`) | Two runtimes, one behaviour — parity by construction rather than by test |
 | **Provider cascade + circuit breaker** | `backend/utils/ai_fallback_engine.js` (534 L) — `cascadeProviders` array, per-provider timeout, `circuitBreakers` with 45 s cooldown, 429 trips the breaker and falls through | Free-tier LLM quotas are the norm here; a hung or quota-exhausted upstream must not eat the whole request |
@@ -151,21 +153,12 @@ Step 4 is severed at HEAD for 17 of 18 handlers (CONCERNS §1).
 
 ### 5) Known Architectural Risks
 
-- **The Vercel API surface is severed at HEAD — six functions pass the budget gate while 17 of
-  18 handlers 500.** `api/` dispatchers import `serverless/{forecasts,historical,ingest,metrics,
-  predict}.js`, `serverless/chat/{query,sample-questions}.js`, `serverless/v1/{alerts/index,
-  kaggle,telemetry,weather}.js`, `serverless/v1/alerts/{evidence-card,policy,review,run}.js` and
-  `serverless/v1/forecasts/{bulk,history,metadata}.js`; **only `serverless/v1/historical.js`
-  exists** (`api/v1/weather/batch.js` is self-contained). The dispatcher's own catch converts
-  the `MODULE_NOT_FOUND` into a per-route JSON 500, so the failure is contained but total for
-  those families. **Impact:** every dynamic API capability — forecasts API, alerts API, chat,
-  telemetry, ingest, metrics, predict — is dead on the Vercel runtime while the static
-  snapshot read (the product's primary path) is unaffected. Measured symptom in-tree:
-  `__tests__/api/{serverlessRouting,telemetry,serverlessGuard,predict}.test.js`,
-  `__tests__/{ingest,metricsApi,predict,vercelForecasts}.test.js` and
-  `__tests__/phaseEHistorical.test.js` all fail; the rendered front door says *"live API:
-  HTTP 503"*. The Express runtime (`backend/routes/**`) still implements the same contract,
-  so the self-host path is the workaround.
+- **The site runs no API, and the front door says so.** `hazardnet.live` and
+  `www.hazardnet.live` are Cloudflare Pages projects serving `dist/`, so `/api/**` answers
+  `404` — that is the deployment, not an outage. The front door falls back to the committed
+  snapshot (`/data/alerts-latest.json`) and states the source honestly; the two API runtimes
+  (`backend/routes/**` behind Express, `api/**` on a function host) are unhosted today. Whether
+  one of them gets a host is an owner decision recorded in `docs/ops/owner-actions.md`.
 - **The repository does not install with `npm ci` at HEAD.** `package-lock.json` is a 41-line
   stub (3 `packages` entries); `npm ci` exits `EUSAGE` listing hundreds of missing entries
   (captured: `@babel/core`, `@google/genai@2.31.0`, `@hazardnet/analytics`, …). Every CI job
@@ -242,42 +235,46 @@ Step 4 is severed at HEAD for 17 of 18 handlers (CONCERNS §1).
   `frontend/vite.config.ts` (273 L)
 - `.github/workflows/{ci,daily_advisory_ingest,live-wind-update,site-health,windows-compile,secret-rotation-audit,Firebase-Store-Verify,verify-secrets}.yml`; the retired release pipelines are inert in `.github/workflow-templates/` (`hazardnet-mobile-android-release.yml`, `hazardnet-windows-msix-release.yml`, `hazardnet-ops-slack-notify.yml`)
 - `scripts/process_advisory_ingest.mjs`, `scripts/fetch_kaggle_advisory.mjs`,
-  `scripts/check-vercel-functions.mjs`, `scripts/check-bundle.mjs`
+  `scripts/check-bundle.mjs`
 - `backend/data/forecasts/manifest.json` (prediction_date **2026-10-24**, 128 rows, model
   version stamped), `frontend/public/data/forecasts-latest.json` (built 2026-10-25T10:49Z,
   64+64 rows), `frontend/public/data/freshness.json` (**lags** — describes 2026-10-10),
   `frontend/public/data/alerts-latest.json` (2026-10-11, 116 WATCH), `data/site-health/latest.json`
   (2026-10-24: 5 success / 2 failure, `edge_challenged: false`)
 - `docs/PUBLICATION_POLICY.md`, `PRODUCT.md`, `docs/ops/owner-actions.md`
-- Terminal output (this sandbox, 2026-10-25): `node scripts/check-vercel-functions.mjs` → 6
-  functions; `git ls-files \| wc -l` → 1,017; `npx jest --ci --silent` → 157 passed / **25
-  failed** / 2 skipped suites; FrontDoor test output rendering *"live API: HTTP 503"*;
-  `test -e` existence checks for every deleted module named above
+- Terminal output (this sandbox, 2026-10-26): `node scripts/check-workflows.mjs` → 8 workflows
+  OK; `git ls-files \| wc -l` → 1,017; `npx jest --ci --silent` → 184 suites, 1,969 passed /
+  24 skipped; `npm run build` → `frontend/dist` + `dist`
 
 ## Extended Sections (Optional)
 
-### Vercel serverless surface (the 12-function budget)
+### The Node function surface (`api/`)
 
-**The constraint.** The Vercel Hobby plan allows **at most 12 Serverless Functions per
-deployment**, and every file under `api/` is one function. This repository serves more public
-URLs than that. A file per URL does not fit.
+**What it is.** `api/` holds one entry point per URL *family*; each is a thin
+`createDispatcher({ param, entry, routes })` call. The handlers live in `serverless/`, which no
+function host scans, so the same module serves both the Node-function entry point and the
+Express route in `backend/routes/` — one implementation, two runtimes.
 
-**The design.** `api/` holds one entry point per URL *family*; each is a thin
-`createDispatcher({ param, entry, routes })` call. The handlers live in `serverless/`, a
-directory Vercel never scans for functions (only `api/` is).
+**Where it is deployed.** Not on the site's host. Since 2026-10-26 the site is a **Cloudflare
+Pages** static deployment (`docs/ops/deployment.md`): Pages serves `dist/` and nothing else, so
+`hazardnet.live` and `www.hazardnet.live` answer `/api/*` with `404`. `api/` is kept because the
+handlers it dispatches to are the same modules the Express server mounts, and because the
+entry-point shape is what a container or Workers deployment would need. The layout was
+originally forced by a 12-function plan limit on the host that has since been dropped; the
+constraint is gone, the shape is kept.
 
-**Measured: 6 of 12 functions deployed, 6 left on the budget** (`node scripts/check-vercel-functions.mjs`):
+**Measured: 6 entry points**
 
-| # | Function file | Family | Dispatches to | State at HEAD |
-|---|---|---|---|---|
-| 1 | `api/[endpoint].js` | top-level | `serverless/{forecasts,historical,ingest,metrics,predict}.js` | **all 5 deleted** |
-| 2 | `api/chat/[action].js` | chat | `serverless/chat/{query,sample-questions}.js` | **both deleted** |
-| 3 | `api/v1/[resource].js` | v1 resources | `serverless/v1/{alerts/index,historical,kaggle,telemetry,weather}.js` | only `historical.js` survives |
-| 4 | `api/v1/alerts/[action].js` | alerts actions | `serverless/v1/alerts/{evidence-card,policy,review,run}.js` | **all 4 deleted** |
-| 5 | `api/v1/forecasts/[action].js` | forecast actions | `serverless/v1/forecasts/{bulk,history,metadata}.js` | **all 3 deleted** |
-| 6 | `api/v1/weather/batch.js` | static sibling | itself (static wins over a dynamic segment) | present |
+| # | Function file | Family | Dispatches to |
+|---|---|---|---|
+| 1 | `api/[endpoint].js` | top-level | `serverless/{forecasts,historical,ingest,metrics,predict}.js` |
+| 2 | `api/chat/[action].js` | chat | `serverless/chat/{query,sample-questions}.js` |
+| 3 | `api/v1/[resource].js` | v1 resources | `serverless/v1/{alerts/index,historical,kaggle,telemetry,weather}.js` |
+| 4 | `api/v1/alerts/[action].js` | alerts actions | `serverless/v1/alerts/{evidence-card,policy,review,run}.js` |
+| 5 | `api/v1/forecasts/[action].js` | forecast actions | `serverless/v1/forecasts/{bulk,history,metadata}.js` |
+| 6 | `api/v1/weather/batch.js` | static sibling | itself (static wins over a dynamic segment) |
 
-**Routing contract** (from `serverless/dispatch.js`, 86 L at HEAD):
+**Routing contract** (from `serverless/dispatch.js`):
 
 - The **path is the source of truth** for the segment; the query parameter is the fallback
   (`routeSegment`). **Both are stripped from the request before the handler runs**
@@ -286,19 +283,20 @@ directory Vercel never scans for functions (only `api/` is).
   request object must rebuild it per call.
 - Guard runs first (`guardRequest`, from `backend/middleware/serverlessGuard.js`); an
   unmatched path gets a **JSON 404** (`no endpoint "<key>"`) with rate-limit headers.
-- A loader that throws — which at HEAD is every deleted handler — is answered with JSON 500
-  `internal server error` (`dispatch.js:76-82`), per route, without touching the rest of the
-  family. The fault-isolation design is visibly doing its job at HEAD.
+- A loader that throws is answered with JSON 500 `internal server error` per route, without
+  touching the rest of the family: the fault-isolation design means one broken import fails
+  only its own endpoint.
 - **Static siblings win** over a dynamic segment; only one segment is matched.
 
-**The gate.** `scripts/check-vercel-functions.mjs` (`HOBBY_FUNCTION_LIMIT = 12`,
-`HEADROOM_WARNING = 2`) runs in CI. **Gap:** it counts function *files*, not whether the
-handlers they import exist — at HEAD it passes 6/12 over a severed surface. A route-table
-integrity check (every literal `() => import('…')` resolves) is the missing gate.
+**The gate.** `__tests__/api/serverlessRouting.test.js` pins the surface: the set of files
+under `api/` is exactly the declared entry-point set (a stray file cannot join silently),
+every declared URL still resolves to a handler, the entry files stay declarative (no endpoint
+logic, no module-scope handler imports), every relative import path resolves, and no module
+under `serverless/` is orphaned from the entry points.
 
 **Adding an endpoint:** put the handler in `serverless/`, add one entry to the relevant
-family's `routes` table with a **literal** `() => import('…')` specifier (so the bundler can
-trace it), then run `npm run check:functions`. Only a new URL *family* consumes budget.
+family's `routes` table with a **literal** `() => import('…')` specifier (so a bundler can
+trace it), and mount the same handler in the Express router.
 
 ### Startup / initialisation order (self-host)
 
@@ -312,7 +310,7 @@ directives: cspDirectivesFromString()}})` → `requestId` → `corsMiddleware()`
 the SPA catch-all `app.get('*')`.
 
 `cspEnforce` resolves as: `CSP_ENFORCE` if defined, else `NODE_ENV === 'production' ||
-VERCEL_ENV === 'production'` (enforcing in production, Report-Only in development).
+DEPLOY_ENV === 'production'` (enforcing in production, Report-Only in development).
 
 ### Async / event topology
 

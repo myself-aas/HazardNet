@@ -200,7 +200,7 @@ export interface ForecastMetadata {
  * snapshot. Throws only when all three sources fail.
  */
 export async function fetchForecastMetadata(): Promise<ForecastMetadata> {
-  // 1. Live metadata endpoint (Vercel serverless / Express backend).
+  // 1. Live metadata endpoint (Node function / Express backend).
   try {
     const metadataResponse = await fetch(`/api/v1/forecasts/metadata?fresh=${Date.now()}`, {
       cache: 'no-store',

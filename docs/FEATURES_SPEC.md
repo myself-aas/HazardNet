@@ -130,7 +130,7 @@ classes, with two honestly labelled severity tracks per forecast record.
 │    2 files, 22 columns, 553.2 kB, CC BY-NC 4.0                     │
 │    Updated: Daily (synced from 8-HazardNet-Advisory notebook)       │
 │                                                                     │
-│  Committed artifacts ──► Vercel (6/12 serverless functions)         │
+│  Committed artifacts ──► Cloudflare Pages (static, no functions)    │
 │  108 prerendered pages ──► CDN edge cache                           │
 │  PMTiles ──► Client-side vector tile cache                          │
 │  Service Worker ──► IndexedDB offline state store                   │
@@ -221,7 +221,7 @@ load.
 1. **Artifact Read (Client-Side):**
    On page load, the React hydration routine reads the committed
    `forecasts-latest.json` and `alerts-latest.json` artifacts from the
-   Vercel CDN edge cache. No server-side database query is made. The
+   Cloudflare edge cache. No server-side database query is made. The
    strip under the headline renders:
    - Count of published alerts at each tier (WATCH / WARNING / SEVERE)
    - Number of districts the last run covered (e.g., "60 / 64")
@@ -1082,7 +1082,7 @@ number also publishes the check on it.
 │     ├── alerts-latest.json                               │
 │     └── status-snapshot.json                             │
 │                                                         │
-│  6. Trigger Vercel deployment                            │
+│  6. Push to main → Cloudflare Pages builds              │
 │     ├── Build frontend (108 prerendered pages)           │
 │     ├── Deploy serverless functions (6/12 budget)        │
 │     └── Invalidate CDN edge cache                        │
@@ -1239,8 +1239,10 @@ Reviewed: 2026-09-17.
 
 ### 19.1 Deployment Target
 
-Vercel serverless functions, operating within a **12-function budget**.
-Current usage: **6 of 12 functions**.
+Cloudflare Pages serves the site **statically** — there is no API on the public host, and
+`/api/**` answers 404 (`docs/ops/deployment.md`). The Node-function surface (`api/**`, 6
+entry points over 20 handlers) is kept for a future host and shares every handler with the
+Express backend.
 
 ### 19.2 API Endpoints
 
@@ -1564,7 +1566,7 @@ defined by `ADVISORY_CSV_COLUMNS` in the backend:
 | Service Worker cache | ≤ 50 MB | Low-end Android storage budget |
 | Inference worker RAM | ≤ 40 MB | 2 GB RAM budget phones |
 | Advisory CSV | ~553 KB | Fits in a single 3G round-trip |
-| Vercel functions | 6 / 12 | Headroom for future endpoints |
+| Node-function entry points | 6 | One per URL family; no plan budget applies |
 | Prerendered pages | 108 | Full site crawlable without JS |
 | E2E test coverage | 151 suites / 1,591 tests | Regression safety |
 | Lint errors | 0 (683-warning budget) | Code quality floor |
@@ -1576,7 +1578,7 @@ defined by `ADVISORY_CSV_COLUMNS` in the backend:
 ### 27.1 Security
 
 - **CSP Headers:** Single source of truth, parity-verified across
-  Vercel config, Express middleware, and static headers. Ad-network
+  `frontend/public/_headers`, `firebase.json`, and Express middleware. Ad-network
   `script-src` allowlist removed.
 - **Security Headers Parity:** Automated test suite verifies
   consistency across all deployment targets.
@@ -1654,7 +1656,6 @@ on every deployment:
 
 | Gate | What It Checks |
 |------|---------------|
-| `check:functions` | Vercel function count ≤ 12 |
 | `check:rotation` | Secret rotation cadence (15 creds, 0 overdue) |
 | `check:claims` | All cited evidence paths exist (565 paths) |
 | `check:tokens` | Design system token compliance |

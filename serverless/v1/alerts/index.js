@@ -9,7 +9,7 @@
  * the Express module in would drag multer and the route graph into this cold start).
  *
  * Deployed through api/v1/[resource].js; see serverless/dispatch.js and
- * docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget.
+ * docs/codebase/ARCHITECTURE.md#the-node-function-surface-api.
  */
 
 import { guardRequest } from '../../../backend/middleware/serverlessGuard.js';

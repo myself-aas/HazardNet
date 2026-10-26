@@ -1,7 +1,7 @@
 /**
  * Analytics event name constants.
  *
- * Events are shared between web (Vercel Analytics) and mobile (Firebase/Sentry
+ * Events are shared between web (Cloudflare Web Analytics) and mobile (Firebase/Sentry
  * or custom). Each platform implements a thin `track(event, properties)`
  * adapter that forwards to its SDK; this module only names the events and
  * documents their expected properties.

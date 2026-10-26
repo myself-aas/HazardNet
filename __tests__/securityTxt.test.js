@@ -91,26 +91,19 @@ describe('disclosure documents agree with each other', () => {
 });
 
 describe('routing', () => {
-  const rootConfig = JSON.parse(readFileSync(join(ROOT, 'vercel.json'), 'utf8'));
+  const redirects = readFileSync(join(ROOT, 'frontend/public/_redirects'), 'utf8');
 
-  it('the SPA rewrite leaves dotted paths (so /.well-known/security.txt) alone', () => {
-    const rewrites = rootConfig.rewrites || [];
-    expect(rewrites.length).toBeGreaterThan(0);
-    // Every catch-all rewrite must exclude paths containing a dot; otherwise the static
-    // file is never reached and a request for it returns index.html instead.
-    for (const rewrite of rewrites) {
-      // The catch-all now lands on the *noindex* shell (`404.html`), not on `index.html`: an
-      // unknown URL served the indexable homepage HTML is a soft 404, and the crawlable URL space
-      // is unbounded (Phase 8). The dotted-path exclusion is what keeps `/.well-known/security.txt`
-      // and `/data/*.json` reachable, so it must survive any change here.
-      expect(rewrite.destination).toBe('/404.html');
-      expect(rewrite.source).toContain('.*\\.[a-zA-Z0-9]+$');
+  /* `/.well-known/security.txt` is a static file in the build output, so nothing has to
+     exclude it any more: Cloudflare Pages serves the file before any fallback, and
+     `_redirects` carries no catch-all that could swallow it. Both halves are asserted —
+     the file is copied into the build, and no rule rewrites it. */
+  it('no redirect rule can swallow /.well-known/security.txt', () => {
+    for (const line of redirects.split('\n')) {
+      if (!line.trim() || line.trim().startsWith('#')) continue;
+      expect(line).not.toContain('.well-known');
     }
-  });
-
-  it('the security.txt path is not overridden by a redirect', () => {
-    for (const redirect of rootConfig.redirects || []) {
-      expect(redirect.source).not.toContain('.well-known');
-    }
+    // …and the file itself ships from `frontend/public/`, which Vite copies verbatim into the
+    // asset root Cloudflare serves. There is no catch-all rewrite left to exclude it from.
+    expect(existsSync(join(ROOT, 'frontend/public/.well-known/security.txt'))).toBe(true);
   });
 });

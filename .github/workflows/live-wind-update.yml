@@ -60,16 +60,9 @@ jobs:
             echo "committed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Trigger Vercel Production Deployment
-        if: steps.commit-artifact.outputs.committed == 'true'
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: |
-          if [ -z "${VERCEL_TOKEN:-}" ]; then
-            echo "[deploy] VERCEL_TOKEN unset — relying on GitHub push trigger for deployment."
-            exit 0
-          fi
-          echo "[deploy] Triggering Vercel deployment..."
-          npx --yes vercel deploy --prod --token="$VERCEL_TOKEN"
+      # Deployment is Cloudflare Pages' Git integration: pushing the artifact commit
+      # to `main` starts the Pages build, which is why no deploy step lives here.
+      # Until 2026-10-26 this job ended with `npx vercel deploy --prod`, gated on
+      # `committed == 'true'` and on a VERCEL_TOKEN this repository never held — so the
+      # step silently deferred to the Git trigger anyway. The Vercel project, its two
+      # configs and its secrets are gone (docs/ops/deployment.md).

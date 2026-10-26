@@ -196,12 +196,13 @@ jobs:
           fi
           echo "✅ Homepage serves the app shell"
 
-      # Deep-link probe (2026-09-17 audit, P0). Every non-root route returned
-      # Vercel's platform 404 in production — /login, /dashboard, /about,
-      # /blogs, /documentation — because the project was built from frontend/
-      # and the root vercel.json rewrites never applied. The build now emits a
-      # real HTML file per route (frontend/scripts/prerender.mjs) and
-      # frontend/vercel.json carries the rewrite, so this must stay green.
+      # Deep-link probe (2026-09-17 audit, P0). Every non-root route once
+      # returned the platform's 404 in production — /login, /dashboard, /about,
+      # /blogs, /documentation — because the deployment built from the wrong
+      # root and its rewrites never applied. The build now emits a real HTML
+      # file per route (frontend/scripts/prerender.mjs), and Cloudflare Pages
+      # serves those files directly, so no rewrite is involved and this must
+      # stay green.
       - name: Probe deep links resolve with prerendered content
         id: deep_links
         continue-on-error: true
@@ -216,7 +217,7 @@ jobs:
             code="${response##*$'\n'}"
             html="${response%$'\n'*}"
             if [ "$code" != "200" ]; then
-              echo "::error::$label ($path) returned HTTP $code — deep links are broken. Check the Vercel Root Directory (docs/ops/owner-actions.md §2a-bis) and that the prerender step ran."
+              echo "::error::$label ($path) returned HTTP $code — deep links are broken. Confirm the Pages build ran the prerender step (frontend/scripts/prerender.mjs) and that the deployment's output directory is dist (docs/ops/deployment.md)."
               FAILED=1
               return
             fi
@@ -237,18 +238,17 @@ jobs:
           check_route '/.well-known/security.txt' 'contact:' 'security.txt'
           exit "$FAILED"
 
-      # Security-header probe (SEC-03/SEC-04). The policy is declared in three
-      # host configs — vercel.json (both copies) and firebase.json — plus helmet
-      # in backend/server.js for the self-hosted deployment; if the one that
-      # applies to production is not among the copies you updated, the headers
-      # disappear silently. That is what this probe caught on 2026-10-04: the
-      # domain is answered by Firebase Hosting (deploys themselves stay
-      # owner-run on Vercel — docs/ops/owner-actions.md Action 17), and
-      # firebase.json carried only Referrer-Policy / X-Content-Type-Options /
-      # X-Frame-Options, so there was no CSP, no Permissions-Policy and an HSTS
-      # value without includeSubDomains in production while both Vercel configs
-      # were complete. The Firebase copy is now covered by
-      # __tests__/securityHeadersParity.test.js too.
+      # Security-header probe (SEC-03/SEC-04). The policy is declared for the
+      # Cloudflare Pages deployment in `frontend/public/_headers`, for the
+      # Firebase Hosting deployment in `firebase.json`, and for the self-hosted
+      # backend by helmet (backend/server.js); if the one that applies to
+      # production is not among the copies you updated, the headers disappear
+      # silently. That is what this probe caught on 2026-10-04, when the domain
+      # was answered by Firebase Hosting and firebase.json carried only
+      # Referrer-Policy / X-Content-Type-Options / X-Frame-Options, so there was
+      # no CSP, no Permissions-Policy and an HSTS value without includeSubDomains
+      # in production while the config that was not serving carried everything.
+      # All three copies are now covered by __tests__/securityHeadersParity.test.js.
       - name: Probe security headers
         id: security_headers
         continue-on-error: true
@@ -282,13 +282,12 @@ jobs:
 
           # Which host answered? This is the only probe that says anything about
           # the deployment's own configuration, so record the fingerprint of the
-          # thing it measured. Measured 2026-10-26 (docs/audits/2026-10-26-live-security-headers.md):
-          # the answers on hazardnet.live carry `server: cloudflare` and none of
-          # `x-fh-requested-host` / `x-served-by` / `x-vercel-id`, and the two
-          # headers they do carry (nosniff, referrer-policy) are a subset of the
-          # repo's set — i.e. the host answering the domain is not applying any
-          # of `firebase.json` / `vercel.json` / `frontend/vercel.json`.
-          FINGERPRINT=$(grep -iE '^(server|x-fh-requested-host|x-served-by|x-vercel-id|x-vercel-cache|via):' <<< "$HEADERS" | paste -sd ' | ' - || true)
+          # thing it measured. Since 2026-10-26 the answer should be Cloudflare
+          # (`server: cloudflare`) in front of Cloudflare Pages, whose `_headers`
+          # file is the policy this step checks. `x-fh-requested-host` would mean
+          # Firebase Hosting answered instead — a different config in this repo,
+          # so the probe then measures `firebase.json`, not `_headers`.
+          FINGERPRINT=$(grep -iE '^(server|x-fh-requested-host|x-served-by|cf-ray|via):' <<< "$HEADERS" | paste -sd ' | ' - || true)
           echo "[headers] answering host: ${FINGERPRINT:-no identifying header}"
           LAST_MODIFIED=$(grep -iE '^last-modified:' <<< "$HEADERS" | head -1 | sed 's/^[^:]*: *//' || true)
           if [ -n "$LAST_MODIFIED" ]; then
@@ -332,7 +331,7 @@ jobs:
               DETAIL="$DETAIL (deployment last-modified $LAST_MODIFIED)"
             fi
             echo "detail=$DETAIL" >> "$GITHUB_OUTPUT"
-            echo "::error::security-header gap — $DETAIL. The header set is declared in firebase.json, vercel.json and frontend/vercel.json; whichever host answers $SITE_URL must be redeployed with it (or the headers added at the edge). docs/audits/2026-10-26-live-security-headers.md"
+            echo "::error::security-header gap — $DETAIL. The header set is declared in frontend/public/_headers (Cloudflare Pages), firebase.json and backend/server.js (helmet); whichever host answers $SITE_URL must be redeployed with it (or the headers added at the edge). docs/audits/2026-10-26-live-security-headers.md"
             {
               echo ""
               echo "> ## ⚠️ security headers: $DETAIL"
@@ -342,7 +341,7 @@ jobs:
               echo "> The requirement set is 5 headers (HSTS with includeSubDomains, CSP with"
               echo "> \`frame-ancestors 'none'\`, \`X-Content-Type-Options: nosniff\`,"
               echo "> \`Referrer-Policy\`, \`Permissions-Policy\`). The repo declares all five in"
-              echo "> \`firebase.json\`, \`vercel.json\` and \`frontend/vercel.json\`, so this is a"
+              echo "> \`frontend/public/_headers\`, \`firebase.json\` and helmet, so this is a"
               echo "> deployment/edge gap, not a source gap: see"
               echo "> \`docs/audits/2026-10-26-live-security-headers.md\` (measured) and"
               echo "> docs/ops/owner-actions.md Action 17."
@@ -412,8 +411,9 @@ jobs:
           # same apex→www 308.
           #
           # Production currently ships the SPA plus the committed snapshot and
-          # serves NO /api/* route at all (Vercel Root Directory — see
-          # docs/ops/owner-actions.md §2a-bis). While PUSH_TO_API=false the
+          # serves NO /api/* route at all: Cloudflare Pages hosts static assets,
+          # and the Node API (backend/) runs on its own host — see
+          # docs/ops/deployment.md. While PUSH_TO_API=false the
           # snapshot IS the documented delivery path (daily_forecast.yml
           # commits it), so a 404 on the API must not go red as long as the
           # snapshot the site actually serves is present and fresh. The probe
@@ -454,7 +454,7 @@ jobs:
             exit 1
           fi
 
-          echo "::warning::$API_URL returned HTTP $HTTP_CODE — this deployment serves no /api/v1/forecasts/* route (Vercel Root Directory, docs/ops/owner-actions.md §2a-bis). Probing the committed snapshot instead: it is the active delivery path while PUSH_TO_API=false. Set the API_METADATA_URL repository variable if the API runs on another host."
+          echo "::warning::$API_URL returned HTTP $HTTP_CODE — this deployment serves no /api/v1/forecasts/* route: Cloudflare Pages serves static assets only, and the Node API lives in backend/ on its own host. Probing the committed snapshot instead, which is the active delivery path. Set the API_METADATA_URL repository variable if the API runs on another host."
           SNAP_CODE=$(curl -sSL --max-redirs 5 -A "$PROBE_USER_AGENT" -H 'Accept: application/json,text/plain;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.9' -o /tmp/metadata.json -w "%{http_code}" --max-time 30 "$SNAPSHOT_URL")
           echo "snapshot HTTP $SNAP_CODE ($SNAPSHOT_URL)"
           if [ "$SNAP_CODE" != "200" ] || ! jq -e . /tmp/metadata.json >/dev/null 2>&1; then

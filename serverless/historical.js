@@ -7,7 +7,7 @@
  * guardRequest( before answering (double-metering here would halve the read budget),
  * so the guard requirement for this file is satisfied by delegation.
  *
- * Deployed through api/[endpoint].js; docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget.
+ * Deployed through api/[endpoint].js; docs/codebase/ARCHITECTURE.md#the-node-function-surface-api.
  */
 
 export { default } from './v1/historical.js';

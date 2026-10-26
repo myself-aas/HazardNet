@@ -1,28 +1,29 @@
 /**
- * Shared guard for the Vercel serverless handlers (Phase 6, SEC-07).
+ * Shared guard for the Node function handlers in `api/` (Phase 6, SEC-07).
  *
  * Why this exists: the Express limiters in `backend/middleware/rateLimit.js` only run
- * when the Express server does. Production is deployed as Vercel functions (`api/**`),
+ * when the Express server does. The handlers in `api/**` run on a function host instead,
  * where those middlewares never execute — so every public endpoint was unmetered. This
- * module is the one place the serverless surface gets its rate limit and its response
- * headers, and `__tests__/api/serverlessGuard.test.js` fails if an `api/**` handler is
- * added without calling it.
+ * module is the one place that surface gets its rate limit and its response headers, and
+ * `__tests__/api/serverlessGuard.test.js` fails if an `api/**` handler is added without
+ * calling it.
  *
  * Honest scope of the guarantee:
  *
- *   - Vercel runs many short-lived instances, each with its own memory, so this is a
+ *   - A function host runs many short-lived instances, each with its own memory, so this is a
  *     **per-instance** limit. It stops a single client hammering one instance and it
  *     makes trivial scraping/cost attacks far more expensive, but it is not a global
  *     quota: an attacker who spreads requests across instances gets `limit × instances`.
  *     A hard guarantee needs a shared counter (Upstash/Redis) — recorded as an owner
  *     action in `docs/ops/owner-actions.md` rather than pretended away here.
- *   - The limiter is deliberately dependency-free. A serverless cold start should not
+ *   - The limiter is deliberately dependency-free. A function cold start should not
  *     pay for a Redis client it cannot reach.
  *
- * What is *not* a heuristic: the client key. Behind Vercel, `x-forwarded-for` is set by
- * the platform and the first entry is the real client; the headers are not
- * attacker-controlled on this deployment (the functions are only reachable through the
- * edge). When the header is absent (local dev, tests) the socket address is used.
+ * What is *not* a heuristic: the client key. Behind an edge that terminates the
+ * connection, `x-forwarded-for` is set by the platform and the first entry is the real
+ * client; the headers are not attacker-controlled on such a deployment (the functions are
+ * only reachable through the edge). When the header is absent (local dev, tests) the
+ * socket address is used.
  */
 
 import { verifyApiKey } from '../utils/apiKeyAuth.js';

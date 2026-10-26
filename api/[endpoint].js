@@ -1,11 +1,10 @@
 /**
- * Vercel Serverless Function — the top-level API surface.
+ * Node Serverless Function — the top-level API surface.
  *
- * One function file covers every one-segment endpoint, because the Hobby plan allows at
- * most 12 Serverless Functions per deployment and this repository serves more URLs than
- * that (see docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget; the budget is enforced by
- * scripts/check-vercel-functions.mjs). The handlers themselves live in `serverless/`,
- * which Vercel does not scan for functions.
+ * One function file covers every one-segment endpoint: the URL families keep the function
+ * count small, and the handlers themselves live in `serverless/`, a directory no function
+ * host scans (see docs/codebase/ARCHITECTURE.md#the-node-function-surface-api). The surface
+ * is pinned by __tests__/api/serverlessRouting.test.js.
  *
  * Served here (unchanged URLs, unchanged handlers):
  *   POST /api/forecasts    CSV upload → advisories (Gemini) → forecast store

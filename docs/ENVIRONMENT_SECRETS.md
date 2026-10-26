@@ -6,8 +6,8 @@
 > when it was last replaced is what keeps it from silently living forever.
 
 **Audience:** the repository owner (or any contributor) deploying HazardNet — the web
-app at hazardnet.live, its serverless API, and its CI — using **only free tiers that
-require no credit card anywhere**.
+app at hazardnet.live (Cloudflare Pages), its Node API wherever that is hosted, and its
+CI — using **only free tiers that require no credit card anywhere**.
 
 Every platform below was chosen so that the full production stack runs at **$0/month
 with no payment method ever entered**. Where a vendor has a paid tier, this guide
@@ -22,7 +22,7 @@ to one (or more) of them:
 
 | Surface | Where it is set | Consumed by |
 | --- | --- | --- |
-| **A. Vercel project environment** | vercel.com → Project → Settings → Environment Variables (or `vercel env add`) | the serverless functions in `api/` + `backend/` at runtime, and the Vite build that produces `frontend/dist` |
+| **A. Build + API-host environment** | for the site: Cloudflare Pages → Project → Settings → Variables and Secrets; for an API: whatever host runs it (see §2.1) | the Vite build that produces `dist/` (all `VITE_*` values are baked in at build time), and the Node API (`backend/` or `api/`) at runtime |
 | **B. GitHub Actions secrets/variables** | github.com → repo → Settings → Secrets and variables → Actions (or `gh secret set`) | the workflows in `.github/workflows/` (`ci.yml`, `verify-secrets.yml`, `site-health.yml`, `Firebase-Store-Verify.yml`, `daily_advisory_ingest.yml`, `live-wind-update.yml`, `windows-compile.yml`, `secret-rotation-audit.yml`) |
 | **C. Local `.env`** | `cp .env.example .env` in the repo root, then fill values (never committed) | local dev servers, local rebuilds of the snapshots (`node scripts/build_forecast_snapshot.mjs`, …) |
 
@@ -43,43 +43,45 @@ to one (or more) of them:
 
 ## 1. Platform-by-platform setup (all $0, no credit card)
 
-### 1.1 Vercel — hosting, serverless functions, CDN, analytics
+### 1.1 Cloudflare Pages — hosting, custom domain, CDN
 
-**What it provides:** static hosting + the serverless API routes, custom domain TLS,
-preview deployments, optional Web Analytics.
+**What it provides:** static hosting for the built site (`dist/`), the `_headers` and
+`_redirects` files, custom-domain TLS, preview deployments per branch, and Web Analytics.
 
-**Cost / card:** Hobby plan is **$0 forever, no credit card, no expiry**. It cannot be
-charged (no payment method exists on the plan). The only constraint is the fair-use
-clause: **personal / non-commercial use**. Keep the project non-commercial and you
-never see a billing screen.
+The API is **not** part of this deployment: Pages serves static assets only, so
+`/api/**` answers `404`. That is the designed state (see `docs/ops/deployment.md`); the
+front door falls back to the committed snapshot in `/data/`. If an API is wanted later it
+needs its own host (`backend/` on a container, or `api/**` on a Node-function host).
+
+**Cost / card:** Free plan is **$0, no credit card**. Limits to know: 500 builds/month,
+20,000 files per deployment, 25 MiB per file.
 
 **Steps**
 
-1. Go to <https://vercel.com> → **Sign Up** → **Continue with GitHub** (authorize;
-   this also wires up Git integration — no card step exists in this flow).
-2. **Add New… → Project** → Import `myself-aas/HazardNet`.
-3. Framework Preset: **Vite**; Root Directory: leave default (the repo root serves the
-   API from `api/` and builds `frontend/` per the repo's `vercel.json`/build config).
-4. Before the first deploy, open **Settings → Environment Variables** and add the
-   variables from §2 (scope: Production + Preview; repeat per field with
-   **Add to all environments** or set per environment as the table says).
-5. Deploy. Then add the custom domain: **Settings → Domains → Add** (`hazardnet.live`,
-   `www`). At your registrar, add the CNAME/A records Vercel shows — TLS certificates
-   are issued automatically and free.
-6. Optional analytics: **Project → Analytics → Enable** (included in Hobby's free
-   usage allowance), then set `VITE_VERCEL_ANALYTICS=on` so the app loads it.
-7. CLI alternative (useful for bulk imports):
-   ```bash
-   npm i -g vercel
-   vercel login            # browser auth, no card
-   vercel link             # connect this repo folder to the project
-   vercel env add GEMINI_API_KEY production    # paste value when prompted
-   vercel env pull .env.local                  # pull the set down for local dev
-   ```
+1. Go to <https://dash.cloudflare.com> → **Workers & Pages → Create → Pages → Connect to
+   Git**. Authorize GitHub and pick `myself-aas/HazardNet`.
+2. Build settings — exactly these, or the deployment serves the wrong tree:
+   - **Framework preset:** None
+   - **Build command:** `npm run build`
+   - **Build output directory:** `dist`
+   - **Root directory:** leave empty (the repository root)
+   `npm run build` runs `npm --prefix frontend run build` and then mirrors the output to
+   the root `dist/` (`scripts/copy-dist.mjs`), which is the directory Pages publishes.
+3. **Settings → Variables and Secrets**: add every `VITE_*` value from §2.2. They are baked
+   into the bundle at build time, so adding or changing one requires a new deployment.
+   Nothing in §2.1 belongs here — those are API secrets and the static site has no API.
+4. Deploy, then **Custom domains → Set up a domain** for both `hazardnet.live` and
+   `www.hazardnet.live`. Cloudflare creates the CNAME to `<project>.pages.dev` and issues
+   the certificate. Both hostnames serve the same deployment, so the canonical tags and
+   the canonical host stay consistent.
+5. Optional analytics: **Pages → project → Metrics** for Web Analytics. It is served by
+   Cloudflare's own beacon and needs no script tag, no module and no environment variable
+   in this repository.
 
-**Stay-free notes:** don't add a payment method (Hobby has no field for one unless you
-upgrade — just never click Upgrade). If a month's limit is hit, usage pauses until the
-window resets; it never auto-bills.
+**Verify the deploy, not the dashboard:** `curl -sSI https://hazardnet.live/` must show
+the security headers from `frontend/public/_headers`, and
+`curl -s https://hazardnet.live/data/freshness.json` must quote the build the last ingest
+produced. `docs/ops/deployment.md` has the full checklist.
 
 ### 1.2 Firebase — Auth, Firestore, push (FCM)
 
@@ -121,7 +123,7 @@ resets. Auth, Firestore (within free daily quotas), and FCM are all covered by S
    **Project Settings (gear) → Service accounts → Generate new private key → Generate**.
    A JSON file downloads. This JSON is the credential behind:
    - `FIREBASE_SERVICE_ACCOUNT_JSON` — the **entire JSON minified onto one line**
-     (paste it as-is into a Vercel env var; the server parses it).
+     (paste it as-is into the API host's env var; the server parses it).
    - The CI triple: `FIREBASE_PROJECT_ID` (top-level `project_id` field),
      `FIREBASE_CLIENT_EMAIL` (the `client_email` field),
      `FIREBASE_PRIVATE_KEY` (the `private_key` field — **set it with real newlines**
@@ -150,7 +152,7 @@ advisory feature with caching).
 2. **Create API key** → pick/create a project when asked → copy the key (starts with
    `AIza`, ~39 characters). The key is shown once — store it in your password manager
    immediately.
-3. Put it in Vercel (`GEMINI_API_KEY`, scopes: Production/Preview) and in GitHub
+3. Put it in the API host (`GEMINI_API_KEY`) and in GitHub
    (`GEMINI_API_KEY` secret) if CI exercises advisory smoke tests.
 4. **Backup key** (`GEMINI_API_KEY_BACKUP`): create a *second* key in a *second*
    project (or a second Google account) and set it as the failover. This gives you
@@ -174,7 +176,7 @@ limited by rate limits (~30 requests/minute plus daily token caps).
    step exists). Verify your email.
 2. **API Keys → Create API Key** → name it `hazardnet` → copy it **immediately**
    (shown exactly once; keys start with `gsk_`).
-3. Set `GROQ_API_KEY` in Vercel.
+3. Set `GROQ_API_KEY` in the API host (§2.1).
 
 ### 1.5 OpenRouter — `OPENROUTER_API_KEY`
 
@@ -190,7 +192,7 @@ credit card**. Without any purchase the free-model allowance is roughly
 1. Go to <https://openrouter.ai> → **Sign in** (Google/GitHub SSO; no card).
 2. **Keys** (<https://openrouter.ai/settings/keys>) → **Create Key** → copy it
    (starts with `sk-or-`).
-3. Set `OPENROUTER_API_KEY` in Vercel.
+3. Set `OPENROUTER_API_KEY` in the API host (§2.1).
 4. **Stay-free note:** the dashboard may advertise credits — ignore it. Only use
    model IDs ending in `:free` in any configuration you control; adding a card is
    never required.
@@ -208,7 +210,7 @@ fallback provider.
 2. **Settings → Access Tokens** (<https://huggingface.co/settings/tokens>) →
    **Create new token** → type **Read** → name it `hazardnet` → copy (starts with
    `hf_`).
-3. Set `HUGGINGFACE_API_KEY` in Vercel.
+3. Set `HUGGINGFACE_API_KEY` in the API host (§2.1).
 
 ### 1.7 Self-generated secrets (no vendor at all)
 
@@ -222,7 +224,7 @@ ingest caller only:
 openssl rand -hex 32     # e.g. 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
 ```
 
-Set the same value in Vercel (`BACKEND_API_KEY`) and wherever the authorized caller
+Set the same value in the API host (`BACKEND_API_KEY`) and wherever the authorized caller
 lives (CI secret of the same name).
 
 **`VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VITE_VAPID_PUBLIC_KEY` /
@@ -236,8 +238,8 @@ npx web-push generate-vapid-keys
 #   Private Key: <…>
 ```
 
-- `VAPID_PUBLIC_KEY` → Vercel (server side)
-- `VAPID_PRIVATE_KEY` → Vercel (server side, **secret**)
+- `VAPID_PUBLIC_KEY` → the API host (server side)
+- `VAPID_PRIVATE_KEY` → the API host (server side, **secret**)
 - the same **public** key → `VITE_VAPID_PUBLIC_KEY` (frontend build; public by design)
 - `WEB_PUSH_CONTACT` → a `mailto:` address the push service can contact, e.g.
   `mailto:admin@hazardnet.live`
@@ -303,7 +305,12 @@ legacy** after the research-tooling cleanup:
 
 ## 2. Complete variable reference
 
-### 2.1 Serverless runtime (Vercel project environment; scope: Production + Preview)
+### 2.1 API runtime (an API host's environment; not the Pages project)
+
+Nothing in this table is read by the static site. It is the environment of whichever
+process runs `backend/server.js` or the `api/**` functions — the Docker/self-host
+container today, if any. Keep them out of the Pages build variables: a Pages deployment
+that carries `BACKEND_API_KEY` has published it to a build log for no benefit.
 
 | Variable | Required | Purpose / consumed by | How to obtain (free) |
 | --- | --- | --- | --- |
@@ -328,9 +335,10 @@ legacy** after the research-tooling cleanup:
 | `ALERT_AUTO_PUBLISH_MINUTES` | optional | Auto-publish delay minutes when enabled | decision |
 | `ALERT_DUTY_OFFICERS` | optional | Comma-separated duty-officer identifiers for the alert desk | decision |
 | `QA_CHROMIUM_PATH` / `PLAYWRIGHT_CHROMIUM_PATH` | CI-only | Explicit Chromium binary paths for headless QA | leave unset locally |
-| `NODE_ENV`, `VERCEL_ENV` | — | **Platform-provided. Never set these manually.** | automatic |
+| `NODE_ENV` | — | **Platform-provided. Never set this manually.** | automatic |
+| `DEPLOY_ENV` | optional | Set `production` on an API host that does not set `NODE_ENV`; it drives CORS fail-closed and CSP enforcement | decision |
 
-### 2.2 Frontend build (`VITE_*` — public by design; set in Vercel build env)
+### 2.2 Frontend build (`VITE_*` — public by design; set in the Pages build env)
 
 | Variable | Required | Purpose | Value source |
 | --- | --- | --- | --- |
@@ -345,7 +353,6 @@ legacy** after the research-tooling cleanup:
 | `VITE_FIREBASE_FIRESTORE_DATABASE_ID` | optional | Set only for a **named** Firestore DB; unset = `(default)` | §1.2 step 3 |
 | `VITE_VAPID_PUBLIC_KEY` | for push | Public push key in the client | §1.7 |
 | `VITE_CONTACT_EMAIL` | recommended | Public contact address rendered on the site | your email |
-| `VITE_VERCEL_ANALYTICS` | optional | `on` to load Vercel Web Analytics | §1.1 step 6 |
 | `VITE_DOWNLOAD_GITHUB_OWNER` / `VITE_DOWNLOAD_REPO_ANDROID` | optional | Download-link overrides (default to this GitHub repo) | keep default |
 | `VITE_DOWNLOAD_LIVE_RELEASES`, `VITE_DOWNLOAD_REPO_{WINDOWS,LINUX,NPM,PYTHON}`, `VITE_NPM_PACKAGE_NAME`, `VITE_PYPI_PACKAGE_NAME` | optional | Additional package/download-link overrides | keep default |
 
@@ -365,7 +372,6 @@ legacy** after the research-tooling cleanup:
 | `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` | secrets | no (template only) | Android template, not a live workflow | §1.7 |
 | `SITE_PROBE_TOKEN` | secret | recommended | `site-health.yml` sends it as `x-hazardnet-probe`; needs the matching Cloudflare WAF skip rule | `openssl rand -hex 32` |
 | `KAGGLE_USERNAME` / `KAGGLE_KEY` | secrets | yes, for a green ingest | `daily_advisory_ingest.yml` Kaggle CLI | §1.5 |
-| `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` | secrets | optional | ingest-triggered Vercel deploy (step exits 0 when unset) | §1.4 |
 | `SLACK_WEBHOOK_URL` | secret | no (template only) | `.github/workflow-templates/hazardnet-ops-slack-notify.yml` | — |
 | `API_METADATA_URL` | **variable** | recommended | `site-health.yml` metadata probe | your live URL |
 | `PUSH_TO_API` | **variable** | optional | master switch for ingest push | `false` unless an ingest API exists |
@@ -381,10 +387,11 @@ check itself does not list. It never prints a value.
 
 | Do this | With these |
 | --- | --- |
-| **Vercel → Environment Variables** | `GEMINI_API_KEY`, `GEMINI_API_KEY_BACKUP`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `HUGGINGFACE_API_KEY`, `BACKEND_API_KEY`, `FIREBASE_SERVICE_ACCOUNT_JSON`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `WEB_PUSH_CONTACT`, `FRONTEND_ORIGIN`, all `VITE_*` from §2.2, optional flags (`CSP_ENFORCE`, `ALERT_*`, timeouts) |
-| **GitHub → Secrets** | `GEMINI_API_KEY`, `BACKEND_API_KEY`, `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, `CODECOV_TOKEN`, optional: `HAZARDNET_API_URL`, `HAZARDNET_API_KEY`, `EE_SERVICE_ACCOUNT_JSON`, `SITE_PROBE_TOKEN`, `KAGGLE_USERNAME`, `KAGGLE_KEY`, `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` (`ANDROID_KEYSTORE_*` only if the Android template is restored) |
+| **Cloudflare Pages → Variables and Secrets** | all `VITE_*` from §2.2 and nothing else |
+| **API host → environment** (§2.1) | `GEMINI_API_KEY`, `GEMINI_API_KEY_BACKUP`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `HUGGINGFACE_API_KEY`, `BACKEND_API_KEY`, `FIREBASE_SERVICE_ACCOUNT_JSON`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `WEB_PUSH_CONTACT`, `FRONTEND_ORIGIN`, optional flags (`CSP_ENFORCE`, `ALERT_*`, timeouts) |
+| **GitHub → Secrets** | `GEMINI_API_KEY`, `BACKEND_API_KEY`, `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, `CODECOV_TOKEN`, optional: `HAZARDNET_API_URL`, `HAZARDNET_API_KEY`, `EE_SERVICE_ACCOUNT_JSON`, `SITE_PROBE_TOKEN`, `KAGGLE_USERNAME`, `KAGGLE_KEY` (`ANDROID_KEYSTORE_*` only if the Android template is restored) |
 | **GitHub → Variables** | `API_METADATA_URL`, `PUSH_TO_API` |
-| **Local `.env` (from `.env.example`)** | everything you need for local runs; `vercel env pull .env.local` is the easiest way to populate it |
+| **Local `.env` (from `.env.example`)** | everything you need for local runs — copy the values from the Pages build variables (all public) and from the API host |
 
 ---
 
@@ -403,12 +410,14 @@ cp .env.example .env                  # NEVER commit .env (gitignore already blo
 #    - advisory needs at least one provider key (GEMINI/GROQ/OPENROUTER/HF)
 #    - frontend dev server needs the VITE_FIREBASE_* set
 
-# 3. easiest accurate fill — pull the exact production values Vercel already has:
-vercel link && vercel env pull .env.local
+# 3. easiest accurate fill — copy the exact production values from the Pages build
+#    variables (public, all VITE_*) and from the API host (secrets). Cloudflare has no
+#    "pull" command, so this is a console copy:
+#      dash.cloudflare.com -> Workers & Pages -> <project> -> Settings -> Variables
 
 # 4. run the stack locally and confirm health. The Vite dev server owns :3000 and
 #    proxies /api, /metrics and /health to :3001, so the API is started there:
-npm run build --prefix frontend       # or: vercel dev
+npm run build:frontend                # produces frontend/dist (+ root dist via npm run build)
 PORT=3001 npm run dev:api &           # backend/server.js honours PORT (default 3000)
 curl -s localhost:3001/api/v1/forecasts/metadata | head
 ```
@@ -463,7 +472,7 @@ curl -s localhost:3001/api/v1/forecasts/metadata | head
 
 | Platform | Provides | Plan | $0? | Card required? | Hard limits to know |
 | --- | --- | --- | --- | --- | --- |
-| Vercel | hosting, serverless, CDN, TLS | Hobby | yes | **No** | non-commercial use clause; monthly usage allowance pauses at the cap |
+| Cloudflare Pages | static hosting, CDN, TLS, `_headers`/`_redirects`, Web Analytics | Free | yes | **No** | 500 builds/month; 20,000 files and 25 MiB per file per deployment; **no serverless functions on the static deploy** |
 | Firebase | Auth, Firestore, FCM | Spark | yes | **No** | daily Firestore quotas; **do not enable Cloud Storage (needs paid Blaze)** |
 | Google AI Studio | Gemini API key | free tier | yes | **No** | per-minute/per-day request caps on Flash-class models |
 | Groq | OpenAI-compatible LLM API | free tier | yes | **No** | ~30 req/min + daily token caps |

@@ -76,7 +76,7 @@ import DistrictForecastCard from './map/DistrictForecastCard';
 import type { HazardLayerDef } from './map/mapPrimitives';
 import { MAP_CHROME, MAP_INTERACTIVE, MAP_HEAT_RAMP, MAP_RAIN_RAMP, MAP_RISK_RAMP } from '@hazardnet/design-system';
 
-/* ── Hoisted module scope (2026-10-06, Vercel React guidance) ─────────────────────────────────
+/* ── Hoisted module scope (2026-10-06 React best-practice pass) ───────────────────────────────
    `PIN_GLYPH_SVG` — the 260-character crosshair glyph inside the two location pins (the user's
    pinpoint and the live GPS dot) was written out twice, verbatim. One constant, interpolated into
    both templates, so the two pins cannot drift apart and neither one re-parses the markup on every

@@ -456,12 +456,14 @@ export async function loadAlerts(options: LoadAlertsOptions = {}): Promise<Alert
          and no level ledger is not a quiet day: it is a live endpoint with nothing behind it.
 
          Measured 2026-10-26, and it cost a false alarm on the front door. `www.hazardnet.live`
-         is served by Vercel, whose `/api/v1/alerts` function answers
-         `{count: 0, state_counts: {}, alerts: []}` because no alert store is wired to that
-         deployment — while the committed snapshot on the same host holds 106 published
-         advisories. `hazardnet.live` is served by Cloudflare Pages, which has no serverless
-         function at all, so its API call 404s and the loader correctly fell through to the
-         snapshot. Two hostnames, one build, two different answers about the weather.
+         was then still answered by the legacy hosting project, whose `/api/v1/alerts` replied
+         `{count: 0, state_counts: {}, alerts: []}` because no alert store was wired to it —
+         while the committed snapshot on the same host held 106 published advisories.
+         `hazardnet.live` was already on Cloudflare Pages, which runs no API at all, so its call
+         404ed and the loader correctly fell through to the snapshot. Two hostnames, one build,
+         two different answers about the weather. Both hosts are Pages projects now
+         (docs/ops/deployment.md), so the empty-answer branch is a guard rather than a live
+         condition — kept because a future API host could answer exactly that way.
 
          Returning here would have reported the empty API as the truth: with no `counts` in
          the payload, the strip called the artifact unreadable; with `counts`, it would have

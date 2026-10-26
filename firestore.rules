@@ -212,7 +212,7 @@ service cloud.firestore {
     }
 
     // Forecast bulletins are PUBLIC data: anyone may read them (the website's
-    // live layer + the Vercel GET handlers when FORECAST_STORE=firestore).
+    // live layer + the Node-function GET handlers when FORECAST_STORE=firestore).
     // Writes stay denied here on purpose — ingest goes through the
     // authenticated backend into the Firestore store;
     // the unauthenticated client SDK must never be able to poison bulletins.

@@ -1,0 +1,23 @@
+# Cloudflare Pages redirects for HazardNet.
+#
+# Format: https://developers.cloudflare.com/pages/configuration/redirects/
+# (`from  to  [status]` — the status is optional and defaults to 302.)
+#
+# This replaced `vercel.json`'s `redirects` array on 2026-10-26, when the
+# deployment moved to Cloudflare Pages only (both `hazardnet.live` and
+# `www.hazardnet.live` CNAME to `hazardnet.pages.dev`). Cloudflare serves this
+# file from the asset root; Vite copies it verbatim into `dist/` because it
+# lives in `frontend/public/`.
+#
+# Deliberately absent: a catch-all `/* /index.html 200` rewrite.
+#
+# The prerenderer emits a real HTML file per route (frontend/scripts/prerender.mjs),
+# so known URLs are files and never need a rewrite. An unknown URL falls to
+# `404.html`, which Cloudflare Pages serves automatically with a 404 status and
+# which is the *noindex* shell — the page still boots the SPA, so a route that is
+# real but unlisted (a profile URL, an alert id) renders for the visitor while a
+# crawler is told not to index it. A `/* /index.html 200` rule would undo that:
+# every unknown URL would answer 200 with the indexable homepage, which is the
+# soft-404 case __tests__/seoFoundations.test.js exists to prevent.
+
+/documentation  /docs  301

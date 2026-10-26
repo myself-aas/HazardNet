@@ -2,8 +2,8 @@
  * @jest-environment node
  */
 /**
- * Vercel serverless handler tests — serverless/v1/forecasts/{bulk,history,metadata}.js,
- * deployed together as api/v1/forecasts/[action].js (docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget).
+ * Forecast handler tests — serverless/v1/forecasts/{bulk,history,metadata}.js,
+ * deployed together as api/v1/forecasts/[action].js (docs/codebase/ARCHITECTURE.md#the-node-function-surface-api).
  *
  * These handlers are thin wrappers over the shared serving logic
  * (backend/utils/forecastServe.js) + the forecast store; the tests pin the
@@ -71,7 +71,7 @@ const ROWS = [
   },
 ];
 
-/** Minimal Vercel req/res doubles capturing status, headers, and body. */
+/** Minimal Node-function req/res doubles capturing status, headers, and body. */
 function invoke(handler, { method = 'GET', query = {} } = {}) {
   const res = {
     statusCode: 200,
@@ -102,7 +102,7 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
-describe('GET /api/v1/forecasts/bulk (Vercel)', () => {
+describe('GET /api/v1/forecasts/bulk', () => {
   test('serves the Express-identical envelope with no-store caching', async () => {
     const res = await invoke(bulkHandler, { query: { horizon: '7_days' } });
     expect(res.statusCode).toBe(200);
@@ -139,7 +139,7 @@ describe('GET /api/v1/forecasts/bulk (Vercel)', () => {
   });
 });
 
-describe('GET /api/v1/forecasts/history (Vercel)', () => {
+describe('GET /api/v1/forecasts/history', () => {
   test('serves JSON with the parsed window echoed back', async () => {
     const res = await invoke(historyHandler, { query: { from: '2026-09-01', to: '2026-09-13' } });
     expect(res.statusCode).toBe(200);
@@ -175,7 +175,7 @@ describe('GET /api/v1/forecasts/history (Vercel)', () => {
   });
 });
 
-describe('GET /api/v1/forecasts/metadata (Vercel)', () => {
+describe('GET /api/v1/forecasts/metadata', () => {
   test('serves prediction date, ingestion stamp, and Kaggle provenance', async () => {
     const res = await invoke(metadataHandler);
     expect(res.statusCode).toBe(200);

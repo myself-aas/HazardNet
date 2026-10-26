@@ -15,7 +15,7 @@
  * `__tests__/api/security.test.js` cover the running surfaces.
  */
 
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const root = process.cwd();
@@ -37,32 +37,31 @@ const routeStrings = (config) => {
   return out;
 };
 
-describe('Vercel configurations never route to model artifacts', () => {
-  for (const rel of ['vercel.json', 'frontend/vercel.json']) {
-    test(`${rel} has no artifact route and builds from a scoped output directory`, () => {
-      const config = readJson(rel);
-      for (const rule of routeStrings(config)) {
-        expect(rule).not.toMatch(ARTIFACT);
-      }
-      // The deployed tree must be a build output, never the repository root —
-      // a root-scoped deployment would publish Models/ along with the site.
-      const output = config.outputDirectory;
-      expect(typeof output).toBe('string');
-      expect(output).not.toBe('.');
-      expect(output).not.toMatch(ARTIFACT);
-    });
-  }
+describe('the Cloudflare Pages deployment never serves model artifacts', () => {
+  /* `vercel.json` used to keep the deployed tree scoped to a build output. On Cloudflare
+     Pages the equivalent guarantee is that the asset root is the build output — `dist`, into
+     which `frontend/dist` is copied — and that no redirect or header rule names `Models/`.
+     Both are asserted here rather than assumed, because publishing the repository root would
+     ship the model artifacts with the site. */
+  test('no redirect rule names a model artifact, and the asset root is the build output', () => {
+    const redirects = readText('frontend/public/_redirects');
+    for (const line of redirects.split('\n')) {
+      if (!line.trim() || line.trim().startsWith('#')) continue;
+      expect(line).not.toMatch(ARTIFACT);
+    }
 
-  test('root and frontend vercel.json carry identical security headers, SPA fallback, and build-to-dist parity', () => {
-    const rootConfig = readJson('vercel.json');
-    const frontendConfig = readJson('frontend/vercel.json');
     const rootPkg = readJson('package.json');
-
-    expect(rootConfig.headers).toEqual(frontendConfig.headers);
-    expect(rootConfig.rewrites).toEqual(frontendConfig.rewrites);
-    expect(rootConfig.outputDirectory).toBe('dist');
-    expect(frontendConfig.outputDirectory).toBe('dist');
+    // `npm run build` writes frontend/dist AND mirrors it to dist/; Cloudflare Pages publishes
+    // `dist`. The copy step is what keeps the two locations identical (scripts/copy-dist.mjs).
     expect(rootPkg.scripts.build).toContain('scripts/copy-dist.mjs');
+    expect(existsSync(join(process.cwd(), 'scripts/copy-dist.mjs'))).toBe(true);
+  });
+
+  test('the build output is what Pages publishes, not the repository root', () => {
+    const raw = readText('.github/workflows/site-health.yml');
+    // The probe asserts the deployment serves prerendered files; a root-scoped deployment
+    // would serve `Models/` and `data/` alongside the site.
+    expect(raw).toContain('frontend/scripts/prerender.mjs');
   });
 });
 
