@@ -103,7 +103,17 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
   const reduceMotion = useReducedMotion();
   const frame = useWebFrame(30, 10);
 
-  const published = alerts.length;
+  /* The verdict's count answers "how many district advisories are published at WATCH or
+     above" — which the artifact's `counts` object states for the whole run. The `alerts`
+     prop alone cannot answer it: it is the strip's top-N slice (the page slices to 4
+     before this component sees it), and counting it would understate the run — exactly
+     the error the honesty rules are written against. The max of the two is safe in both
+     directions: the counts state the ledger, and an alert the list actually carries must
+     never be rendered as unpublished. */
+  const publishableInCounts = counts !== null && counts !== undefined
+    ? ((counts.WATCH ?? 0) + (counts.WARNING ?? 0) + (counts.SEVERE ?? 0))
+    : 0;
+  const published = Math.max(publishableInCounts, alerts.length);
   const ageHours = ageHoursFrom(generatedAt);
   const coverageText =
     coverage?.districts_covered != null && coverage?.districts_expected != null

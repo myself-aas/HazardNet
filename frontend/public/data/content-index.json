@@ -1,6 +1,6 @@
 {
   "schema": "hazardnet-content-index/v1",
-  "generated_at": "2026-10-08T16:21:32.507Z",
+  "generated_at": "2026-10-25T17:15:02.614Z",
   "generated_by": "scripts/build_content_engine.mjs",
   "origin": "https://www.hazardnet.live",
   "inputs": {
@@ -8,8 +8,8 @@
     "district_table": "frontend/src/data/bangladeshDistricts.ts",
     "forecast_snapshot": {
       "path": "frontend/public/data/forecasts-latest.json",
-      "prediction_date": "2026-09-16",
-      "generated_at": "2026-10-08T13:53:09.074Z"
+      "prediction_date": "2026-10-24",
+      "generated_at": "2026-10-25T10:49:05.018Z"
     },
     "event_archive": null,
     "model_performance": {
@@ -23,12 +23,12 @@
     "routes": 75,
     "hazards": 8,
     "districts": 64,
-    "districts_with_outlook": 60,
-    "districts_without_outlook": 4,
+    "districts_with_outlook": 64,
+    "districts_without_outlook": 0,
     "retrospectives": 0,
     "model_performance_episodes": 5,
     "prerendered_html_files": 108,
-    "sitemap_urls": 99
+    "sitemap_urls": 103
   },
   "unmatched_snapshot_districts": [],
   "routes": [
@@ -347,8 +347,8 @@
     {
       "path": "/districts/jhenaidah",
       "title": "Jhenaidah district hazard outlook: HazardNet",
-      "robots": "noindex,follow",
-      "in_sitemap": false
+      "robots": "index,follow",
+      "in_sitemap": true
     },
     {
       "path": "/districts/magura",
@@ -383,8 +383,8 @@
     {
       "path": "/districts/barisal",
       "title": "Barisal district hazard outlook: HazardNet",
-      "robots": "noindex,follow",
-      "in_sitemap": false
+      "robots": "index,follow",
+      "in_sitemap": true
     },
     {
       "path": "/districts/bhola",
@@ -467,8 +467,8 @@
     {
       "path": "/districts/khagrachhari",
       "title": "Khagrachhari district hazard outlook: HazardNet",
-      "robots": "noindex,follow",
-      "in_sitemap": false
+      "robots": "index,follow",
+      "in_sitemap": true
     },
     {
       "path": "/districts/rangamati",
@@ -479,8 +479,8 @@
     {
       "path": "/districts/bandarban",
       "title": "Bandarban district hazard outlook: HazardNet",
-      "robots": "noindex,follow",
-      "in_sitemap": false
+      "robots": "index,follow",
+      "in_sitemap": true
     }
   ]
 }

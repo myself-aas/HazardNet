@@ -8,7 +8,11 @@
  */
 
 import { db, collection, getDocs, query, where, orderBy, limit } from './db.js';
-import { persistForecasts } from './forecastPersistence.js';
+// NOTE: forecastPersistence.js is intentionally NOT imported statically — it pulls in
+// firebase-admin (native gRPC via google-gax), which a clean-room process cannot resolve
+// unless the full native install is present. The forecast READ path (every serverless
+// handler, CI smoke probes, scripts/rehearse_alert_engine.mjs) must stay importable
+// without it, so the persistence lane is loaded lazily inside commitForecasts.
 import fs from 'fs';
 import path from 'path';
 import { lookupDistrict } from './utils/advisoryMapper.js';
@@ -92,7 +96,12 @@ export function ensureAdvisoryFields(row) {
 // ─────────────────────────────────────────────────────────────────────────
 
 function loadSnapshotData() {
+  // FORECAST_SNAPSHOT_PATH overrides the committed artifact — the seam test suites use so
+  // their fallback-store expectations stay independent of what production data happens to
+  // say today (the fault isolating __tests__/forecastStore.test.js from the pipeline cadence).
+  const override = process.env.FORECAST_SNAPSHOT_PATH;
   const possiblePaths = [
+    ...(override ? [path.resolve(process.cwd(), override)] : []),
     path.resolve(process.cwd(), 'frontend', 'public', 'data', 'forecasts-latest.json'),
     path.resolve(process.cwd(), 'dist', 'data', 'forecasts-latest.json'),
     path.resolve(process.cwd(), 'frontend', 'dist', 'data', 'forecasts-latest.json'),
@@ -154,6 +163,7 @@ async function readForecasts(queryRef) {
 
 async function commitForecasts(rows, predictionDate) {
   try {
+    const { persistForecasts } = await import('./forecastPersistence.js');
     return await persistForecasts(rows, predictionDate);
   } catch (cause) {
     const error = new Error('Forecast persistence failed', { cause });

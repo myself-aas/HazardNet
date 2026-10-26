@@ -74,18 +74,18 @@ describe('the last-run page', () => {
     const card = await screen.findByTestId('last-run-visual');
     // The eyebrow is the title of the card that moved.
     expect(within(card).getByText('The last run, from the committed artifacts')).toBeInTheDocument();
-    await waitFor(() => expect(within(card).getByText(/60 \/ 64/)).toBeInTheDocument());
-    expect(within(card).getByText(/coverage status: partial/)).toBeInTheDocument();
+    await waitFor(() => expect(within(card).getByText(/64 \/ 64/)).toBeInTheDocument());
+    expect(within(card).getByText(/coverage status: complete/)).toBeInTheDocument();
   });
 
-  it('states the withheld outcome in words instead of dressing an unread value as a zero', async () => {
+  it('states the published outcome in words instead of dressing an unread value as a zero', async () => {
     renderPage();
 
     const card = await screen.findByTestId('last-run-visual');
-    // The snapshot this deployment ships publishes nothing; the card says what happened
-    // to the assessed rows rather than showing a bare zero.
-    expect(await within(card).findByText(/No alert is published from this run/)).toBeInTheDocument();
-    expect(within(card).getByText(/74 assessed rows were withheld/)).toBeInTheDocument();
+    // The snapshot this deployment ships publishes 106 alerts; the card says what the run
+    // published, with the evidence chain each one carries — never an inferred number.
+    expect(await within(card).findByText(/106 alerts are published from this run/)).toBeInTheDocument();
+    expect(within(card).getByText(/each one carries its evidence/)).toBeInTheDocument();
   });
 
   it('reads the honesty notes the run reports against itself', async () => {
@@ -99,7 +99,7 @@ describe('the last-run page', () => {
   it('has no accessibility violations', async () => {
     const view = renderPage();
     await screen.findByTestId('last-run-visual');
-    await waitFor(() => expect(view.container.textContent).toMatch(/60 \/ 64/));
+    await waitFor(() => expect(view.container.textContent).toMatch(/64 \/ 64/));
     expect(await axe(view.container)).toHaveNoViolations();
   });
 });

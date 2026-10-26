@@ -39,10 +39,21 @@ const row = (over = {}) => ({
   ...over,
 });
 
+// The firestore read path is mocked; the *fallback* path reads a snapshot file. Pin that
+// file to a fixture so the suite's expectations cannot rot with the committed production
+// snapshot (what district 19 held on the day the test was written is not the contract).
+const FALLBACK_FIXTURE = '__tests__/fixtures/forecasts-snapshot.fixture.json';
+
 beforeEach(() => {
   jest.clearAllMocks();
   resetForecastStore();
+  process.env.FORECAST_SNAPSHOT_PATH = FALLBACK_FIXTURE;
   persistForecasts.mockReset().mockImplementation(async (rows) => ({ written: rows.length }));
+});
+
+afterEach(() => {
+  delete process.env.FORECAST_SNAPSHOT_PATH;
+  resetForecastStore();
 });
 
 describe('mode selection', () => {

@@ -57,6 +57,12 @@ export const DATA_CREDITS: Record<string, DataCredit> = {
     href: 'https://gibs.earthdata.nasa.gov',
     licence: 'NASA GIBS / EOSDIS terms (imagery is NASA, free to use)',
   },
+  windOpenMeteo: {
+    id: 'windOpenMeteo',
+    label: 'Wind field: Open-Meteo forecast API (10 m wind speed and direction, blended NWP)',
+    href: 'https://open-meteo.com/en/terms',
+    licence: 'CC BY 4.0 (Open-Meteo)',
+  },
   windGfs: {
     id: 'windGfs',
     label: 'Wind field: NOAA Global Forecast System (GFS) 0.25 degree run, courtesy of NOAA',

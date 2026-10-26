@@ -52,6 +52,15 @@ export function createDispatcher({ param, entry, routes = {} }) {
   const table = new Map(Object.entries(routes));
 
   const dispatcher = async function (req, res) {
+    // The dispatcher itself is guarded: an unknown path must be metered too (the probe
+    // that enumerates /api/* should burn budget, not map the surface for free). Handlers
+    // apply their own tighter bucket on top; this read-tier call is the floor. Statically
+    // asserted by __tests__/api/serverlessGuard.test.js (every serverless/ file must
+    // contain a guardRequest( call — this dispatcher's is the 404 path's only guard).
+    if (guardRequest(req, res, { bucket: 'read' })) {
+      return;
+    }
+
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('Cache-Control', 'no-store');
@@ -59,7 +68,6 @@ export function createDispatcher({ param, entry, routes = {} }) {
     const key = routeSegment(req, param, table);
 
     if (!key || !table.has(key)) {
-      res.setHeader('ratelimit-limit', '60');
       res.setHeader('cache-control', 'no-store');
       return res.status(404).json({ error: `no endpoint "${key || 'unknown'}"` });
     }

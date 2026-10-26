@@ -1,0 +1,32 @@
+{
+  "schema": "hazardnet-forecast-snapshot/v2",
+  "prediction_date": "2026-09-16",
+  "generated_at": "2026-09-16T06:00:00.000Z",
+  "source": "test fixture — the suite's fallback store must not read committed data",
+  "horizons": {
+    "7_days": [
+      {
+        "district_id": 1,
+        "district_name": "Bagerhat",
+        "horizon": "7_days",
+        "hazard_type": "Flash Flood",
+        "severity_score": 0.41,
+        "confidence": 0.82,
+        "target_date": "2026-09-23",
+        "prediction_date": "2026-09-16"
+      }
+    ],
+    "15_days": [
+      {
+        "district_id": 1,
+        "district_name": "Bagerhat",
+        "horizon": "15_days",
+        "hazard_type": "Flash Flood",
+        "severity_score": 0.44,
+        "confidence": 0.8,
+        "target_date": "2026-10-01",
+        "prediction_date": "2026-09-16"
+      }
+    ]
+  }
+}

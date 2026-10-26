@@ -54,7 +54,8 @@ jobs:
         # would have run the frontend suites instead (21 either way, so the job
         # would have stayed green while covering none of the backend).
         # Pass the complete ignore list explicitly. Guarded by
-        # scripts/tests/test_workflows.py::test_backend_jest_step_has_no_bare_selector
+        # node scripts/check-workflows.mjs (the old pytest guard
+        # scripts/tests/test_workflows.py left the tree when the Python stack did)
         # The list is directory scopes only. It used to also name nine individual
         # suites (severityEmbargo, securityTxt, securityHeadersParity, nasaTokens,
         # freshnessArtifact, contentEngine, claimsGate, alertSnapshot, alertReplay)
@@ -176,7 +177,7 @@ jobs:
         run: npx jest --config apps/mobile/jest.config.cjs --ci --runInBand --forceExit
 
   test-pipeline-scripts:
-    name: Pipeline Scripts Tests
+    name: Pipeline Artifact Smoke Tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -189,11 +190,6 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-
-      - name: Set up Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: '3.11'
 
       - name: Cache node_modules
         uses: actions/cache@v6
@@ -209,30 +205,35 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps --no-audit --no-fund
 
-      - name: Install Python test deps
-        run: pip install --break-system-packages --requirement scripts/requirements-pipeline.txt pytest || pip install --break-system-packages pytest
+      # Guards the workflow files themselves: every .github/workflows/*.yml must parse as
+      # YAML and must not use the `secrets` context in ANY `if:` (job or step — GitHub
+      # rejects the whole file with zero jobs either way; gate on a resolved step output
+      # instead — the Sept 2026 CI outage). Node port of the deleted
+      # scripts/tests/test_workflows.py guards; the Python stack left the tree, the
+      # failure mode it stopped must not come back.
+      - name: Workflow files are loadable and secrets-safe
+        run: node scripts/check-workflows.mjs
 
-      # Guards the production pipeline scripts AND the workflow files themselves:
-      # every .github/workflows/*.yml must parse as YAML and must not use the
-      # `secrets` context in ANY `if:` (job or step — GitHub rejects the whole
-      # file with zero jobs either way; gate on a resolved step output
-      # instead — the Sept 2026 CI outage). See scripts/tests/.
-      - name: Run pipeline script tests
-        run: python -m pytest scripts/tests -q
-
-      # committed driver series. Offline and deterministic, so it runs in CI rather than only in
-      # the workflow that produces them — a hand-edited score fails here.
-      # Phase 9 §8.1: the validation artifact is the first place this repository publishes its
-      # own measured performance, so the property that matters is what the builder *refuses*.
-      # A report that claims the CNN was evaluated, or whose drivers claim to be forecast fields,
-      # must fail the build rather than reach the page.
+      # Guards the snapshot builder's refusal rules: a future change that drops, renames or
+      # re-types a CSV column fails here instead of 202-0'ing nightly. The fixture is the
+      # committed pipeline CSV's first row per horizon — offline, deterministic, and in
+      # lockstep with the real schema by construction (a hand-rolled fixture is how the
+      # snapshot builder and the real payload drifted apart; the Python fixture generator
+      # that used to do this left the tree in the history squash).
       - name: Snapshot builder smoke test
         run: |
-          if [ ! -f scripts/tests/make_fixture_csv.py ] || [ ! -f scripts/build_forecast_snapshot.mjs ]; then
-            echo "snapshot builder fixtures not yet vendored — skipping"
-            exit 0
-          fi
-          python scripts/tests/make_fixture_csv.py /tmp/fixture_forecasts.csv
+          set -euo pipefail
+          node -e "
+            const fs = require('fs');
+            const rows = fs.readFileSync('backend/data/forecasts/hazardnet_forecasts_latest.csv', 'utf8').trim().split('\\n');
+            const header = rows[0];
+            const firstByHorizon = new Map();
+            for (const row of rows.slice(1)) {
+              const horizon = row.split(',')[6];
+              if (!firstByHorizon.has(horizon)) firstByHorizon.set(horizon, row);
+            }
+            fs.writeFileSync('/tmp/fixture_forecasts.csv', [header, ...firstByHorizon.values()].join('\\n') + '\\n');
+          "
           node scripts/build_forecast_snapshot.mjs /tmp/fixture_forecasts.csv /tmp/forecasts-latest.json
           node -e "const s=require('/tmp/forecasts-latest.json'); if(!s.horizons['7_days']?.length) throw new Error('empty 7_days'); console.log('snapshot OK:', s.prediction_date)"
 
@@ -247,7 +248,7 @@ jobs:
           fi
           set -euo pipefail
           node scripts/build_alert_snapshot.mjs \
-            --in scripts/tests/fixtures/alerts/alert-run.sample.json \
+            --in scripts/fixtures/alerts/alert-run.sample.json \
             --out /tmp/alerts-latest.json
           node -e "
             const s = require('/tmp/alerts-latest.json');
@@ -260,7 +261,7 @@ jobs:
             console.log('alert snapshot OK:', s.alerts.length, 'published rows');
           "
           # Overwriting a non-empty snapshot with an empty run must fail (exit 3).
-          if node scripts/build_alert_snapshot.mjs --in scripts/tests/fixtures/alerts/empty-run.sample.json --out /tmp/alerts-latest.json 2>/dev/null; then
+          if node scripts/build_alert_snapshot.mjs --in scripts/fixtures/alerts/empty-run.sample.json --out /tmp/alerts-latest.json 2>/dev/null; then
             echo "::error::the builder replaced a non-empty snapshot with an empty one"
             exit 1
           fi
@@ -303,9 +304,6 @@ jobs:
             console.log('alert snapshot OK: engine run-report shape read');
           "
 
-      # The ingestion entry points a workflow would call, exercised offline against
-      # the same fixtures the unit tests use: events → load SQL, and a scene
-      # manifest whose dataset_version the publisher will require.
     # The E2E quarantine added on 2026-09-13 (continue-on-error: true) was
     # lifted the same day: the root cause was a production defect, not a flaky
     # suite. Rolldown wrapped `leaflet` in a lazily-initialised CommonJS
@@ -449,7 +447,8 @@ jobs:
       # diff-based step reports success, and the backend suite then fails 60 s earlier on
       # `model_version` falling back to the legacy literal. `git status --porcelain`
       # reports untracked (`??`) and modified (` M`) alike, so stale == missing == red.
-      # Guarded by scripts/tests/test_workflows.py::test_model_version_gate_detects_missing_file.
+      # Guarded by node scripts/check-workflows.mjs (was the deleted
+      # test_workflows.py::test_model_version_gate_detects_missing_file).
       - name: Model version handshake is committed and clean
         run: |
           set -euo pipefail
@@ -501,7 +500,8 @@ jobs:
       # PRD REQ-006 / TASK-008 / TRD INT-CLAIM-01: every metric-shaped number
       # in public copy must be registered in docs/CLAIMS.md with a strategy
       # label. Fabricated or unregistered metrics fail the build.
-      # Guarded by scripts/tests/test_workflows.py::test_claims_gate_step_present.
+      # Guarded by node scripts/check-workflows.mjs (was the deleted
+      # test_workflows.py::test_claims_gate_step_present).
       - name: Claims registry verification
         run: node scripts/verify_claims.mjs
 
