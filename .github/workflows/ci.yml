@@ -528,6 +528,15 @@ jobs:
       - name: Craft floor gate
         run: npm run check:craft
 
+      # Route ↔ surface-brief coverage. Every route in frontend/src/App.tsx must be
+      # claimed by a brief in .impeccable/surfaces/, every brief route must still exist,
+      # and every brief must declare the mode that governs its ambition. This is the
+      # maintain-phase check from docs/agents/impeccable-protocol.md: a route added
+      # without a brief inherits no direction, and a brief left on a renamed route stops
+      # constraining anything. `npm run protocol:status` prints the current ledger.
+      - name: Route and surface protocol
+        run: npm run protocol:check
+
       - name: Production build
         run: npm run build
 
@@ -546,6 +555,13 @@ jobs:
       # `npm run check:design:update` in the same commit.
       - name: Design quality gate
         run: npm run check:design
+
+      # The document audit over what ships: one h1, sane heading order, a title and
+      # description, no canonical on a noindex page, a landmark, alt text, accessible
+      # names, and the safety framing that closes every prerendered document. It reads
+      # frontend/dist, so it runs after the build. scripts/audit-pages.mjs --strict.
+      - name: Document audit
+        run: npm run audit:pages:strict
 
       # Route pages use the finalized HazardNet/Apple color roles only: no stock
       # Tailwind hues or un-tokenized hex literals. The scanner can report all components
