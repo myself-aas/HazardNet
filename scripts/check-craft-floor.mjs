@@ -62,13 +62,46 @@ const RULES = [
   {
     id: 'eyebrow-over-heading',
     why: 'A kicker or eyebrow above a heading is a ban in the craft floor, not a default: the heading carries its own weight. Group labels belong in the heading itself.',
+    // Remotion compositions are video frames, not pages. A broadcast lower-third puts the
+    // date and the item type above the place name on purpose — that is the medium's own
+    // convention, and the viewer has no scroll position to orient them instead.
+    allow: (file) => file.includes('/remotion/'),
     test: (file, body) => {
       const hits = [];
-      // `<Eyebrow>` rendered as a sibling immediately before a heading, or an
-      // uppercase micro-label class on the element just above one.
+      // (1) `<Eyebrow>` rendered as a sibling immediately before a heading.
       const re = /<Eyebrow[^>]*>[\s\S]{0,200}?<\/Eyebrow>\s*<h[1-6]/g;
       for (const m of body.matchAll(re)) {
         hits.push({ line: lineOf(body, m.index), snippet: firstLine(m[0]) });
+      }
+      // (2) The same ban wearing a different name. The first version of this rule only
+      // knew `<Eyebrow>`, so eight hand-rolled kickers survived it: a `text-xs` chip with
+      // `rounded-full`, `uppercase` or `font-mono` sitting above an `<h1>` — on the article
+      // renderer that serves 75 documents, and on the hazards, divisions, documentation,
+      // contact, advisories and blog pages. A chip is an eyebrow whether or not it came
+      // from a component.
+      //
+      // Scoped to `<h1>` on purpose: a chip above a page heading is always a kicker. Above
+      // an `<h2>` it is frequently a card's category label or a chart legend, which is a
+      // judgment call the reviewer makes per surface, not a rule that can read intent. Within that scope the test is positional — a marked micro-element
+      // whose next ~300 characters contain no other heading, section or article boundary
+      // and then a page-level heading.
+      for (const h of body.matchAll(/<h1\b/g)) {
+        const from = Math.max(0, h.index - 700);
+        const pre = body.slice(from, h.index);
+        for (const m of pre.matchAll(/<(span|p|div|small)\b([^>]*)>/g)) {
+          const attrs = m[2] || '';
+          const cls =
+            (attrs.match(/className=(?:"([^"]*)"|\{`([^`]*)`\})/) || []).slice(1).filter(Boolean).join(' ') || '';
+          const small = /\btext-(?:xs|sm|\[1[0-2]px\])/.test(cls);
+          const marked = /\buppercase\b|\brounded-full\b|\bfont-mono\b|tracking-wide/.test(cls);
+          if (!(small && marked)) continue;
+          const after = pre.slice(m.index + m[0].length);
+          const gap = after + body.slice(h.index, h.index);
+          if (gap.length > 400) continue;
+          if (/<h[1-6]\b|<section\b|<article\b/.test(after)) continue;
+          hits.push({ line: lineOf(body, from + m.index), snippet: firstLine(pre.slice(m.index)) });
+          break; // one hit per heading is enough to name the pattern
+        }
       }
       return hits;
     },
@@ -185,6 +218,9 @@ const findings = [];
 for (const file of files) {
   const body = stripComments(readFileSync(file, 'utf8'));
   for (const rule of RULES) {
+    // `allow` is a documented escape on the rule itself, never a per-hit waiver: the
+    // reason has to live next to the rule, where the next reader will find it.
+    if (rule.allow && rule.allow(file)) continue;
     for (const hit of rule.test(file, body)) {
       findings.push({
         rule: rule.id,

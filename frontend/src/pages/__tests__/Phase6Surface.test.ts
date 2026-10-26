@@ -1,8 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-const read = (...parts: string[]) =>
-  fs.readFileSync(path.join(__dirname, '..', '..', ...parts), 'utf8');
+const read = (...parts: string[]) => fs.readFileSync(path.join(__dirname, '..', '..', ...parts), 'utf8');
 
 describe('Phase 6 surface contracts (§14.3 / §14.7 / §14.8)', () => {
   describe('front door', () => {
@@ -54,6 +53,42 @@ describe('Phase 6 surface contracts (§14.3 / §14.7 / §14.8)', () => {
 
     it('skips autoFocus unless the pointer is fine', () => {
       expect(login).toMatch(/autoFocus=\{finePointer\}/);
+    });
+  });
+
+  describe('console tabs', () => {
+    const dashboard = read('pages', 'Dashboard.tsx');
+
+    // The 2026-10-26 critique found `role="tablist"` over five `role="tab"` buttons with no
+    // panels to control and no arrow keys: an announced tab interface that switched nothing
+    // for a screen reader and read as five plain buttons to a keyboard user. These pin the
+    // WAI-ARIA tabs pattern the strip now implements, in source, because Dashboard needs a
+    // Leaflet container to render.
+    it('gives every tab a panel to control and a stable id', () => {
+      expect(dashboard).toMatch(/role="tablist"/);
+      expect(dashboard).toMatch(/role="tabpanel"/);
+      expect(dashboard).toMatch(/id=\{`console-tab-\$\{tab\.id\}`\}/);
+      expect(dashboard).toMatch(/aria-controls=\{`console-panel-\$\{tab\.id\}`\}/);
+      expect(dashboard).toMatch(/id=\{`console-panel-\$\{activeView\}`\}/);
+      expect(dashboard).toMatch(/aria-labelledby=\{`console-tab-\$\{activeView\}`\}/);
+    });
+
+    it('is a single tab stop with arrow, Home and End navigation', () => {
+      expect(dashboard).toMatch(/tabIndex=\{activeView === tab\.id \? 0 : -1\}/);
+      for (const key of ['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown', 'Home', 'End']) {
+        expect(dashboard).toContain(`event.key === '${key}'`);
+      }
+      // Moving focus must select the tab too (automatic activation), and the focused tab
+      // has to be the one the reader can see in a strip that scrolls on a phone.
+      expect(dashboard).toMatch(/setActiveView\(target\.id\);/);
+      expect(dashboard).toMatch(/console-tab-\$\{target\.id\}`\)\?\.focus\(\)/);
+    });
+
+    it('does not make the panel a second tab stop', () => {
+      // Every view owns focusable controls, so an APG-correct panel omits tabindex. A
+      // `tabIndex={0}` here would put an empty stop between the strip and the view.
+      const panel = dashboard.slice(dashboard.indexOf('role="tabpanel"'));
+      expect(panel.slice(0, 400)).not.toMatch(/tabIndex=\{0\}/);
     });
   });
 

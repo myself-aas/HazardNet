@@ -21,17 +21,11 @@ export const About: React.FC = () => {
         transition={{ duration: 0.2 }}
         className="bg-white border border-carbon-20 rounded-2xl p-6 md:p-8 space-y-4"
       >
-        <div className="flex items-center gap-2">
-          <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-amber-50 text-amber-900 border border-amber-200">
-            HazardNet Early Warning Initiative
-          </span>
-          <span className="text-carbon-60">•</span>
-          <span className="text-xs text-carbon-60 font-medium">Active Deployment: 2026</span>
-        </div>
-
         <h1 className="text-ap-lead sm:text-ap-display-md font-brand font-bold leading-tight text-carbon-90 tracking-tight">
           Hazard<span className="text-ap-link">Net</span> Agro-Climatic Intelligence Platform
         </h1>
+        <p className="mt-3 text-xs text-carbon-60 font-medium">Active deployment: 2026</p>
+
         <p className="text-base leading-[1.62] text-carbon-60 max-w-3xl">
           Automated multi-hazard early warning, multi-band satellite feature classification, physical severity
           quantification, and offline-capable edge computing for agricultural extension across Bangladesh.

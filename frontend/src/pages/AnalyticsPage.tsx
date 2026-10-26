@@ -68,7 +68,14 @@ export const AnalyticsPage: React.FC = () => {
     field('Prediction date', snapshot?.prediction_date),
     field('Kernel', snapshot?.kernel),
     field('Source', snapshot?.source),
-    field('Horizons', snapshot?.horizons ? Object.entries(snapshot.horizons).map(([h, rows]) => `${h}: ${Array.isArray(rows) ? rows.length : '?'} rows`).join(' · ') : null),
+    field(
+      'Horizons',
+      snapshot?.horizons
+        ? Object.entries(snapshot.horizons)
+            .map(([h, rows]) => `${h}: ${Array.isArray(rows) ? rows.length : '?'} rows`)
+            .join(' · ')
+        : null,
+    ),
   ].filter((row): row is { label: string; value: string } => row !== null);
 
   return (
@@ -80,19 +87,13 @@ export const AnalyticsPage: React.FC = () => {
     >
       <div className="ap-card relative overflow-hidden transition-all duration-300">
         <div className="relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-900 text-xs font-mono font-bold mb-3 shadow-2xs">
-            <span>RESEARCHER & ADMIN ANALYTICS</span>
-            <span>•</span>
-            <span>Model and pipeline diagnostics</span>
-          </div>
           <h1 className="text-2xl sm:text-4xl font-extrabold text-carbon-90 tracking-tight">
             Model Diagnostics & Pipeline Observability
           </h1>
           <p className="text-carbon-60 mt-2 max-w-3xl text-xs sm:text-sm leading-relaxed">
-            What this deployment can actually show: the freshness and provenance of the last forecast snapshot, the
-            raw forecast store, and the pipeline that produced it. Accuracy metrics (latency, MAE, ECE) appear here
-            only after a benchmark has been run and recorded. Until then this page says so instead of quoting
-            numbers.
+            What this deployment can actually show: the freshness and provenance of the last forecast snapshot, the raw
+            forecast store, and the pipeline that produced it. Accuracy metrics (latency, MAE, ECE) appear here only
+            after a benchmark has been run and recorded. Until then this page says so instead of quoting numbers.
           </p>
         </div>
       </div>
@@ -104,7 +105,9 @@ export const AnalyticsPage: React.FC = () => {
           whileTap={{ scale: 0.98 }}
           onClick={() => navigate('/analytics/forecast-dashboard')}
           className={`px-4 py-2.5 rounded-2xl text-xs font-extrabold transition-all shrink-0 whitespace-nowrap cursor-pointer ${
-            activeTab === 'forecast-dashboard' ? 'bg-amber-500 text-ap-on-sev shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
+            activeTab === 'forecast-dashboard'
+              ? 'bg-amber-500 text-ap-on-sev shadow-2xs'
+              : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
           }`}
         >
           Forecast dashboard
@@ -114,7 +117,9 @@ export const AnalyticsPage: React.FC = () => {
           whileTap={{ scale: 0.98 }}
           onClick={() => navigate('/analytics/model-metrics')}
           className={`px-4 py-2.5 rounded-2xl text-xs font-extrabold transition-all shrink-0 whitespace-nowrap cursor-pointer ${
-            activeTab === 'model-metrics' ? 'bg-amber-500 text-ap-on-sev shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
+            activeTab === 'model-metrics'
+              ? 'bg-amber-500 text-ap-on-sev shadow-2xs'
+              : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
           }`}
         >
           Model metrics
@@ -124,7 +129,9 @@ export const AnalyticsPage: React.FC = () => {
           whileTap={{ scale: 0.98 }}
           onClick={() => navigate('/analytics/pipeline-status')}
           className={`px-4 py-2.5 rounded-2xl text-xs font-extrabold transition-all shrink-0 whitespace-nowrap cursor-pointer ${
-            activeTab === 'pipeline-status' ? 'bg-amber-500 text-ap-on-sev shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
+            activeTab === 'pipeline-status'
+              ? 'bg-amber-500 text-ap-on-sev shadow-2xs'
+              : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
           }`}
         >
           Pipeline status
@@ -134,7 +141,9 @@ export const AnalyticsPage: React.FC = () => {
           whileTap={{ scale: 0.98 }}
           onClick={() => navigate('/analytics/historical')}
           className={`px-4 py-2.5 rounded-2xl text-xs font-extrabold transition-all shrink-0 whitespace-nowrap cursor-pointer ${
-            activeTab === 'historical' ? 'bg-amber-500 text-ap-on-sev shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
+            activeTab === 'historical'
+              ? 'bg-amber-500 text-ap-on-sev shadow-2xs'
+              : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
           }`}
         >
           Historical record vs detections
@@ -163,22 +172,34 @@ export const AnalyticsPage: React.FC = () => {
             transition={{ duration: 0.25 }}
             className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6"
           >
-            <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="ap-card transition-all space-y-3 cursor-pointer md:col-span-2">
+            <motion.div
+              whileHover={{ y: -4, scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              className="ap-card transition-all space-y-3 cursor-pointer md:col-span-2"
+            >
               <div className="text-xs font-mono text-carbon-60 font-bold">INFERENCE LATENCY</div>
               <div className="text-2xl font-black text-carbon-60">Not published</div>
               <p className="text-xs text-carbon-60 leading-relaxed">
                 No committed benchmark measures end-to-end inference latency.
               </p>
             </motion.div>
-            <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="ap-card transition-all space-y-3 cursor-pointer">
+            <motion.div
+              whileHover={{ y: -4, scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              className="ap-card transition-all space-y-3 cursor-pointer"
+            >
               <div className="text-xs font-mono text-carbon-60 font-bold">MEAN ABSOLUTE ERROR (MAE)</div>
               <div className="text-2xl font-black text-carbon-60">Not published</div>
               <p className="text-xs text-carbon-60 leading-relaxed">
-                The classifier has not yet been scored against independent BMD/FFWC station records, so no error
-                metric is quoted here. The methodology page describes the validation status that does exist.
+                The classifier has not yet been scored against independent BMD/FFWC station records, so no error metric
+                is quoted here. The methodology page describes the validation status that does exist.
               </p>
             </motion.div>
-            <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="ap-card transition-all space-y-3 sm:col-span-2 md:col-span-1 cursor-pointer">
+            <motion.div
+              whileHover={{ y: -4, scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              className="ap-card transition-all space-y-3 sm:col-span-2 md:col-span-1 cursor-pointer"
+            >
               <div className="text-xs font-mono text-carbon-60 font-bold">EXPECTED CALIBRATION ERROR (ECE)</div>
               <div className="text-2xl font-black text-carbon-60">Not published</div>
               <p className="text-xs text-carbon-60 leading-relaxed">
@@ -223,7 +244,10 @@ export const AnalyticsPage: React.FC = () => {
             {!snapshotLoading && !snapshotError && provenance.length > 0 && (
               <dl className="divide-y divide-carbon-10 border border-carbon-20 rounded-xl bg-white">
                 {provenance.map((row) => (
-                  <div key={row.label} className="flex flex-col gap-1 p-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+                  <div
+                    key={row.label}
+                    className="flex flex-col gap-1 p-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6"
+                  >
                     <dt className="text-xs font-semibold text-carbon-60">{row.label}</dt>
                     <dd className="break-words font-mono text-xs text-carbon-90 sm:text-right">{row.value}</dd>
                   </div>
@@ -244,9 +268,9 @@ export const AnalyticsPage: React.FC = () => {
           >
             <h2 className="text-xl font-bold text-carbon-90">Recorded historical events vs HazardNet detections</h2>
             <p className="text-sm text-carbon-60 leading-relaxed">
-              The catalogued historical record for Bangladesh plotted against the episodes HazardNet has been
-              scored on. The two are different kinds of measurement and are drawn as different marks: the record
-              spans every year, the benchmark covers five episodes and reports detection only.
+              The catalogued historical record for Bangladesh plotted against the episodes HazardNet has been scored on.
+              The two are different kinds of measurement and are drawn as different marks: the record spans every year,
+              the benchmark covers five episodes and reports detection only.
             </p>
             <EmdatComparisonChart
               events={hazardCatalog as { year: number; hazard_type: string }[]}

@@ -67,7 +67,7 @@
       "pages/Dashboard.tsx": {
         "grid-cols-1 md:grid-cols-3": {
           "kind": "console",
-          "reason": "the live console's three stacked panels - dense product UI, which the skill's §13 puts out of scope for this rule."
+          "reason": "the live console's three stacked panels - dense product UI, which the skill's \u00a713 puts out of scope for this rule."
         },
         "grid-cols-2 sm:grid-cols-3": {
           "kind": "stats",
@@ -75,10 +75,6 @@
         }
       },
       "pages/DivisionsPage.tsx": {
-        "grid-cols-2 sm:grid-cols-3": {
-          "kind": "stats",
-          "reason": "coverages tiles in the division header."
-        },
         "grid-cols-1 min-[1200px]:grid-cols-3 min-[880px]:grid-cols-2": {
           "kind": "index",
           "reason": "the division index grid, one card per division."
@@ -91,10 +87,6 @@
         }
       },
       "pages/HazardsPage.tsx": {
-        "grid-cols-2 sm:grid-cols-3": {
-          "kind": "stats",
-          "reason": "coverages tiles in the hazard header."
-        },
         "grid-cols-1 min-[1200px]:grid-cols-3 min-[880px]:grid-cols-2": {
           "kind": "index",
           "reason": "the hazard index grid, one card per hazard."

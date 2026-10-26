@@ -151,7 +151,7 @@ export const DistrictBriefBody: React.FC = () => {
               <button
                 key={mode}
                 onClick={() => setTrendViewMode(mode)}
-                className={`min-h-[44px] px-3.5 py-2 rounded-lg transition-all cursor-pointer capitalize touch-manipulation ${
+                className={`min-h-[44px] px-3.5 py-2 rounded-lg transition-colors cursor-pointer capitalize touch-manipulation ${
                   trendViewMode === mode ? 'bg-white text-carbon-90 font-bold shadow-sm' : 'text-carbon-70 hover:text-carbon-90'
                 }`}
               >
@@ -245,7 +245,7 @@ export const DistrictBriefBody: React.FC = () => {
           <button
             onClick={() => setShowLiveAiAdvisory(!showLiveAiAdvisory)}
             aria-expanded={showLiveAiAdvisory}
-            className={`inline-flex min-h-[44px] items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer touch-manipulation screen-only self-start sm:self-auto ${
+            className={`inline-flex min-h-[44px] items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-colors cursor-pointer touch-manipulation screen-only self-start sm:self-auto ${
               showLiveAiAdvisory
                 ? 'bg-amber-500 text-ap-on-sev'
                 : 'bg-white border border-carbon-20 text-carbon-70 hover:bg-carbon-05 hover:text-carbon-90'

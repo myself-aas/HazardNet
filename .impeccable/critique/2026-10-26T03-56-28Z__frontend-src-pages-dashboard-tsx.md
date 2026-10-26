@@ -58,3 +58,18 @@ slug: frontend-src-pages-dashboard-tsx
 ## Not tested
 
 The map at 360px, the tab strip's keyboard path, pinch and drag under touch, and the perceived cost of the toolbar transitions on a low-end Android device.
+
+## Closure
+
+Both P1s are closed in the code, not in this record — the snapshot stays as the account of
+what the run found.
+
+- **Tab semantics — closed 2026-10-26.** The strip is now a real WAI-ARIA tab set: stable
+  `console-tab-<id>` / `console-panel-<id>` ids, `aria-controls` on every tab and
+  `aria-labelledby` on the panel, a roving `tabIndex` so the strip is one tab stop, and
+  ArrowLeft / ArrowRight / ArrowUp / ArrowDown / Home / End with automatic activation
+  (`frontend/src/pages/Dashboard.tsx`, `onConsoleTabKeyDown`). Pinned by three assertions in
+  `frontend/src/pages/__tests__/Phase6Surface.test.ts`.
+- **Motion — still open.** `transition-all` and the `hover:scale-[1.02]` /
+  `active:scale-98` pairs remain on the console toolbar and tab strip. That is the next fix
+  wave, not this one: the tab work was scoped as the accessibility defect.

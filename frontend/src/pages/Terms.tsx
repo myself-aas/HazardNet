@@ -16,17 +16,10 @@ export const Terms: React.FC = () => {
 
       <div className="max-w-[65ch] space-y-6 border border-carbon-20 rounded-2xl bg-white p-6 text-base leading-[1.62] text-carbon-70 lg:p-8">
         <div className="border-b border-carbon-20 pb-4 space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-ap-primary/10 text-ap-link border border-ap-primary/20 uppercase">
-              Legal Agreement
-            </span>
-            <span className="text-carbon-60">•</span>
-            <span className="text-xs text-carbon-60 font-medium">Effective Date: August 1, 2026</span>
-          </div>
-
           <h1 className="text-ap-lead font-bold leading-[1.2] tracking-tight text-carbon-90">
             HazardNet AI Terms of Service & Data License
           </h1>
+          <span className="text-xs text-carbon-60 font-medium">Effective Date: August 1, 2026</span>
         </div>
 
         <section className="space-y-2">

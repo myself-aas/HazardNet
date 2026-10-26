@@ -102,7 +102,9 @@ export const HistoricalCatalogPage: React.FC = () => {
       <div className="min-h-dvh bg-carbon-05 text-carbon-80 p-4 sm:p-8">
         <DataStateError
           title="The historical archive is temporarily unavailable"
-          onRetry={() => { void refetch(); }}
+          onRetry={() => {
+            void refetch();
+          }}
         />
       </div>
     );
@@ -134,9 +136,10 @@ export const HistoricalCatalogPage: React.FC = () => {
         year: record.year,
         hazard_type: record.hazard_type,
         location_districts: [record.district],
-        full_description: record.summary && record.summary !== 'No detailed description available.'
-          ? record.summary
-          : `Historical ${record.hazard_type} event recorded in ${record.district} district on ${record.date}. Validated severity index: ${record.severity_index_name} (score: ${record.severity_score}).`,
+        full_description:
+          record.summary && record.summary !== 'No detailed description available.'
+            ? record.summary
+            : `Historical ${record.hazard_type} event recorded in ${record.district} district on ${record.date}. Validated severity index: ${record.severity_index_name} (score: ${record.severity_score}).`,
         gee_start: record.gee_start,
         gee_end: record.gee_end,
         validated_affected: record.validated_affected,
@@ -152,16 +155,17 @@ export const HistoricalCatalogPage: React.FC = () => {
         <header className="border-b border-carbon-20 pb-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-mono text-carbon-60">
-                  Empirical Catalog 2000–2026
-                </span>
-              </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-carbon-90 tracking-tight">
                 Historical Hazard Archive
               </h1>
+              <div className="mt-3 flex items-center gap-2">
+                <span className="text-xs font-medium text-carbon-60">Empirical Catalog 2000–2026</span>
+              </div>
               <p className="text-sm text-carbon-60 mt-2 max-w-3xl leading-relaxed">
-                3,062 recorded event-district observations in the 26-year empirical multi-hazard registry spanning all 64 districts of Bangladesh. This is an observation count, not a count of disasters: 70 distinct physical episodes are cross-referenced with UN OCHA ReliefWeb, FAO GIEWS, WHO Emergency, and ADRC multilateral GLIDE disaster systems.
+                3,062 recorded event-district observations in the 26-year empirical multi-hazard registry spanning all
+                64 districts of Bangladesh. This is an observation count, not a count of disasters: 70 distinct physical
+                episodes are cross-referenced with UN OCHA ReliefWeb, FAO GIEWS, WHO Emergency, and ADRC multilateral
+                GLIDE disaster systems.
               </p>
             </div>
 
@@ -190,7 +194,7 @@ export const HistoricalCatalogPage: React.FC = () => {
           >
             <div className="flex flex-wrap items-baseline justify-between gap-2 mb-4">
               <h2 className="text-base font-bold text-carbon-90 tracking-tight">National baseline</h2>
-              <span className="text-xs font-mono text-carbon-60">2000 to 2026 · general summary stats</span>
+              <span className="text-xs text-carbon-60">2000 to 2026 · general summary stats</span>
             </div>
             <dl className="grid grid-cols-2 lg:grid-cols-6 gap-3">
               {data.baseline.metrics.map((m) => (
@@ -225,32 +229,32 @@ export const HistoricalCatalogPage: React.FC = () => {
                     )}
                   </ul>
                   <div className="hidden md:block">
-                  <table className="w-full text-xs font-mono tabular-nums">
-                    <thead>
-                      <tr>
-                        <th className="text-left py-1 pr-2 font-semibold text-carbon-60"></th>
-                        {data.correlations.variables.map((v) => (
-                          <th key={v} className="text-right py-1 pl-2 font-semibold text-carbon-60">
-                            {v.replace(/_/g, ' ')}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {data.correlations.matrix.map((row, i) => (
-                        <tr key={data.correlations.variables[i]} className="border-t border-carbon-20">
-                          <th className="text-left py-1 pr-2 font-semibold text-carbon-70">
-                            {data.correlations.variables[i].replace(/_/g, ' ')}
-                          </th>
-                          {row.map((cell, j) => (
-                            <td key={j} className="text-right py-1 pl-2 text-carbon-80">
-                              {cell == null ? '·' : cell.toFixed(2)}
-                            </td>
+                    <table className="w-full text-xs font-mono tabular-nums">
+                      <thead>
+                        <tr>
+                          <th className="text-left py-1 pr-2 font-semibold text-carbon-60"></th>
+                          {data.correlations.variables.map((v) => (
+                            <th key={v} className="text-right py-1 pl-2 font-semibold text-carbon-60">
+                              {v.replace(/_/g, ' ')}
+                            </th>
                           ))}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {data.correlations.matrix.map((row, i) => (
+                          <tr key={data.correlations.variables[i]} className="border-t border-carbon-20">
+                            <th className="text-left py-1 pr-2 font-semibold text-carbon-70">
+                              {data.correlations.variables[i].replace(/_/g, ' ')}
+                            </th>
+                            {row.map((cell, j) => (
+                              <td key={j} className="text-right py-1 pl-2 text-carbon-80">
+                                {cell == null ? '·' : cell.toFixed(2)}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}
@@ -261,10 +265,10 @@ export const HistoricalCatalogPage: React.FC = () => {
                   </h3>
                   <p>
                     {data.geeValidation.gee_rows} hand-off rows were compared against the{' '}
-                    {data.geeValidation.catalog_rows} row clean archive: {data.geeValidation.matched} agree
-                    on GLIDE, district, hazard and observation window; {data.geeValidation.mismatched} carry
-                    drift, mostly revised GLIDE numbers. The drift is reported by gee-validation.json and is
-                    never silently absorbed into the catalog.
+                    {data.geeValidation.catalog_rows} row clean archive: {data.geeValidation.matched} agree on GLIDE,
+                    district, hazard and observation window; {data.geeValidation.mismatched} carry drift, mostly revised
+                    GLIDE numbers. The drift is reported by gee-validation.json and is never silently absorbed into the
+                    catalog.
                   </p>
                 </div>
               )}
@@ -319,11 +323,7 @@ export const HistoricalCatalogPage: React.FC = () => {
 
       {/* Multilateral GLIDE Popover */}
       {activeGlide && (
-        <GlideResourcePopover
-          glideId={activeGlide}
-          isOpen={isGlideOpen}
-          onClose={() => setIsGlideOpen(false)}
-        />
+        <GlideResourcePopover glideId={activeGlide} isOpen={isGlideOpen} onClose={() => setIsGlideOpen(false)} />
       )}
 
       {/* Disaster Master Report Modal */}

@@ -179,11 +179,6 @@ export const Contact: React.FC = () => {
       <Breadcrumbs />
 
       <header className="bg-white border border-carbon-20 rounded-2xl p-6 md:p-8 space-y-3">
-        <div className="flex items-center gap-2">
-          <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-50 text-amber-900 border border-amber-200 uppercase tracking-wider">
-            Support &amp; communications
-          </span>
-        </div>
         <h1 className="text-2xl md:text-3xl font-extrabold text-carbon-90 tracking-tight">
           Contact, incident reporting &amp; API access
         </h1>

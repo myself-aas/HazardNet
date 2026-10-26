@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import MaterialIcon from '../MaterialIcon';
-import { readingTimeMinutes, wordCount } from '../../lib/blogArticles';
+import { BLOG_TEXT_COLORS, readingTimeMinutes, wordCount } from '../../lib/blogArticles';
 
 /**
  * Dependency-free rich text editor for the HazardNet blog studio.
@@ -151,7 +151,9 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       onClick={onClick}
       disabled={disabled}
       className={`h-8 min-w-8 px-1.5 rounded-lg text-ap-caption font-black transition-colors cursor-pointer disabled:opacity-40 ${
-        active ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'text-carbon-60 hover:bg-carbon-10 border border-transparent'
+        active
+          ? 'bg-amber-100 text-amber-900 border border-amber-300'
+          : 'text-carbon-60 hover:bg-carbon-10 border border-transparent'
       }`}
     >
       <MaterialIcon name={icon} className="w-4 h-4" />
@@ -159,7 +161,10 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   );
 
   return (
-    <div className="border border-carbon-20 rounded-2xl overflow-hidden bg-white shadow-xs" data-testid="rich-text-editor">
+    <div
+      className="border border-carbon-20 rounded-2xl overflow-hidden bg-white shadow-xs"
+      data-testid="rich-text-editor"
+    >
       {/* Toolbar */}
       <div
         className="flex flex-wrap items-center gap-1 p-2 border-b border-carbon-20 bg-carbon-05/80 sticky top-0 z-10"
@@ -194,7 +199,9 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <span className="w-px h-6 bg-carbon-20 mx-1" aria-hidden="true" />
 
         <div className="flex items-center gap-1" role="group" aria-label="Text color">
-          {['#1d1d1f', '#c01f1f', '#0066cc', '#1d7a3e', '#c01f1f'].map((color) => (
+          {/* The same four values the sanitizer accepts (BLOG_TEXT_COLORS) — the swatch row used to
+              offer five, two of them the same red, and promised colours the renderer would refuse. */}
+          {BLOG_TEXT_COLORS.map((color) => (
             <button
               key={color}
               type="button"
@@ -250,7 +257,9 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
       {/* Status bar */}
       <div className="flex items-center justify-between gap-3 px-3.5 py-2 border-t border-carbon-20 bg-carbon-05/80 text-xs font-bold text-carbon-60">
-        <span className="font-mono">{words} words · ~{readingTimeMinutes(value)} min read</span>
+        <span className="font-mono">
+          {words} words · ~{readingTimeMinutes(value)} min read
+        </span>
         <span className="font-mono">{sourceView ? 'SOURCE VIEW' : 'VISUAL EDITOR'}</span>
       </div>
     </div>

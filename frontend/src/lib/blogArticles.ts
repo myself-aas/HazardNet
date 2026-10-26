@@ -12,7 +12,18 @@
 
 import DOMPurify from 'dompurify';
 import { db } from '../services/firebase';
-import { collection, query, orderBy, getDocs, where, getDoc, doc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  orderBy,
+  getDocs,
+  where,
+  getDoc,
+  doc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+} from 'firebase/firestore';
 import { isPrimarySuperAdmin } from './superadmins';
 
 export type BlogArticleStatus = 'draft' | 'published';
@@ -114,33 +125,144 @@ export function ensureUniqueSlug(base: string, existingSlugs: string[], ownId?: 
  * config would have RE-ENABLED elements the previous blocklist removed.
  */
 const ALLOWED_TAGS = [
-  'p', 'br', 'hr', 'div', 'span',
-  'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-  'strong', 'b', 'em', 'i', 'u', 's', 'strike', 'del', 'ins', 'mark',
-  'sub', 'sup', 'small', 'big', 'tt', 'nobr', 'font', 'center',
-  'blockquote', 'pre', 'code',
-  'ul', 'ol', 'li',
-  'a', 'img',
-  'table', 'caption', 'colgroup', 'col', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td',
+  'p',
+  'br',
+  'hr',
+  'div',
+  'span',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'strong',
+  'b',
+  'em',
+  'i',
+  'u',
+  's',
+  'strike',
+  'del',
+  'ins',
+  'mark',
+  'sub',
+  'sup',
+  'small',
+  'big',
+  'tt',
+  'nobr',
+  'font',
+  'center',
+  'blockquote',
+  'pre',
+  'code',
+  'ul',
+  'ol',
+  'li',
+  'a',
+  'img',
+  'table',
+  'caption',
+  'colgroup',
+  'col',
+  'thead',
+  'tbody',
+  'tfoot',
+  'tr',
+  'th',
+  'td',
 ];
 
 /** Attributes that cannot execute. `id` is safe here: DOMPurify's DOM
  *  clobbering protection (SANITIZE_DOM, on by default) neutralises it. */
 const ALLOWED_ATTR = [
-  'href', 'src', 'alt', 'title', 'target', 'rel', 'width', 'height',
-  'class', 'style', 'colspan', 'rowspan', 'align', 'valign', 'dir', 'lang',
-  'color', 'size', 'face', 'cite', 'datetime', 'start', 'type', 'id',
-  'loading', 'decoding', 'referrerpolicy',
+  'href',
+  'src',
+  'alt',
+  'title',
+  'target',
+  'rel',
+  'width',
+  'height',
+  'class',
+  'style',
+  'colspan',
+  'rowspan',
+  'align',
+  'valign',
+  'dir',
+  'lang',
+  'color',
+  'size',
+  'face',
+  'cite',
+  'datetime',
+  'start',
+  'type',
+  'id',
+  'loading',
+  'decoding',
+  'referrerpolicy',
 ];
 
 /**
- * Inline CSS is required for the editor's alignment and text-colour commands.
- * DOMPurify allows the `style` attribute but does not parse the declarations
- * inside it, so anything able to fetch or execute is dropped here. Every
- * editor command uses plain keyword properties (text-align, color, …), so this
- * costs no functionality.
+ * The four colours the editor may write into a post.
+ *
+ * Before this list existed the toolbar offered five swatches (two of them the same red) and
+ * the sanitizer accepted *any* `color` a post carried — so an author could publish grey-on-grey
+ * text, or a hex outside the Apple/HDS palette, and the design system's contrast floor held for
+ * every page except the one surface where the words come from a text editor. The stored value is
+ * a colour, the rendered value is a token decision, and that decision belongs to the design
+ * system. Four values, named here, is the whole of what an author may choose.
+ */
+export const BLOG_TEXT_COLORS = ['#1d1d1f', '#0066cc', '#1d7a3e', '#c01f1f'] as const;
+
+const ALLOWED_COLORS = new Set<string>(BLOG_TEXT_COLORS.map((c) => c.toLowerCase()));
+
+/** Properties an author may set inline. Typography only: nothing here can paint a surface,
+ *  move a box, size a box or load a resource. */
+const INLINE_PROPERTIES = new Set(['text-align', 'color', 'font-weight', 'font-style', 'text-decoration']);
+
+const TEXT_ALIGN = /^(?:left|right|center|justify)$/i;
+const FONT_WEIGHT = /^(?:normal|bold|bolder|lighter|[1-9]00)$/i;
+const FONT_STYLE = /^(?:normal|italic|oblique)$/i;
+const TEXT_DECORATION = /^(?:none|underline|line-through|overline)$/i;
+
+/**
+ * Inline CSS is required for the editor's alignment, weight and text-colour commands.
+ * DOMPurify allows the `style` attribute but does not parse the declarations inside it, so
+ * each declaration is checked here against the property allowlist above — a value that fails
+ * the check is dropped rather than passed through, which is what makes `background`,
+ * `font-size`, `position` and friends impossible to smuggle in from the editor's source view.
  */
 const UNSAFE_CSS = /(url\s*\(|expression\s*\(|javascript:|vbscript:|@import|behaviou?r\s*:|\\)/i;
+
+/**
+ * Normalise a CSS colour to `#rrggbb`. Browsers serialise `execCommand('foreColor')` as either
+ * `rgb(r, g, b)` or a hex, depending on `styleWithCSS`, so both forms have to be understood
+ * before either can be compared with the allowlist. Returns null for anything else — named
+ * colours, `currentColor`, `hsl()` — because the allowlist is a closed set, not a language.
+ */
+function normaliseColor(value: string): string | null {
+  const raw = value.trim().toLowerCase();
+  const rgb = raw.match(/^rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*(?:,\s*\d*\.?\d+\s*)?\)$/);
+  if (rgb) {
+    const channels = rgb.slice(1, 4).map(Number);
+    if (channels.some((c) => c > 255)) return null;
+    return `#${channels.map((c) => c.toString(16).padStart(2, '0')).join('')}`;
+  }
+  const short = raw.match(/^#([0-9a-f])([0-9a-f])([0-9a-f])$/);
+  if (short) return `#${short[1]}${short[1]}${short[2]}${short[2]}${short[3]}${short[3]}`;
+  if (/^#[0-9a-f]{6}$/.test(raw)) return raw;
+  return null;
+}
+
+/** The canonical hex for an author-chosen colour, or null when it is not one of the four. */
+function allowedColor(value: string): string | null {
+  const normalised = normaliseColor(value);
+  return normalised && ALLOWED_COLORS.has(normalised) ? normalised : null;
+}
 
 /**
  * DOMPurify deliberately permits `data:` URIs on media tags — `img` is in its
@@ -159,11 +281,26 @@ const SAFE_DATA_URI = /^data:image\/(?:png|jpe?g|gif|webp|avif|bmp|x-icon);/i;
 const URI_ATTRS = new Set(['src', 'href', 'xlink:href', 'poster', 'action', 'formaction']);
 
 function sanitizeInlineStyle(value: string): string {
-  return value
-    .split(';')
-    .map((declaration) => declaration.trim())
-    .filter((declaration) => declaration && !UNSAFE_CSS.test(declaration))
-    .join('; ');
+  const kept: string[] = [];
+  for (const declaration of value.split(';')) {
+    const trimmed = declaration.trim();
+    if (!trimmed || UNSAFE_CSS.test(trimmed)) continue;
+    const separator = trimmed.indexOf(':');
+    if (separator === -1) continue;
+    const property = trimmed.slice(0, separator).trim().toLowerCase();
+    const raw = trimmed.slice(separator + 1).trim();
+    if (!INLINE_PROPERTIES.has(property) || !raw) continue;
+    if (property === 'text-align' && TEXT_ALIGN.test(raw)) kept.push(`text-align: ${raw.toLowerCase()}`);
+    else if (property === 'font-weight' && FONT_WEIGHT.test(raw)) kept.push(`font-weight: ${raw.toLowerCase()}`);
+    else if (property === 'font-style' && FONT_STYLE.test(raw)) kept.push(`font-style: ${raw.toLowerCase()}`);
+    else if (property === 'text-decoration' && TEXT_DECORATION.test(raw))
+      kept.push(`text-decoration: ${raw.toLowerCase()}`);
+    else if (property === 'color') {
+      const colour = allowedColor(raw);
+      if (colour) kept.push(`color: ${colour}`);
+    }
+  }
+  return kept.join('; ');
 }
 
 if (!(DOMPurify as unknown as { __hazardnetHooks?: boolean }).__hazardnetHooks) {
@@ -174,6 +311,16 @@ if (!(DOMPurify as unknown as { __hazardnetHooks?: boolean }).__hazardnetHooks) 
     if (data.attrName === 'style') {
       const safe = sanitizeInlineStyle(data.attrValue);
       if (safe) data.attrValue = safe;
+      else data.keepAttr = false;
+      return;
+    }
+
+    // The legacy `<font color>` attribute is the other way execCommand writes a text colour,
+    // so it has to answer to the same four-value allowlist as the style declaration — otherwise
+    // the older serialisation is a hole around the newer one.
+    if (data.attrName.toLowerCase() === 'color') {
+      const colour = allowedColor(data.attrValue);
+      if (colour) data.attrValue = colour;
       else data.keepAttr = false;
       return;
     }
@@ -225,13 +372,19 @@ export function sanitizeBlogHtml(html: string): string {
 
 /** Rough reading time from stripped text (200 wpm). */
 export function readingTimeMinutes(html: string): number {
-  const text = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const text = html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
   const words = text ? text.split(' ').length : 0;
   return Math.max(1, Math.round(words / 200));
 }
 
 export function wordCount(html: string): number {
-  const text = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const text = html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
   return text ? text.split(' ').length : 0;
 }
 
@@ -347,12 +500,15 @@ export async function listArticles(): Promise<BlogStoreResult<BlogArticle[]>> {
       localDemo: true,
     };
   }
-  let data: any[] = []; let error = null;
+  let data: any[] = [];
+  let error = null;
   try {
     const q = query(collection(db, TABLE), orderBy('created_at', 'desc'));
     const snap = await getDocs(q);
-    data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  } catch(e) { error = e; }
+    data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  } catch (e) {
+    error = e;
+  }
   if (error) return { data: [], error: String(error), localDemo: false };
   return { data: (data ?? []).map(rowToArticle), error: null, localDemo: false };
 }
@@ -368,12 +524,15 @@ export async function listPublishedArticles(): Promise<BlogStoreResult<BlogArtic
       localDemo: true,
     };
   }
-  let data: any[] = []; let error = null;
+  let data: any[] = [];
+  let error = null;
   try {
     const q = query(collection(db, TABLE), where('status', '==', 'published'), orderBy('published_at', 'desc'));
     const snap = await getDocs(q);
-    data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  } catch(e) { error = e; }
+    data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  } catch (e) {
+    error = e;
+  }
   if (error) return { data: [], error: String(error), localDemo: false };
   return { data: (data ?? []).map(rowToArticle), error: null, localDemo: false };
 }
@@ -383,12 +542,15 @@ export async function getArticleBySlug(slug: string): Promise<BlogStoreResult<Bl
   if (isLocalDemoMode()) {
     return { data: readLocal().find((a) => a.slug === slug) ?? null, error: null, localDemo: true };
   }
-  let data: any = null; let error = null;
+  let data: any = null;
+  let error = null;
   try {
     const q = query(collection(db, TABLE), where('slug', '==', slug));
     const snap = await getDocs(q);
-    if(!snap.empty) data = { id: snap.docs[0].id, ...snap.docs[0].data() };
-  } catch(e) { error = e; }
+    if (!snap.empty) data = { id: snap.docs[0].id, ...snap.docs[0].data() };
+  } catch (e) {
+    error = e;
+  }
   if (error) return { data: null, error: String(error), localDemo: false };
   return { data: data ? rowToArticle(data as Record<string, unknown>) : null, error: null, localDemo: false };
 }
@@ -398,11 +560,14 @@ export async function getArticleById(id: string): Promise<BlogStoreResult<BlogAr
   if (isLocalDemoMode()) {
     return { data: readLocal().find((a) => a.id === id) ?? null, error: null, localDemo: true };
   }
-  let data: any = null; let error = null;
+  let data: any = null;
+  let error = null;
   try {
     const dSnap = await getDoc(doc(db, TABLE, id));
-    if(dSnap.exists()) data = { id: dSnap.id, ...dSnap.data() };
-  } catch(e) { error = e; }
+    if (dSnap.exists()) data = { id: dSnap.id, ...dSnap.data() };
+  } catch (e) {
+    error = e;
+  }
   if (error) return { data: null, error: String(error), localDemo: false };
   return { data: data ? rowToArticle(data as Record<string, unknown>) : null, error: null, localDemo: false };
 }
@@ -431,13 +596,16 @@ export async function createArticle(
     writeLocal(all);
     return { data: article, error: null, localDemo: true };
   }
-  let data: any = null; let error = null;
+  let data: any = null;
+  let error = null;
   try {
     const newRow = articleToRow({ ...draft, authorId: author.id, publishedAt: article.publishedAt });
     const ref = doc(collection(db, TABLE));
     await setDoc(ref, newRow);
     data = { id: ref.id, ...newRow };
-  } catch(e) { error = e; }
+  } catch (e) {
+    error = e;
+  }
   if (error) return { data: null, error: String(error), localDemo: false };
   return { data: rowToArticle(data as Record<string, unknown>), error: null, localDemo: false };
 }
@@ -476,11 +644,14 @@ export async function updateArticle(
   const row = articleToRow(changes);
   row.updated_at = now;
   if (changes.status === 'published') row.published_at = changes.publishedAt ?? now;
-  let data: any = null; let error = null;
+  let data: any = null;
+  let error = null;
   try {
     await updateDoc(doc(db, TABLE, id), row);
     data = row;
-  } catch(e) { error = e; }
+  } catch (e) {
+    error = e;
+  }
   if (error) return { data: null, error: String(error), localDemo: false };
   return { data: rowToArticle(data as Record<string, unknown>), error: null, localDemo: false };
 }
@@ -497,7 +668,9 @@ export async function deleteArticle(id: string, author: AuthorContext): Promise<
   let error = null;
   try {
     await deleteDoc(doc(db, TABLE, id));
-  } catch(e) { error = e; }
+  } catch (e) {
+    error = e;
+  }
   if (error) return { data: false, error: String(error), localDemo: false };
   return { data: true, error: null, localDemo: false };
 }

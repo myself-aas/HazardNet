@@ -49,20 +49,17 @@ export const Blogs: React.FC = () => {
     >
       <Breadcrumbs />
 
-      <div className="rounded-2xl bg-white border border-carbon-20/90 p-6 md:p-8 relative overflow-hidden space-y-3">
-        <div className="absolute top-0 left-0 w-full h-1 bg-primary"></div>
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-full text-xs font-mono font-extrabold bg-amber-50 text-amber-900 border border-amber-300 uppercase tracking-wider">
-            Research Insights & Field Reports
-          </span>
+      <div className="rounded-2xl bg-white border border-carbon-20/90 p-6 md:p-8 space-y-3">
+        <h1 className="text-ap-lead sm:text-ap-display-md font-bold leading-tight text-carbon-90 tracking-tight">
+          HazardNet AI Blog & Field Deployment Studies
+        </h1>
+        <div className="mt-3 flex items-center gap-2">
+          <span className="text-xs font-medium text-carbon-60">Research Insights & Field Reports</span>
           <span className="text-carbon-60">•</span>
           <span className="text-xs text-carbon-60 font-semibold">HazardNet Knowledge Base</span>
         </div>
 
-        <h1 className="text-ap-lead sm:text-ap-display-md font-bold leading-tight text-carbon-90 tracking-tight">
-          HazardNet AI Blog & Field Deployment Studies
-        </h1>
-        <p className="text-carbon-60 text-base leading-[1.62] max-w-3xl">
+        <p className="text-carbon-70 text-base leading-[1.62] max-w-[68ch]">
           Technical deep-dives, remote sensing methodologies, field deployment case studies, and low-bandwidth
           engineering notes written by the HazardNet research team. Every article opens on its own page with a unique
           URL.
@@ -98,32 +95,33 @@ export const Blogs: React.FC = () => {
 
       {liveArticles.length > 0 && (
         <section className="space-y-3" data-testid="live-articles">
-          <h2 className="text-sm font-black text-carbon-90 uppercase tracking-wider font-mono flex items-center gap-2">
-            Latest articles
-          </h2>
+          <h2 className="text-base font-bold text-carbon-90">Latest articles</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {liveArticles.map((article) => (
               <Link
                 key={article.id}
                 to={`/blogs/${article.slug}`}
-                className="rounded-2xl group bg-white border border-carbon-20/70 p-5 hover:border-amber-400/80 hover:transition-all flex flex-col justify-between gap-3"
+                className="rounded-2xl group bg-white border border-carbon-20/70 p-5 hover:border-carbon-40 transition-colors flex flex-col justify-between gap-3"
               >
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs font-mono font-bold">
-                    <span className="px-2 py-0.5 rounded-full bg-carbon-05 text-carbon-80 border border-carbon-20">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <span className="px-2 py-0.5 rounded-full bg-carbon-05 text-carbon-80 border border-carbon-20 font-semibold">
                       {article.category}
                     </span>
-                    <span className="text-carbon-60">{readingTimeMinutes(article.contentHtml)} min read</span>
+                    <span className="text-carbon-60">
+                      {article.publishedAt ? `${article.publishedAt.slice(0, 10)} · ` : ''}
+                      {readingTimeMinutes(article.contentHtml)} min read
+                    </span>
                   </div>
-                  <h3 className="text-sm font-black text-carbon-90 group-hover:text-ap-link leading-snug">
+                  <h3 className="text-lg font-bold text-carbon-90 group-hover:text-ap-link leading-snug">
                     {article.title}
                   </h3>
-                  <p className="text-base leading-[1.62] text-carbon-60 line-clamp-2">{article.excerpt}</p>
+                  <p className="text-base leading-[1.62] text-carbon-70 line-clamp-2">{article.excerpt}</p>
                 </div>
-                <div className="text-xs font-mono text-carbon-60 flex items-center justify-between">
+                <div className="text-xs text-carbon-60 flex items-center justify-between">
                   <span>{article.authorName}</span>
-                  <span className="inline-flex items-center gap-1.5 font-black text-carbon-90 group-hover:text-ap-link">
-                    Read /blogs/{article.slug} <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span className="inline-flex items-center gap-1.5 font-semibold text-carbon-90 group-hover:text-ap-link">
+                    Read article <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                   </span>
                 </div>
               </Link>
