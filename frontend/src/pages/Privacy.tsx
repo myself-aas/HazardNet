@@ -23,7 +23,7 @@ export const Privacy: React.FC = () => {
         </div>
 
         <section className="space-y-2">
-          <h2 className="text-sm font-bold text-carbon-90">1. Commitment to Open Privacy</h2>
+          <h2 className="text-lg font-bold tracking-tight text-carbon-90 sm:text-xl">1. Commitment to Open Privacy</h2>
           <p>
             HazardNet AI is committed to protecting user privacy while delivering decision-support for disaster
             preparedness. Forecasts are computed in a scheduled server-side pipeline and served as committed snapshots:
@@ -32,7 +32,7 @@ export const Privacy: React.FC = () => {
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-sm font-bold text-carbon-90">2. Information We Process</h2>
+          <h2 className="text-lg font-bold tracking-tight text-carbon-90 sm:text-xl">2. Information We Process</h2>
           <ul className="list-disc pl-5 space-y-1.5 text-carbon-70">
             <li>
               <strong>Geolocation Data:</strong> If you grant location permission, your browser latitude and longitude
@@ -48,8 +48,10 @@ export const Privacy: React.FC = () => {
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-sm font-bold text-carbon-90">3. Zero Third-Party Tracker Guarantee</h2>
-          <p className="rounded-lg p-3 bg-amber-50 border border-amber-200 text-amber-900 font-medium">
+          <h2 className="text-lg font-bold tracking-tight text-carbon-90 sm:text-xl">
+            3. Zero Third-Party Tracker Guarantee
+          </h2>
+          <p className="rounded-lg p-3 bg-[var(--ap-sev-moderate-surface)] border border-[var(--ap-sev-moderate)] font-medium text-carbon-90">
             HazardNet contains <strong>no third-party advertising trackers</strong>, no social media tracking scripts,
             and no commercial data brokers. All telemetry is limited to anonymous error logs required for system uptime
             maintenance.
@@ -57,7 +59,7 @@ export const Privacy: React.FC = () => {
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-sm font-bold text-carbon-90">4. Contact Our Privacy Lead</h2>
+          <h2 className="text-lg font-bold tracking-tight text-carbon-90 sm:text-xl">4. Contact Our Privacy Lead</h2>
           <p>
             If you have questions regarding data privacy or wish to request data removal, contact us via our{' '}
             <Link to="/contact" className="font-bold text-ap-link underline underline-offset-4">

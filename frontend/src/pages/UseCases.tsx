@@ -75,7 +75,7 @@ const USE_CASES: UseCaseData[] = [
     hazardType: 'Drought',
     impactLevel: 'Extreme Soil Aridity',
     icon: 'sunny',
-    bannerColor: 'border-amber-300 bg-amber-50/80 text-amber-900',
+    bannerColor: 'border-[var(--ap-sev-moderate)] bg-[var(--ap-sev-moderate-surface)] text-carbon-90',
     districtId: 'rajshahi',
     summary:
       'High terrace clay soils in Barind suffer prolonged rainfall deficits during pre-monsoon and post-monsoon windows, severely stressing Aus rice transplanting and mango orchards.',
@@ -166,9 +166,9 @@ export const UseCases: React.FC = () => {
               whileTap={{ scale: 0.98 }}
               key={item.id}
               onClick={() => setActiveCaseId(item.id)}
-              className={`p-4 border text-left transition-all duration-300 flex flex-col justify-between gap-3 hover:cursor-pointer ${
+              className={`p-4 border text-left transition-colors flex flex-col justify-between gap-3 hover:cursor-pointer ${
                 isSelected
-                  ? 'bg-amber-50/90 text-carbon-90 border-ap-primary ring-2 ring-ap-primary/40 shadow-amber-500/10'
+                  ? 'bg-[var(--ap-sev-moderate-surface)] text-carbon-90 border-ap-primary ring-2 ring-ap-primary/40 '
                   : 'bg-white text-carbon-80 border-carbon-20 hover:border-carbon-30 hover:bg-carbon-05/50'
               }`}
             >
@@ -177,7 +177,7 @@ export const UseCases: React.FC = () => {
                 <span
                   className={`px-2.5 py-1 rounded-full text-xs font-mono font-extrabold border ${
                     isSelected
-                      ? 'bg-amber-200/90 text-amber-950 border-amber-300'
+                      ? 'bg-[var(--ap-sev-moderate-surface)] text-carbon-90 border-[var(--ap-sev-moderate)]'
                       : 'bg-carbon-10 text-carbon-70 border-carbon-20'
                   }`}
                 >
@@ -227,7 +227,7 @@ export const UseCases: React.FC = () => {
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
               <Link
                 to={`/?district=${activeCase.districtId}&report=true`}
-                className="px-4 py-2.5 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 text-xs font-black transition-all hover:shrink-0 text-center inline-block cursor-pointer"
+                className="px-4 py-2.5 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 text-xs font-black transition-colors hover:shrink-0 text-center inline-block cursor-pointer"
               >
                 <MaterialIcon name="satellite_alt" className="w-4 h-4" /> Simulate Hazard on Live GIS
               </Link>
@@ -240,7 +240,7 @@ export const UseCases: React.FC = () => {
               <motion.div
                 whileHover={{ y: -3 }}
                 key={i}
-                className="rounded-2xl p-4 sm:p-5 bg-carbon-05/90 border border-carbon-20/80 hover:border-amber-300/80 hover:transition-all duration-300 space-y-1.5"
+                className="rounded-2xl p-4 sm:p-5 bg-carbon-05/90 border border-carbon-20/80 hover:border-carbon-40 transition-colors space-y-1.5"
               >
                 <span className="text-xs font-mono font-bold text-carbon-60 uppercase tracking-wider block">
                   {st.label}
@@ -252,9 +252,9 @@ export const UseCases: React.FC = () => {
 
           {/* Core Summary & Satellite Method */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="rounded-2xl space-y-3 p-5 bg-carbon-05/80 border border-carbon-20/80 hover:border-carbon-30 transition-all">
+            <div className="rounded-2xl space-y-3 p-5 bg-carbon-05/80 border border-carbon-20/80 hover:border-carbon-40 transition-colors">
               <h3 className="font-bold text-xs uppercase font-mono text-carbon-90 flex items-center gap-2">
-                <span className="p-1 rounded-md bg-amber-100 text-amber-900">
+                <span className="p-1 rounded-md bg-[var(--ap-sev-moderate-surface)] text-carbon-90">
                   <MaterialIcon name="content_copy" className="w-4 h-4" />
                 </span>{' '}
                 Problem Statement & Threat
@@ -267,17 +267,17 @@ export const UseCases: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-3">
               <h3 className="font-extrabold text-sm text-carbon-90 flex items-center gap-2">
-                <MaterialIcon name="agriculture" className="w-4 h-4 text-emerald-600" /> Vulnerable Crops & Local
-                Commodities
+                <MaterialIcon name="agriculture" className="w-4 h-4 text-[var(--ap-sev-low)]" /> Vulnerable Crops &
+                Local Commodities
               </h3>
               <ul className="space-y-2 text-xs">
                 {activeCase.affectedCrops.map((crop, i) => (
                   <motion.li
                     whileHover={{ x: 3 }}
                     key={i}
-                    className="rounded-lg p-3 bg-carbon-05/90 border border-carbon-20/80 text-carbon-70 flex items-center gap-2.5 font-semibold hover:border-emerald-300/80 transition-all"
+                    className="rounded-lg p-3 bg-carbon-05/90 border border-carbon-20/80 text-carbon-70 flex items-center gap-2.5 font-semibold hover:border-carbon-40 transition-colors"
                   >
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100/80 text-emerald-700">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--ap-sev-low-surface)] text-[var(--ap-sev-low)]">
                       <Check className="h-3.5 w-3.5" aria-hidden="true" />
                     </span>
                     <span>{crop}</span>
@@ -295,9 +295,9 @@ export const UseCases: React.FC = () => {
                   <motion.li
                     whileHover={{ x: 3 }}
                     key={i}
-                    className="rounded-lg p-3 bg-carbon-05/90 border border-carbon-20/80 text-carbon-70 flex items-start gap-2.5 hover:border-amber-300/80 transition-all"
+                    className="rounded-lg p-3 bg-carbon-05/90 border border-carbon-20/80 text-carbon-70 flex items-start gap-2.5 hover:border-[var(--ap-sev-moderate)] transition-colors"
                   >
-                    <span className="font-black text-amber-900 bg-amber-100/80 px-2 py-0.5 rounded-full text-xs shrink-0">
+                    <span className="font-black text-carbon-90 bg-[var(--ap-sev-moderate-surface)] px-2 py-0.5 rounded-full text-xs shrink-0">
                       {i + 1}
                     </span>
                     <span className="font-medium pt-0.5">{step}</span>
@@ -310,7 +310,7 @@ export const UseCases: React.FC = () => {
       </AnimatePresence>
 
       {/* Cross-Link Quick Actions */}
-      <div className="rounded-2xl bg-amber-50/80 border border-amber-200 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 text-carbon-90">
+      <div className="rounded-2xl bg-[var(--ap-sev-moderate-surface)] border border-[var(--ap-sev-moderate)] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 text-carbon-90">
         <div className="space-y-1 text-center md:text-left">
           <h3 className="text-lg font-black text-carbon-90 tracking-tight">
             Ready to explore these scenarios with live data?
@@ -325,7 +325,7 @@ export const UseCases: React.FC = () => {
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
               to="/download"
-              className="px-5 py-2.5 bg-primary hover:bg-primary-strong text-ap-action-fg font-black text-xs transition-all hover:inline-block cursor-pointer"
+              className="px-5 py-2.5 bg-primary hover:bg-primary-strong text-ap-action-fg font-black text-xs transition-colors hover:inline-block cursor-pointer"
             >
               <MaterialIcon name="download" className="w-4 h-4" /> Download Software
             </Link>
@@ -333,7 +333,7 @@ export const UseCases: React.FC = () => {
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
               to="/docs"
-              className="rounded-full px-5 py-2.5 bg-white text-carbon-90 font-bold text-xs hover:bg-carbon-10 transition-all border border-carbon-30 inline-block cursor-pointer"
+              className="rounded-full px-5 py-2.5 bg-white text-carbon-90 font-bold text-xs hover:bg-carbon-10 transition-colors border border-carbon-30 inline-block cursor-pointer"
             >
               <MaterialIcon name="menu_book" className="w-4 h-4" /> Read Research Docs
             </Link>

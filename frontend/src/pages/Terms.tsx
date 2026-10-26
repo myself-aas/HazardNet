@@ -23,7 +23,7 @@ export const Terms: React.FC = () => {
         </div>
 
         <section className="space-y-2">
-          <h2 className="text-ap-tagline font-bold tracking-tight text-carbon-90">1. Acceptance of Terms</h2>
+          <h2 className="text-lg font-bold tracking-tight text-carbon-90 sm:text-xl">1. Acceptance of Terms</h2>
           <p>
             By accessing or using the HazardNet AI web platform, mobile applications, or API endpoints, you agree to be
             bound by these Terms and Conditions. HazardNet is a hosted disaster early-warning initiative and decision
@@ -32,7 +32,7 @@ export const Terms: React.FC = () => {
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-ap-tagline font-bold tracking-tight text-carbon-90">2. Hosted Model Protection</h2>
+          <h2 className="text-lg font-bold tracking-tight text-carbon-90 sm:text-xl">2. Hosted Model Protection</h2>
           <p>
             HazardNet model weights, preprocessing parameters, and inference implementation are proprietary server-side
             assets. The web platform exposes prediction results through authorized API requests only; downloading,
@@ -41,7 +41,7 @@ export const Terms: React.FC = () => {
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-ap-tagline font-bold tracking-tight text-carbon-90">
+          <h2 className="text-lg font-bold tracking-tight text-carbon-90 sm:text-xl">
             3. Disaster Early-Warning Disclaimer
           </h2>
           <p className="rounded-xl border border-severity-high bg-white p-4 text-carbon-80">
@@ -53,7 +53,7 @@ export const Terms: React.FC = () => {
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-ap-tagline font-bold tracking-tight text-carbon-90">4. API Usage & Rate Limits</h2>
+          <h2 className="text-lg font-bold tracking-tight text-carbon-90 sm:text-xl">4. API Usage & Rate Limits</h2>
           <p>
             Public REST API endpoints and archived forecast snapshots are subject to rate limits (1,000 requests per day
             for standard users) to preserve infrastructure availability during emergency hazard events. Unauthorized
@@ -62,7 +62,7 @@ export const Terms: React.FC = () => {
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-ap-tagline font-bold tracking-tight text-carbon-90">5. Contact & Questions</h2>
+          <h2 className="text-lg font-bold tracking-tight text-carbon-90 sm:text-xl">5. Contact & Questions</h2>
           <p>
             For legal or academic licensing inquiries, please visit our{' '}
             <Link to="/contact" className="font-bold text-ap-link underline underline-offset-4">

@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import Breadcrumbs from '../components/Breadcrumbs';
 import MaterialIcon from '../components/MaterialIcon';
 import { SendIcon } from '../components/ui/animated-state-icons';
@@ -111,6 +112,13 @@ export const Contact: React.FC = () => {
   const [form, setForm] = useState<FormState>(INITIAL);
   const [prepared, setPrepared] = useState<{ kind: FormKind; subject: string; body: string } | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
+  // The summary is `role="alert"`, which announces it — but a keyboard user is still standing in
+  // the field they were typing in, several controls away from the explanation. Focus moves to the
+  // summary instead of a silent `scrollIntoView`, so the list is read and Tab continues from it.
+  const errorRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (errors.length > 0) errorRef.current?.focus();
+  }, [errors]);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -167,7 +175,7 @@ export const Contact: React.FC = () => {
   };
 
   const inputClass =
-    'w-full rounded-md p-2.5 border border-carbon-30 bg-carbon-05 text-carbon-90 font-medium outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-200';
+    'w-full rounded-md p-2.5 border border-carbon-30 bg-carbon-05 text-carbon-90 font-medium outline-none focus:border-ap-primary focus:ring-2 focus:ring-ap-primary';
 
   return (
     <motion.div
@@ -214,10 +222,10 @@ export const Contact: React.FC = () => {
                   setPrepared(null);
                   setErrors([]);
                 }}
-                className={`min-h-[44px] px-4 py-2 transition-all whitespace-nowrap cursor-pointer touch-manipulation tap-target inline-flex items-center justify-center ${
+                className={`min-h-[44px] px-4 py-2 transition-colors whitespace-nowrap cursor-pointer touch-manipulation tap-target inline-flex items-center justify-center ${
                   activeForm === kind
-                    ? 'bg-amber-500 text-ap-on-sev font-bold'
-                    : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20 hover:text-carbon-90'
+                    ? 'bg-primary text-ap-action-fg font-bold'
+                    : 'bg-carbon-10 text-carbon-70 hover:bg-carbon-20 hover:text-carbon-90'
                 }`}
               >
                 {label}
@@ -226,7 +234,12 @@ export const Contact: React.FC = () => {
           </div>
 
           {errors.length > 0 && (
-            <div role="alert" className="rounded-2xl border border-ap-primary bg-white p-4 text-xs text-ap-link">
+            <div
+              ref={errorRef}
+              tabIndex={-1}
+              role="alert"
+              className="rounded-2xl border border-ap-primary bg-white p-4 text-xs text-ap-link outline-none"
+            >
               <p className="font-bold">Please fix the following before continuing:</p>
               <ul className="mt-1 list-disc pl-5">
                 {errors.map((problem) => (
@@ -509,9 +522,7 @@ export const Contact: React.FC = () => {
 
         <aside className="space-y-6">
           <div className="rounded-2xl bg-white text-carbon-90 p-6 space-y-4 border border-carbon-20">
-            <h2 className="font-extrabold text-sm uppercase tracking-wider font-mono text-carbon-90">
-              Official hotlines
-            </h2>
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-carbon-90">Official hotlines</h2>
 
             <div className="space-y-3 text-xs">
               <div className="rounded-2xl p-3 bg-white border border-ap-primary space-y-1">
@@ -521,16 +532,16 @@ export const Contact: React.FC = () => {
                   999
                 </p>
               </div>
-              <div className="rounded-2xl p-3 bg-amber-50 border border-amber-200 space-y-1">
-                <span className="font-bold text-amber-900 block">Department of Agricultural Extension (DAE)</span>
-                <p className="font-mono text-sm font-bold text-amber-800">
+              <div className="rounded-2xl p-3 bg-[var(--ap-sev-moderate-surface)] border border-[var(--ap-sev-moderate)] space-y-1">
+                <span className="font-bold text-carbon-90 block">Department of Agricultural Extension (DAE)</span>
+                <p className="font-mono text-sm font-bold text-[var(--ap-sev-moderate)]">
                   <PhoneCall className="mr-1 inline h-4 w-4" aria-hidden="true" />
                   16123
                 </p>
               </div>
-              <div className="rounded-2xl p-3 bg-amber-50 border border-amber-200 space-y-1">
-                <span className="font-bold text-amber-900 block">Disaster management helpline</span>
-                <p className="font-mono text-sm font-bold text-amber-800">
+              <div className="rounded-2xl p-3 bg-[var(--ap-sev-moderate-surface)] border border-[var(--ap-sev-moderate)] space-y-1">
+                <span className="font-bold text-carbon-90 block">Disaster management helpline</span>
+                <p className="font-mono text-sm font-bold text-[var(--ap-sev-moderate)]">
                   <PhoneCall className="mr-1 inline h-4 w-4" aria-hidden="true" />
                   1090
                 </p>
@@ -540,7 +551,7 @@ export const Contact: React.FC = () => {
 
           <div className="bg-white border border-carbon-20 rounded-2xl p-6 space-y-3 text-xs text-carbon-60">
             <h2 className="font-bold text-carbon-90 text-sm flex items-center gap-2">
-              <MaterialIcon name="hub" className="text-amber-800" /> Where reports go
+              <MaterialIcon name="hub" className="text-carbon-50" /> Where reports go
             </h2>
             <p className="leading-relaxed">
               HazardNet is an independent project without a staffed office. Reports are filed on the public issue
@@ -550,7 +561,7 @@ export const Contact: React.FC = () => {
             <ul className="space-y-1.5">
               <li>
                 <a
-                  className="font-bold text-amber-700 hover:text-amber-900 underline underline-offset-4"
+                  className="font-bold text-ap-link underline underline-offset-4"
                   href={`${REPO}/issues`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -559,18 +570,12 @@ export const Contact: React.FC = () => {
                 </a>
               </li>
               <li>
-                <a
-                  className="font-bold text-amber-700 hover:text-amber-900 underline underline-offset-4"
-                  href={mailtoUrl}
-                >
+                <a className="font-bold text-ap-link underline underline-offset-4" href={mailtoUrl}>
                   {CONTACT_EMAIL}
                 </a>
               </li>
               <li>
-                <a
-                  className="font-bold text-amber-700 hover:text-amber-900 underline underline-offset-4"
-                  href="/.well-known/security.txt"
-                >
+                <a className="font-bold text-ap-link underline underline-offset-4" href="/.well-known/security.txt">
                   Security disclosure policy
                 </a>
               </li>
@@ -581,13 +586,13 @@ export const Contact: React.FC = () => {
 
       <p className="text-xs text-carbon-60">
         HazardNet is decision support, not an official warning service. See the{' '}
-        <a className="font-bold text-amber-700 hover:text-amber-900" href="/methodology">
+        <Link className="font-bold text-ap-link" to="/methodology">
           methodology
-        </a>{' '}
+        </Link>{' '}
         and{' '}
-        <a className="font-bold text-amber-700 hover:text-amber-900" href="/data-sources">
+        <Link className="font-bold text-ap-link" to="/data-sources">
           data sources
-        </a>{' '}
+        </Link>{' '}
         pages for scope and limitations.
       </p>
     </motion.div>
