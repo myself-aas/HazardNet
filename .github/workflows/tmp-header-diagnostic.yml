@@ -2,6 +2,9 @@ name: TMP Header Diagnostic
 
 on:
   workflow_dispatch:
+  push:
+    branches: [arena/e0f19f23-hazardnet]
+    paths: ['.github/workflows/tmp-header-diagnostic.yml']
 
 permissions:
   contents: write
