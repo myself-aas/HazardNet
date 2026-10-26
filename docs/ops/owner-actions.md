@@ -19,6 +19,14 @@ recorded under **§ Decision log** at the bottom of this file. Actions that were
 "deploy something from CI" are re-measured against the new target rather than closed on the old
 one.
 
+**2026-10-26 — cost is now a decision input, not a line item.** The project runs on free tiers
+only; **no paid dependency may be introduced without a funding decision**, and the constraint is
+recorded as a control in **§ Cost constraints** below so the next reader does not re-propose what
+was withdrawn. Two recommendations in this file were withdrawn the same day for cost: Action 8's
+Durable Objects / Upstash counter (→ the free plan's single edge rate-limiting rule) and Action
+12's log drain into BigQuery/ClickHouse (→ Workers Analytics Engine). Both are rewritten in place
+with the withdrawal recorded, not deleted.
+
 **How to close an action:** do the work, flip `Status` to `Closed`, add the date and your name on
 the `Closed by` line, and — if code or a workflow pointed at it — remove or update that comment in
 the same change. An action nobody can be paged for is a note, not a control.
@@ -72,7 +80,8 @@ site origin; while none is, leave it unset and read the 404 as the documented an
 | **Do** | Install Java + the Firebase emulator, then run the behavioural suite: owner read/write allowed, anonymous read denied on a private profile, anonymous `list` without `limit(1)` denied, over-size and wrong-owned writes denied. |
 | **Verify** | Every assertion passes against the emulator, and the shape test is kept as the CI-resident guard. |
 | **Closed by** | — |
-| **Measured 2026-10-26** | Unchanged by the deploy cutover, and still unimplemented: `grep -rn 'setup:emulators\|emulators:exec\|java-version' .github/workflows/` returns **0** matches. The Resident guard it is meant to complement (the shape test in `__tests__/`) is the only thing checking the rules today. Needs the owner's Google Cloud service account either way — CI cannot read Firestore. |
+| **Measured 2026-10-26 (cost)** | The repository half is done and is now a **cost control**, not only a loop guard: the probe commit carries `[skip ci]` (Pages honours `[CI Skip]` / `[Skip CI]` / `[CF-Pages-Skip]`, case-insensitive) and `data/site-health/**` is excluded from the build watch paths. The measurement that made it urgent: **75 of the 195 non-merge commits to `main` in the previous 30 days were probe commits**, 52 of them in October, against a 500-build monthly Pages allowance. The status stays Open for one scheduled run — only the dashboard can show a *Deploy skipped* entry. |
+| **Measured 2026-10-26** | Unchanged by the deploy cutover, and still unimplemented: `grep -rn 'setup:emulators\|emulators:exec\|java-version' .github/workflows/` returns **0** matches. The Resident guard it is meant to complement (the shape test in `__tests__/`) is the only thing checking the rules today. Needs the owner's Google Cloud service account either way — CI cannot read Firestore. **Cost 2026-10-26:** the Java install plus emulator JAR download is cheap on Actions minutes because the repository is **public** (`isPrivate: false`, read from the GitHub API on 2026-10-26), where Actions minutes are unlimited. On a private repo this job is an ongoing minute cost — which is now a funding question, not a scheduling one (§ Cost constraints). |
 
 ## Action 4 · *not reconstructed*
 
@@ -116,16 +125,17 @@ No citation in the tree identifies this action.
 *Searched `git log --all -S "Action 7"` and the reflog on 2026-10-26; no citation found — the
 string only ever appears in this file, already marked not reconstructed (`f28f854`, `d2fd9d9`).*
 
-## Action 8 · Shared rate-limit counter
+## Action 8 · Rate-limit the API at the edge, not per instance
 
 | | |
 |---|---|
-| **Status** | Open |
-| **Why** | `backend/middleware/serverlessGuard.js` and `SECURITY.md` are explicit that the buckets are **per instance** (`limit × instances`), so the effective ceiling scales with the number of warm lambdas. |
-| **Do** | Move the counters to a shared store (Upstash/Redis or an equivalent) and have `guardRequest` read/write through it. |
-| **Verify** | Two concurrent instances share one count — fire 2 × N requests from two hosts and confirm the second batch is throttled at N, not 2N. |
+| **Status** | Open — **rewritten 2026-10-26 to a free-tier plan; the paid plan was withdrawn.** |
+| **Why** | `backend/middleware/serverlessGuard.js` and `SECURITY.md` are explicit that the buckets are **per instance** (`limit × instances`), so the effective ceiling scales with the number of warm lambdas. `backend/middleware/serverlessGuard.js:66` is a module-level `Map`, so the ceiling is *unbounded* under scale rather than merely loose — it was never a real limit, just a per-isolate one. |
+| **Do** | **One edge rule, not a shared store.** (1) Cloudflare → Security → WAF → **Rate limiting rules**: create the free plan's **single** rule against the most-trodden path — `/api/v1/telemetry` first, since it is unauthenticated and writes a log line per batch — with a generous threshold. (2) Keep `serverlessGuard.js` exactly as it is as the per-isolate second layer: it costs nothing and still stops a single hot isolate. (3) If the account has **SQLite-backed Durable Objects on the free plan**, use one for exact global counting instead — that is the correct tool and it costs nothing; if the dashboard does not offer it, take the edge rule and do not pay. |
+| **Verify** | Fire 2 × N requests from two hosts and confirm the second batch throttles at N, not 2N. |
 | **Closed by** | — |
-| **Measured 2026-10-26 (decision, not an implementation)** | The cutover does not change this, because the API is not on Pages (`docs/ops/deployment.md` §7). When an API host exists, the counter belongs in **one** place the host can reach: a **Durable Object** on Cloudflare Workers if the host is Workers-based (exact counts, no eventual consistency — KV is the wrong primitive here and Upstash is the fallback if Workers Paid is unavailable), otherwise Redis/Upstash over REST next to the Node process. `backend/middleware/serverlessGuard.js:66` is a module-level `Map`, so the change is one function (`bump`) plus a configured client — not a rewrite. **Not implemented in this cutover:** there is no host to point it at, and a client for a store that does not exist is untested code pretending to be a control. |
+| **Cost — why the plan changed** | The original text said "Upstash/Redis or an equivalent", i.e. a paid dependency. Withdrawn 2026-10-26: an edge rule is a **real global** limit for the one path that needs it at $0, which is strictly better than today for that path and no worse for the rest. Free plan specifics that constrain the rule: **one rule only**, **`Path` is the only available expression field**, counting characteristics **IP only**, counting period **10 s only**, mitigation timeout **10 s only**, action = *perform during mitigation period* (no throttle-above-rate). The 10 s window is why the rule guards a write endpoint rather than a read: it caps a burst, it does not meter a steady drip. |
+| **Measured 2026-10-26** | Unchanged and unimplemented: the API is not on Pages (`docs/ops/deployment.md` §7), so there is no origin to rate limit yet. This action is **blocked on Action 21**, not on money — the rule points at a host that must exist first. Nothing in this cutover introduced a client for a store that does not exist. |
 
 ## Action 9 · Site-health probe cannot publish its result
 
@@ -149,7 +159,7 @@ the run summary and the uploaded artifact, but the committed file goes stale. |
 | **Do** | (a) Backfill `profile_visibility` on rows that predate the field (default-deny now hides them). (b) Add a `publicProfiles/{uid}` mirror written by the backend holding only the display fields the profile page renders, and point `/u/<username>` at it. (c) Then move `email`, `phone_number`, `whatsapp_number`, `address`, `pinpoint_lat`, `pinpoint_lng` out of the public document entirely. |
 | **Verify** | A public profile fetched anonymously contains no contact field; the emulator suite from Action 3 covers it. |
 | **Closed by** | — |
-| **Measured 2026-10-26** | Unchanged by the cutover. `firestore.rules:34` still documents `publicProfiles` as the *long-term* fix and the mirror does not exist (`grep -rn publicProfiles backend/` → no writer). The `(a)` backfill is an owner-side Firestore write for rows that predate `profile_visibility`; `(b)` and `(c)` are code and are blocked on an API host, because the mirror is written by the backend. |
+| **Measured 2026-10-26** | Unchanged by the cutover. `firestore.rules:34` still documents `publicProfiles` as the *long-term* fix and the mirror does not exist (`grep -rn publicProfiles backend/` → no writer). The `(a)` backfill is an owner-side Firestore write for rows that predate `profile_visibility`; `(b)` and `(c)` are code and are blocked on an API host, because the mirror is written by the backend. **This is now a cost control as well as a privacy fix:** Firestore Spark allows 50k reads/day, and the current public page reads the *fat* profile document per visit. The mirror is a small document holding only the rendered display fields, so the same page costs fewer bytes and burns the read budget more slowly. Do it for both reasons. |
 
 ## Action 11 · Advisory dataset freshness (Kaggle ⇄ pipeline)
 
@@ -182,16 +192,17 @@ ingest (validate → map → snapshot → alert replay → alerts snapshot → f
 reproduced locally from a fresh 128-row CSV on 2026-10-05 and exits 0 at every step — so the red
 remains the notebook's, not the pipeline's.
 
-## Action 12 · Decide where analytics events are stored
+## Action 12 · Store analytics events in Workers Analytics Engine
 
 | | |
 |---|---|
 | **Status** | Open — added 2026-10-02 |
 | **Why** | `POST /api/v1/telemetry` (added with `@hazardnet/analytics`) validates batches and emits them to the platform log, then acknowledges. Nothing persists them. That was deliberate: an unauthenticated endpoint writing to Firestore is a data-integrity, privacy and cost decision, not a technical one. |
-| **Do** | Pick a sink (log drain → BigQuery/ClickHouse, or a hosted collector), then either forward the `{"tag":"analytics", …}` log lines or replace the `console.log` in `serverless/v1/telemetry.js` with a write. **Blocked on hosting**: the endpoint is served by `api/`, which has no host today (`docs/ops/deployment.md` §6). The client-side flag is `VITE_ANALYTICS_ENABLED=true` in the Pages build variables. |
-| **Verify** | Load the site with the flag on, watch a batch arrive at `/api/v1/telemetry` (204), and see the same event in the sink with the same `session`. |
+| **Do** | **Workers Analytics Engine — no drain, no warehouse.** Replace the `console.log(JSON.stringify({tag: 'analytics', …}))` in `serverless/v1/telemetry.js:136` with `env.ANALYTICS.writeDataPoint({…})` and bind the dataset (`binding = "ANALYTICS"`, `dataset = "hazardnet_telemetry"`). Query it with SQL from the dashboard or the SQL API. Set `VITE_ANALYTICS_ENABLED=true` in the Pages **Production** environment only, never Preview. **Blocked on hosting**: the endpoint is served by `api/`, which has no host today (`docs/ops/deployment.md` §7) — this lands after the first Action 21 endpoint ports, not before it. |
+| **Verify** | Load the site with the flag on, watch a batch arrive at `/api/v1/telemetry` (204), and read the same `session` back in a dashboard query. |
 | **Closed by** | — |
-| **Measured 2026-10-26 (decision, not an implementation)** | The sink is still `console.log(JSON.stringify({tag: 'analytics', …}))` (`serverless/v1/telemetry.js:136`) — the transport *is* the log line, and `__tests__/api/telemetry.test.js` pins that. The cutover makes one option concrete and removes another: **Workers Analytics Engine** (`writeDataPoint`) or **Queue → R2 → BigQuery** are the Cloudflare-native sinks, but both require a **Pages Function**, which this deployment deliberately does not have while the API is off Pages (`docs/ops/deployment.md` §3, Action 21). So the sink choice is now downstream of wherever the API ends up, not a standalone decision. `VITE_ANALYTICS_ENABLED` must be set in the Pages **Production** scope only, never Preview. |
+| **Cost — why the plan changed** | The original text, "log drain → BigQuery/ClickHouse, or a hosted collector", was a paid dependency plus a second account surface. Withdrawn 2026-10-26. Free limits that make Analytics Engine the answer: **100,000 data points written/day**, **10,000 read queries/day**, **3 months retention**, ≤ 250 `writeDataPoint` calls per invocation, ≤ 16 KB of blobs per data point. 100k/day is ~10⁴× this site's telemetry volume; 3 months retention is the binding constraint — anything needing longer history must aggregate to R2 before it ages out, which is a decision to make later, not now. |
+| **Measured 2026-10-26 (decision, not an implementation)** | The transport is still the log line and `__tests__/api/telemetry.test.js` pins that — see the rewrite above for why a drain is no longer on the table. `VITE_ANALYTICS_ENABLED` in **Production** scope only: a Preview-scoped flag would collect traffic from unreleased builds into the production dataset. |
 
 ## Action 13 · Clear the open handles the React Native suites leave behind
 
@@ -213,7 +224,7 @@ remains the notebook's, not the pipeline's.
 | **Do** | Add a PR-triggered compile-only job (no packaging) on `windows-2022`, reusing the same `node_modules` hoisting steps. Skip it on docs-only changes. |
 | **Verify** | A deliberately broken import in `apps/windows/src` fails the PR job before it reaches a tag. |
 | **Closed by** | — |
-| **Measured 2026-10-26** | Closer than the title says: `.github/workflows/windows-compile.yml` is already `on: pull_request` with `paths:` limited to `apps/windows/**` and the workflow file itself, and runs on `windows-2022` (line 22) — the compile-only PR job exists. What is missing is the proof, and it cannot be produced here (no Windows runner in this sandbox): break an import in `apps/windows/src` on a throwaway branch, confirm the job goes red, then close with that run's link. |
+| **Measured 2026-10-26** | Closer than the title says: `.github/workflows/windows-compile.yml` is already `on: pull_request` with `paths:` limited to `apps/windows/**` and the workflow file itself, and runs on `windows-2022` (line 22) — the compile-only PR job exists. What is missing is the proof, and it cannot be produced here (no Windows runner in this sandbox): break an import in `apps/windows/src` on a throwaway branch, confirm the job goes red, then close with that run's link. **Cost 2026-10-26 — no deferral needed:** the repository is **public** (`isPrivate: false` from the GitHub API), so Actions minutes are unlimited and the `windows-2022` runner's 2× multiplier costs nothing. The defer-to-`workflow_dispatch` option is therefore *not* taken; it becomes the fallback if the repository is ever made private without a funding decision (§ Cost constraints). |
 
 ## Action 15 · Implement or delete the declared plugins
 
@@ -278,16 +289,18 @@ remains the notebook's, not the pipeline's.
 | **Verify** | `curl -s https://www.hazardnet.live/ \| grep -o 'could not be read'` returns nothing, and the same page shows *“Advisories are active. N district advisories are published at WATCH or above.”* with an `Updated` line whose age is the artifact's (`generated_at 2026-10-25T19:21…` today), not `0 h`. Then `curl -sI https://www.hazardnet.live/api/v1/alerts` should be **404** (there is no API on either host now), and `curl -s https://www.hazardnet.live/data/alerts-latest.json \| head -c 200` should match the apex byte for byte. **`https://www.hazardnet.live` is in `site-health.yml`'s probe set**, so the monitor covers the hostname every canonical URL points at instead of only the apex. |
 | **Closed by** | — |
 
-## Action 21 · Migrate the API surface to Cloudflare, or host it elsewhere (opened 2026-10-26)
+## Action 21 · Bring the API to the same origin with Pages Functions (opened 2026-10-26)
 
 | | |
 |---|---|
-| **Status** | Open — **new workstream, deliberately not part of the Pages cutover.** |
+| **Status** | Open — **new workstream; target chosen 2026-10-26 on cost and header grounds.** |
 | **Why** | The site is static Pages, so `/api/**` answers 404 (`docs/ops/deployment.md` §7). The front door degrades honestly to the committed snapshots, but anything that needs a live store — ingest push, alert review, telemetry, chat, `/api/metrics` — has no runtime. Two API implementations exist and both are unhosted: `backend/` (Express, 11 routers) and `api/**` (6 Node-function entry points over 20 shared handlers). |
-| **Do** | Choose one target, in this order of least surprise: (a) **a container** running `backend/server.js` — zero code change, keeps multer/Firebase/Firestore, and `API_METADATA_URL` points the probes and the frontend at it; (b) **Pages Functions** dispatching into the same `serverless/**` handlers — needs an adapter, a `functions/` tree, and a decision about the header contract in `docs/ops/deployment.md` §3 (a Function makes every request an invocation, and `_headers` does **not** apply to Function responses, so the middleware must set the same six headers and the parity test must cover it); (c) **Workers** with the same handlers, if the store access can be made edge-safe. |
-| **Verify** | `curl -sI https://<api-host>/health` answers, `/api/metrics` exposes `hazardnet_forecast_age_hours`, the frontend's live-API panel stops falling back to the snapshot on the front door, and `docs/ops/deployment.md` §7 is rewritten to say where the API runs. |
+| **Do** | **Pages Functions at `www.hazardnet.live/api/*` — same origin, free tier.** The choice, with the rejected options recorded: <br>**(a) chosen — Pages Functions.** One runtime, one header surface: `functions/_middleware.ts` sets the six headers on every response and imports them from the same module `_headers` is generated from, so `__tests__/securityHeadersParity.test.js` stays a file-parity assertion instead of growing a live-fetch leg. No CORS, no `Vary: Origin`, no preflight, no fourth config. No second deploy target, no second secret set, no second account. <br>**(b) rejected — a standalone Worker on a subdomain.** Same V8 runtime and the same Web-standard port cost, but it is another `wrangler.toml`, another secret set and another thing that can be green while the site is red — plus the header problem returns, because a Worker does not read `_headers`. <br>**(c) rejected — a container** running `backend/server.js`: zero code change and keeps multer/Firebase, but it is a paid runtime with an always-on bill. <br>**Three constraints the port must respect:** <br>1. **`functions/_routes.json` is mandatory**, not optional. The moment a `functions/` tree exists, Pages invokes a Function for *every* request unless `_routes.json` excludes the static paths — so the file must `include` only `/api/*` and `exclude` `/*`. Without it, the site's unlimited free static requests become metered Function invocations. <br>2. **Set Runtime → Fail open / closed to "fail open"** on the Pages project, so exhausting the daily Function allowance on Workers Free serves static assets instead of an error page. <br>3. **10 ms CPU per request** is the design constraint and it is the right one: the expensive work already lives in GitHub Actions, and the delivery path is a committed JSON snapshot. The Function surface is *read a snapshot, serve it, maybe proxy a Firestore read* — never model inference. `api/` uses `fs`, `multer` and Node built-ins that do not exist at the edge, so the portable surface only is what ports. |
+| **Verify** | `curl -sI https://www.hazardnet.live/api/v1/forecasts/bulk` answers 200 with the same six headers the static site sends, `/api/metrics` exposes `hazardnet_forecast_age_hours`, `_routes.json` keeps a static asset path out of the Function, and `docs/ops/deployment.md` §7 is rewritten to say where the API runs. |
 | **Closed by** | — |
-| **Note** | Whichever target is chosen, `api/**` and `backend/**` must not drift apart in the meantime: `__tests__/api/serverlessRouting.test.js` and `__tests__/forecastServe.test.js` exist to keep them sharing one implementation. |
+| **First port (proposed)** | `forecasts/bulk` only — read-only, snapshot-backed, and already probed by `site-health.yml`, so it can be verified by an existing check. Telemetry is deliberately *not* in the first port: it lands with Action 12's Analytics Engine binding, so the sink and its writer change in one PR instead of two. |
+| **Cost note** | No `/api/*` line exists in `frontend/public/_redirects` to replace — that guard was deliberately never written (`_redirects` says why in its own header), and today `/api/**` falls to `404.html` because no asset matches. So the first port is **additive**: a `functions/` tree and its `_routes.json`, not an edit to a routing rule. |
+| **Note** | Whichever target is chosen, `api/**` and `backend/**` must not drift apart: `__tests__/api/serverlessRouting.test.js` and `__tests__/forecastServe.test.js` exist to keep them sharing one implementation. `PUSH_TO_API` stays `false` — writing ingest output through a metered Function for no user-visible gain is the opposite of the cost constraint. |
 
 ## Action 22 · Retire the Firebase Hosting site, not just its config (opened 2026-10-26)
 
@@ -311,6 +324,53 @@ remains the notebook's, not the pipeline's.
 | **Verify** | A new push to any branch produces **no** `Vercel` or `Vercel Preview Comments` check run (`gh api repos/myself-aas/HazardNet/commits/<sha>/check-runs --jq '.check_runs[].name'`), and the Vercel dashboard lists no project pointing at this repository. |
 | **Closed by** | — |
 | **Why it is not in the code half** | A GitHub App installation is account state. There is no file to delete and no API this repository is authorised to call; recording it here is the only place it can be tracked. |
+
+## § Cost constraints
+
+**Effective 2026-10-26. Free tier only.** No paid dependency — a service, a plan upgrade, a second
+host or a metered runtime — may be introduced without an explicit funding decision recorded here.
+This is a **control**, not a note: it exists because two recommendations in this file were written
+assuming money, and the next reader would rebuild them otherwise.
+
+### What the architecture costs
+
+Nothing. The expensive compute is in GitHub Actions and the Kaggle notebook; the site is static
+HTML on Pages; the API surface is thin reads over a committed snapshot. No part of the design
+needs a paid runtime, so no part of it should acquire one by accident.
+
+### The withdrawal record
+
+| Withdrawn 2026-10-26 | Assumed cost | Replaced by | Why the replacement is not a downgrade |
+|---|---|---|---|
+| Action 8 — Durable Objects / Upstash shared counter | $5/mo + a second account | The free plan's **single** edge rate-limiting rule, with `serverlessGuard.js` kept as the per-isolate layer | The per-isolate buckets were never a ceiling — they are `limit × warm instances`, i.e. unbounded under scale. An edge rule is a **real global** limit for the one path that needs it. |
+| Action 12 — log drain → BigQuery/ClickHouse | $ + a warehouse | **Workers Analytics Engine** `writeDataPoint` | 100k data points/day and 3-month retention against a telemetry volume four orders of magnitude smaller. |
+
+### The free allowances that actually bind
+
+Verified from Cloudflare's docs on 2026-10-26 unless marked *stated*.
+
+| Service | Free allowance | The cap that bites |
+|---|---|---|
+| Pages (static) | unlimited requests and bandwidth, 500 builds/month | **Builds.** Measured 2026-10-26: **75 of the 195 commits to `main` in the previous 30 days were probe commits** (52 in October alone) — ~a tenth of the monthly build allowance spent republishing one monitoring file. The watch-path exclusion and the `[skip ci]` marker in `site-health.yml` are cost controls now, not just anti-loops (`docs/ops/deployment.md` §9). |
+| Pages Functions | 100,000 requests/day, **10 ms CPU** per request | CPU. Reads and proxies only — never model inference (Action 21). |
+| R2 | 10 GB storage, 1M writes, 10M reads/month, no egress | Nothing near-term. This is why snapshots belong in R2 and not Firestore. |
+| KV | 100k reads/day, **1k writes/day** | Writes. Never use KV as a counter. |
+| D1 | 5 GB, 5M row reads/day | — |
+| Analytics Engine | 100k data points written/day, 10k read queries/day, 3-month retention | Retention: anything needing longer history aggregates to R2 first. |
+| Rate limiting rules | **1 rule**, `Path` only, IP counting, 10 s period, 10 s mitigation | **One rule.** Point it at the most-abused path. |
+| Cron Triggers | free | — |
+| GitHub Actions | **unlimited on public repos**; private = 2,000 min/month, ×2 Windows, ×10 macOS | Repo visibility. `myself-aas/HazardNet` is **public** (`isPrivate: false`, GitHub API, 2026-10-26), so Action 14's `windows-2022` PR job and Action 3's emulator job cost nothing. Making the repo private turns both into a recurring bill. |
+| Firestore Spark | 1 GiB, 50k reads/day, 20k writes/day *(stated 2026-10-26 — confirm the project is on **Spark, not Blaze**)* | Reads. Action 10's `publicProfiles` mirror is a cost control as well as a privacy fix. If the project is on Blaze, set a $0 budget alert with a hard cap. |
+
+### How to add a paid dependency, if that day comes
+
+1. Write the funding decision here, dated, with the monthly ceiling and the free alternative that
+   was rejected.
+2. Only then implement it, and update the action that needs it to name the paid service.
+3. If the service is declined, record the decline — an action blocked on a funding decision is
+   **blocked**, not abandoned, and must not silently become "not doing this".
+
+---
 
 ## § Decision log
 
@@ -347,6 +407,31 @@ registration of a second configuration that no host read was the direct cause of
 - `data/site-health/**` is excluded from the build watch paths and the probe commit carries
   `[skip ci]`, so monitoring cannot become a deploy loop (Action 9).
 
+### 2026-10-26 · Free tier only — two cost-driven recommendations withdrawn
+
+**Decision:** the project takes no paid dependency. Cloudflare Pages (static + Functions), R2, KV,
+D1, cron triggers, Analytics Engine, the free plan's single rate-limiting rule and GitHub Actions
+on a public repository cover the whole architecture at $0. Recorded as **§ Cost constraints**
+above, with the allowances and the escape hatch.
+
+**Withdrawn the same day, with why:**
+
+- **Action 8** proposed Durable Objects / Upstash for a shared rate-limit counter. Cost without
+  benefit: the per-isolate buckets were never a real ceiling, and one edge rule is a genuinely
+  global limit at $0. Rewritten in place; the withdrawal is recorded in the action, not deleted
+  from history.
+- **Action 12** proposed a log drain into BigQuery/ClickHouse. A warehouse plus a second account
+  to answer questions about a dataset that fits in Analytics Engine's daily allowance many times
+  over. Rewritten in place.
+
+**Also decided:** Action 21 targets **Pages Functions at the same origin**, not a Worker on a
+subdomain and not a container — same port cost, one fewer deploy target, one fewer secret set, and
+it eliminates the divergent header surface instead of duplicating it. The free tier and the header
+contract point at the same answer, which is why this one is not a compromise.
+
+**Not changed:** `PUSH_TO_API` stays `false`. Writing ingest output through a metered runtime for
+no user-visible gain is the exact thing this section forbids.
+
 ### 2026-10-04 · `https://www.hazardnet.live` remains the canonical origin (unchanged)
 
 **Decision, still in force:** `www` is canonical; the apex redirects to it; the code is not to be
@@ -376,3 +461,4 @@ would have been the larger, riskier change and was explicitly not taken.
 | 2026-10-26 | **Vercel removed as a deployment target** (owner instruction: *"completely remove everything point to vercel"*). The DNS export for the day shows `hazardnet.live` **and** `www.hazardnet.live` both CNAME to `hazardnet.pages.dev`, so Pages is the only host. Deleted: `vercel.json`, `frontend/vercel.json`, `scripts/check-vercel-functions.mjs`, `frontend/src/lib/vercelAnalytics.ts`, the `check:functions` script and its CI step, the two workflow deploy steps, the three `VERCEL_*` secret names, the `.vercel` ignore entry and `VITE_VERCEL_ANALYTICS`. Behaviour that the deleted configs declared now lives in `frontend/public/_headers` (policy + cache rules), `frontend/public/_redirects` (the one legacy redirect, and deliberately **no** SPA catch-all) and `dist/404.html`; `__tests__/{securityHeadersParity,securityTxt,modelArtifactsNotServed,seoFoundations}.test.js` were re-pointed at those files. Action 2 closed, Action 17 closed for the site and left open for the API, Action 20 resolved by DNS. `docs/ops/deployment.md` is the new single record. |
 | 2026-10-26 | **Cloudflare Pages cutover, phase 2** — deploy trigger is now the Pages deploy hook (`CF_PAGES_DEPLOY_HOOK`, retried, fails loudly), documented with its fallback (`wrangler pages deploy`) and its credentials in `docs/ENVIRONMENT_SECRETS.md` §1.1.1 plus two new rotation-register entries. The Firebase Hosting block was retired after measuring that `hazardnet-aas48424.web.app` still serves the **2026-09-24** build; Action 22 opened to disable the site itself. `site-health.yml` now requires the six headers **with their values** (not just presence), warns when the answer is not Cloudflare-fronted and fails if Firebase answers; `contents: write` narrowed to the `probe` job; the probe commit and both artifact commits carry `[skip ci]`, which is why the deploy hook is mandatory. `securityHeadersParity` pins the exact values, the 100-rule/2,000-char parser limits and the absence of a second static-host policy. Actions 3, 5, 8, 10, 11, 12, 13, 14, 15, 16, 17 and 9 carry dated measurements; 4 and 7 record their history search; 21 (API host) opened. |
 | 2026-10-26 | **The Vercel GitHub App is still installed on the repository.** `gh api …/check-runs` on PR #100 shows `Vercel Preview Comments` (app `vercel`) and a `Vercel` deployment check pointing at `vercel.com/aas-core/hazardnet`. Removing the configs does not remove an app installation, so every push still produces a preview deployment of a project this repository no longer configures. Action 23 opened; it is an account-level action, not a code change. |
+| 2026-10-26 | **Cost became a control.** New § Cost constraints (free tier only; no paid dependency without a funding decision), with the binding allowance for each service and the procedure for adding one. Two cost-driven recommendations withdrawn and rewritten in place: Action 8's Durable Objects/Upstash counter → the free plan's single edge rate-limiting rule (strictly better for the one abusive path, no worse elsewhere); Action 12's BigQuery/ClickHouse drain → Workers Analytics Engine. Action 21 re-targeted to **Pages Functions at the same origin**, with `_routes.json` recorded as mandatory (without it every static request becomes a metered Function invocation), Runtime → Fail open/closed set to *fail open*, and the 10 ms CPU limit stated as the design constraint it is. Repo visibility measured (`isPrivate: false`): Action 14 needs no deferral and Action 3's emulator job is free; both now say what would change if the repo went private. Action 10 gains its cost reason. |
