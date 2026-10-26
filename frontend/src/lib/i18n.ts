@@ -445,7 +445,6 @@ const EN = {
   'frontdoor.blogs.newest': 'Newest',
   'frontdoor.blogs.allPosts': 'Read all posts',
   'frontdoor.faq.h2': 'Direct answers',
-  'frontdoor.attribution.eyebrow': 'Attribution',
   'frontdoor.attribution.h2': 'Who built this, and under whose supervision',
   'frontdoor.attribution.body':
     '{author} ({role}): {work}. {type}, {department}, {university}, supervised by {supervisor} ({supervisorRole}){coSupervision}.',
@@ -903,7 +902,6 @@ const BN: Record<string, string> = {
   'frontdoor.blogs.newest': 'সর্বশেষ',
   'frontdoor.blogs.allPosts': 'সব লেখা পড়ুন',
   'frontdoor.faq.h2': 'সরাসরি উত্তর',
-  'frontdoor.attribution.eyebrow': 'স্বীকৃতি',
   'frontdoor.attribution.h2': 'কে তৈরি করেছেন এবং কার তত্ত্বাবধানে',
   'frontdoor.attribution.body':
     '{author} ({role}): {work}. {type}, {department}, {university}; তত্ত্বাবধানে {supervisor} ({supervisorRole}){coSupervision}।',

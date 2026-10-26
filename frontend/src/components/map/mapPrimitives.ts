@@ -1,4 +1,4 @@
-import { APPLE_SEVERITY } from '@hazardnet/design-system';
+import { APPLE_COLORS, APPLE_SEVERITY, APPLE_STATUS, hazardPalette } from '@hazardnet/design-system';
 // Extracted from LiveMapView.tsx (P2 decomposition, first slice).
 // Pure, component-independent map primitives: river polylines data,
 // hazard layer registry, and the Leaflet marker icon builder.
@@ -17,7 +17,7 @@ export const BANGLADESH_RIVERS = [
       [23.78, 89.80],
       [23.40, 90.60],
     ] as [number, number][],
-    color: '#0066cc',
+    color: APPLE_COLORS.primary,
   },
   {
     name: 'Jamuna River (Brahmaputra Channel)',
@@ -29,7 +29,7 @@ export const BANGLADESH_RIVERS = [
       [23.95, 89.78],
       [23.78, 89.80],
     ] as [number, number][],
-    color: '#0066cc',
+    color: APPLE_COLORS.primary,
   },
   {
     name: 'Meghna Estuary Network',
@@ -41,7 +41,7 @@ export const BANGLADESH_RIVERS = [
       [22.90, 90.60],
       [22.20, 90.75],
     ] as [number, number][],
-    color: '#0066cc',
+    color: APPLE_COLORS.primary,
   },
   {
     name: 'Teesta River Basin',
@@ -52,7 +52,7 @@ export const BANGLADESH_RIVERS = [
       [25.68, 89.58],
       [25.50, 89.70],
     ] as [number, number][],
-    color: '#0066cc',
+    color: APPLE_COLORS.primary,
   },
   {
     name: 'Surma & Kushiyara (Sylhet Haor)',
@@ -63,7 +63,7 @@ export const BANGLADESH_RIVERS = [
       [24.55, 91.05],
       [24.40, 90.80],
     ] as [number, number][],
-    color: '#0066cc',
+    color: APPLE_COLORS.primary,
   },
   {
     name: 'Karnaphuli Coastal Basin',
@@ -73,7 +73,7 @@ export const BANGLADESH_RIVERS = [
       [22.45, 91.95],
       [22.28, 91.80],
     ] as [number, number][],
-    color: '#0066cc',
+    color: APPLE_COLORS.primary,
   },
 ];
 
@@ -144,15 +144,15 @@ export const createCustomIcon = (
       -webkit-backdrop-filter: blur(14px);
       outline: none;
     ">
-      <span style="color: #1d1d1f; letter-spacing: -0.2px;">${districtName}: <span style="color: #0066cc;">${hazardDef.name}</span></span>
+      <span style="color: var(--ap-label); letter-spacing: -0.2px;">${districtName}: <span style="color: var(--ap-link);">${hazardDef.name}</span></span>
       ${tierLabel ? `
       <span style="
         background: ${color};
-        color: #ffffff;
+        color: var(--ap-on-primary);
         font-weight: 900;
         font-size: 12px;
         padding: 2px 6px;
-        border-radius: 6px;
+        border-radius: var(--ap-radius-xs);
         letter-spacing: 0.5px;
       ">
         ${tierLabel}
@@ -160,11 +160,11 @@ export const createCustomIcon = (
       ` : ''}
       <span style="
         background: ${color};
-        color: #ffffff;
+        color: var(--ap-on-primary);
         font-weight: 900;
         font-size: 12px;
         padding: 2px 7px;
-        border-radius: 6px;
+        border-radius: var(--ap-radius-xs);
         margin-left: 2px;
         box-shadow: 0 2px 6px ${glowColor};
       ">
@@ -207,15 +207,17 @@ export const createCustomIcon = (
 export interface HazardLayerDef {
   id: string;
   name: string;
+  /** Hazard-identity hue from APPLE_HAZARD — one encoding for the map, the bento and
+   *  the console. The chips used to carry a second Tailwind palette
+   *  (`bg-amber-100 text-amber-800 …`) that nothing rendered. */
   color: string;
-  badgeColor: string;
 }
 
 export const HAZARD_LAYERS: HazardLayerDef[] = [
-  { id: 'Flash Flood', name: 'Flash Flood', color: '#0066cc', badgeColor: 'bg-sky-100 text-sky-800 border-sky-200' },
-  { id: 'Monsoon Flood', name: 'Monsoon Flood', color: '#0066cc', badgeColor: 'bg-blue-100 text-blue-800 border-blue-200' },
-  { id: 'Tropical Cyclone', name: 'Tropical Cyclone', color: '#0066cc', badgeColor: 'bg-purple-100 text-purple-800 border-purple-200' },
-  { id: 'Drought', name: 'Drought', color: '#8a5a00', badgeColor: 'bg-amber-100 text-amber-800 border-amber-200' },
-  { id: 'Cold Wave', name: 'Cold Wave', color: '#0066cc', badgeColor: 'bg-cyan-100 text-cyan-800 border-cyan-200' },
-  { id: 'Severe Storm', name: 'Severe Storm', color: '#c01f1f', badgeColor: 'bg-rose-100 text-rose-800 border-rose-200' },
+  { id: 'Flash Flood', name: 'Flash Flood', color: hazardPalette('Flash Flood').text },
+  { id: 'Monsoon Flood', name: 'Monsoon Flood', color: hazardPalette('Monsoon Flood').text },
+  { id: 'Tropical Cyclone', name: 'Tropical Cyclone', color: hazardPalette('Tropical Cyclone').text },
+  { id: 'Drought', name: 'Drought', color: hazardPalette('Drought').text },
+  { id: 'Cold Wave', name: 'Cold Wave', color: hazardPalette('Cold Wave').text },
+  { id: 'Severe Storm', name: 'Severe Storm', color: hazardPalette('Severe Storm').text },
 ];

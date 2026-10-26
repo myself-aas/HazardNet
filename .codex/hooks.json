@@ -6,8 +6,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ ! -f 'C:\\Users\\Ashif\\.agents\\skills\\impeccable\\scripts\\impeccable' ] || 'C:\\Users\\Ashif\\.agents\\skills\\impeccable\\scripts\\impeccable' hook",
-            "commandWindows": "if exist \"C:\\\\Users\\\\Ashif\\\\.agents\\\\skills\\\\impeccable\\\\scripts\\\\impeccable.cmd\" (\"C:\\\\Users\\\\Ashif\\\\.agents\\\\skills\\\\impeccable\\\\scripts\\\\impeccable.cmd\" hook & exit /b)",
+            "command": "[ -x node_modules/.bin/impeccable ] || exit 0; node_modules/.bin/impeccable hook",
+            "commandWindows": "if not exist \"node_modules\\.bin\\impeccable.cmd\" (exit /b 0) & \"node_modules\\.bin\\impeccable.cmd\" hook",
             "timeout": 5,
             "statusMessage": "Checking UI changes"
           }
@@ -19,8 +19,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ ! -f 'C:\\Users\\Ashif\\.agents\\skills\\impeccable\\scripts\\impeccable' ] || 'C:\\Users\\Ashif\\.agents\\skills\\impeccable\\scripts\\impeccable' hook",
-            "commandWindows": "if exist \"C:\\\\Users\\\\Ashif\\\\.agents\\\\skills\\\\impeccable\\\\scripts\\\\impeccable.cmd\" (\"C:\\\\Users\\\\Ashif\\\\.agents\\\\skills\\\\impeccable\\\\scripts\\\\impeccable.cmd\" hook & exit /b)",
+            "command": "[ -x node_modules/.bin/impeccable ] || exit 0; node_modules/.bin/impeccable hook",
+            "commandWindows": "if not exist \"node_modules\\.bin\\impeccable.cmd\" (exit /b 0) & \"node_modules\\.bin\\impeccable.cmd\" hook",
             "timeout": 30,
             "statusMessage": "Design deep pass"
           }

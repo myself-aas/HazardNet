@@ -3,7 +3,7 @@ import html2canvas from 'html2canvas-pro';
 import toast from 'react-hot-toast';
 import L from 'leaflet';
 import { iconMarkup } from '../lib/iconMarkup';
-import { APPLE_FONT_STACK } from '@hazardnet/design-system';
+import { APPLE_COLORS, APPLE_FONT_STACK } from '@hazardnet/design-system';
 
 export interface UseMapSnapshotOptions {
   exportScale?: number;
@@ -63,7 +63,8 @@ export function useMapSnapshot(
             useCORS: true,
             allowTaint: false,
             scale: scaleToUse,
-            backgroundColor: '#1d1d1f',
+            // html2canvas paints onto its own canvas, where var() does not resolve.
+            backgroundColor: APPLE_COLORS.ink,
             logging: false,
             imageTimeout: 12000,
             ignoreElements: (element) => {
@@ -86,18 +87,21 @@ export function useMapSnapshot(
                   color-scheme: light;
                 }
                 :root {
-                  --background: #ffffff;
-                  --foreground: #1d1d1f;
-                  --card: #ffffff;
-                  --card-foreground: #1d1d1f;
-                  --primary: #1d1d1f;
-                  --primary-foreground: #fafafc;
-                  --secondary: #f5f5f7;
-                  --secondary-foreground: #1d1d1f;
-                  --muted: #f5f5f7;
-                  --muted-foreground: #6e6e73;
-                  --border: #e0e0e0;
-                  --input: #e0e0e0;
+                  --background: var(--ap-on-primary);
+                  /* Same values as the app's token layer, restated on the detached clone
+                     html2canvas renders: a cloned document resolves its own styles, so it
+                     needs the token values rather than var() references to the live root. */
+                  --foreground: ${APPLE_COLORS.ink};
+                  --card: ${APPLE_COLORS.canvas};
+                  --card-foreground: ${APPLE_COLORS.ink};
+                  --primary: ${APPLE_COLORS.ink};
+                  --primary-foreground: ${APPLE_COLORS.canvasParchment};
+                  --secondary: ${APPLE_COLORS.canvasParchment};
+                  --secondary-foreground: ${APPLE_COLORS.ink};
+                  --muted: ${APPLE_COLORS.canvasParchment};
+                  --muted-foreground: var(--ap-label-secondary);
+                  --border: ${APPLE_COLORS.hairline};
+                  --input: ${APPLE_COLORS.hairline};
                 }
               `;
               clonedDoc.head.appendChild(oklchFixStyle);
@@ -115,13 +119,13 @@ export function useMapSnapshot(
                     left: 16px;
                     right: 16px;
                     z-index: 999999;
-                    background: rgba(15, 23, 42, 0.95);
-                    color: #ffffff;
-                    border: 2px solid #333333;
-                    border-radius: 20px;
+                    background: var(--ap-black);
+                    color: var(--ap-on-primary);
+                    border: 2px solid var(--ap-ink-muted-80);
+                    border-radius: var(--ap-radius-card);
                     padding: 16px 20px;
                     font-family: ${APPLE_FONT_STACK};
-                    box-shadow: 0 25px 30px -5px rgba(0,0,0,0.7);
+                    box-shadow: 0 25px 30px -5px var(--ap-scrim);
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
@@ -144,22 +148,22 @@ export function useMapSnapshot(
 
                   headerDiv.innerHTML = `
                     <div style="display: flex; align-items: center; gap: 14px;">
-                      <div style="width: 48px; height: 48px; border-radius: 14px; background: #c01f1f; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 24px; color: #1d1d1f; border: 2px solid #ffffff; flex-shrink: 0;">
+                      <div style="width: 48px; height: 48px; border-radius: var(--ap-radius-md); background: var(--ap-danger); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 21px; color: var(--ap-label); border: 2px solid var(--ap-on-primary); flex-shrink: 0;">
                         ${iconMarkup('Shield', { size: 24 })}
                       </div>
                       <div>
                         <div style="display: flex; align-items: center; gap: 8px;">
-                          <span style="background: #c01f1f; color: #1d1d1f; font-weight: 900; font-size: 12px; padding: 2px 9px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">
+                          <span style="background: var(--ap-danger); color: var(--ap-label); font-weight: 900; font-size: 12px; padding: 2px 9px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">
                             HAZARDNET AI GEOSPATIAL REPORT
                           </span>
-                          <span style="font-size: 12px; color: #a1a1a6; font-family: monospace;">
+                          <span style="font-size: 12px; color: var(--ap-n-30); font-family: monospace;">
                             VERIFIED SNAPSHOT
                           </span>
                         </div>
-                        <h2 style="font-size: 20px; font-weight: 900; color: #ffffff; margin: 4px 0 0 0; letter-spacing: -0.02em;">
+                        <h2 style="font-size: 21px; font-weight: 900; color: var(--ap-on-primary); margin: 4px 0 0 0; letter-spacing: -0.02em;">
                           ${escapedTitle}
                         </h2>
-                        <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px; font-size: 12px; color: #d2d2d7;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px; font-size: 12px; color: var(--ap-n-20);">
                           <span style="display: inline-flex; align-items: center; gap: 4px;">${iconMarkup('MapPin', { size: 14 })}<strong>Location Focus:</strong> ${escapedLocation}</span>
                           <span>•</span>
                           <span style="display: inline-flex; align-items: center; gap: 4px;">${iconMarkup('Radio', { size: 14 })}<strong>Tile Engine:</strong> ${escapedBaseMap}</span>
@@ -167,11 +171,11 @@ export function useMapSnapshot(
                       </div>
                     </div>
 
-                    <div style="text-align: right; border-left: 1px solid #333333; padding-left: 16px; font-size: 12px; color: #a1a1a6;">
-                      <div style="display: flex; align-items: center; justify-content: flex-end; gap: 5px; font-family: monospace; font-size: 12px; color: #0066cc; font-weight: 700;">
+                    <div style="text-align: right; border-left: 1px solid var(--ap-ink-muted-80); padding-left: 16px; font-size: 12px; color: var(--ap-n-30);">
+                      <div style="display: flex; align-items: center; justify-content: flex-end; gap: 5px; font-family: monospace; font-size: 12px; color: var(--ap-primary-on-dark); font-weight: 700;">
                         ${iconMarkup('Clock', { size: 14 })}${escapedTimestamp}
                       </div>
-                      <div style="margin-top: 4px; font-size: 12px; color: #d2d2d7; max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      <div style="margin-top: 4px; font-size: 12px; color: var(--ap-n-20); max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                         Active Layers: ${escapedOverlays}
                       </div>
                     </div>
@@ -188,13 +192,13 @@ export function useMapSnapshot(
                     bottom: 20px;
                     left: 20px;
                     z-index: 999999;
-                    background: rgba(15, 23, 42, 0.95);
-                    color: #ffffff;
-                    border: 1.5px solid #333333;
+                    background: var(--ap-black);
+                    color: var(--ap-on-primary);
+                    border: 1.5px solid var(--ap-ink-muted-80);
                     border-radius: 16px;
                     padding: 12px 16px;
                     font-family: ${APPLE_FONT_STACK};
-                    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.6);
+                    box-shadow: 0 20px 25px -5px var(--ap-scrim);
                     font-size: 12px;
                     display: flex;
                     flex-direction: column;
@@ -202,22 +206,22 @@ export function useMapSnapshot(
                   `;
 
                   legendDiv.innerHTML = `
-                    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333333; padding-bottom: 6px;">
-                      <strong style="color: #c01f1f; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Multi-Hazard Severity Key</strong>
-                      <span style="color: #a1a1a6; font-size: 12px; font-family: monospace;">HazardNet v2.4</span>
+                    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--ap-ink-muted-80); padding-bottom: 6px;">
+                      <strong style="color: var(--ap-danger); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Multi-Hazard Severity Key</strong>
+                      <span style="color: var(--ap-n-30); font-size: 12px; font-family: monospace;">HazardNet v2.4</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 12px;">
                       <div style="display: flex; align-items: center; gap: 6px;">
-                        <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #c01f1f; box-shadow: 0 0 6px #c01f1f;"></span>
-                        <span style="font-weight: 700; color: #ff6b60;">High Risk (≥80%)</span>
+                        <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--ap-danger); "></span>
+                        <span style="font-weight: 700; color: var(--ap-on-scrim-sev);">High Risk (≥80%)</span>
                       </div>
                       <div style="display: flex; align-items: center; gap: 6px;">
-                        <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #8a5a00; box-shadow: 0 0 6px #8a5a00;"></span>
-                        <span style="font-weight: 700; color: #f5b73d;">Moderate (50-79%)</span>
+                        <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--ap-warning); "></span>
+                        <span style="font-weight: 700; color: var(--ap-sev-moderate);">Moderate (50-79%)</span>
                       </div>
                       <div style="display: flex; align-items: center; gap: 6px;">
-                        <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #1d7a3e; box-shadow: 0 0 6px #1d7a3e;"></span>
-                        <span style="font-weight: 700; color: #4ad66d;">Low Risk (<50%)</span>
+                        <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--ap-success); "></span>
+                        <span style="font-weight: 700; color: var(--ap-sev-low);">Low Risk (<50%)</span>
                       </div>
                     </div>
                   `;

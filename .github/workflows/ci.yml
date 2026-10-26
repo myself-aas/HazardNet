@@ -520,6 +520,14 @@ jobs:
       - name: Design quality gate (source)
         run: npm run check:design:source
 
+      # The craft floor: the patterns the detector cannot see because they live in
+      # composition rather than CSS — a kicker above a heading, gradient text, a coloured
+      # side stripe, a zero-offset halo, a decorative blur disc, a sub-44px control, or a
+      # browser surface nobody themed. scripts/check-craft-floor.mjs, one rule per line of
+      # the floor, each with the reason it is a defect rather than a taste question.
+      - name: Craft floor gate
+        run: npm run check:craft
+
       - name: Production build
         run: npm run build
 

@@ -951,7 +951,6 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
           <div className="space-y-8">
             {/* Section Banner Header */}
             <div className="bg-carbon-90 rounded-xl p-6 sm:p-8 text-carbon-05 border border-carbon-80 flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-96 h-96 bg-ap-primary/10 rounded-full blur-3xl pointer-events-none"></div>
               <div className="space-y-2 relative z-10 max-w-2xl">
                 <div className="flex items-center gap-2.5">
                   <span className="px-3 py-1 rounded-full text-xs font-mono font-black uppercase tracking-wider bg-primary text-ap-action-fg">

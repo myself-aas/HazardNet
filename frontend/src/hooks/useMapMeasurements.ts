@@ -2,6 +2,7 @@ import { useEffect, useMemo, useCallback } from 'react';
 import L from 'leaflet';
 import { ALL_64_DISTRICTS, DistrictData } from '../data/bangladeshDistricts';
 import { iconMarkup } from '../lib/iconMarkup';
+import { APPLE_STATUS } from '@hazardnet/design-system';
 
 export type DistrictGeo = DistrictData;
 
@@ -167,10 +168,10 @@ export function useMapMeasurements({
               width: 28px;
               height: 28px;
               border-radius: 50%;
-              background: ${isStart ? '#1d7a3e' : isEnd ? '#c01f1f' : '#c01f1f'};
-              border: 3px solid #ffffff;
+              background: ${isStart ? 'var(--ap-success)' : 'var(--ap-danger)'};
+              border: 3px solid var(--ap-on-primary);
               box-shadow: 0 4px 14px rgba(0,0,0,0.35);
-              color: #ffffff;
+              color: var(--ap-on-primary);
               font-family: var(--ap-font-display);
               font-size: 12px;
               font-weight: 900;
@@ -193,7 +194,7 @@ export function useMapMeasurements({
       // Connecting Polyline & Midpoint Analysis Leaflet Popup
       if (measurePoints.length >= 2) {
         const line = L.polyline(measurePoints, {
-          color: '#c01f1f',
+          color: APPLE_STATUS.danger,
           weight: 5,
           opacity: 0.95,
           dashArray: '8, 8',
@@ -206,8 +207,16 @@ export function useMapMeasurements({
           const midLat = (measurePoints[0][0] + measurePoints[1][0]) / 2;
           const midLng = (measurePoints[0][1] + measurePoints[1][1]) / 2;
 
+          const riskBadgeVar =
+            analysis.riskRating === 'High'
+              ? 'var(--ap-danger)'
+              : analysis.riskRating === 'Moderate'
+                ? 'var(--ap-warning)'
+                : 'var(--ap-success)';
+          // Leaflet paints this polyline on canvas, where a CSS var does not resolve,
+          // so the same three statuses are read from the token object as literal hex.
           const riskBadgeColor =
-            analysis.riskRating === 'High' ? '#c01f1f' : analysis.riskRating === 'Moderate' ? '#8a5a00' : '#1d7a3e';
+            analysis.riskRating === 'High' ? APPLE_STATUS.danger : analysis.riskRating === 'Moderate' ? APPLE_STATUS.warning : APPLE_STATUS.success;
 
           const midpointIcon = L.divIcon({
             html: `
@@ -215,9 +224,9 @@ export function useMapMeasurements({
                 width: 28px;
                 height: 28px;
                 border-radius: 50%;
-                background: #ffffff;
-                border: 3px solid #c01f1f;
-                box-shadow: 0 4px 16px rgba(249, 168, 37, 0.6);
+                background: var(--ap-on-primary);
+                border: 3px solid var(--ap-danger);
+                box-shadow: 0 4px 16px var(--ap-scrim);
                 color: var(--ap-primary);
                 display: grid;
                 place-items: center;
@@ -240,42 +249,42 @@ export function useMapMeasurements({
               .replace(/>/g, '&gt;');
 
           const popupContent = `
-            <div style="padding: 10px; font-family: var(--ap-font-display); color: #1d1d1f; min-width: 250px; max-width: 290px;">
-              <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e0e0e0; padding-bottom: 6px; margin-bottom: 8px;">
-                <strong style="font-size: 12px; color: #1d1d1f; font-weight: 900; display: flex; align-items: center; gap: 4px;">
+            <div style="padding: 10px; font-family: var(--ap-font-display); color: var(--ap-label); min-width: 250px; max-width: 290px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--ap-hairline); padding-bottom: 6px; margin-bottom: 8px;">
+                <strong style="font-size: 12px; color: var(--ap-label); font-weight: 900; display: flex; align-items: center; gap: 4px;">
                   ${iconMarkup('Ruler', { size: 14 })} Path Measurement
                 </strong>
-                <span style="font-size: 12px; font-weight: 900; background: #c01f1f; color: #ffffff; padding: 2px 8px; border-radius: 9999px;">
+                <span style="font-size: 12px; font-weight: 900; background: var(--ap-danger); color: var(--ap-on-primary); padding: 2px 8px; border-radius: 9999px;">
                   ${analysis.totalDistanceKm.toFixed(1)} km
                 </span>
               </div>
               
-              <div style="font-size: 12px; line-height: 1.6; color: #333333;">
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; font-weight: 800; color: #1d1d1f; background: #fafafc; padding: 6px 8px; border-radius: 8px; border: 1px solid #e0e0e0;">
-                  <span style="color: #0066cc; display: inline-flex; align-items: center; gap: 3px;">${iconMarkup('MapPin', { size: 14 })} ${escapeHtml(analysis.startDistrict?.name || 'P1')}</span>
-                  <span style="color: #6e6e73; display: inline-flex; align-items: center;">${iconMarkup('ArrowRight', { size: 14 })}</span>
-                  <span style="color: #8a5a00; display: inline-flex; align-items: center; gap: 3px;">${iconMarkup('Crosshair', { size: 14 })} ${escapeHtml(analysis.endDistrict?.name || 'P2')}</span>
+              <div style="font-size: 12px; line-height: 1.6; color: var(--ap-ink-muted-80);">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; font-weight: 800; color: var(--ap-label); background: var(--ap-parchment); padding: 6px 8px; border-radius: 8px; border: 1px solid var(--ap-hairline);">
+                  <span style="color: var(--ap-link); display: inline-flex; align-items: center; gap: 3px;">${iconMarkup('MapPin', { size: 14 })} ${escapeHtml(analysis.startDistrict?.name || 'P1')}</span>
+                  <span style="color: var(--ap-label-secondary); display: inline-flex; align-items: center;">${iconMarkup('ArrowRight', { size: 14 })}</span>
+                  <span style="color: var(--ap-warning); display: inline-flex; align-items: center; gap: 3px;">${iconMarkup('Crosshair', { size: 14 })} ${escapeHtml(analysis.endDistrict?.name || 'P2')}</span>
                 </div>
                 
                 <div style="margin-top: 8px; display: flex; align-items: center; justify-content: space-between;">
-                  <span style="font-size: 12px; font-weight: 700; color: #6e6e73; text-transform: uppercase;">Path Severity Risk:</span>
-                  <span style="font-size: 12px; font-weight: 900; color: ${riskBadgeColor}; background: ${riskBadgeColor}15; padding: 2px 6px; border-radius: 4px; border: 1px solid ${riskBadgeColor}30;">
+                  <span style="font-size: 12px; font-weight: 700; color: var(--ap-label-secondary); text-transform: uppercase;">Path Severity Risk:</span>
+                  <span style="font-size: 12px; font-weight: 900; color: ${riskBadgeVar}; background: color-mix(in srgb, ${riskBadgeVar} 8%, transparent); padding: 2px 6px; border-radius: 4px; border: 1px solid color-mix(in srgb, ${riskBadgeVar} 19%, transparent);">
                     ${(analysis.maxSeverity * 100).toFixed(0)}% • ${analysis.riskRating}
                   </span>
                 </div>
 
                 <div style="margin-top: 6px;">
-                  <span style="font-size: 12px; font-weight: 700; color: #6e6e73; text-transform: uppercase;">Hazards Encountered:</span>
+                  <span style="font-size: 12px; font-weight: 700; color: var(--ap-label-secondary); text-transform: uppercase;">Hazards Encountered:</span>
                   <div style="margin-top: 4px; display: flex; flex-wrap: wrap; gap: 4px;">
                     ${
                       analysis.hazardsDetected.length > 0
-                        ? analysis.hazardsDetected.map(h => `<span style="font-size: 12px; font-weight: 800; background: #f5b73d; color: #8a5a00; border: 1px solid #f5b73d; padding: 1px 6px; border-radius: 4px;">${iconMarkup('AlertTriangle', { size: 13 })} ${escapeHtml(h)}</span>`).join('')
-                        : `<span style="font-size: 12px; color: #1d7a3e; font-weight: 700;">${iconMarkup('CheckCircle2', { size: 13 })} Low Hazard Risk</span>`
+                        ? analysis.hazardsDetected.map(h => `<span style="font-size: 12px; font-weight: 800; background: var(--ap-sev-moderate); color: var(--ap-warning); border: 1px solid var(--ap-sev-moderate); padding: 1px 6px; border-radius: 4px;">${iconMarkup('AlertTriangle', { size: 13 })} ${escapeHtml(h)}</span>`).join('')
+                        : `<span style="font-size: 12px; color: var(--ap-success); font-weight: 700;">${iconMarkup('CheckCircle2', { size: 13 })} Low Hazard Risk</span>`
                     }
                   </div>
                 </div>
 
-                <div style="margin-top: 8px; font-size: 12px; color: #6e6e73; border-top: 1px dashed #d2d2d7; padding-top: 6px;">
+                <div style="margin-top: 8px; font-size: 12px; color: var(--ap-label-secondary); border-top: 1px dashed var(--ap-n-20); padding-top: 6px;">
                   Districts transited (${analysis.districtsAlongPath.length}): ${escapeHtml(analysis.districtsAlongPath.map(d => d.district.name).join(', '))}
                 </div>
               </div>

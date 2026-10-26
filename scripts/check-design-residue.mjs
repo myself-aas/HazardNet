@@ -92,7 +92,11 @@ for (const manifest of ['package.json', 'frontend/package.json', 'apps/mobile/pa
    app-level names that have no Apple equivalent. Anything else is a second
    vocabulary wearing a CSS variable. */
 const cssFiles = listFiles("find frontend/src -name '*.css'");
-const APP_LOCAL = /^--(navbar|hero|control|ring|tw)-/; // app chrome with no Apple counterpart
+// App chrome with no Apple counterpart. `--print-*` is paper geometry: the Apple radius
+// and type ramps are measured in px for a viewport, while a printed page is set in points
+// and has its own two steps (hand-out radius, colophon type). index.css declares them once
+// inside `@media print` so the printed sheet cannot drift from itself.
+const APP_LOCAL = /^--(navbar|hero|control|ring|tw|print)-/;
 // `--radius` on its own is Tailwind v4's DEFAULT radius key (what bare `rounded` reads), so it is a theme key too.
 const TAILWIND_KEY = /^--(color|font|text|spacing|radius|breakpoint|container|shadow|animate|ease|leading|tracking|blur|z|inset|perspective|aspect|default)-|^--radius$/;
 const DEAD_NAMESPACES = /^--(mrd|hds|hn|m3|md3|nasa|meridian|severity|surface|panel|glass|sidebar|chart|primary|secondary|success|warning|info|destructive|muted|popover|card|accent|input|foreground|background|border|subtle|spacesuit)(-|$)/;

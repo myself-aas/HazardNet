@@ -259,8 +259,6 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
             </div>
           </div>
         </div>
-        {/* decorative circle */}
-        <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/10 blur-2xl" aria-hidden />
         {error && (
           <div className="mt-3 rounded-md bg-red-500/20 border border-red-300/40 px-3 py-2 text-sm flex items-center gap-2">
             <AlertTriangle size={16} />

@@ -104,6 +104,27 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--ap-label);
 }
 
+/* The rest of the browser's own surfaces, themed from the same palette. Selection was
+   themed and these were not: the caret, the native checkbox and radio fill, and the
+   underline offset under every link were still the platform's defaults in whatever blue
+   the OS ships. They belong to this product, so they take its accent. */
+:root {
+  caret-color: var(--ap-primary);
+  accent-color: var(--ap-primary);
+}
+
+a {
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: from-font;
+}
+
+/* A link that wraps is still one link; a clipped descender is a defect at any size. */
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible {
+  text-underline-offset: 0.2em;
+}
+
 .metric-value, .confidence-badge, .tensor-log, .hn-tabular-nums, code, pre {
   font-family: var(--ap-font-mono);
   font-variant-numeric: tabular-nums;
@@ -335,7 +356,7 @@ html {
      value has no visual effect on the glyph. */
   line-height: 1.35;
   margin-bottom: 8px;
-  font-size: 18px;
+  font-size: 21px; /* glyph inside a 44 px map control, not body text */
   color: var(--ap-label);
   background: var(--ap-frosted-bg);
   -webkit-backdrop-filter: blur(var(--ap-frosted-blur)) saturate(1.35);
@@ -477,7 +498,7 @@ html[data-map-debug-fx='true'] .cluster-pulse-ring {
 .leaflet-container a.leaflet-popup-close-button {
   color: var(--ap-n-50) !important;
   padding: 8px 12px 0 0 !important;
-  font-size: 18px !important;
+  font-size: 21px !important; /* glyph size for Leaflet's drawn × control, not text */
   font-weight: bold !important;
   transition: color 0.2s ease;
 }
@@ -496,7 +517,7 @@ html[data-map-debug-fx='true'] .cluster-pulse-ring {
 
   .leaflet-container a.leaflet-popup-close-button {
     padding: 6px 10px 0 0 !important;
-    font-size: 20px !important;
+    font-size: 21px !important; /* same glyph, one step: the tap target carries the size */
     width: 44px !important;
     height: 44px !important;
     display: flex !important;
@@ -523,7 +544,7 @@ html[data-map-debug-fx='true'] .cluster-pulse-ring {
 @keyframes cyberPulse {
   0% {
     transform: scale(0.92);
-    box-shadow: 0 0 0 0 rgba(198, 40, 40, 0.6);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--ap-danger) 60%, transparent);
   }
 
   70% {
@@ -1368,10 +1389,10 @@ input[type="reset"] {
   touch-action: manipulation;
 }
 
-/* 1. Top-bar wordmark: brand, 20–22 px, 600 (Semibold), +0.02 em; sits in 56–64 px header */
+/* 1. Top-bar wordmark: headline-md (21 px), 600, +0.02 em; sits in 56–64 px header */
 .hn-topbar-wordmark {
   font-family: var(--ap-font-display);
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 600;
   letter-spacing: 0.02em;
   line-height: 1.3;
@@ -1379,7 +1400,7 @@ input[type="reset"] {
 
 @media (min-width: 640px) {
   .hn-topbar-wordmark {
-    font-size: 22px;
+    font-size: 21px;
   }
 }
 
@@ -1398,11 +1419,11 @@ input[type="reset"] {
   border-bottom: 2px solid var(--ap-primary);
 }
 
-/* 3. Dropdown & sidebar menu: sans, 13–14 px, 400–500, line-height 1.4 */
+/* 3. Dropdown & sidebar menu: label-md (14 px), 400–500, line-height 1.4 */
 .hn-dropdown-item,
 .hn-sidebar-item {
   font-family: var(--ap-font-text);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 400;
   line-height: 1.4;
 }
@@ -1426,33 +1447,36 @@ input[type="reset"] {
 
 @media (min-width: 640px) {
   .hn-breadcrumb {
-    font-size: 13px;
+    font-size: 14px;
   }
 }
 
-/* 5. Page title (H1): display serif, 28–32 px, 700, -0.01 em */
+/* 5. Page title (H1): headline-xl-mobile → headline-xl (32 → 44 px).
+   This rule used to top out at 28/32 px, so the product's own <h1> was smaller
+   than the DESIGN.md ramp the components already used. */
 .hn-h1,
 h1 {
   font-family: var(--ap-font-display);
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
   letter-spacing: -0.01em;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 @media (min-width: 640px) {
 
   .hn-h1,
   h1 {
-    font-size: 32px;
+    font-size: 44px;
+    letter-spacing: -0.012em;
   }
 }
 
-/* 6. Section (H2) = display serif 22 px; card title (H3) = sans 16–18 px, 600 */
+/* 6. Section (H2) = headline-md 21 px; card title (H3) = headline-sm 17 px, 600 */
 .hn-h2,
 h2 {
   font-family: var(--ap-font-display);
-  font-size: 22px;
+  font-size: 21px;
   font-weight: 700;
   line-height: 1.3;
 }
@@ -1460,7 +1484,7 @@ h2 {
 .hn-h3,
 h3 {
   font-family: var(--ap-font-text);
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
   line-height: 1.35;
 }
@@ -1469,15 +1493,15 @@ h3 {
 
   .hn-h3,
   h3 {
-    font-size: 18px;
+    font-size: 17px;
   }
 }
 
-/* 7. Body text: sans, 16 px, 400, line-height 1.62 */
+/* 7. Body text: body-md 17 px, 400, line-height 1.62 (DESIGN.md body-md: 24 px leading) */
 .hn-body,
 p {
   font-family: var(--ap-font-text);
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 400;
   line-height: 1.62;
 }
@@ -1493,7 +1517,7 @@ p {
 
 @media (min-width: 640px) {
   .hn-caption {
-    font-size: 13px;
+    font-size: 12px;
   }
 }
 
@@ -1615,7 +1639,7 @@ button,
 /* 10. Data readouts (severity score, confidence, dates); the mono stack, 13–16 px, 600, tabular figures */
 .hn-data-readout {
   font-family: var(--ap-font-mono);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
@@ -1623,7 +1647,7 @@ button,
 
 @media (min-width: 640px) {
   .hn-data-readout {
-    font-size: 16px;
+    font-size: 17px;
   }
 }
 
@@ -1720,7 +1744,7 @@ caption {
   input[type=tel],
   select,
   textarea {
-    font-size: 16px !important;
+    font-size: 17px !important;
   }
 }
 
@@ -1740,6 +1764,19 @@ caption {
 }
 
 @media print {
+  /* The screen radius ramp is in pixels; paper geometry is in points and is set by the
+     page, not by the viewport. One declaration per step here, so a hand-out's corner
+     radius is a decision made once instead of nine literals scattered through the block. */
+  :root {
+    --print-radius-cell: 6pt;
+    --print-radius-box: 4pt;
+    --print-radius-chip: 3pt;
+    --print-radius-tight: 2pt;
+    /* The end-of-brief page is a fixed 8px colophon: print-only, and smaller than any
+       screen step on purpose. */
+    --print-micro-type: 8px;
+  }
+
   /* 1. Page Configuration & Geometry with CSS Paged Media Page Counters */
   @page {
     size: A4 portrait;
@@ -1929,7 +1966,7 @@ caption {
     background: #ffffff !important;
     color: var(--ap-n-90) !important;
     border: 1pt solid var(--ap-n-30) !important;
-    border-radius: 6pt !important;
+    border-radius: var(--print-radius-cell) !important;
     box-shadow: none !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
@@ -2179,14 +2216,14 @@ caption {
   .print-end-of-brief {
     page-break-before: always !important;
     break-before: page !important;
-    font-size: 8px !important;
+    font-size: var(--print-micro-type) !important;
     line-height: 1.4 !important;
     margin-top: 0 !important;
     padding-top: 24pt !important;
   }
 
   .end-of-brief-page * {
-    font-size: 8px !important;
+    font-size: var(--print-micro-type) !important;
   }
 
   /* Operational Trigger Threshold Box */
@@ -2197,7 +2234,7 @@ caption {
   [class*="bg-carbon-05"] {
     background-color: var(--ap-n-05) !important;
     border: 1pt solid var(--ap-n-40) !important;
-    border-radius: 4pt !important;
+    border-radius: var(--print-radius-box) !important;
     padding: 5pt 7pt !important;
   }
 
@@ -2209,7 +2246,7 @@ caption {
     background-color: var(--ap-n-10) !important;
     color: var(--ap-n-90) !important;
     font-weight: 700 !important;
-    border-radius: 3pt !important;
+    border-radius: var(--print-radius-chip) !important;
   }
 
   /* 12. Technical Cultivars & Long Advisory Tables with Repeated Emergency Header */
@@ -2296,7 +2333,7 @@ caption {
     break-inside: avoid !important;
     background-color: #ffffff !important;
     border: 1pt solid var(--ap-n-60) !important;
-    border-radius: 6pt !important;
+    border-radius: var(--print-radius-cell) !important;
     padding: 4pt 6pt !important;
     margin: 4pt 0 !important;
   }
@@ -2312,7 +2349,7 @@ caption {
     gap: 4pt !important;
     background-color: var(--ap-n-05) !important;
     border: 1pt solid var(--ap-n-50) !important;
-    border-radius: 4pt !important;
+    border-radius: var(--print-radius-box) !important;
     padding: 2.5pt 6pt !important;
     font-family: var(--ap-font-mono) !important;
     font-size: 7.5pt !important;
@@ -2334,7 +2371,7 @@ caption {
     font-weight: 800 !important;
     text-transform: uppercase !important;
     padding: 1.5pt 4pt !important;
-    border-radius: 2pt !important;
+    border-radius: var(--print-radius-tight) !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -2457,7 +2494,7 @@ body.pdf-exporting .no-print,
   background: #ffffff !important;
   color: var(--ap-n-90) !important;
   border: 1pt solid var(--ap-n-30) !important;
-  border-radius: 6pt !important;
+  border-radius: var(--print-radius-cell) !important;
   box-shadow: none !important;
 }
 
@@ -2488,7 +2525,7 @@ body.pdf-exporting .no-print,
   display: flex !important;
   background-color: #ffffff !important;
   border: 1pt solid var(--ap-n-60) !important;
-  border-radius: 6pt !important;
+  border-radius: var(--print-radius-cell) !important;
 }
 
 .pdf-capture-mode .print-last-updated,
@@ -2613,19 +2650,22 @@ body.pdf-exporting .no-print,
 }
 
 /* ─── Blog article typography (prose-blog) ─────────────────────────────── */
-.prose-blog h1 { font-size: 1.6rem; font-weight: 900; color: var(--ap-n-90); margin: 1.4rem 0 0.6rem; letter-spacing: -0.01em; }
-.prose-blog h2 { font-size: 1.3rem; font-weight: 900; color: var(--ap-n-90); margin: 1.3rem 0 0.5rem; }
-.prose-blog h3 { font-size: 1.1rem; font-weight: 800; color: var(--ap-n-80); margin: 1.1rem 0 0.4rem; }
+.prose-blog h1 { font-size: 28px; font-weight: 700; color: var(--ap-n-90); margin: 1.4rem 0 0.6rem; letter-spacing: -0.01em; }
+.prose-blog h2 { font-size: 21px; font-weight: 700; color: var(--ap-n-90); margin: 1.3rem 0 0.5rem; }
+.prose-blog h3 { font-size: 17px; font-weight: 600; color: var(--ap-n-80); margin: 1.1rem 0 0.4rem; }
 .prose-blog p  { margin: 0.75rem 0; line-height: 1.75; }
 .prose-blog ul, .prose-blog ol { margin: 0.75rem 0 0.75rem 1.4rem; line-height: 1.7; }
 .prose-blog ul { list-style: disc; }
 .prose-blog ol { list-style: decimal; }
 .prose-blog li { margin: 0.3rem 0; }
-.prose-blog a  { color: #b45309; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
-.prose-blog a:hover { color: #92400e; }
-.prose-blog blockquote { margin: 1rem 0; padding: 0.6rem 1rem; border: 1px solid var(--ap-n-20); background: #fffbeb; color: #78350f; font-style: italic; }
+/* Read-mode prose draws from the same status/link tokens as the app chrome. These were
+   Tailwind amber and red literals (#b45309 / #92400e / #fffbeb / #78350f / #b91c1c) — a
+   second palette inside an Apple system, and the only warm cream surface in the product. */
+.prose-blog a  { color: var(--ap-link); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+.prose-blog a:hover { color: var(--ap-primary-hover); }
+.prose-blog blockquote { margin: 1rem 0; padding: 0.6rem 1rem; border-inline-start: 1px solid var(--ap-n-20); background: var(--ap-sev-moderate-surface); color: var(--ap-n-80); font-style: italic; }
 .prose-blog pre { margin: 1rem 0; padding: 0.9rem 1rem; background: var(--ap-n-90); color: var(--ap-n-20); border-radius: 0.75rem; overflow-x: auto; font-size: 0.78rem; line-height: 1.6; }
-.prose-blog code { font-family: var(--ap-font-mono); font-size: 0.82em; background: var(--ap-n-10); padding: 0.1rem 0.35rem; border-radius: 0.35rem; color: #b91c1c; }
+.prose-blog code { font-family: var(--ap-font-mono); font-size: 0.82em; background: var(--ap-n-10); padding: 0.1rem 0.35rem; border-radius: var(--ap-radius-xs); color: var(--ap-danger); }
 .prose-blog pre code { background: transparent; color: inherit; padding: 0; }
 .prose-blog img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 1rem 0; border: 1px solid var(--ap-n-20); }
 .prose-blog hr { margin: 1.5rem 0; border: none; border-top: 1px solid var(--ap-n-20); }

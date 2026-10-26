@@ -145,19 +145,19 @@ export const DistrictForecastRecords: React.FC = () => {
                     type="monotone"
                     dataKey="physicsSeverity"
                     name="physicsSeverity"
-                    stroke="#c01f1f"
+                    stroke="var(--ap-sev-very-high)"
                     strokeWidth={3}
-                    dot={{ r: 4, fill: '#c01f1f' }}
+                    dot={{ r: 4, fill: 'var(--ap-sev-very-high)' }}
                     activeDot={{ r: 6 }}
                   />
                   <Line
                     type="monotone"
                     dataKey="modelSeverity"
                     name="modelSeverity"
-                    stroke="#0066cc"
+                    stroke="var(--ap-link)"
                     strokeWidth={2}
                     strokeDasharray="4 4"
-                    dot={{ r: 3, fill: '#0066cc' }}
+                    dot={{ r: 3, fill: 'var(--ap-link)' }}
                   />
                 </LineChart>
               </ResponsiveContainer>

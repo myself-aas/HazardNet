@@ -1374,7 +1374,7 @@ html[data-low-bandwidth='true'] .hn-loop__glow {
 [data-theme='dark'] .hn-paper .border-carbon-30,
 .dark .hn-paper .border-carbon-20,
 .dark .hn-paper .border-carbon-30 {
-  border-color: #d1d1d1;
+  border-color: var(--ap-n-30);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -1395,6 +1395,6 @@ html[data-low-bandwidth='true'] .hn-loop__glow {
 
   :root:not([data-theme='light']) .hn-paper .border-carbon-20,
   :root:not([data-theme='light']) .hn-paper .border-carbon-30 {
-    border-color: #d1d1d1;
+    border-color: var(--ap-n-30);
   }
 }

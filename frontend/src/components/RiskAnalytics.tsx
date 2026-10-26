@@ -157,8 +157,6 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
       {/* Top Banner KPI Header — Modernized Mobile-First */}
       <div className="bg-white border border-carbon-20 rounded-lg sm:rounded-xl md:rounded-xl lg:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm relative overflow-hidden">
         
-        {/* Subtle Ambient Glow */}
-        <div className="absolute top-0 right-0 w-64 sm:w-96 h-64 sm:h-96 bg-carbon-10/30 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4 md:gap-6">
           <div className="min-w-0 flex-1">

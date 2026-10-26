@@ -12,6 +12,7 @@
 
 import React, { forwardRef, useImperativeHandle, useRef } from 'react';
 import { Interactive, Sequence, type InteractiveBaseProps, type InteractiveTransformProps, type InteractivitySchema, type SequenceControls } from 'remotion';
+import { APPLE_COLORS } from '@hazardnet/design-system';
 
 export type BadgeProps = InteractiveBaseProps &
   InteractiveTransformProps & {
@@ -24,7 +25,7 @@ export const badgeSchema = {
   ...Interactive.baseSchema,
   color: {
     type: 'color',
-    default: '#0066cc',
+    default: APPLE_COLORS.primary,
     description: 'Badge color',
   },
   padding: {
@@ -43,7 +44,7 @@ const BadgeInner = forwardRef<
   BadgeProps & {
     readonly controls: SequenceControls | undefined;
   }
->(({ children, color = '#0066cc', padding = 16, style, name, controls, ...sequenceProps }, ref) => {
+>(({ children, color = APPLE_COLORS.primary, padding = 16, style, name, controls, ...sequenceProps }, ref) => {
   const outlineRef = useRef<HTMLDivElement>(null);
 
   useImperativeHandle(ref, () => outlineRef.current as HTMLDivElement, [] );

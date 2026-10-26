@@ -1,3 +1,4 @@
+import { APPLE_COLORS, APPLE_FONTS } from '@hazardnet/design-system';
 import React from 'react';
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from 'remotion';
 import { Interactive } from 'remotion';
@@ -49,8 +50,8 @@ export const HazardNetBrandComposition: React.FC<{
         name="Tagline"
         style={{
           marginTop: 8,
-          color: '#22D3EE',
-          fontFamily: 'DM Mono, monospace',
+          color: APPLE_COLORS.primaryOnDark,
+          fontFamily: APPLE_FONTS.mono,
           fontSize: 14,
           letterSpacing: '0.14em',
           opacity: interpolate(frame, [fps * 0.4, fps], [0, 1], {

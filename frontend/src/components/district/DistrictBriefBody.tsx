@@ -205,9 +205,9 @@ export const DistrictBriefBody: React.FC = () => {
                     type="monotone"
                     dataKey="severity"
                     name="Published severity"
-                    stroke="#8b0f3a"
+                    stroke="var(--ap-sev-extreme)"
                     strokeWidth={3}
-                    dot={{ r: 4, fill: '#8b0f3a' }}
+                    dot={{ r: 4, fill: 'var(--ap-sev-extreme)' }}
                     activeDot={{ r: 6 }}
                   />
                 )}
@@ -439,12 +439,12 @@ export const DistrictBriefBody: React.FC = () => {
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={climaticEventsData.yearlyTrend} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f7" vertical={false} />
-                      <XAxis dataKey="year" tick={{ fontSize: 12, fill: '#6e6e73' }} />
-                      <YAxis tick={{ fontSize: 12, fill: '#6e6e73' }} />
+                      <XAxis dataKey="year" tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
+                      <YAxis tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
                       <Tooltip
                         contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e0e0e0', borderRadius: '0.5rem', fontSize: '12px' }}
                       />
-                      <Bar dataKey="count" name="Disaster Events" fill="#0066cc" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="count" name="Disaster Events" fill="var(--ap-link)" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -466,13 +466,13 @@ export const DistrictBriefBody: React.FC = () => {
                     <AreaChart data={climaticEventsData.seasonalPattern} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
                       <defs>
                         <linearGradient id="districtSeasonGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#8a5a00" stopOpacity={0.4} />
-                          <stop offset="95%" stopColor="#8a5a00" stopOpacity={0.0} />
+                          <stop offset="5%" stopColor="var(--ap-sev-moderate)" stopOpacity={0.4} />
+                          <stop offset="95%" stopColor="var(--ap-sev-moderate)" stopOpacity={0.0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f7" vertical={false} />
-                      <XAxis dataKey="monthName" tick={{ fontSize: 12, fill: '#6e6e73' }} />
-                      <YAxis tick={{ fontSize: 12, fill: '#6e6e73' }} />
+                      <XAxis dataKey="monthName" tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
+                      <YAxis tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
                       <Tooltip
                         contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e0e0e0', borderRadius: '0.5rem', fontSize: '12px' }}
                       />

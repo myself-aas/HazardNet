@@ -163,11 +163,6 @@ function useLiveFacts(): LiveFacts {
 
 /* ─────────────────────────────── presentation ──────────────────────────────── */
 
-/** Eyebrow: uppercase caption, weight over size, secondary label colour. */
-const Eyebrow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <p className="ap-caption-strong text-ap-link">{children}</p>
-);
-
 /**
  * One figure in the trust strip.
  *
@@ -240,7 +235,7 @@ const SectionBody: React.FC<{ section: Section }> = ({ section }) => {
       {section.callout?.text && (
         <p
           role={section.callout.tone === 'warning' ? 'note' : undefined}
-          className="rounded-xl border border-carbon-20 border-l-[2px] border-l-severity-high bg-white p-4 text-base leading-[1.62] text-carbon-80"
+          className="rounded-xl border border-severity-high bg-white p-4 text-base leading-[1.62] text-carbon-80"
         >
           {section.callout.text}
         </p>
@@ -631,7 +626,7 @@ export const FrontDoor: React.FC = () => {
           </div>
 
           <div className="rounded-2xl border border-carbon-20 bg-white p-5">
-            <Eyebrow>{t('frontdoor.run.publishedEyebrow')}</Eyebrow>
+            <h3 className="text-sm font-semibold text-carbon-90">{t('frontdoor.run.publishedEyebrow')}</h3>
             {alertsLoading && <p className="mt-3 text-sm text-carbon-60">{t('frontdoor.run.reading')}</p>}
 
             {!alertsLoading && topAlerts.length > 0 && (
@@ -730,7 +725,7 @@ export const FrontDoor: React.FC = () => {
             <div
               role="alert"
               aria-live="polite"
-              className="rounded-xl border border-carbon-20 border-l-[2px] border-l-severity-high bg-white p-4 space-y-3"
+              className="rounded-xl border border-severity-high bg-white p-4 space-y-3"
             >
               <p className="text-sm leading-[1.62] text-carbon-70">{t('frontdoor.run.failed')}</p>
               <div className="flex flex-wrap gap-3">
@@ -781,7 +776,7 @@ export const FrontDoor: React.FC = () => {
           </div>
 
           <div>
-            <Eyebrow>{t('frontdoor.products.horizonsEyebrow')}</Eyebrow>
+            <h3 className="text-sm font-semibold text-carbon-90">{t('frontdoor.products.horizonsEyebrow')}</h3>
             <div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-2">
               <Link
                 to="/docs/forecasts"
@@ -963,8 +958,7 @@ export const FrontDoor: React.FC = () => {
           aria-labelledby="attribution-heading"
           className="rounded-2xl border border-carbon-20 bg-white p-6 lg:p-8"
         >
-          <Eyebrow>{t('frontdoor.attribution.eyebrow')}</Eyebrow>
-          <h2 id="attribution-heading" className="mt-3 text-ap-tagline font-bold tracking-tight text-carbon-90">
+          <h2 id="attribution-heading" className="text-ap-tagline font-bold tracking-tight text-carbon-90">
             {t('frontdoor.attribution.h2')}
           </h2>
           <p className="mt-3 max-w-3xl text-base leading-[1.62] text-carbon-70">

@@ -164,7 +164,9 @@ describe('sanitizeBlogHtml — must not break legitimate article markup', () => 
   it('preserves the alignment and colour styles the toolbar writes', () => {
     expect(sanitizeBlogHtml('<p style="text-align: center">c</p>'))
       .toContain('text-align: center')
-    expect(sanitizeBlogHtml('<p style="color: rgb(255, 0, 0)">red</p>'))
+    // A fixture that proves the sanitizer keeps an author-chosen editor colour; it is
+    // never a token and never rendered by the app.
+    expect(sanitizeBlogHtml('<p style="color: rgb(255, 0, 0)">red</p>')) // impeccable-disable-line design-system-color
       .toContain('color: rgb(255, 0, 0)')
     expect(sanitizeBlogHtml('<span style="font-weight: 700">b</span>'))
       .toContain('font-weight: 700')

@@ -41,7 +41,9 @@ const CONFIGS: Record<OAuthProviderId, OAuthProviderConfig> = {
     id: 'google',
     label: 'Google',
     short: 'G',
-    color: '#4285F4',
+    // Google's brand mark; the provider's colour is part of the sign-in affordance
+    // users recognise, not our chrome.
+    color: '#4285F4', // impeccable-disable-line design-system-color
     developerAppUrl: 'https://console.cloud.google.com/apis/credentials',
     setupDocsUrl: 'https://firebase.google.com/docs/auth/web/google-signin',
     firebaseProviderId: 'google.com',

@@ -58,7 +58,8 @@
 .leaflet-container a.leaflet-popup-close-button {
   width: 44px;
   height: 44px;
-  font-size: 16px;
+  /* Leaflet's own × glyph in a 44 px target — a control size, not body text. */
+  font-size: 21px;
   line-height: 44px;
   padding: 0;
   color: var(--ap-label-secondary);

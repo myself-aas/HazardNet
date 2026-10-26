@@ -1,0 +1,333 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-26T02:58:48Z",
+  "title": "Design System: HazardNet \u2014 Cupertino Precision",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Action Blue (text weight)",
+        "canonical": "#0066cc",
+        "tonalRamp": [
+          "#1e344a",
+          "#2e4e6e",
+          "#39638d",
+          "#3d72a6",
+          "#5984b0",
+          "#7c9dbf",
+          "#a5bcd3",
+          "#d3e0ed"
+        ]
+      },
+      "primary-focus": {
+        "role": "primary",
+        "displayName": "Action Blue (fill and focus)",
+        "canonical": "#0071e3",
+        "tonalRamp": [
+          "#1e364f",
+          "#2e5175",
+          "#396897",
+          "#3d77b2",
+          "#5989ba",
+          "#7ca1c6",
+          "#a5bed8",
+          "#d3e2f0"
+        ]
+      },
+      "primary-on-dark": {
+        "role": "primary",
+        "displayName": "Sky Link Blue",
+        "canonical": "#2997ff",
+        "tonalRamp": [
+          "#273e55",
+          "#3b5d7e",
+          "#4a77a3",
+          "#528bc1",
+          "#6a99c6",
+          "#89adcf",
+          "#aec7df",
+          "#d9e6f4"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#1d1d1f",
+        "tonalRamp": [
+          "#242424",
+          "#373738",
+          "#454546",
+          "#4c4c4d",
+          "#656566",
+          "#858586",
+          "#ababac",
+          "#d7d7d7"
+        ]
+      },
+      "on-surface": {
+        "role": "neutral",
+        "displayName": "Raised ground",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#555555",
+          "#7e7e7e",
+          "#a3a3a3",
+          "#c1c1c1",
+          "#c6c6c6",
+          "#cfcfcf",
+          "#dfdfdf",
+          "#f4f4f4"
+        ]
+      },
+      "parchment": {
+        "role": "neutral",
+        "displayName": "Recessed panel",
+        "canonical": "#f5f5f7",
+        "tonalRamp": [
+          "#525253",
+          "#7b7b7c",
+          "#9f9f9f",
+          "#bbbbbc",
+          "#c2c2c2",
+          "#cccccd",
+          "#dcdcdd",
+          "#f2f2f3"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "displayHero": {
+        "displayName": "displayHero",
+        "purpose": "Design.md typography role `displayHero` (56px/60px, weight 700, tracking -0.015em)."
+      },
+      "displayHeroMobile": {
+        "displayName": "displayHeroMobile",
+        "purpose": "Design.md typography role `displayHeroMobile` (40px/44px, weight 700, tracking -0.012em)."
+      },
+      "headlineXl": {
+        "displayName": "headlineXl",
+        "purpose": "Design.md typography role `headlineXl` (44px/48px, weight 600, tracking -0.012em)."
+      },
+      "headlineXlMobile": {
+        "displayName": "headlineXlMobile",
+        "purpose": "Design.md typography role `headlineXlMobile` (32px/36px, weight 600, tracking -0.01em)."
+      },
+      "headlineLg": {
+        "displayName": "headlineLg",
+        "purpose": "Design.md typography role `headlineLg` (28px/32px, weight 600, tracking -0.008em)."
+      },
+      "headlineMd": {
+        "displayName": "headlineMd",
+        "purpose": "Design.md typography role `headlineMd` (21px/26px, weight 600, tracking -0.006em)."
+      },
+      "headlineSm": {
+        "displayName": "headlineSm",
+        "purpose": "Design.md typography role `headlineSm` (17px/22px, weight 600, tracking -0.004em)."
+      },
+      "bodyLg": {
+        "displayName": "bodyLg",
+        "purpose": "Design.md typography role `bodyLg` (19px/26px, weight 400, tracking -0.005em)."
+      },
+      "bodyMd": {
+        "displayName": "bodyMd",
+        "purpose": "Design.md typography role `bodyMd` (17px/24px, weight 400, tracking -0.004em)."
+      },
+      "bodySm": {
+        "displayName": "bodySm",
+        "purpose": "Design.md typography role `bodySm` (14px/18px, weight 400, tracking 0em)."
+      },
+      "labelMd": {
+        "displayName": "labelMd",
+        "purpose": "Design.md typography role `labelMd` (14px/18px, weight 500, tracking -0.002em)."
+      },
+      "labelSm": {
+        "displayName": "labelSm",
+        "purpose": "Design.md typography role `labelSm` (12px/16px, weight 500, tracking 0.01em)."
+      },
+      "caption": {
+        "displayName": "caption",
+        "purpose": "Design.md typography role `caption` (11px/14px, weight 400, tracking 0.012em)."
+      }
+    },
+    "shadows": [
+      {
+        "name": "soft-hairline",
+        "value": "0 0 0 1px rgba(0, 0, 0, 0.08)",
+        "purpose": "A light card edge. Depth is a hairline, not a blur."
+      },
+      {
+        "name": "product",
+        "value": "rgba(0, 0, 0, 0.22) 3px 5px 30px 0",
+        "purpose": "Product photography only. Never interface chrome."
+      },
+      {
+        "name": "popover",
+        "value": "0 24px 48px -12px rgba(0, 0, 0, 0.18)",
+        "purpose": "Floating panels and sheets."
+      },
+      {
+        "name": "segment",
+        "value": "0 2px 6px rgba(0, 0, 0, 0.12)",
+        "purpose": "The selected segment of a segmented control."
+      }
+    ],
+    "motion": [
+      {
+        "name": "press",
+        "value": "transform: scale(0.97), 120ms cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Press feedback on every control; the only scale change."
+      },
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.25, 1, 0.5, 1)",
+        "purpose": "The one authored entrance (APPLE_MOTION.ease). Starts from an already-visible default."
+      },
+      {
+        "name": "segment",
+        "value": "360ms cubic-bezier(0.25, 1, 0.5, 1)",
+        "purpose": "Segmented-control selection travel (APPLE_MOTION.duration.segment)."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "phone",
+        "value": "640px"
+      },
+      {
+        "name": "tablet",
+        "value": "768px"
+      },
+      {
+        "name": "large-phone",
+        "value": "735px"
+      },
+      {
+        "name": "tablet-portrait",
+        "value": "833px"
+      },
+      {
+        "name": "tablet-landscape",
+        "value": "1023px"
+      },
+      {
+        "name": "small-desktop",
+        "value": "1068px"
+      },
+      {
+        "name": "desktop",
+        "value": "1440px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Button \u2014 filled",
+      "kind": "button",
+      "refersTo": "ButtonLink intent=solid",
+      "description": "The single primary action on a surface. Action Blue fill, ink-weight label, press scale.",
+      "html": "<a class=\"ds-btn-filled\" href=\"#\">Open the live map</a>",
+      "css": ".ds-btn-filled{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 24px;border-radius:var(--ap-radius-md,12px);background:var(--ap-primary,#0066cc);color:var(--ap-on-primary,#fff);font-family:inherit;font-size:14px;font-weight:500;line-height:18px;letter-spacing:-0.002em;text-decoration:none;transition:transform 120ms cubic-bezier(.4,0,.2,1),background 160ms}.ds-btn-filled:hover{background:var(--ap-primary-focus,#0071e3)}.ds-btn-filled:active{transform:scale(.97)}.ds-btn-filled:focus-visible{outline:2px solid var(--ap-focus-ring,#0071e3);outline-offset:2px}"
+    },
+    {
+      "name": "Button \u2014 ghost",
+      "kind": "button",
+      "refersTo": "ButtonLink intent=ghost",
+      "description": "A secondary action. Hairline border, ink label; hover refines the border, never the hue.",
+      "html": "<a class=\"ds-btn-ghost\" href=\"#\">Read the methodology</a>",
+      "css": ".ds-btn-ghost{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 24px;border-radius:var(--ap-radius-md,12px);border:1px solid var(--ap-hairline,#e0e0e0);background:transparent;color:var(--ap-label,#1d1d1f);font-family:inherit;font-size:14px;font-weight:500;text-decoration:none;transition:transform 120ms cubic-bezier(.4,0,.2,1),border-color 160ms}.ds-btn-ghost:hover{border-color:var(--ap-label-secondary,#6e6e73)}.ds-btn-ghost:active{transform:scale(.97)}.ds-btn-ghost:focus-visible{outline:2px solid var(--ap-focus-ring,#0071e3);outline-offset:2px}"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "Card",
+      "description": "A group that must travel together. One hairline, no shadow, never nested.",
+      "html": "<div class=\"ds-card\"><h3 class=\"ds-card-title\">Monsoon flood</h3><p class=\"ds-card-body\">Riverine inundation across the Brahmaputra, Jamuna and Padma floodplains.</p></div>",
+      "css": ".ds-card{border:1px solid var(--ap-hairline,#e0e0e0);border-radius:var(--ap-radius-lg,16px);background:var(--ap-canvas,#fff);padding:24px}.ds-card-title{margin:0;font-size:21px;line-height:26px;font-weight:600;letter-spacing:-0.006em;color:var(--ap-label,#1d1d1f)}.ds-card-body{margin:8px 0 0;max-width:65ch;font-size:17px;line-height:24px;color:var(--ap-label-secondary,#6e6e73)}"
+    },
+    {
+      "name": "Pill tabs",
+      "kind": "chip",
+      "refersTo": "PillTabs",
+      "description": "Segmented control. The selected segment is a raised surface, not a second accent.",
+      "html": "<div class=\"ds-tabs\" role=\"tablist\"><button class=\"ds-tab\" aria-selected=\"true\" role=\"tab\">Map</button><button class=\"ds-tab\" aria-selected=\"false\" role=\"tab\">Table</button></div>",
+      "css": ".ds-tabs{display:inline-flex;gap:4px;padding:4px;border-radius:9999px;background:var(--ap-parchment,#f5f5f7)}.ds-tab{min-height:44px;padding:8px 18px;border:0;border-radius:9999px;background:transparent;color:var(--ap-label-secondary,#6e6e73);font:inherit;font-size:12px;font-weight:500;cursor:pointer}.ds-tab[aria-selected=\"true\"]{background:var(--ap-canvas,#fff);color:var(--ap-label,#1d1d1f);box-shadow:0 2px 6px rgba(0,0,0,.12)}.ds-tab:focus-visible{outline:2px solid var(--ap-focus-ring,#0071e3);outline-offset:2px}"
+    },
+    {
+      "name": "Severity badge",
+      "kind": "chip",
+      "refersTo": "SeverityBadge",
+      "description": "A hazard level. Colour, glyph and word together \u2014 colour is never the only carrier.",
+      "html": "<span class=\"ds-sev ds-sev--very-high\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 12 12\" aria-hidden=\"true\"><path d=\"M6 1 11 10H1z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"/></svg>Very high</span>",
+      "css": ".ds-sev{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:9999px;font-size:11px;line-height:14px;font-weight:500;letter-spacing:.012em}.ds-sev--very-high{background:var(--ap-sev-very-high-surface,#fdebeb);color:var(--ap-sev-very-high,#c01f1f)}"
+    },
+    {
+      "name": "Text field",
+      "kind": "input",
+      "refersTo": "ap-input",
+      "description": "One label above the field, hairline control, 17px text so iOS does not zoom on focus.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">District</span><input class=\"ds-field-input\" placeholder=\"Satkhira\" /></label>",
+      "css": ".ds-field{display:flex;flex-direction:column;gap:6px;font-family:inherit}.ds-field-label{font-size:12px;font-weight:500;letter-spacing:.01em;color:var(--ap-label-secondary,#6e6e73)}.ds-field-input{min-height:44px;padding:10px 14px;border:1px solid var(--ap-input-stroke,#e0e0e0);border-radius:var(--ap-radius-input,12px);background:var(--ap-input-fill,#fff);color:var(--ap-label,#1d1d1f);font:inherit;font-size:17px;line-height:24px;caret-color:var(--ap-primary,#0066cc)}.ds-field-input::placeholder{color:var(--ap-label-tertiary,#86868b)}.ds-field-input:focus-visible{outline:2px solid var(--ap-focus-ring,#0071e3);outline-offset:1px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "A public instrument, read in daylight",
+    "overview": "HazardNet is read outdoors on cheap Android phones by someone deciding whether their district is at risk today. Apple's language suits this because it is restraint under load: large quiet surfaces, one idea per screen, type doing the structural work, colour reserved for meaning. What is taken: the neutral ramp, the label hierarchy, the tint system, generous vertical rhythm, a single deep shadow, type as the primary hierarchy device. What is refused: marketing gestures \u2014 no full-bleed product theatre, no scroll-choreographed reveals, no oversized display type floating in empty space.",
+    "keyCharacteristics": [
+      "One accent, one shadow \u2014 and not on UI.",
+      "No hover state is ever the only affordance.",
+      "Severity is colour, glyph and word together.",
+      "Two density tracks, one spacing scale.",
+      "The no-JS shell is a surface, held to the same rules."
+    ],
+    "rules": [
+      {
+        "name": "One accent",
+        "body": "Interactive chrome uses Action Blue and nothing else. There is no second accent, no brand gradient, no colour used for personality.",
+        "section": "colors"
+      },
+      {
+        "name": "Colour carries meaning only",
+        "body": "If a colour does not indicate a hazard, a status, or interactivity, it is neutral.",
+        "section": "colors"
+      },
+      {
+        "name": "One shadow, and not on UI",
+        "body": "Elevation is a single deep shadow used where depth genuinely communicates layering, and it is not applied to interface chrome.",
+        "section": "elevation"
+      },
+      {
+        "name": "Cards are not the default container",
+        "body": "Content flows on the ground and is separated by spacing and alignment. A card earns its place when it groups something that must travel together, and cards are never nested.",
+        "section": "layout"
+      },
+      {
+        "name": "No hover-only affordance",
+        "body": "Hover may refine an interaction; it may never be the only way to discover one.",
+        "section": "typography"
+      },
+      {
+        "name": "A hazard level reads at first paint",
+        "body": "No level, threshold or warning animates in, and no hazard colour transitions on load.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do carry a hazard level with colour, glyph and word together.",
+      "Do separate sections with space and reach for a card only when the group must travel.",
+      "Do set tabular data in tabular-nums, in the mono face, at a ramp step.",
+      "Do theme the browser's own surfaces \u2014 selection, caret, scrollbar, focus ring, underline.",
+      "Do let a heading carry its own weight; a group label is that group's heading.",
+      "Do keep one authored motion moment per screen, starting from an already-visible default."
+    ],
+    "donts": [
+      "Don't introduce a second accent, a brand gradient, or a colour used for personality.",
+      "Don't put a shadow on UI chrome, and never a zero-offset coloured halo.",
+      "Don't put a label or kicker above a heading.",
+      "Don't use a coloured side stripe above 1px on a card, callout or alert.",
+      "Don't nest cards, or reach for a card grid as the page structure.",
+      "Don't ship a size, radius, colour or font that is not in the front matter.",
+      "Don't let a hazard level animate in, transition, or hide behind hover.",
+      "Don't use emoji or unicode glyphs as icons; the set is drawn and generated."
+    ]
+  }
+}

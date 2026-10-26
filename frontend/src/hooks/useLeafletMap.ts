@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet.markercluster';
 import { isValidLatLng, detectExactPinpointLocation, getDistrictBoundaryCoordinates } from '../services/geolocationService';
+import { APPLE_SEVERITY, MAP_INTERACTIVE } from '@hazardnet/design-system';
 import { DistrictData } from '../data/bangladeshDistricts';
 
 /**
@@ -211,15 +212,19 @@ export function useLeafletMap(
         const isHigh = maxSev >= 0.7;
         const isMod = maxSev >= 0.4 && maxSev < 0.7;
 
-        const bgGradient = isHigh
-          ? 'linear-gradient(135deg, #c01f1f 0%, #c01f1f 100%)'
+        // One severity ramp for the cluster chip, its halo and its ping — the same three
+        // hues a district badge and the map legend use. These were a bespoke red/amber/green
+        // trio (`#c01f1f`, `#8a5a00`, `#1d7a3e` next to `rgba(220,38,38…)`/`rgba(245,158,11…)`)
+        // that matched neither the ramp nor each other.
+        const clusterColor = isHigh
+          ? APPLE_SEVERITY.veryHigh.solid
           : isMod
-          ? 'linear-gradient(135deg, #8a5a00 0%, #8a5a00 100%)'
-          : 'linear-gradient(135deg, #1d7a3e 0%, #1d7a3e 100%)';
+            ? APPLE_SEVERITY.moderate.solid
+            : APPLE_SEVERITY.low.solid;
 
-        const glowColor = isHigh ? 'rgba(220, 38, 38, 0.65)' : isMod ? 'rgba(245, 158, 11, 0.65)' : 'rgba(16, 185, 129, 0.65)';
+        const glowColor = `color-mix(in srgb, ${clusterColor} 65%, transparent)`;
         const pulseRing = isHigh
-          ? `<div class="cluster-pulse-ring" style="position: absolute; inset: -6px; border-radius: 50%; background: rgba(220, 38, 38, 0.4); z-index: -1;"></div>`
+          ? `<div class="cluster-pulse-ring" style="position: absolute; inset: -6px; border-radius: 50%; background: color-mix(in srgb, ${clusterColor} 40%, transparent); z-index: -1;"></div>`
           : '';
 
         const tooltipTitle = `${count} Districts: ${districtNames.slice(0, 4).join(', ')}${districtNames.length > 4 ? '...' : ''} | Max Severity: ${maxSevPct}% (${dominantHazard})`;
@@ -232,9 +237,9 @@ export function useLeafletMap(
               width: 44px;
               height: 44px;
               border-radius: 50%;
-              background: ${bgGradient};
-              border: 2.5px solid #ffffff;
-              box-shadow: 0 4px 18px ${glowColor}, 0 2px 6px rgba(0,0,0,0.35);
+              background: ${clusterColor};
+              border: 2.5px solid var(--ap-on-primary);
+              box-shadow: 0 4px 18px ${glowColor}, 0 2px 6px var(--ap-scrim);
               display: flex;
               flex-direction: column;
               align-items: center;

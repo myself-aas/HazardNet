@@ -670,7 +670,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
                 </button>
                 <button
                   onClick={onClose}
-                  className="w-9 h-9 bg-carbon-20 hover:bg-carbon-30 active:bg-carbon-40 text-carbon-70 rounded-lg text-xs font-black flex items-center justify-center transition-colors shrink-0 min-h-[36px]"
+                  className="w-11 h-11 bg-carbon-20 hover:bg-carbon-30 active:bg-carbon-40 text-carbon-70 rounded-xl text-xs font-black flex items-center justify-center transition-colors shrink-0"
                   title="Close Sheet"
                   aria-label="Close Sheet"
                 >

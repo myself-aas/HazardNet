@@ -5,7 +5,7 @@
       {
         "type": "command",
         "matcher": "edit|create|apply_patch",
-        "bash": "[ ! -f \"$(git rev-parse --show-toplevel)/.github/skills/impeccable/scripts/impeccable\" ] || \"$(git rev-parse --show-toplevel)/.github/skills/impeccable/scripts/impeccable\" hook",
+        "bash": "cd \"$(git rev-parse --show-toplevel)\" && { [ -x node_modules/.bin/impeccable ] && node_modules/.bin/impeccable hook || true; }",
         "timeoutSec": 5
       }
     ]
