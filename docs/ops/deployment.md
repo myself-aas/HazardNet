@@ -207,6 +207,12 @@ The Firebase Hosting block was retired the same day, after measuring that
 (`built_at 2026-09-24T20:35:20Z`, 0 published alerts, 7/7 probe checks failing);
 `firebase.json` now carries only `firestore`.
 
+**The Vercel GitHub App is a separate, still-open item.** Deleting configuration does not
+uninstall an app: PR checks on 2026-10-26 still showed `Vercel Preview Comments` and a `Vercel`
+deployment check for `vercel.com/aas-core/hazardnet`, so every push was still building a Vercel
+preview of a project nothing here configures. `docs/ops/owner-actions.md` Action 23 is the
+uninstall/disconnect step; there is no file in this repository that can do it.
+
 If you find a Vercel or Firebase-Hosting instruction anywhere — a doc, a comment, a script — it
 is stale. Either delete it or point it here. Dated audits under `docs/audits/` are history and
 may keep naming both; anything in a setup guide, runbook or config is not.
