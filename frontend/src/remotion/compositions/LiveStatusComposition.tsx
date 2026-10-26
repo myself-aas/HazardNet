@@ -1,6 +1,7 @@
 import React from 'react';
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from 'remotion';
 import { Interactive } from 'remotion';
+import { APPLE_FONTS, APPLE_COLORS } from '@hazardnet/design-system';
 
 export const LiveStatusComposition: React.FC<{
   published?: number;
@@ -42,12 +43,12 @@ export const LiveStatusComposition: React.FC<{
         <Interactive.Div
           name="Published label"
           style={{
-            fontFamily: 'DM Mono, monospace',
+            fontFamily: APPLE_FONTS.mono,
             fontSize: 12,
             fontWeight: 700,
             letterSpacing: '0.05em',
             textTransform: 'uppercase',
-            color: '#6e6e73',
+            color: APPLE_COLORS.inkMuted48,
             opacity: interpolate(frame, [fps * 0.2, fps * 0.6], [0, 1], {
               easing: Easing.bezier(0.16, 1, 0.3, 1),
               extrapolateLeft: 'clamp',
@@ -60,7 +61,7 @@ export const LiveStatusComposition: React.FC<{
         <Interactive.Div
           name="Assessed value"
           style={{
-            fontFamily: 'DM Mono, monospace',
+            fontFamily: APPLE_FONTS.mono,
             fontSize: 14,
             fontWeight: 800,
             color: '#1d1d1f',

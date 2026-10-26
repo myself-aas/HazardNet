@@ -98,20 +98,13 @@ export const Documentation: React.FC = () => {
 
       {/* Title banner */}
       <div className="bg-carbon-05 border border-carbon-20 rounded-2xl p-6 md:p-8">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-ap-primary/10 text-ap-link border border-ap-primary/20">
-            Documentation
-          </span>
-          <span className="text-carbon-60">•</span>
-          <span className="text-xs text-carbon-60 font-medium">Updated 5 October 2026</span>
-        </div>
         <h1 className="text-2xl md:text-3xl font-brand font-black text-carbon-90 tracking-tight">
           Hazard<span className="text-ap-link">Net</span> documentation
         </h1>
+        <p className="mt-2 text-xs text-carbon-60 font-medium">Updated 5 October 2026</p>
         <p className="text-xs md:text-sm text-carbon-60 mt-2 leading-relaxed max-w-2xl">
-          One place that explains every HazardNet surface and every number it shows: what the
-          system publishes, how to read it, and where its limits are. Methods are
-          research-private; this site publishes results and outputs only.
+          One place that explains every HazardNet surface and every number it shows: what the system publishes, how to
+          read it, and where its limits are. Methods are research-private; this site publishes results and outputs only.
         </p>
       </div>
 
@@ -148,17 +141,16 @@ export const Documentation: React.FC = () => {
         <h2 className="text-sm font-bold text-carbon-90">Three standing rules</h2>
         <ul className="text-xs text-carbon-70 space-y-1.5 list-disc pl-5">
           <li>
-            HazardNet is decision support, not an official warning service. Official warnings
-            come from the Bangladesh Meteorological Department and the Flood Forecasting and
-            Warning Centre.
+            HazardNet is decision support, not an official warning service. Official warnings come from the Bangladesh
+            Meteorological Department and the Flood Forecasting and Warning Centre.
           </li>
           <li>
-            Forecast skill is not yet validated against observed outcomes. Every severity value
-            is published with that stated, and nothing is interpolated to fill a gap.
+            Forecast skill is not yet validated against observed outcomes. Every severity value is published with that
+            stated, and nothing is interpolated to fill a gap.
           </li>
           <li>
-            Model code, dataset collection, training and benchmarking are research-private.
-            Results and outputs are public.
+            Model code, dataset collection, training and benchmarking are research-private. Results and outputs are
+            public.
           </li>
         </ul>
       </section>

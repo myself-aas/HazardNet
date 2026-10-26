@@ -272,6 +272,23 @@ function resolveReviewDates(sections) {
   });
 }
 
+
+/**
+ * The safety framing, in the static document.
+ *
+ * DESIGN.md §Safety framing makes this a layout requirement on every surface that states a
+ * hazard level: not official, BMD/FFWC are, and 999. The hydrated app carries it; the
+ * prerendered document did not, so the one thing a crawler or a no-JS visitor reads was the
+ * one thing missing it.
+ */
+const SAFETY_FRAMING = [
+  '<p class="hn-safety">',
+  'HazardNet is <strong>not an official warning service</strong>. Official warnings come from ',
+  '<a href="https://live.bmd.gov.bd/">BMD</a> and <a href="https://ffwc.gov.bd/">FFWC</a>. ',
+  'In an emergency call <a href="tel:999">999</a>.',
+  '</p>',
+].join('');
+
 /**
  * The notice that closes every static document: what a visitor reads between the
  * server's first paint and the SPA taking over. The animated brand mark above it
@@ -290,8 +307,8 @@ const LOADING_NOTICE = [
 function renderBody(route) {
   const parts = [
     `<!--HN_STATIC_START-->`,
-    `<div class="hn-static">`,
-    `<h1>${renderInline(route.h1 ?? route.title)}</h1>`,
+    `<main class="hn-static">`,
+    `<h1>${renderInline(route.h1 ?? route.title ?? 'Page not found')}</h1>`,
     route.standfirst ? `<p class="hn-lead">${renderInline(route.standfirst)}</p>` : '',
     route.path === '/status' ? renderStatusPanel(statusArtifact) : '',
     // The front door is the page whose job is to say who is behind the numbers, so the
@@ -302,8 +319,9 @@ function renderBody(route) {
     route.updated
       ? `<p class="hn-meta">Content reviewed ${escapeHtml(route.updated)}. HazardNet is decision support, not an official warning service — see the <a href="/methodology">methodology</a> for scope and limitations.</p>`
       : '',
+    SAFETY_FRAMING,
     LOADING_NOTICE,
-    `</div>`,
+    `</main>`,
     `<!--HN_STATIC_END-->`,
   ];
   return parts.filter(Boolean).join('');
@@ -422,7 +440,11 @@ const STATIC_STYLES = `<style>
   .hn-static ul{margin:.5rem 0 1rem;padding-left:1.15rem;color:#333333}
   .hn-static li{margin:.3rem 0}
   .hn-static a{color:#0066cc}
-  .hn-static .hn-callout{border-left:2px solid #b3400f;background:#fdeee7;color:#b3400f;padding:.7rem .9rem;border-radius:0;font-size:.94rem}
+  /* A callout is a surface, not a stripe. It used to carry a 2px accent left edge on a
+     tinted ground — the generated-callout signature, and a colour-only carrier of meaning
+     for a reader who cannot see the hue. One hairline all round, the raised corner, and the
+     label in the body weight carries it instead. */
+  .hn-static .hn-callout{border:1px solid #b3400f;background:#fdeee7;color:#b3400f;padding:.7rem .9rem;border-radius:8px;font-size:.94rem}
   .hn-static .hn-meta{font-size:.8rem;line-height:1.75;letter-spacing:.025em;color:#5a5a5d;border-top:1px solid #e0e0e0;padding-top:.9rem;margin-top:2rem}
   .hn-static .hn-meta-line{font-size:.8rem;line-height:1.75;letter-spacing:.025em;color:#5a5a5d}
   .hn-static .hn-tablewrap{overflow-x:auto;margin:.75rem 0 1rem}
@@ -439,6 +461,10 @@ const STATIC_STYLES = `<style>
   .hn-static .hn-reason{display:block;font-weight:400;font-size:.8rem;color:#5a5a5d}
   .hn-static .hn-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   .hn-static .hn-loading{font-size:.8rem;color:#5a5a5d}
+  /* The safety framing closes every static document (DESIGN.md §Safety framing). It is the
+     last thing on the page on purpose: still in the flow, never behind an interaction. */
+  .hn-static .hn-safety{font-size:.8rem;line-height:1.6;color:#5a5a5d;border-top:1px solid #e0e0e0;padding-top:.8rem;margin-top:1.6rem}
+  .hn-static .hn-safety a{color:#0066cc}
   /* The brand mark that loads in place of the notice below. The artwork itself is
      /hazardnet-loader.svg — the infinity mark, animated — so a slow connection
      spends its wait looking at the product's own mark instead of a spinner.
@@ -457,9 +483,11 @@ const STATIC_STYLES = `<style>
     .hn-static p,.hn-static ul,.hn-static li{color:#cccccc}
     .hn-static .hn-lead{color:#e0e0e0}
     .hn-static a{color:#2997ff}
-    .hn-static .hn-callout{background:#272729;border-left-color:#b3400f;color:#fdeee7}
+    .hn-static .hn-callout{background:#272729;border-color:#b3400f;color:#fdeee7}
     .hn-static .hn-meta{background:#242426;border-top-color:#333333;color:#a1a1a6}
-    .hn-static .hn-meta-line,.hn-static caption,.hn-static .hn-reason,.hn-static .hn-loading{color:#a1a1a6}
+    .hn-static .hn-meta-line,.hn-static caption,.hn-static .hn-reason,.hn-static .hn-loading,.hn-static .hn-safety{color:#a1a1a6}
+    .hn-static .hn-safety{border-top-color:#333333}
+    .hn-static .hn-safety a{color:#2997ff}
     /* Nothing to revert for the loader on this scheme: the infinity mark's blue gradient holds at >= 3:1 on both a
        white and a near-black ground, so one animated file serves both. (The previous mark was near-black and
        had to be inverted, with a hue rotation to save its red, here and in the header.) */
@@ -943,7 +971,27 @@ if (existsSync(robotsSource)) {
 // A 404 route for hosts that honour 404.html (Vercel does). Unknown deep links
 // still fall through to the SPA (needed for /blogs/:slug and district pages),
 // which marks itself noindex.
-writeFileSync(path.join(distDir, '404.html'), template);
+//
+// It used to be the bare template — an empty <div id="root"> with no heading, no landmark
+// and no safety framing, which is the whole document for a visitor whose JavaScript has not
+// run. It gets the same static shell as every other route, with no canonical link: a 404 must
+// not nominate itself as the canonical URL for anything.
+const notFoundBody = renderBody({
+  path: '/404',
+  title: 'Page not found',
+  h1: 'Page not found',
+  standfirst:
+    'That address is not one of the pages HazardNet publishes. The live map and the documentation index are the two places most visitors are looking for.',
+});
+writeFileSync(
+  path.join(distDir, '404.html'),
+  injectIntoRoot(template.replace(/<meta[^>]+name=["']robots["'][^>]*>/i, ''), notFoundBody).replace(
+    '</head>',
+    // The shell's own stylesheet, which every other route gets with its head block. Without
+    // it the 404 paints the shell's markup against the application bundle's defaults.
+    `  <meta name="robots" content="noindex,follow" />\n  ${STATIC_STYLES}\n</head>`,
+  ),
+);
 
 console.log(
   `[prerender] ${prerendered.length} routes written (${blogArticles.length} blog articles, ` +

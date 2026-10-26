@@ -320,7 +320,7 @@ const AppContent: React.FC = () => {
             border: '1px solid var(--ap-n-20)',
             borderRadius: 'var(--ap-radius-sm, 8px)',
             boxShadow: 'none',
-            fontSize: '16px',
+            fontSize: '17px',
           },
         }}
       />

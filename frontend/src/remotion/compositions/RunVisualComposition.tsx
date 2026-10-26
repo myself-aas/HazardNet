@@ -6,6 +6,7 @@
 import React from 'react';
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from 'remotion';
 import { Interactive } from 'remotion';
+import { APPLE_FONTS, APPLE_COLORS } from '@hazardnet/design-system';
 
 export const RunVisualComposition: React.FC<{
   coverage?: string;
@@ -77,9 +78,9 @@ export const RunVisualComposition: React.FC<{
           </span>
           <span
             style={{
-              fontFamily: 'DM Mono, monospace',
+              fontFamily: APPLE_FONTS.mono,
               fontSize: 12,
-              color: '#6e6e73',
+              color: APPLE_COLORS.inkMuted48,
             }}
           >
             {status}
@@ -89,7 +90,7 @@ export const RunVisualComposition: React.FC<{
         <Interactive.Div
           name="Coverage value"
           style={{
-            fontFamily: 'DM Mono, monospace',
+            fontFamily: APPLE_FONTS.mono,
             fontSize: 32,
             fontWeight: 900,
             color: '#1d1d1f',

@@ -161,8 +161,8 @@ export const ALL_8_DIVISIONS: DivisionData[] = [
     avgSeverity: 0.58,
     primaryHazard: 'Barind Agricultural Drought',
     path: 'M 15,22 L 38,28 L 50,44 L 38,52 L 15,48 Z',
-    fill: 'rgba(194, 194, 194, 0.18)',
-    stroke: '#d2d2d7',
+    fill: 'color-mix(in srgb, var(--ap-n-30) 18%, transparent)',
+    stroke: 'var(--ap-n-30)',
     cx: 31,
     cy: 38
   },
@@ -206,8 +206,8 @@ export const ALL_8_DIVISIONS: DivisionData[] = [
     avgSeverity: 0.57,
     primaryHazard: 'Monsoon Flood & Urban Inundation',
     path: 'M 38,52 L 50,44 L 68,44 L 68,66 L 44,68 Z',
-    fill: 'rgba(120, 120, 120, 0.18)',
-    stroke: '#6e6e73',
+    fill: 'color-mix(in srgb, var(--ap-n-50) 18%, transparent)',
+    stroke: 'var(--ap-label-secondary)',
     cx: 55,
     cy: 55
   },
@@ -221,8 +221,8 @@ export const ALL_8_DIVISIONS: DivisionData[] = [
     avgSeverity: 0.62,
     primaryHazard: 'Tropical Cyclone & Saline Intrusion',
     path: 'M 22,50 L 44,52 L 48,78 L 26,82 L 20,68 Z',
-    fill: 'rgba(194, 194, 194, 0.18)',
-    stroke: '#d2d2d7',
+    fill: 'color-mix(in srgb, var(--ap-n-30) 18%, transparent)',
+    stroke: 'var(--ap-n-30)',
     cx: 36,
     cy: 66
   },

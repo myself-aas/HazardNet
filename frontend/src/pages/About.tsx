@@ -16,85 +16,63 @@ export const About: React.FC = () => {
       <Breadcrumbs />
 
       {/* Hero Banner */}
-      <motion.div
-        whileHover={{ y: -2 }}
-        transition={{ duration: 0.2 }}
-        className="bg-white border border-carbon-20 rounded-2xl p-6 md:p-8 space-y-4"
-      >
-        <div className="flex items-center gap-2">
-          <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-amber-50 text-amber-900 border border-amber-200">
-            HazardNet Early Warning Initiative
-          </span>
-          <span className="text-carbon-60">•</span>
-          <span className="text-xs text-carbon-60 font-medium">Active Deployment: 2026</span>
-        </div>
-
+      <div className="bg-white border border-carbon-20 rounded-2xl p-6 md:p-8 space-y-4">
         <h1 className="text-ap-lead sm:text-ap-display-md font-brand font-bold leading-tight text-carbon-90 tracking-tight">
           Hazard<span className="text-ap-link">Net</span> Agro-Climatic Intelligence Platform
         </h1>
+        <p className="mt-3 text-xs text-carbon-60 font-medium">Active deployment: 2026</p>
+
         <p className="text-base leading-[1.62] text-carbon-60 max-w-3xl">
           Automated multi-hazard early warning, multi-band satellite feature classification, physical severity
           quantification, and offline-capable edge computing for agricultural extension across Bangladesh.
         </p>
 
         <div className="flex flex-wrap items-center gap-3 pt-2">
-          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-            <Link
-              to="/use-cases"
-              className="inline-flex min-h-[44px] items-center px-6 py-2 bg-primary hover:bg-primary-strong text-ap-action-fg text-base font-semibold touch-manipulation"
-            >
-              Explore Regional Use Cases
-            </Link>
-          </motion.div>
+          <Link
+            to="/use-cases"
+            className="inline-flex min-h-[44px] items-center px-6 py-2 rounded-full bg-primary hover:bg-primary-strong text-ap-action-fg text-base font-semibold touch-manipulation"
+          >
+            Explore Regional Use Cases
+          </Link>
 
-          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-            <Link
-              to="/download"
-              className="inline-flex min-h-[44px] items-center px-6 py-2 bg-primary hover:bg-primary-strong text-ap-action-fg text-base font-semibold touch-manipulation"
-            >
-              Download Offline Software
-            </Link>
-          </motion.div>
+          <Link
+            to="/download"
+            className="inline-flex min-h-[44px] items-center px-6 py-2 rounded-full bg-white text-carbon-90 text-base font-semibold border border-carbon-30 hover:bg-carbon-05 touch-manipulation"
+          >
+            Download Offline Software
+          </Link>
 
-          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-            <a
-              href="https://github.com/myself-aas/HazardNet"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-[44px] items-center px-6 py-2 bg-white text-carbon-70 text-base font-semibold border border-carbon-20 rounded-full hover:text-carbon-90 hover:bg-carbon-05 touch-manipulation"
-            >
-              GitHub Repository
-            </a>
-          </motion.div>
+          <a
+            href="https://github.com/myself-aas/HazardNet"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-[44px] items-center gap-1.5 px-2 py-2 text-base font-semibold text-ap-link hover:text-ap-link underline-offset-4 hover:underline touch-manipulation"
+          >
+            GitHub Repository <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </a>
         </div>
-      </motion.div>
+      </div>
 
-      {/* Impact Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Impact figures: a definition list on hairlines. Four white cards with a hover lift
+          were the hero-metric template, and the lift promised an interaction that does nothing. */}
+      <dl className="grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { label: 'Spatial Coverage', val: '64 Districts', detail: 'All 8 Administrative Divisions' },
-          { label: 'Hazard Categories', val: '8 Distinct Classes', detail: 'Flood, Cyclone, Drought & Storms' },
-          { label: 'Severity Precision', val: '0.00 - 1.00', detail: 'Continuous Physical Index' },
+          { label: 'Spatial coverage', val: '64 districts', detail: 'All 8 administrative divisions' },
+          { label: 'Hazard classes', val: '8 modelled', detail: 'Flood, cyclone, drought, storms and four more' },
+          { label: 'Severity scale', val: '0.00 – 1.00', detail: 'Continuous physical index' },
           {
-            label: 'Inference Path',
+            label: 'Inference path',
             val: 'Stored reads',
             detail: 'Server-side batch pipeline; no in-browser model execution',
           },
-        ].map((stat, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: i * 0.08 }}
-            whileHover={{ y: -3, scale: 1.01 }}
-            className="bg-white border border-carbon-20 rounded-2xl p-5 space-y-1 cursor-pointer"
-          >
-            <span className="text-xs font-mono uppercase text-carbon-60 font-bold block">{stat.label}</span>
-            <span className="text-xl font-extrabold text-carbon-90">{stat.val}</span>
-            <p className="text-xs text-carbon-60">{stat.detail}</p>
-          </motion.div>
+        ].map((stat) => (
+          <div key={stat.label} className="border-t border-carbon-20 pt-3">
+            <dt className="text-xs font-semibold uppercase tracking-wide text-carbon-60">{stat.label}</dt>
+            <dd className="mt-1 text-xl font-extrabold text-carbon-90">{stat.val}</dd>
+            <p className="mt-1 text-xs text-carbon-60">{stat.detail}</p>
+          </div>
         ))}
-      </div>
+      </dl>
 
       {/* Team & Institutional Partners */}
       <motion.div
@@ -119,15 +97,11 @@ export const About: React.FC = () => {
               location: 'Bangladesh',
             },
           ].map((partner, i) => (
-            <motion.div
-              key={i}
-              whileHover={{ y: -2 }}
-              className="p-4 bg-carbon-05 border border-carbon-20 rounded-2xl space-y-1 transition-all"
-            >
+            <div key={i} className="p-4 bg-carbon-05 border border-carbon-20 rounded-2xl space-y-1">
               <h3 className="font-bold text-carbon-90">{partner.name}</h3>
               <p className="text-carbon-70 font-medium text-base leading-[1.62]">{partner.role}</p>
               <p className="text-carbon-60 text-xs">{partner.location}</p>
-            </motion.div>
+            </div>
           ))}
         </div>
       </motion.div>
@@ -171,20 +145,19 @@ export const About: React.FC = () => {
               linkText: 'Read Model Architecture',
             },
           ].map((item, idx) => (
-            <motion.div
+            <div
               key={idx}
-              whileHover={{ scale: 1.01 }}
-              className={`bg-carbon-05 border border-carbon-20 rounded-2xl p-4 space-y-2 transition-all ${idx === 0 ? 'md:col-span-2' : ''}`}
+              className={`bg-carbon-05 border border-carbon-20 rounded-2xl p-4 space-y-2 ${idx === 0 ? 'md:col-span-2' : ''}`}
             >
               <h3 className="font-bold text-carbon-90">{item.title}</h3>
               <p className="leading-relaxed text-carbon-60">{item.desc}</p>
-              <Link to={item.link} className="text-ap-link font-bold underline inline-block pt-1 hover:text-amber-900">
+              <Link to={item.link} className="text-ap-link font-bold underline inline-block pt-1 hover:text-ap-link">
                 <span className="inline-flex items-center gap-1.5">
                   {item.linkText}
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </span>
               </Link>
-            </motion.div>
+            </div>
           ))}
         </div>
       </motion.div>

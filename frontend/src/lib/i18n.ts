@@ -327,10 +327,6 @@ const EN = {
   'frontdoor.hero.resumeMotion': 'Resume motion',
   'frontdoor.hero.readMore': 'Read the full overview',
   'frontdoor.hero.readLess': 'Show less',
-  'frontdoor.hero.evidencePointer':
-    'This run: {covered} of {expected} districts covered, {published}. Read the proof.',
-  'frontdoor.hero.evidencePointerAlerts': '{count} alerts published',
-  'frontdoor.hero.evidencePointerNoAlerts': 'no alerts published',
   'frontdoor.toc': 'On this page',
   'frontdoor.tocSection': 'Section',
   'frontdoor.bengaliDraft': 'Bengali draft. Awaiting native-speaker review',
@@ -445,7 +441,6 @@ const EN = {
   'frontdoor.blogs.newest': 'Newest',
   'frontdoor.blogs.allPosts': 'Read all posts',
   'frontdoor.faq.h2': 'Direct answers',
-  'frontdoor.attribution.eyebrow': 'Attribution',
   'frontdoor.attribution.h2': 'Who built this, and under whose supervision',
   'frontdoor.attribution.body':
     '{author} ({role}): {work}. {type}, {department}, {university}, supervised by {supervisor} ({supervisorRole}){coSupervision}.',
@@ -788,10 +783,6 @@ const BN: Record<string, string> = {
   'frontdoor.hero.resumeMotion': 'গতি চালু করুন',
   'frontdoor.hero.readMore': 'সম্পূর্ণ সারসংক্ষেপ পড়ুন',
   'frontdoor.hero.readLess': 'সংক্ষেপে দেখান',
-  'frontdoor.hero.evidencePointer':
-    'এই রানে {expected} জেলার মধ্যে {covered} জেলার তথ্য আছে, {published}। প্রমাণ দেখুন।',
-  'frontdoor.hero.evidencePointerAlerts': '{count} সতর্কতা প্রকাশিত',
-  'frontdoor.hero.evidencePointerNoAlerts': 'কোনো সতর্কতা প্রকাশিত হয়নি',
   'frontdoor.toc': 'এই পাতায়',
   'frontdoor.tocSection': 'বিভাগ',
   'frontdoor.bengaliDraft': 'বাংলা খসড়া. স্থানীয় ভাষাভাষীর পর্যালোচনা বাকি',
@@ -903,7 +894,6 @@ const BN: Record<string, string> = {
   'frontdoor.blogs.newest': 'সর্বশেষ',
   'frontdoor.blogs.allPosts': 'সব লেখা পড়ুন',
   'frontdoor.faq.h2': 'সরাসরি উত্তর',
-  'frontdoor.attribution.eyebrow': 'স্বীকৃতি',
   'frontdoor.attribution.h2': 'কে তৈরি করেছেন এবং কার তত্ত্বাবধানে',
   'frontdoor.attribution.body':
     '{author} ({role}): {work}. {type}, {department}, {university}; তত্ত্বাবধানে {supervisor} ({supervisorRole}){coSupervision}।',

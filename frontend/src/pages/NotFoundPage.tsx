@@ -23,24 +23,49 @@ export const NotFoundPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="p-3 bg-carbon-05 border border-carbon-20 rounded-lg text-xs text-carbon-60 font-mono text-left">
-          Status: 404 HTTP / Client Router Unmatched
-        </div>
+        {/* The box that used to sit here printed `Status: 404 HTTP / Client Router Unmatched`
+            in monospace: this repository's vocabulary, addressed to a visitor who mistyped a
+            district slug. What the page actually knows is the path they asked for, so it says
+            that instead. (2026-10-26 critique, P1.) */}
+        <p className="text-sm leading-[1.62] text-carbon-70">
+          You asked for{' '}
+          <code className="break-all rounded-sm bg-carbon-05 px-1 py-0.5 font-mono text-carbon-80">
+            {location.pathname}
+          </code>
+          .
+        </p>
 
-        <div className="flex flex-col sm:flex-row gap-2 pt-2">
-          <Link
-            to="/"
-            className="inline-flex min-h-[44px] flex-1 items-center justify-center bg-primary px-6 py-3 text-base font-semibold text-ap-action-fg hover:bg-primary-strong touch-manipulation"
-          >
+        {/* Two `.ap-btn` links, not two hand-rolled buttons. The pair used to be a square
+            `bg-primary` block beside a `rounded-full` outline — two component libraries in
+            one row, and both bypassing the system's own button. (Same critique, P1.) */}
+        <div className="flex flex-col gap-2 pt-2 sm:flex-row">
+          <Link to="/" className="ap-btn flex-1">
             Home
           </Link>
-          <Link
-            to="/live"
-            className="rounded-full inline-flex min-h-[44px] flex-1 items-center justify-center border-2 border-ap-primary px-6 py-3 text-base font-semibold text-ap-link hover:bg-ap-primary/5 touch-manipulation"
-          >
+          <Link to="/live" className="ap-btn ap-btn-secondary flex-1">
             Live map
           </Link>
         </div>
+
+        {/* A reader who is here wanted something specific. These are the three destinations
+            that account for almost all of it. */}
+        <ul className="flex flex-wrap justify-center gap-x-5 gap-y-2 border-t border-carbon-20 pt-4 text-xs font-bold">
+          <li>
+            <Link to="/alerts" className="text-ap-link underline underline-offset-2">
+              Alerts
+            </Link>
+          </li>
+          <li>
+            <Link to="/districts" className="text-ap-link underline underline-offset-2">
+              Districts
+            </Link>
+          </li>
+          <li>
+            <Link to="/docs" className="text-ap-link underline underline-offset-2">
+              Documentation
+            </Link>
+          </li>
+        </ul>
       </div>
     </div>
   );

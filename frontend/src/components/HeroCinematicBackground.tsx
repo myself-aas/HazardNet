@@ -91,7 +91,8 @@ export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused
             width: 1100,
             height: 1100,
             borderRadius: '50%',
-            background: 'radial-gradient(circle, #1c67e355 0%, #0f3a7a22 50%, transparent 70%)',
+            background:
+              'radial-gradient(circle, color-mix(in srgb, var(--ap-primary-on-dark) 33%, transparent) 0%, color-mix(in srgb, var(--ap-primary) 13%, transparent) 50%, transparent 70%)',
             opacity: shouldAnimate
               ? interpolate(frame, [0, fps * 4, fps * 8], [0.35, 0.45, 0.35], {
                   easing: Easing.bezier(0.4, 0, 0.2, 1),
@@ -187,7 +188,7 @@ export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused
           zIndex: 6,
           pointerEvents: 'none',
           background:
-            'radial-gradient(ellipse at center, transparent 38%, rgba(5,7,14,0.55) 75%, rgba(5,7,14,0.95) 100%)',
+            'radial-gradient(ellipse at center, transparent 38%, color-mix(in srgb, var(--ap-black) 55%, transparent) 75%, color-mix(in srgb, var(--ap-black) 95%, transparent) 100%)',
         }}
       />
     </Interactive.Div>

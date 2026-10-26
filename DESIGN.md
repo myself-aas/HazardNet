@@ -303,6 +303,39 @@ typography:
 
     letterSpacing: 0.012em
 
+  # EXTENSION — the one face this repository ships. `@fontsource/noto-sans-bengali`
+  # (Bengali subset, regular 400, ~43 KiB) is loaded in index.css and is the only
+  # @font-face in the product; Latin still renders in the system stack, and browsers
+  # synthesize bold for Bengali (see frontend/public/fonts/README.md for the 50 KiB
+  # ceiling the rest of the font plan is held to). APPLE_FONTS.bengali is the token.
+  body-bengali:
+
+    fontFamily: Noto Sans Bengali
+
+    fontSize: 17px
+
+    fontWeight: '400'
+
+    lineHeight: 26px
+
+    letterSpacing: 0em
+
+  # EXTENSION — tabular data. Coordinates, timestamps, severity scores, endpoint and
+  # source identifiers, and the code a table header names. APPLE_FONTS.mono is the stack;
+  # SFMono-Regular is its resolved face on Apple platforms, and the one the detector reads.
+  data-mono:
+
+    fontFamily: SFMono-Regular
+
+    fontSize: 14px
+
+    fontWeight: '400'
+
+    lineHeight: 18px
+
+    letterSpacing: 0em
+
+
 rounded:
 
   sm: 0.25rem
@@ -339,7 +372,7 @@ spacing:
 
 ---
 
-## The world
+## Overview
 
 HazardNet is read in daylight, outdoors, on cheap Android phones, often by someone who has
 walked to a neighbour's house to check a screen. Sometimes it is read at a desk by a researcher
@@ -361,7 +394,7 @@ Three rules pin this as *Apple* rather than merely "a blue design system", and t
 enforces them: **one accent, one shadow — and not on UI — and no hover state is ever the only
 affordance.**
 
-## Grounds
+## Colors
 
 Two appearances, both first-class. Surfaces come from the neutral ramp; text comes from the
 label ramp. Components read role tokens (`--ap-canvas`, `--ap-ink`, `--ap-tile-1`) and never
@@ -382,8 +415,6 @@ visible grey rule between sections is a defect.
 
 Tinted surfaces tint the ground rather than painting a flat block, and secondary text inside a
 tinted surface is tinted *from that hue*, never greyed.
-
-## Colour carries meaning only
 
 If a colour does not indicate a hazard, a status, or interactivity, it is neutral.
 
@@ -415,7 +446,7 @@ Contrast-driven divergence from Apple's stock values is expected and is recorded
 happens: the accent's text weight is `#0066cc` rather than `#0071E3`, because `#0071E3`
 measures 4.3:1 on parchment and text needs 4.5:1. Filled actions and focus keep `#0071E3`.
 
-## Type
+## Typography
 
 One family, ten steps. Body is 17px/24px; `body-lg` is 19px/26px; `display-hero` is 56px/60px at
 weight 700 with tracking at -0.015em. Tracking tightens as size grows.
@@ -454,14 +485,17 @@ below it, so a heading belongs to what follows it.
 and alignment. A card earns its place when it groups something that must travel together. Cards
 are never nested inside cards.
 
-## Motion
+### Browser surfaces
+
+The parts of the page we did not draw still carry the system. Text selection, the caret,
+scrollbars, focus rings, underline offset, and tabular numerals all ship with browser defaults
+that belong to no design system. All are themed from this palette.
+
+### Motion
 
 One authored moment per screen; everything else is a state change. Entrances start from an
 already-visible default, never from invisible. Reduced-motion preferences resolve straight to
 the end state — nothing is removed, nothing is hidden.
-
-**One shadow, and not on UI.** Elevation is a single deep shadow used where depth genuinely
-communicates layering, and it is not applied to interface chrome.
 
 **A hazard level must be readable the instant the screen paints.** No level, threshold, or
 warning animates in; no hazard colour transitions on load. Motion is for navigation and
@@ -470,7 +504,69 @@ disclosure, never for the reading of a warning.
 **No hover-only affordance.** Hover may refine an interaction; it may never be the only way to
 discover one.
 
-## Accessibility — binding, not aspirational
+## Elevation & Depth
+
+**One shadow, and not on UI.** Elevation is a single deep shadow used where depth genuinely
+communicates layering, and it is not applied to interface chrome.
+
+Depth in this product is a hairline and a change of surface, in that order. A raised card is a
+one-pixel border in `--ap-hairline` on `--ap-canvas`; a recessed panel is `--ap-parchment`; a
+popover is `--ap-tile-2` with the same hairline. The single documented shadow
+(`--ap-elev-product`) is reserved for product photography and for the one floating map control
+that must read against imagery, and it always carries an offset and a soft blur — a zero-offset
+coloured halo is a defect, not depth.
+
+## Shapes
+
+Two shape families, and a component belongs to one of them.
+
+- **Rects** take `--ap-radius-sm` (8px) for chips and inputs, `--ap-radius-md` (12px) for
+  controls, and `--ap-radius-lg` (16px) for cards and panels. Nothing is square except a
+  full-bleed media edge and the printed page, which is set in points.
+- **Pills** (`--ap-radius-pill`) are for small controls only: badges, segmented tabs, filter
+  chips, and the round map buttons. A pill is never a container for a paragraph.
+
+A radius is never used to signal hierarchy on its own; a bigger corner is not a bigger card.
+
+## Components
+
+The component layer is `frontend/src/components/apple/primitives.tsx` plus the surface classes in
+`styles/apple.css`. It has five grammars and they differ by shape and weight, never by hue:
+
+| Component | Shape | Type | Behaviour |
+|---|---|---|---|
+| `ButtonLink` filled | rect, `radius-md`, Action Blue fill | `label-md`, 500 | press is `scale(0.95)`; focus ring is the token ring |
+| `ButtonLink` ghost | rect, hairline border, ink label | `label-md`, 500 | hover changes the border and the underline, never the hue |
+| `Card` | rect, `radius-lg`, hairline, no shadow | any | groups what must travel together; never nested |
+| `PillTabs` | pill, segmented control | `label-sm`, 500 | the selected segment is a raised surface, not a colour |
+| `SeverityBadge` | pill, severity surface | `caption` | colour + glyph + word, always all three |
+
+Every one of them sets a 44 × 44 minimum target and takes its colour from a role token.
+`SectionHeading` composes a heading with an optional standfirst — an explaining paragraph, never a
+label above the heading.
+
+## Do's and Don'ts
+
+### Do:
+- **Do** carry a hazard level with colour, glyph and word together.
+- **Do** separate sections with space; reach for a card only when the group must travel.
+- **Do** set tabular data in `tabular-nums`, in the mono face, at a ramp step.
+- **Do** theme the browser's own surfaces — selection, caret, scrollbar, focus ring, underline.
+- **Do** let a heading carry its own weight; a group label is that group's heading.
+- **Do** keep one authored motion moment per screen, starting from an already-visible default.
+
+### Don't:
+- **Don't** introduce a second accent, a brand gradient, or a colour used for personality.
+- **Don't** put a shadow on UI chrome, and never a zero-offset coloured halo.
+- **Don't** put a label or kicker above a heading.
+- **Don't** use a coloured side stripe above 1px on a card, callout or alert.
+- **Don't** nest cards, or reach for a card grid as the page structure.
+- **Don't** ship a size, radius, colour or font that is not in the front matter.
+- **Don't** let a hazard level animate in, transition, or hide behind hover.
+- **Don't** use emoji or unicode glyphs as icons; the set is drawn and generated.
+- **Don't** let an image read as documentation of a real event without saying it is illustrative.
+
+## Accessibility
 
 This section is enforced by scripts that gate the build.
 
@@ -509,12 +605,6 @@ the point of use, or is not used.
 Images carry intrinsic dimensions to prevent layout shift, responsive sources, and alt text that
 conveys the image's information — or empty alt where the image is genuinely decorative.
 
-## Browser surfaces
-
-The parts of the page we did not draw still carry the system. Text selection, the caret,
-scrollbars, focus rings, underline offset, and tabular numerals all ship with browser defaults
-that belong to no design system. All are themed from this palette.
-
 ## Reference
 
 This document is not free-form prose: its YAML front matter is the machine-read spec. Three
@@ -535,3 +625,4 @@ npm run check:contrast:css
 npm run check:residue
 npm test -- __tests__/appleParity.test.js
 ```
+

@@ -4,8 +4,8 @@ import type { MapToolbarProps } from '../MapToolbar';
 import type { HazardLayerDef } from '../mapPrimitives';
 
 const hazards: HazardLayerDef[] = [
-  { id: 'Drought', name: 'Drought', color: '#000', badgeColor: '' },
-  { id: 'Monsoon Flood', name: 'Monsoon Flood', color: '#000', badgeColor: '' },
+  { id: 'Drought', name: 'Drought', color: '#000' },
+  { id: 'Monsoon Flood', name: 'Monsoon Flood', color: '#000' },
 ];
 
 const base: MapToolbarProps = {

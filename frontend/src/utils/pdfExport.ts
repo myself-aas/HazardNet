@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas-pro';
+import { APPLE_FONTS } from '@hazardnet/design-system';
 import {
   formatFilenameWithPlaceholders,
   PdfFilenameContext,
@@ -256,7 +257,7 @@ export async function exportElementToPdf(options: PdfExportOptions = {}): Promis
             .bg-white, .bg-carbon-05, .bg-carbon-10, .bg-carbon-90, .bg-carbon-black, [class*="bg-slate-"] {
               background-color: ${inkSaver ? '#ffffff' : '#ffffff'} !important;
               color: #1d1d1f !important;
-              border-color: #d2d2d7 !important;
+              border-color: var(--ap-n-30) !important;
             }
             h1, h2, h3, h4, h5, h6 {
               color: #1d1d1f !important;
@@ -279,7 +280,7 @@ export async function exportElementToPdf(options: PdfExportOptions = {}): Promis
               border: 1.5px solid #1d1d1f !important;
             }
             th, td {
-              border: 1px solid #d2d2d7 !important;
+              border: 1px solid var(--ap-n-30) !important;
               padding: 6px 8px !important;
               color: #1d1d1f !important;
             }
@@ -292,7 +293,7 @@ export async function exportElementToPdf(options: PdfExportOptions = {}): Promis
             th.emergency-protocol-title {
               background-color: #1d1d1f !important;
               color: #ffffff !important;
-              font-family: 'DM Mono', Consolas, monospace !important;
+              font-family: ${APPLE_FONTS.mono} !important;
               font-size: 8pt !important;
               font-weight: 900 !important;
               text-transform: uppercase !important;

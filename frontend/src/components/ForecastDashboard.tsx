@@ -347,7 +347,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
           value={stats.total}
           unit="Districts"
           subtitle={`Horizon: ${selectedHorizon.replace('_', ' ')}`}
-          statusBadge={{ label: 'TACTICAL', color: '#0066cc' }}
+          statusBadge={{ label: 'TACTICAL', color: 'var(--ap-link)' }}
           icon={<MaterialIcon name="assessment" />}
         />
         <BentoCard
@@ -355,7 +355,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
           value={stats.highRisk}
           unit="Districts"
           subtitle="Severity Score ≥ 67%"
-          statusBadge={{ label: 'CRITICAL', color: '#c01f1f' }}
+          statusBadge={{ label: 'CRITICAL', color: 'var(--ap-sev-very-high)' }}
           icon={<MaterialIcon name="warning" />}
           gaugePercent={Math.min(100, (stats.highRisk / Math.max(1, stats.total)) * 100 * 2)}
         />
@@ -364,7 +364,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
           value={stats.modRisk}
           unit="Districts"
           subtitle="Severity Score 34% - 66%"
-          statusBadge={{ label: 'ADVISORY', color: '#b3400f' }}
+          statusBadge={{ label: 'ADVISORY', color: 'var(--ap-sev-high)' }}
           icon={<MaterialIcon name="error_outline" />}
           gaugePercent={Math.min(100, (stats.modRisk / Math.max(1, stats.total)) * 100 * 1.5)}
         />
@@ -504,12 +504,12 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={trendChartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f7" />
-                    <XAxis dataKey="date" stroke="#6e6e73" fontSize={12} tickLine={false} />
-                    <YAxis domain={[0, 100]} stroke="#6e6e73" fontSize={12} tickFormatter={(val) => `${val}%`} />
+                    <XAxis dataKey="date" stroke='var(--ap-label-secondary)' fontSize={12} tickLine={false} />
+                    <YAxis domain={[0, 100]} stroke='var(--ap-label-secondary)' fontSize={12} tickFormatter={(val) => `${val}%`} />
                     <Tooltip />
                     <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                    <ReferenceLine y={67} stroke="#c01f1f" strokeDasharray="4 4" />
-                    <ReferenceLine y={34} stroke="#8a5a00" strokeDasharray="4 4" />
+                    <ReferenceLine y={67} stroke='var(--ap-sev-very-high)' strokeDasharray="4 4" />
+                    <ReferenceLine y={34} stroke='var(--ap-sev-moderate)' strokeDasharray="4 4" />
 
                     {availableHazards.map((hazard) => (
                       <Area
@@ -517,8 +517,8 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                         type="monotone"
                         dataKey={hazard}
                         name={hazard}
-                        stroke={HAZARD_COLORS[hazard] || '#6e6e73'}
-                        fill={HAZARD_COLORS[hazard] || '#6e6e73'}
+                        stroke={HAZARD_COLORS[hazard] || 'var(--ap-label-secondary)'}
+                        fill={HAZARD_COLORS[hazard] || 'var(--ap-label-secondary)'}
                         fillOpacity={0.15}
                         strokeWidth={2}
                       />
@@ -533,15 +533,15 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={districtComparisonData} margin={{ top: 10, right: 30, left: 10, bottom: 40 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f7" />
-                    <XAxis dataKey="name" stroke="#6e6e73" fontSize={12} angle={-35} textAnchor="end" interval={0} />
-                    <YAxis domain={[0, 100]} stroke="#6e6e73" fontSize={12} tickFormatter={(val) => `${val}%`} />
+                    <XAxis dataKey="name" stroke='var(--ap-label-secondary)' fontSize={12} angle={-35} textAnchor="end" interval={0} />
+                    <YAxis domain={[0, 100]} stroke='var(--ap-label-secondary)' fontSize={12} tickFormatter={(val) => `${val}%`} />
                     <Tooltip />
-                    <ReferenceLine y={67} stroke="#c01f1f" strokeDasharray="4 4" />
+                    <ReferenceLine y={67} stroke='var(--ap-sev-very-high)' strokeDasharray="4 4" />
                     <Bar dataKey="maxSeverity" name="Severity Score %" radius={[6, 6, 0, 0]}>
                       {districtComparisonData.map((entry, index) => (
                         <Cell
                           key={`cell-${index}`}
-                          fill={entry.maxSeverity >= 67 ? '#c01f1f' : entry.maxSeverity >= 34 ? '#8a5a00' : '#1d7a3e'}
+                          fill={entry.maxSeverity >= 67 ? 'var(--ap-sev-very-high)' : entry.maxSeverity >= 34 ? 'var(--ap-sev-moderate)' : 'var(--ap-sev-low)'}
                         />
                       ))}
                     </Bar>
@@ -555,12 +555,12 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={trendChartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f7" />
-                    <XAxis dataKey="date" stroke="#6e6e73" fontSize={12} />
-                    <YAxis domain={[0, 100]} stroke="#6e6e73" fontSize={12} tickFormatter={(val) => `${val}%`} />
+                    <XAxis dataKey="date" stroke='var(--ap-label-secondary)' fontSize={12} />
+                    <YAxis domain={[0, 100]} stroke='var(--ap-label-secondary)' fontSize={12} tickFormatter={(val) => `${val}%`} />
                     <Tooltip />
                     <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                    <Line type="monotone" dataKey="modelSeverity" name="CNN Neural Net %" stroke="#0066cc" strokeWidth={3} />
-                    <Line type="monotone" dataKey="physicsSeverity" name="Physics Proxy %" stroke="#0066cc" strokeWidth={2} strokeDasharray="4 4" />
+                    <Line type="monotone" dataKey="modelSeverity" name="CNN Neural Net %" stroke='var(--ap-link)' strokeWidth={3} />
+                    <Line type="monotone" dataKey="physicsSeverity" name="Physics Proxy %" stroke='var(--ap-link)' strokeWidth={2} strokeDasharray="4 4" />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
@@ -658,7 +658,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                         <span className="inline-flex items-center gap-1.5 font-medium text-carbon-80">
                           <span
                             className="w-2 h-2 rounded-full shrink-0"
-                            style={{ backgroundColor: HAZARD_COLORS[item.hazard_type] || '#6e6e73' }}
+                            style={{ backgroundColor: HAZARD_COLORS[item.hazard_type] || 'var(--ap-label-secondary)' }}
                           />
                           {item.hazard_type}
                         </span>

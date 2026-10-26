@@ -206,9 +206,6 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
   return (
     <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 md:p-10 shadow-md space-y-8 text-carbon-80 relative overflow-hidden transition-all duration-300 hover:shadow-lg">
       
-      {/* Background Ambient Glow */}
-      <div className="absolute -top-32 -right-32 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-rose-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
       {/* Header Bar */}
       <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-carbon-20">

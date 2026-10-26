@@ -25,14 +25,20 @@ import {
   Activity,
   Layers,
   Send,
-  X
+  X,
 } from 'lucide-react';
 
 import MaterialIcon from '../components/MaterialIcon';
 import { SECTOR_ADVISORIES, SectorAdvisoryData, TechnicalStep } from '../data/sectorAdvisoriesData';
 import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
 import { useKaggleAdvisories } from '../hooks/useKaggleAdvisories';
-import { advisorySignalOf, buildForecastIndex, canonicalKey, forecastAgeHours, type ForecastRow } from '../lib/forecasts';
+import {
+  advisorySignalOf,
+  buildForecastIndex,
+  canonicalKey,
+  forecastAgeHours,
+  type ForecastRow,
+} from '../lib/forecasts';
 import { StructuredAdvisoryRenderer } from '../components/StructuredAdvisoryRenderer';
 import { PrintQrCode } from '../components/PrintQrCode';
 import { PdfExportButton } from '../components/PdfExportButton';
@@ -54,7 +60,6 @@ export const AdvisoriesPage: React.FC = () => {
 
   // Phase filtering state
   const [selectedPhase, setSelectedPhase] = useState<'all' | 'pre-disaster' | 'during-event' | 'post-disaster'>('all');
-  
   // Interactive Email Modal State
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [selectedDistrictForEmail, setSelectedDistrictForEmail] = useState<string>('Kurigram');
@@ -74,8 +79,7 @@ export const AdvisoriesPage: React.FC = () => {
   const forecastIndex = useMemo(() => buildForecastIndex(kaggle?.rows ?? []), [kaggle]);
   const kaggleRow: ForecastRow | null = forecastIndex.get(canonicalKey(aiDistrict)) ?? null;
   const aiSeverity: number | null = kaggleRow ? advisorySignalOf(kaggleRow).final : null;
-  const aiConfidence: number | null =
-    kaggleRow && Number.isFinite(kaggleRow.confidence) ? kaggleRow.confidence : null;
+  const aiConfidence: number | null = kaggleRow && Number.isFinite(kaggleRow.confidence) ? kaggleRow.confidence : null;
   const aiHazard: string = kaggleRow?.hazard_type ?? '';
   const [aiCropContext, setAiCropContext] = useState<string>('');
   const [aiLoading, setAiLoading] = useState<boolean>(false);
@@ -83,9 +87,8 @@ export const AdvisoriesPage: React.FC = () => {
   const [aiError, setAiError] = useState<string | null>(null);
 
   // Filtered steps
-  const filteredProtocols = selectedPhase === 'all'
-    ? sector.phasedProtocols
-    : sector.phasedProtocols.filter(p => p.phase === selectedPhase);
+  const filteredProtocols =
+    selectedPhase === 'all' ? sector.phasedProtocols : sector.phasedProtocols.filter((p) => p.phase === selectedPhase);
 
   // Generate dynamic email body
   const generatePopulatedEmail = () => {
@@ -104,13 +107,15 @@ export const AdvisoriesPage: React.FC = () => {
     const emailText = `To: ${sector.emailTemplate.recipientDefault}\nSubject: ${sector.emailTemplate.subject.replace(/\[DISTRICT_NAME\]/g, selectedDistrictForEmail)}\n\n${generatePopulatedEmail()}`;
     navigator.clipboard.writeText(emailText);
     toast.success('Official emergency requisition email copied to clipboard!', {
-      icon: <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+      icon: <CheckCircle2 className="w-5 h-5 text-emerald-600" />,
     });
   };
 
   const handleLaunchMailClient = () => {
     const to = encodeURIComponent(sector.emailTemplate.recipientDefault);
-    const subject = encodeURIComponent(sector.emailTemplate.subject.replace(/\[DISTRICT_NAME\]/g, selectedDistrictForEmail));
+    const subject = encodeURIComponent(
+      sector.emailTemplate.subject.replace(/\[DISTRICT_NAME\]/g, selectedDistrictForEmail),
+    );
     const body = encodeURIComponent(generatePopulatedEmail());
     window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
   };
@@ -118,7 +123,7 @@ export const AdvisoriesPage: React.FC = () => {
   const handleCopyUrl = () => {
     navigator.clipboard.writeText(window.location.href);
     toast.success(`Copied unique URL for ${sector.name} to clipboard!`, {
-      icon: <Copy className="w-4 h-4 text-emerald-600" />
+      icon: <Copy className="w-4 h-4 text-emerald-600" />,
     });
   };
 
@@ -136,8 +141,8 @@ export const AdvisoriesPage: React.FC = () => {
           severity_score: aiSeverity,
           confidence: aiConfidence,
           crop_context: aiCropContext,
-          target_date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-        })
+          target_date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        }),
       });
 
       if (!response.ok) {
@@ -147,7 +152,7 @@ export const AdvisoriesPage: React.FC = () => {
       const data = await response.json();
       setAiAdvisoryData(data);
       toast.success(`Drafted an AI advisory for ${aiDistrict}. Check it against BMD and FFWC before acting.`, {
-        icon: <Sparkles className="w-4 h-4 text-amber-500" />
+        icon: <Sparkles className="w-4 h-4 text-amber-500" />,
       });
     } catch (err: any) {
       console.error('Failed to generate advisory:', err);
@@ -176,7 +181,6 @@ export const AdvisoriesPage: React.FC = () => {
           <span>Advisory reference</span>
           <span>Advisories</span>
         </div>
-        
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <h1 className="text-xl font-black text-carbon-90 tracking-tight">
@@ -189,11 +193,12 @@ export const AdvisoriesPage: React.FC = () => {
             {/* Prominent 'Last Updated' Timestamp and Advisory Currency Validity Indicator */}
             <div className="flex flex-wrap items-center gap-2 mt-2 pt-1 border-t border-carbon-20 text-[8pt] font-mono">
               <span className="print-last-updated">
-                <strong>LAST UPDATED:</strong> {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}, {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} BST (GMT+6)
+                <strong>LAST UPDATED:</strong>{' '}
+                {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })},{' '}
+                {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} BST
+                (GMT+6)
               </span>
-              <span className="print-currency-tag">
-                VALIDITY: 24-HOUR EARLY WARNING WINDOW
-              </span>
+              <span className="print-currency-tag">VALIDITY: 24-HOUR EARLY WARNING WINDOW</span>
             </div>
           </div>
 
@@ -219,15 +224,16 @@ export const AdvisoriesPage: React.FC = () => {
       <div className="bg-white border border-carbon-20/90 rounded-3xl p-4 sm:p-6 shadow-md space-y-4 screen-only">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-carbon-20 pb-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-carbon-10 border border-carbon-20 text-carbon-80 text-xs font-mono font-bold mb-2">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-              <span>NATIONAL STANDARD OPERATING PROCEDURES (SOP)</span>
-            </div>
             <h1 className="text-2xl sm:text-3xl font-black text-carbon-90 tracking-tight">
               Sectoral Hazard Directives & Emergency Protocols
             </h1>
+            <div className="mt-3 inline-flex items-center gap-2 text-xs font-medium text-carbon-60">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <span>NATIONAL STANDARD OPERATING PROCEDURES (SOP)</span>
+            </div>
             <p className="text-xs sm:text-sm text-carbon-60 mt-1 max-w-3xl">
-              Official institutional guidelines, operational thresholds, and verified emergency assistance contacts for Bangladesh disaster management.
+              Official institutional guidelines, operational thresholds, and verified emergency assistance contacts for
+              Bangladesh disaster management.
             </p>
           </div>
 
@@ -290,9 +296,7 @@ export const AdvisoriesPage: React.FC = () => {
                 </div>
                 <span className="text-xs font-extrabold leading-tight">{sec.name}</span>
                 <span
-                  className={`text-xs mt-1 line-clamp-1 font-medium ${
-                    isActive ? 'text-carbon-30' : 'text-carbon-60'
-                  }`}
+                  className={`text-xs mt-1 line-clamp-1 font-medium ${isActive ? 'text-carbon-30' : 'text-carbon-60'}`}
                 >
                   {sec.leadAuthorities[0]}
                 </span>
@@ -318,13 +322,9 @@ export const AdvisoriesPage: React.FC = () => {
               </span>
             </div>
 
-            <h2 className="text-2xl sm:text-3xl font-black text-carbon-90 tracking-tight">
-              {sector.fullTitle}
-            </h2>
+            <h2 className="text-2xl sm:text-3xl font-black text-carbon-90 tracking-tight">{sector.fullTitle}</h2>
 
-            <p className="text-xs sm:text-sm text-carbon-70 leading-relaxed font-normal">
-              {sector.executiveSummary}
-            </p>
+            <p className="text-xs sm:text-sm text-carbon-70 leading-relaxed font-normal">{sector.executiveSummary}</p>
 
             <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 text-xs text-amber-950 space-y-1">
               <span className="font-mono font-black uppercase tracking-wider text-xs block text-amber-900">
@@ -341,7 +341,8 @@ export const AdvisoriesPage: React.FC = () => {
               <span className="text-xs font-mono font-black tracking-wider uppercase">Emergency Action Desk</span>
             </div>
             <p className="text-xs text-carbon-30 leading-snug">
-              Official coordination desk for immediate seed, vaccine, water purification, and evacuation logistics requisition.
+              Official coordination desk for immediate seed, vaccine, water purification, and evacuation logistics
+              requisition.
             </p>
             <div className="space-y-2 pt-1 screen-only">
               <button
@@ -388,9 +389,7 @@ export const AdvisoriesPage: React.FC = () => {
             <span className="text-xs font-mono font-black text-carbon-90 uppercase tracking-wider block">
               Hazard Vulnerability Profile:
             </span>
-            <p className="text-xs text-carbon-60 leading-relaxed font-normal">
-              {sector.hazardVulnerabilitySummary}
-            </p>
+            <p className="text-xs text-carbon-60 leading-relaxed font-normal">{sector.hazardVulnerabilitySummary}</p>
           </div>
         </div>
       </div>
@@ -414,10 +413,13 @@ export const AdvisoriesPage: React.FC = () => {
                   <div>
                     <h3 className="text-base sm:text-lg font-black text-ap-on-inverse flex items-center gap-2">
                       <span>AI advisory drafting</span>
-                      <span className="px-2 py-0.5 rounded-md bg-amber-400 text-carbon-black text-xs font-mono font-black">LIVE</span>
+                      <span className="px-2 py-0.5 rounded-md bg-amber-400 text-carbon-black text-xs font-mono font-black">
+                        LIVE
+                      </span>
                     </h3>
                     <p className="text-xs text-carbon-30">
-                      Real-time generative intelligence correlating district AEZ soil profiles, river stage thresholds, and sector protocols.
+                      Real-time generative intelligence correlating district AEZ soil profiles, river stage thresholds,
+                      and sector protocols.
                     </p>
                   </div>
                 </div>
@@ -452,7 +454,9 @@ export const AdvisoriesPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <span className="block text-xs font-mono font-bold text-carbon-30">SEVERITY (KAGGLE DAILY RECORD):</span>
+                  <span className="block text-xs font-mono font-bold text-carbon-30">
+                    SEVERITY (KAGGLE DAILY RECORD):
+                  </span>
                   <p className="text-xs font-mono text-carbon-05">
                     {aiSeverity == null ? 'Not available for this district' : aiSeverity.toFixed(2)}
                   </p>
@@ -502,7 +506,9 @@ export const AdvisoriesPage: React.FC = () => {
               {aiLoading && (
                 <div className="p-6 sm:p-8 rounded-2xl bg-carbon-80/80 border border-carbon-70 text-center space-y-3 animate-pulse">
                   <div className="w-8 h-8 rounded-full border-2 border-amber-400 border-t-transparent animate-spin mx-auto"></div>
-                  <p className="text-xs text-carbon-30 font-mono">Drafting from the {aiDistrict} forecast record and the {sector.code} protocol...</p>
+                  <p className="text-xs text-carbon-30 font-mono">
+                    Drafting from the {aiDistrict} forecast record and the {sector.code} protocol...
+                  </p>
                 </div>
               )}
 
@@ -521,7 +527,8 @@ export const AdvisoriesPage: React.FC = () => {
                         AI-drafted advisory for {aiDistrict} ({aiHazard})
                       </h4>
                       <p className="text-xs text-carbon-60 font-mono">
-                        Urgency: {aiAdvisoryData.urgency_tier || aiAdvisoryData.urgency_level || 'Not stated'} • Engine: {aiAdvisoryData.provider_source || 'Not stated'}
+                        Urgency: {aiAdvisoryData.urgency_tier || aiAdvisoryData.urgency_level || 'Not stated'} • Engine:{' '}
+                        {aiAdvisoryData.provider_source || 'Not stated'}
                       </p>
                     </div>
                     <span className="px-3 py-1 rounded-full text-xs font-mono font-black bg-amber-100 text-amber-950 border border-amber-300">
@@ -583,15 +590,15 @@ export const AdvisoriesPage: React.FC = () => {
               step.phase === 'pre-disaster'
                 ? 'bg-amber-100 text-amber-950 border-amber-300'
                 : step.phase === 'during-event'
-                ? 'bg-rose-100 text-rose-950 border-rose-300'
-                : 'bg-emerald-100 text-emerald-950 border-emerald-300';
+                  ? 'bg-rose-100 text-rose-950 border-rose-300'
+                  : 'bg-emerald-100 text-emerald-950 border-emerald-300';
 
             const phaseLabel =
               step.phase === 'pre-disaster'
                 ? 'Phase 1: Pre-Disaster Early Warning'
                 : step.phase === 'during-event'
-                ? 'Phase 2: Acute Impact & Event Management'
-                : 'Phase 3: Post-Disaster Recovery & Rehabilitation';
+                  ? 'Phase 2: Acute Impact & Event Management'
+                  : 'Phase 3: Post-Disaster Recovery & Rehabilitation';
 
             return (
               <motion.div
@@ -608,13 +615,9 @@ export const AdvisoriesPage: React.FC = () => {
                       {step.stepNumber}
                     </span>
                     <div>
-                      <h4 className="text-base font-black text-carbon-90 tracking-tight">
-                        {step.title}
-                      </h4>
+                      <h4 className="text-base font-black text-carbon-90 tracking-tight">{step.title}</h4>
                       <div className="flex flex-wrap items-center gap-2 mt-0.5">
-                        <span className="text-xs font-semibold text-carbon-60">
-                          Lead: {step.leadAgency}
-                        </span>
+                        <span className="text-xs font-semibold text-carbon-60">Lead: {step.leadAgency}</span>
                         <span className="text-carbon-60">•</span>
                         <span className="text-xs font-mono text-carbon-60 flex items-center gap-1">
                           <Clock className="w-3 h-3 text-carbon-60" />
@@ -624,7 +627,9 @@ export const AdvisoriesPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <span className={`text-xs font-mono font-black px-3 py-1 rounded-full border self-start sm:self-auto ${phaseBadgeColor}`}>
+                  <span
+                    className={`text-xs font-mono font-black px-3 py-1 rounded-full border self-start sm:self-auto ${phaseBadgeColor}`}
+                  >
                     {phaseLabel}
                   </span>
                 </div>
@@ -711,9 +716,7 @@ export const AdvisoriesPage: React.FC = () => {
               </p>
             </div>
           </div>
-          <span className="text-xs font-mono text-carbon-60 bg-carbon-10 px-2.5 py-1 rounded-lg">
-            SPEC-MATRIX
-          </span>
+          <span className="text-xs font-mono text-carbon-60 bg-carbon-10 px-2.5 py-1 rounded-lg">SPEC-MATRIX</span>
         </div>
 
         <div className="overflow-x-auto">
@@ -737,23 +740,15 @@ export const AdvisoriesPage: React.FC = () => {
             <tbody className="divide-y divide-carbon-10">
               {sector.technicalSpecs.map((item, i) => (
                 <tr key={i} className="hover:bg-carbon-05/80 transition-colors">
-                  <td className="py-3.5 px-4 font-extrabold text-carbon-90 whitespace-nowrap">
-                    {item.name}
-                  </td>
+                  <td className="py-3.5 px-4 font-extrabold text-carbon-90 whitespace-nowrap">{item.name}</td>
                   <td className="py-3.5 px-4">
                     <span className="px-2 py-0.5 rounded-md bg-carbon-10 text-carbon-70 font-mono text-xs font-bold">
                       {item.category}
                     </span>
                   </td>
-                  <td className="py-3.5 px-4 text-carbon-70 font-medium max-w-xs">
-                    {item.toleranceLevel}
-                  </td>
-                  <td className="py-3.5 px-4 font-mono text-carbon-90 font-bold max-w-xs">
-                    {item.recommendedDosage}
-                  </td>
-                  <td className="py-3.5 px-4 text-carbon-60 max-w-xs">
-                    {item.targetCondition}
-                  </td>
+                  <td className="py-3.5 px-4 text-carbon-70 font-medium max-w-xs">{item.toleranceLevel}</td>
+                  <td className="py-3.5 px-4 font-mono text-carbon-90 font-bold max-w-xs">{item.recommendedDosage}</td>
+                  <td className="py-3.5 px-4 text-carbon-60 max-w-xs">{item.targetCondition}</td>
                 </tr>
               ))}
             </tbody>
@@ -801,15 +796,11 @@ export const AdvisoriesPage: React.FC = () => {
                 <h4 className="text-sm font-black text-carbon-90 group-hover:text-blue-900 leading-snug">
                   {doc.title}
                 </h4>
-                <p className="text-xs text-carbon-60 leading-relaxed line-clamp-3">
-                  {doc.description}
-                </p>
+                <p className="text-xs text-carbon-60 leading-relaxed line-clamp-3">{doc.description}</p>
               </div>
 
               <div className="pt-2 border-t border-carbon-20/60 flex items-center justify-between text-xs">
-                <span className="text-xs text-carbon-60 font-medium truncate max-w-[180px]">
-                  {doc.issuingBody}
-                </span>
+                <span className="text-xs text-carbon-60 font-medium truncate max-w-[180px]">{doc.issuingBody}</span>
                 <span className="text-xs font-bold text-blue-700 flex items-center gap-1 group-hover:underline">
                   <span>Visit Portal</span>
                   <ChevronRight className="w-3 h-3" />
@@ -832,7 +823,8 @@ export const AdvisoriesPage: React.FC = () => {
                 Official Contacts & Direct Emergency Support Channels
               </h3>
               <p className="text-xs text-carbon-60">
-                Direct phone hotlines, official desk emails, and physical headquarters for requisitioning government and UN emergency assistance.
+                Direct phone hotlines, official desk emails, and physical headquarters for requisitioning government and
+                UN emergency assistance.
               </p>
             </div>
           </div>
@@ -864,15 +856,9 @@ export const AdvisoriesPage: React.FC = () => {
                     {contact.scope}
                   </span>
                 </div>
-                <h4 className="text-sm font-black text-carbon-90 leading-snug">
-                  {contact.agencyName}
-                </h4>
-                <p className="text-xs font-semibold text-carbon-60">
-                  {contact.departmentOrCell}
-                </p>
-                <p className="text-xs text-carbon-60">
-                  Role: {contact.roleOrDesignation}
-                </p>
+                <h4 className="text-sm font-black text-carbon-90 leading-snug">{contact.agencyName}</h4>
+                <p className="text-xs font-semibold text-carbon-60">{contact.departmentOrCell}</p>
+                <p className="text-xs text-carbon-60">Role: {contact.roleOrDesignation}</p>
               </div>
 
               <div className="space-y-2 pt-3 border-t border-carbon-20 text-xs">
@@ -920,7 +906,7 @@ export const AdvisoriesPage: React.FC = () => {
             <div>• Disaster Management (DDM): 1090</div>
             <div>• National Emergency Services: 999 (Police, Fire, Medical)</div>
             <div>• Krishi Call Centre: 16123</div>
-                      </div>
+          </div>
           <div className="text-right">
             <strong className="text-carbon-90 block mb-1">Source</strong>
             <div>HazardNet Bangladesh. Not an official warning service.</div>
@@ -930,14 +916,17 @@ export const AdvisoriesPage: React.FC = () => {
           </div>
         </div>
         <div className="text-center pt-2 text-[7.5pt] text-carbon-60">
-          Official Technical Directive issued for Bangladesh Disaster Management Committees (DMC) at National, District, Upazila, and Union levels.
+          Official Technical Directive issued for Bangladesh Disaster Management Committees (DMC) at National, District,
+          Upazila, and Union levels.
         </div>
       </div>
 
       {/* PRINT-ONLY FIXED RUNNING FOOTER WITH DYNAMIC CSS PAGE NUMBERING */}
       <div className="print-only print-page-footer">
         <span>HAZARDNET BANGLADESH • ADVISORY REFERENCE</span>
-        <span>SECTOR: {sector.name.toUpperCase()} ({sector.code})</span>
+        <span>
+          SECTOR: {sector.name.toUpperCase()} ({sector.code})
+        </span>
         <span className="print-page-number"></span>
       </div>
 

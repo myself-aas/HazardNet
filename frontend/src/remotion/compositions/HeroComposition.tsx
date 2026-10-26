@@ -24,6 +24,7 @@
 import React from 'react';
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from 'remotion';
 import { Interactive } from 'remotion';
+import { APPLE_FONTS } from '@hazardnet/design-system';
 
 /**
  * Defaults are the front door's own words, not a slogan: the h1 and the coverage facts are the
@@ -111,7 +112,7 @@ export const HeroComposition: React.FC<{
         <div
           style={{
             marginTop: 16,
-            fontFamily: 'Public Sans, sans-serif',
+            fontFamily: APPLE_FONTS.text,
             fontSize: 20,
             fontWeight: 400,
             lineHeight: 1.5,
@@ -155,7 +156,7 @@ export const HeroComposition: React.FC<{
           position: 'absolute',
           inset: 0,
           background:
-            'radial-gradient(ellipse at center, transparent 38%, rgba(5,7,14,0.55) 75%, rgba(5,7,14,0.95) 100%)',
+            'radial-gradient(ellipse at center, transparent 38%, color-mix(in srgb, var(--ap-black) 55%, transparent) 75%, color-mix(in srgb, var(--ap-black) 95%, transparent) 100%)',
         }}
       />
 

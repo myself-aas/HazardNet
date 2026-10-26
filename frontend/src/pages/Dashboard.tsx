@@ -293,6 +293,43 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
     document.body.removeChild(link);
   };
 
+  /**
+   * The console's five views, as a WAI-ARIA tab set.
+   *
+   * Until the 2026-10-26 critique this strip announced `role="tablist"` over five
+   * `role="tab"` buttons with no `aria-controls`, no `role="tabpanel"` to point at and no
+   * arrow keys: assistive technology was told a tab interface existed and then found
+   * nothing to switch between, and a keyboard user got five ordinary buttons in a tab row.
+   * The roles were either worth implementing or worth removing; this implements them.
+   *
+   * Automatic activation: arrowing to a tab selects it. Every view here is already
+   * client-rendered and cheap to mount, so there is no reason to make the reader press
+   * Enter as well. The strip is one tab stop; arrows and Home/End move within it.
+   */
+  const consoleViews = [
+    { id: 'gis' as const, icon: 'satellite_alt', label: 'Map' },
+    { id: 'saved' as const, icon: 'push_pin', label: `Saved (${savedDistricts.length})` },
+    { id: 'analytics' as const, icon: 'analytics', label: 'Analytics' },
+    { id: 'compare' as const, icon: 'balance', label: 'Compare' },
+    { id: 'settings' as const, icon: 'settings', label: 'Settings' },
+  ];
+
+  const onConsoleTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+    const last = consoleViews.length - 1;
+    let next: number | null = null;
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = index === last ? 0 : index + 1;
+    else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = index === 0 ? last : index - 1;
+    else if (event.key === 'Home') next = 0;
+    else if (event.key === 'End') next = last;
+    if (next === null) return;
+    event.preventDefault();
+    const target = consoleViews[next];
+    setActiveView(target.id);
+    // The strip scrolls horizontally on a phone, so moving focus has to bring the tab
+    // into view as well. `focus()` does that; a state change alone would not.
+    document.getElementById(`console-tab-${target.id}`)?.focus();
+  };
+
   // Dedicated Full-Page Google Earth View Mode
   if (isFullScreen && activeView === 'gis') {
     return (
@@ -441,21 +478,21 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
           className="bg-transparent border-0 rounded-lg sm:rounded-xl md:rounded-xl p-4 sm:p-6 md:p-8 lg:p-10 shadow-none flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6 md:gap-8"
         >
           <div className="space-y-2.5 sm:space-y-3 md:space-y-4 flex-1 min-w-0">
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <span className="px-2.5 sm:px-3.5 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-ap-primary/10 text-ap-link border border-ap-primary/20 flex items-center gap-1.5 shrink-0">
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-carbon-90 tracking-tight leading-tight">
+              Multi-Hazard AI Classification
+            </h1>
+            <div className="mt-3 flex flex-wrap items-center gap-2 sm:gap-3">
+              <span className="text-xs flex items-center gap-1.5 shrink-0 font-medium text-carbon-60">
                 <span className="hidden xs:inline">Live GIS</span>
                 <span className="xs:hidden">GIS</span>
               </span>
               <span className="text-carbon-30 hidden sm:inline shrink-0">•</span>
-              <span className="text-xs sm:text-sm font-mono text-carbon-60 line-clamp-1">
+              <span className="text-xs font-medium text-carbon-60">
                 <code className="text-carbon-90 font-bold bg-carbon-10 px-1.5 sm:px-2 py-0.5 border border-carbon-20 rounded">
                   FP32
                 </code>
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-carbon-90 tracking-tight leading-tight">
-              Multi-Hazard AI Classification
-            </h1>
             <p className="text-xs sm:text-sm md:text-base text-carbon-60 max-w-4xl leading-relaxed line-clamp-2 sm:line-clamp-none">
               Published district forecasts for agricultural decision support across Bangladesh.
             </p>
@@ -549,19 +586,19 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
           role="tablist"
           aria-label="Console views"
         >
-          {[
-            { id: 'gis' as const, icon: 'satellite_alt', label: 'Map' },
-            { id: 'saved' as const, icon: 'push_pin', label: `Saved (${savedDistricts.length})` },
-            { id: 'analytics' as const, icon: 'analytics', label: 'Analytics' },
-            { id: 'compare' as const, icon: 'balance', label: 'Compare' },
-            { id: 'settings' as const, icon: 'settings', label: 'Settings' },
-          ].map((tab) => (
+          {consoleViews.map((tab, index) => (
             <button
               key={tab.id}
               type="button"
               role="tab"
+              id={`console-tab-${tab.id}`}
+              aria-controls={`console-panel-${tab.id}`}
               aria-selected={activeView === tab.id}
+              // Roving tabindex: one stop for the whole strip, arrows to move within it
+              // (WAI-ARIA APG, tabs with automatic activation).
+              tabIndex={activeView === tab.id ? 0 : -1}
               onClick={() => setActiveView(tab.id)}
+              onKeyDown={(event) => onConsoleTabKeyDown(event, index)}
               className={`min-h-12 sm:h-13 px-3 sm:px-5 text-xs sm:text-sm md:text-base font-bold flex items-center justify-center gap-1.5 sm:gap-2 touch-manipulation whitespace-nowrap transition-all duration-200 rounded-t-md relative ${
                 activeView === tab.id
                   ? 'text-ap-link bg-gradient-to-b from-ap-primary/5 to-transparent'
@@ -584,216 +621,213 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
           ))}
         </motion.div>
 
-        {/* VIEW 1: NASA+ ANALYTICS */}
-        {activeView === 'analytics' && (
-          <RiskAnalytics
-            onSelectDistrict={(dist) => {
-              if (!dist) {
-                setSelectedDistrict(null);
-                return;
-              }
-              const fullDistrict = getDistrictById(dist.id) || ALL_64_DISTRICTS[0];
-              setSelectedDistrict(fullDistrict);
-              setActiveView('gis');
-            }}
-          />
-        )}
+        {/* The panel the selected tab controls. One wrapper, because only one view renders
+            at a time; `aria-labelledby` points back at the tab that is active, so the
+            relationship survives every switch. No `tabIndex`: every view here owns
+            focusable controls, and a focusable panel would add a stop before them. */}
+        <div
+          role="tabpanel"
+          id={`console-panel-${activeView}`}
+          aria-labelledby={`console-tab-${activeView}`}
+          className="focus:outline-none"
+        >
+          {/* VIEW 1: NASA+ ANALYTICS */}
+          {activeView === 'analytics' && (
+            <RiskAnalytics
+              onSelectDistrict={(dist) => {
+                if (!dist) {
+                  setSelectedDistrict(null);
+                  return;
+                }
+                const fullDistrict = getDistrictById(dist.id) || ALL_64_DISTRICTS[0];
+                setSelectedDistrict(fullDistrict);
+                setActiveView('gis');
+              }}
+            />
+          )}
 
-        {/* VIEW 2: SAVED DISTRICTS PAGE WITH FULL-SCALE LIVEMAPVIEW PREVIEW */}
-        {activeView === 'saved' && (
-          <div className="space-y-4 sm:space-y-6">
-            {/* Saved Districts Page Banner Header — Modernized */}
-            <div className="bg-carbon-90 rounded-lg sm:rounded-xl md:rounded-xl p-4 sm:p-6 md:p-8 text-carbon-05 border border-carbon-80 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 relative overflow-hidden">
-              <div className="space-y-2 sm:space-y-3 relative z-10 flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-                  <span className="px-2.5 sm:px-3 py-1 rounded-md sm:rounded-full text-xs font-mono font-black uppercase tracking-wider bg-primary text-ap-action-fg whitespace-nowrap">
-                    Cloud Sync
-                  </span>
-                  <span className="text-xs font-mono text-carbon-30">{savedDistricts.length} Pinned</span>
-                </div>
-                <h2 className="text-lg sm:text-2xl md:text-3xl font-black text-ap-on-inverse tracking-tight leading-tight">
-                  Saved Districts & Map
-                </h2>
-                <p className="text-xs sm:text-sm text-carbon-30 leading-relaxed font-normal line-clamp-2">
-                  GIS map focused on your saved agricultural districts. Select locations to inspect multi-hazard
-                  boundaries.
-                </p>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2 sm:gap-3 relative z-10 w-full md:w-auto justify-start md:justify-end">
-                {selectedDistrict && (
-                  <button
-                    onClick={() => toggleSaveDistrict(selectedDistrict)}
-                    className={`px-5 py-3 text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
-                      savedDistricts.some((d) => d.id === selectedDistrict.id)
-                        ? 'bg-rose-600 hover:bg-rose-700 text-ap-on-sev'
-                        : 'bg-primary hover:bg-primary-strong text-ap-action-fg'
-                    }`}
-                  >
-                    <span className="flex items-center gap-1">
-                      <MaterialIcon name="push_pin" className="w-4 h-4 inline-block mr-1" />
-                      {savedDistricts.some((d) => d.id === selectedDistrict.id)
-                        ? 'Unpin Selected District'
-                        : 'Pin Selected District'}
+          {/* VIEW 2: SAVED DISTRICTS PAGE WITH FULL-SCALE LIVEMAPVIEW PREVIEW */}
+          {activeView === 'saved' && (
+            <div className="space-y-4 sm:space-y-6">
+              {/* Saved Districts Page Banner Header — Modernized */}
+              <div className="bg-carbon-90 rounded-lg sm:rounded-xl md:rounded-xl p-4 sm:p-6 md:p-8 text-carbon-05 border border-carbon-80 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 relative overflow-hidden">
+                <div className="space-y-2 sm:space-y-3 relative z-10 flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+                    <span className="px-2.5 sm:px-3 py-1 rounded-md sm:rounded-full text-xs font-mono font-black uppercase tracking-wider bg-primary text-ap-action-fg whitespace-nowrap">
+                      Cloud Sync
                     </span>
-                  </button>
-                )}
-              </div>
-            </div>
+                    <span className="text-xs font-mono text-carbon-30">{savedDistricts.length} Pinned</span>
+                  </div>
+                  <h2 className="text-lg sm:text-2xl md:text-3xl font-black text-ap-on-inverse tracking-tight leading-tight">
+                    Saved Districts & Map
+                  </h2>
+                  <p className="text-xs sm:text-sm text-carbon-30 leading-relaxed font-normal line-clamp-2">
+                    GIS map focused on your saved agricultural districts. Select locations to inspect multi-hazard
+                    boundaries.
+                  </p>
+                </div>
 
-            {/* Grid Layout: Left Column = Saved Drawer, Right Column = Full Scale Interactive LiveMapView Stage */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
-              {/* Left Column: Saved Districts Drawer List */}
-              <div className="lg:col-span-4 space-y-3 sm:space-y-4">
-                <div className="ap-card space-y-3.5 sm:space-y-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-sm sm:text-base font-black text-carbon-90 flex items-center gap-1.5 sm:gap-2">
-                      <MaterialIcon name="push_pin" className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-                      <span>Saved ({savedDistricts.length})</span>
-                    </h3>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 relative z-10 w-full md:w-auto justify-start md:justify-end">
+                  {selectedDistrict && (
                     <button
-                      onClick={() => setActiveView('gis')}
-                      className="text-xs font-extrabold text-amber-700 hover:underline cursor-pointer whitespace-nowrap"
+                      onClick={() => toggleSaveDistrict(selectedDistrict)}
+                      className={`px-5 py-3 text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
+                        savedDistricts.some((d) => d.id === selectedDistrict.id)
+                          ? 'bg-rose-600 hover:bg-rose-700 text-ap-on-sev'
+                          : 'bg-primary hover:bg-primary-strong text-ap-action-fg'
+                      }`}
                     >
-                      + Add
+                      <span className="flex items-center gap-1">
+                        <MaterialIcon name="push_pin" className="w-4 h-4 inline-block mr-1" />
+                        {savedDistricts.some((d) => d.id === selectedDistrict.id)
+                          ? 'Unpin Selected District'
+                          : 'Pin Selected District'}
+                      </span>
                     </button>
-                  </div>
-
-                  <div className="space-y-2 sm:space-y-2.5 max-h-[420px] sm:max-h-[640px] overflow-y-auto pr-1 custom-scrollbar">
-                    {savedDistricts.map((dist) => {
-                      const isSelected = selectedDistrict?.id === dist.id;
-                      return (
-                        <div
-                          key={dist.id}
-                          onClick={() => setSelectedDistrict(dist)}
-                          className={`p-3 sm:p-4 border rounded-lg transition-all cursor-pointer flex flex-col gap-2 relative ${
-                            isSelected
-                              ? 'bg-amber-50/80 border-ap-primary ring-2 ring-ap-primary/30'
-                              : 'bg-carbon-05/60 border-carbon-20 hover:bg-carbon-10/80 hover:border-carbon-20'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="min-w-0 flex-1">
-                              <h4 className="text-xs sm:text-sm font-black text-carbon-90 flex items-center gap-1.5 truncate">
-                                <span className="truncate">{dist.name}</span>
-                              </h4>
-                              <p className="text-xs text-carbon-60 font-medium mt-0.5">
-                                <span className="font-bold text-carbon-70">{dist.division}</span>
-                              </p>
-                            </div>
-                            <span
-                              className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-bold border whitespace-nowrap shrink-0 ${
-                                dist.risk === 'High'
-                                  ? 'bg-carbon-10 text-ap-link border-carbon-20'
-                                  : dist.risk === 'Moderate'
-                                    ? 'bg-amber-100 text-amber-800 border-amber-200'
-                                    : 'bg-carbon-10 text-carbon-80 border-carbon-20'
-                              }`}
-                            >
-                              {dist.risk}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center justify-between text-xs font-mono text-carbon-60 pt-1.5 sm:pt-2 border-t border-carbon-20/60 gap-2">
-                            <span className="truncate">{dist.mainCrop}</span>
-                            <span
-                              className={`font-bold flex items-center gap-1 whitespace-nowrap ${isSelected ? 'text-amber-700' : 'text-carbon-60'}`}
-                            >
-                              {isSelected ? (
-                                <>
-                                  <MaterialIcon name="my_location" className="w-3.5 h-3.5 shrink-0" /> Centered
-                                </>
-                              ) : (
-                                <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-                              )}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  )}
                 </div>
               </div>
 
-              {/* Right Column: Full Scale Interactive LiveMapView Stage */}
-              <div className="lg:col-span-8 space-y-3 sm:space-y-4">
-                <div className="ap-card space-y-3 sm:space-y-4">
-                  <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2 px-1 sm:px-3 text-xs">
-                    <div className="flex items-center gap-1.5 sm:gap-2 font-extrabold text-carbon-80 min-w-0">
-                      <span className="truncate">GIS Map</span>
-                      <span className="text-xs font-mono text-carbon-60 bg-carbon-10 px-1.5 sm:px-2 py-0.5 rounded hidden lg:inline truncate">
-                        {selectedDistrict ? `${selectedDistrict.name}` : 'Active'}
-                      </span>
+              {/* Grid Layout: Left Column = Saved Drawer, Right Column = Full Scale Interactive LiveMapView Stage */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
+                {/* Left Column: Saved Districts Drawer List */}
+                <div className="lg:col-span-4 space-y-3 sm:space-y-4">
+                  <div className="ap-card space-y-3.5 sm:space-y-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <h3 className="text-sm sm:text-base font-black text-carbon-90 flex items-center gap-1.5 sm:gap-2">
+                        <MaterialIcon name="push_pin" className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+                        <span>Saved ({savedDistricts.length})</span>
+                      </h3>
+                      <button
+                        onClick={() => setActiveView('gis')}
+                        className="text-xs font-extrabold text-amber-700 hover:underline cursor-pointer whitespace-nowrap"
+                      >
+                        + Add
+                      </button>
                     </div>
 
-                    {/* Dynamic Height Control Selector */}
-                    <div className="flex items-center gap-0.5 sm:gap-1 bg-carbon-10 p-1 border border-carbon-20 rounded-full shrink-0 overflow-x-auto">
-                      <span className="text-xs font-mono font-bold text-carbon-60 px-1.5 hidden md:inline">
-                        HEIGHT:
-                      </span>
-                      <button
-                        onClick={() => setSavedMapHeight('compact')}
-                        className={`px-2.5 py-1 rounded-full text-xs font-black transition-all cursor-pointer ${
-                          savedMapHeight === 'compact'
-                            ? 'bg-carbon-90 text-ap-on-inverse '
-                            : 'text-carbon-60 hover:text-carbon-90 hover:bg-white/60'
-                        }`}
-                        title="Set map stage height to Compact (500px)"
-                      >
-                        <MaterialIcon name="smartphone" className="w-4 h-4 inline-block mr-1" /> 500px
-                      </button>
-                      <button
-                        onClick={() => setSavedMapHeight('standard')}
-                        className={`px-2.5 py-1 rounded-full text-xs font-black transition-all cursor-pointer ${
-                          savedMapHeight === 'standard'
-                            ? 'bg-carbon-90 text-ap-on-inverse '
-                            : 'text-carbon-60 hover:text-carbon-90 hover:bg-white/60'
-                        }`}
-                        title="Set map stage height to Standard (680px)"
-                      >
-                        <MaterialIcon name="desktop_windows" className="w-4 h-4 inline-block mr-1" /> 680px
-                      </button>
-                      <button
-                        onClick={() => setSavedMapHeight('tall')}
-                        className={`px-2.5 py-1 rounded-full text-xs font-black transition-all cursor-pointer ${
-                          savedMapHeight === 'tall'
-                            ? 'bg-carbon-90 text-ap-on-inverse '
-                            : 'text-carbon-60 hover:text-carbon-90 hover:bg-white/60'
-                        }`}
-                        title="Set map stage height to Ultra Tall (850px)"
-                      >
-                        <MaterialIcon name="straighten" className="w-4 h-4 inline-block mr-1" /> 850px
-                      </button>
-                      <button
-                        onClick={() => setSavedMapHeight('dynamic')}
-                        className={`px-2.5 py-1 rounded-full text-xs font-black transition-all cursor-pointer ${
-                          savedMapHeight === 'dynamic'
-                            ? 'bg-primary text-ap-action-fg '
-                            : 'text-carbon-60 hover:text-carbon-90 hover:bg-white/60'
-                        }`}
-                        title="Auto Dynamic Screen Fit Height"
-                      >
-                        <MaterialIcon name="bolt" className="w-4 h-4 inline-block mr-1" /> Dynamic
-                      </button>
+                    <div className="space-y-2 sm:space-y-2.5 max-h-[420px] sm:max-h-[640px] overflow-y-auto pr-1 custom-scrollbar">
+                      {savedDistricts.map((dist) => {
+                        const isSelected = selectedDistrict?.id === dist.id;
+                        return (
+                          <div
+                            key={dist.id}
+                            onClick={() => setSelectedDistrict(dist)}
+                            className={`p-3 sm:p-4 border rounded-lg transition-all cursor-pointer flex flex-col gap-2 relative ${
+                              isSelected
+                                ? 'bg-amber-50/80 border-ap-primary ring-2 ring-ap-primary/30'
+                                : 'bg-carbon-05/60 border-carbon-20 hover:bg-carbon-10/80 hover:border-carbon-20'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="min-w-0 flex-1">
+                                <h4 className="text-xs sm:text-sm font-black text-carbon-90 flex items-center gap-1.5 truncate">
+                                  <span className="truncate">{dist.name}</span>
+                                </h4>
+                                <p className="text-xs text-carbon-60 font-medium mt-0.5">
+                                  <span className="font-bold text-carbon-70">{dist.division}</span>
+                                </p>
+                              </div>
+                              <span
+                                className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-bold border whitespace-nowrap shrink-0 ${
+                                  dist.risk === 'High'
+                                    ? 'bg-carbon-10 text-ap-link border-carbon-20'
+                                    : dist.risk === 'Moderate'
+                                      ? 'bg-amber-100 text-amber-800 border-amber-200'
+                                      : 'bg-carbon-10 text-carbon-80 border-carbon-20'
+                                }`}
+                              >
+                                {dist.risk}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center justify-between text-xs font-mono text-carbon-60 pt-1.5 sm:pt-2 border-t border-carbon-20/60 gap-2">
+                              <span className="truncate">{dist.mainCrop}</span>
+                              <span
+                                className={`font-bold flex items-center gap-1 whitespace-nowrap ${isSelected ? 'text-amber-700' : 'text-carbon-60'}`}
+                              >
+                                {isSelected ? (
+                                  <>
+                                    <MaterialIcon name="my_location" className="w-3.5 h-3.5 shrink-0" /> Centered
+                                  </>
+                                ) : (
+                                  <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                                )}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
+                </div>
 
-                  {/* Map Container Stage with Dynamic Height */}
-                  <div
-                    className={`w-full rounded-xl overflow-hidden border border-carbon-20 relative bg-carbon-90 transition-all duration-300 ${
-                      savedMapHeight === 'compact'
-                        ? 'h-[500px]'
-                        : savedMapHeight === 'standard'
-                          ? 'h-[680px]'
-                          : savedMapHeight === 'tall'
-                            ? 'h-[850px]'
-                            : 'h-[calc(100dvh-220px)] min-h-[550px] max-h-[900px]'
-                    }`}
-                  >
-                    <Map
-                      selectedDistrictId={selectedDistrict?.id || savedDistricts[0]?.id}
-                      compactHeader={true}
-                      customHeight={
+                {/* Right Column: Full Scale Interactive LiveMapView Stage */}
+                <div className="lg:col-span-8 space-y-3 sm:space-y-4">
+                  <div className="ap-card space-y-3 sm:space-y-4">
+                    <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2 px-1 sm:px-3 text-xs">
+                      <div className="flex items-center gap-1.5 sm:gap-2 font-extrabold text-carbon-80 min-w-0">
+                        <span className="truncate">GIS Map</span>
+                        <span className="text-xs font-mono text-carbon-60 bg-carbon-10 px-1.5 sm:px-2 py-0.5 rounded hidden lg:inline truncate">
+                          {selectedDistrict ? `${selectedDistrict.name}` : 'Active'}
+                        </span>
+                      </div>
+
+                      {/* Dynamic Height Control Selector */}
+                      <div className="flex items-center gap-0.5 sm:gap-1 bg-carbon-10 p-1 border border-carbon-20 rounded-full shrink-0 overflow-x-auto">
+                        <span className="text-xs font-mono font-bold text-carbon-60 px-1.5 hidden md:inline">
+                          HEIGHT:
+                        </span>
+                        <button
+                          onClick={() => setSavedMapHeight('compact')}
+                          className={`px-2.5 py-1 rounded-full text-xs font-black transition-all cursor-pointer ${
+                            savedMapHeight === 'compact'
+                              ? 'bg-carbon-90 text-ap-on-inverse '
+                              : 'text-carbon-60 hover:text-carbon-90 hover:bg-white/60'
+                          }`}
+                          title="Set map stage height to Compact (500px)"
+                        >
+                          <MaterialIcon name="smartphone" className="w-4 h-4 inline-block mr-1" /> 500px
+                        </button>
+                        <button
+                          onClick={() => setSavedMapHeight('standard')}
+                          className={`px-2.5 py-1 rounded-full text-xs font-black transition-all cursor-pointer ${
+                            savedMapHeight === 'standard'
+                              ? 'bg-carbon-90 text-ap-on-inverse '
+                              : 'text-carbon-60 hover:text-carbon-90 hover:bg-white/60'
+                          }`}
+                          title="Set map stage height to Standard (680px)"
+                        >
+                          <MaterialIcon name="desktop_windows" className="w-4 h-4 inline-block mr-1" /> 680px
+                        </button>
+                        <button
+                          onClick={() => setSavedMapHeight('tall')}
+                          className={`px-2.5 py-1 rounded-full text-xs font-black transition-all cursor-pointer ${
+                            savedMapHeight === 'tall'
+                              ? 'bg-carbon-90 text-ap-on-inverse '
+                              : 'text-carbon-60 hover:text-carbon-90 hover:bg-white/60'
+                          }`}
+                          title="Set map stage height to Ultra Tall (850px)"
+                        >
+                          <MaterialIcon name="straighten" className="w-4 h-4 inline-block mr-1" /> 850px
+                        </button>
+                        <button
+                          onClick={() => setSavedMapHeight('dynamic')}
+                          className={`px-2.5 py-1 rounded-full text-xs font-black transition-all cursor-pointer ${
+                            savedMapHeight === 'dynamic'
+                              ? 'bg-primary text-ap-action-fg '
+                              : 'text-carbon-60 hover:text-carbon-90 hover:bg-white/60'
+                          }`}
+                          title="Auto Dynamic Screen Fit Height"
+                        >
+                          <MaterialIcon name="bolt" className="w-4 h-4 inline-block mr-1" /> Dynamic
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Map Container Stage with Dynamic Height */}
+                    <div
+                      className={`w-full rounded-xl overflow-hidden border border-carbon-20 relative bg-carbon-90 transition-all duration-300 ${
                         savedMapHeight === 'compact'
                           ? 'h-[500px]'
                           : savedMapHeight === 'standard'
@@ -801,512 +835,535 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                             : savedMapHeight === 'tall'
                               ? 'h-[850px]'
                               : 'h-[calc(100dvh-220px)] min-h-[550px] max-h-[900px]'
-                      }
-                      onOpenDisasterModal={handleOpenDisasterModal}
-                      pinpointLat={userProfile?.pinpointLat}
-                      pinpointLng={userProfile?.pinpointLng}
-                      onSelectDistrict={(dist) => {
-                        if (!dist) {
-                          setSelectedDistrict(null);
-                          return;
+                      }`}
+                    >
+                      <Map
+                        selectedDistrictId={selectedDistrict?.id || savedDistricts[0]?.id}
+                        compactHeader={true}
+                        customHeight={
+                          savedMapHeight === 'compact'
+                            ? 'h-[500px]'
+                            : savedMapHeight === 'standard'
+                              ? 'h-[680px]'
+                              : savedMapHeight === 'tall'
+                                ? 'h-[850px]'
+                                : 'h-[calc(100dvh-220px)] min-h-[550px] max-h-[900px]'
                         }
-                        const fullDistrict = ALL_64_DISTRICTS.find((d) => d.id === dist.id) || dist;
-                        setSelectedDistrict(fullDistrict as District);
-                      }}
-                    />
+                        onOpenDisasterModal={handleOpenDisasterModal}
+                        pinpointLat={userProfile?.pinpointLat}
+                        pinpointLng={userProfile?.pinpointLng}
+                        onSelectDistrict={(dist) => {
+                          if (!dist) {
+                            setSelectedDistrict(null);
+                            return;
+                          }
+                          const fullDistrict = ALL_64_DISTRICTS.find((d) => d.id === dist.id) || dist;
+                          setSelectedDistrict(fullDistrict as District);
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Selected District Telemetry Details Card */}
+                  {selectedDistrict && (
+                    <div className="ap-card space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-carbon-20 pb-4">
+                        <div>
+                          <div className="flex items-center gap-3">
+                            <h3 className="text-xl font-black text-carbon-90">
+                              {selectedDistrict.name} District Telemetry
+                            </h3>
+                            <span className="px-3 py-0.5 rounded-full text-xs font-extrabold bg-amber-50 text-amber-700 border border-amber-200">
+                              {selectedDistrict.hazardType} Target Zone
+                            </span>
+                          </div>
+                          <p className="text-xs text-carbon-60 mt-1">
+                            {predictionSource === 'live' && liveSummary ? (
+                              <>
+                                Stored forecast as of{' '}
+                                {storedForecast?.provenance.prediction_date ?? 'date not recorded'}:{' '}
+                                <strong className="text-carbon-80">
+                                  {liveSummary.hazard} · {(liveSummary.confidence * 100).toFixed(1)}% top-class score
+                                </strong>
+                              </>
+                            ) : (
+                              <>
+                                Static baseline band:{' '}
+                                <strong className="text-carbon-80">{selectedDistrict.risk}</strong>: stored forecast
+                                unavailable, showing the district's climatological prior (not a model output)
+                              </>
+                            )}
+                          </p>
+                        </div>
+
+                        <button
+                          onClick={() => selectedDistrict?.id && handleOpenDisasterModal(selectedDistrict.id)}
+                          className="px-5 py-2.5 bg-primary hover:bg-primary-strong text-ap-action-fg font-black text-xs transition-all cursor-pointer flex items-center justify-center gap-2"
+                        >
+                          <span>Granular Report & Directives</span>
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                        <div className="rounded-xl p-3 bg-carbon-05 border border-carbon-20/80">
+                          <span className="text-xs text-carbon-60 font-mono uppercase font-bold block">Division</span>
+                          <strong className="text-sm font-black text-carbon-80">{selectedDistrict.division}</strong>
+                        </div>
+                        <div className="rounded-xl p-3 bg-carbon-05 border border-carbon-20/80">
+                          <span className="text-xs text-carbon-60 font-mono uppercase font-bold block">
+                            Primary Crop
+                          </span>
+                          <strong className="text-sm font-black text-carbon-80">{selectedDistrict.mainCrop}</strong>
+                        </div>
+                        <div className="rounded-xl p-3 bg-carbon-05 border border-carbon-20/80">
+                          <span className="text-xs text-carbon-60 font-mono uppercase font-bold block">
+                            Coordinates
+                          </span>
+                          <strong className="text-xs font-mono font-black text-carbon-80">
+                            {selectedDistrict.lat}°N, {selectedDistrict.lng}°E
+                          </strong>
+                        </div>
+                        <div className="rounded-xl p-3 bg-carbon-05 border border-carbon-20/80">
+                          <span className="text-xs text-carbon-60 font-mono uppercase font-bold block">
+                            Primary Hazard
+                          </span>
+                          <strong className="text-sm font-black text-amber-700">{selectedDistrict.hazardType}</strong>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* VIEW 3: MULTI-DISTRICT COMPARISON */}
+          {activeView === 'compare' && (
+            <div className="space-y-6">
+              <div className="ap-card space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-2xl font-black text-carbon-90">
+                      Multi-District Agricultural Hazard Comparison
+                    </h2>
+                    <p className="text-xs text-carbon-60 mt-1">
+                      Side-by-side assessment of neural risk scores, crop vulnerability, and primary climate hazards
+                      across Bangladesh.
+                    </p>
                   </div>
                 </div>
 
-                {/* Selected District Telemetry Details Card */}
-                {selectedDistrict && (
-                  <div className="ap-card space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-carbon-20 pb-4">
-                      <div>
-                        <div className="flex items-center gap-3">
-                          <h3 className="text-xl font-black text-carbon-90">
-                            {selectedDistrict.name} District Telemetry
-                          </h3>
-                          <span className="px-3 py-0.5 rounded-full text-xs font-extrabold bg-amber-50 text-amber-700 border border-amber-200">
-                            {selectedDistrict.hazardType} Target Zone
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+                  {savedDistricts.slice(0, 3).map((dist) => (
+                    <div key={dist.id} className="p-5 bg-carbon-05 border border-carbon-20 rounded-2xl space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-black text-carbon-90">{dist.name}</h3>
+                        <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-800">
+                          {dist.risk} Risk
+                        </span>
+                      </div>
+                      <div className="space-y-2 text-xs">
+                        <div className="flex justify-between border-b pb-1">
+                          <span className="text-carbon-60">Division:</span>
+                          <span className="font-bold text-carbon-80">{dist.division}</span>
+                        </div>
+                        <div className="flex justify-between border-b pb-1">
+                          <span className="text-carbon-60">Main Crop:</span>
+                          <span className="font-bold text-carbon-80">{dist.mainCrop}</span>
+                        </div>
+                        <div className="flex justify-between border-b pb-1">
+                          <span className="text-carbon-60">Primary Hazard:</span>
+                          <span className="font-bold text-amber-700">{dist.hazardType}</span>
+                        </div>
+                        <div className="flex justify-between pt-1">
+                          <span className="text-carbon-60">Coordinates:</span>
+                          <span className="font-mono font-bold text-carbon-70">
+                            {dist.lat}°N, {dist.lng}°E
                           </span>
                         </div>
-                        <p className="text-xs text-carbon-60 mt-1">
-                          {predictionSource === 'live' && liveSummary ? (
-                            <>
-                              Stored forecast as of {storedForecast?.provenance.prediction_date ?? 'date not recorded'}:{' '}
-                              <strong className="text-carbon-80">
-                                {liveSummary.hazard} · {(liveSummary.confidence * 100).toFixed(1)}% top-class score
-                              </strong>
-                            </>
-                          ) : (
-                            <>
-                              Static baseline band: <strong className="text-carbon-80">{selectedDistrict.risk}</strong>:
-                              stored forecast unavailable, showing the district's climatological prior (not a model
-                              output)
-                            </>
-                          )}
+                      </div>
+                      <button
+                        onClick={() => {
+                          setSelectedDistrict(dist);
+                          setActiveView('saved');
+                        }}
+                        className="w-full rounded-full py-2.5 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 font-black text-xs transition-all cursor-pointer"
+                      >
+                        <span className="inline-flex items-center justify-center gap-2">
+                          Focus GIS Map Stage <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                        </span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* VIEW 5: SETTINGS & OFFLINE CACHE MANAGEMENT */}
+          {activeView === 'settings' && (
+            <div className="space-y-8">
+              {/* Section Banner Header */}
+              <div className="bg-carbon-90 rounded-xl p-6 sm:p-8 text-carbon-05 border border-carbon-80 flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
+                <div className="space-y-2 relative z-10 max-w-2xl">
+                  <div className="flex items-center gap-2.5">
+                    <span className="px-3 py-1 rounded-full text-xs font-mono font-black uppercase tracking-wider bg-primary text-ap-action-fg">
+                      Storage & Offline Control
+                    </span>
+                    <span className="text-xs font-mono text-carbon-30">ServiceWorker Cache Engine</span>
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-black text-ap-on-inverse tracking-tight">
+                    Offline Storage Settings
+                  </h2>
+                  <p className="text-xs sm:text-sm text-carbon-30 leading-relaxed font-normal">
+                    HazardNet keeps map tiles in the normal browser cache only and never writes them to offline storage:
+                    tile servers ask us not to bulk-download or persist their tiles. Forecast snapshots and app assets
+                    can still be purged here at any time.
+                  </p>
+                </div>
+              </div>
+
+              {/* Cards Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                {/* Tile policy card */}
+                <div className="lg:col-span-7 ap-card space-y-6">
+                  <div className="flex items-center justify-between border-b border-carbon-20 pb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-full w-12 h-12 bg-ap-primary/15 border border-ap-primary/30 text-amber-700 flex items-center justify-center font-bold text-xl">
+                        <MaterialIcon name="public" className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-black text-carbon-90">Map Tiles</h3>
+                        <p className="text-xs text-carbon-60 font-mono">OpenTopoMap · OpenStreetMap data</p>
+                      </div>
+                    </div>
+                    <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-carbon-05 text-carbon-80 border border-carbon-20">
+                      Not stored offline
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs font-mono">
+                    <div className="rounded-2xl p-4 bg-carbon-05 border border-carbon-20">
+                      <span className="text-xs text-carbon-60 font-bold uppercase block">Persisted Tiles</span>
+                      <strong className="text-xl font-black text-carbon-90">0</strong>
+                      <span className="text-xs text-carbon-60 block mt-0.5">by design</span>
+                    </div>
+
+                    <div className="rounded-2xl p-4 bg-carbon-05 border border-carbon-20">
+                      <span className="text-xs text-carbon-60 font-bold uppercase block">Tile Source</span>
+                      <strong className="text-sm font-black text-carbon-90">tile.opentopomap.org</strong>
+                      <span className="text-xs text-carbon-60 block mt-0.5">renders OSM data</span>
+                    </div>
+
+                    <div className="p-4 bg-carbon-05 border border-carbon-20 rounded-2xl col-span-2 sm:col-span-1">
+                      <span className="text-xs text-carbon-60 font-bold uppercase block">Caching</span>
+                      <strong className="text-sm font-black text-carbon-90">Browser HTTP cache</strong>
+                      <span className="text-xs text-carbon-60 block mt-0.5">honours server headers</span>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl p-4 bg-carbon-05 border border-amber-200 text-xs text-amber-900 space-y-2">
+                    <div className="flex items-center gap-2 font-bold">
+                      <MaterialIcon name="lightbulb" className="w-4 h-4 inline-block mr-1" />
+                      <span>Why tiles are not downloadable for offline use</span>
+                    </div>
+                    <p className="leading-relaxed">
+                      Map tiles (rendered from OpenStreetMap data) are never bulk-downloaded or permanently stored: the
+                      earlier OpenStreetMap tile servers IP-blocked this site after an old build pre-cached them, and
+                      that lesson stuck. Tiles load on demand and live only in your browser's ordinary HTTP cache.
+                    </p>
+                  </div>
+
+                  <div className="pt-2 flex flex-wrap items-center gap-3">
+                    <button
+                      onClick={handleClearAllCaches}
+                      disabled={isClearingAllCache}
+                      className="px-5 py-3.5 bg-carbon-10 hover:bg-carbon-10 hover:text-ap-link hover:border-carbon-20 border border-carbon-20 rounded-full text-carbon-70 font-bold text-xs transition-all cursor-pointer"
+                    >
+                      {isClearingAllCache ? (
+                        'Purging All Caches...'
+                      ) : (
+                        <span className="flex items-center gap-1.5">
+                          <MaterialIcon name="delete" className="w-3.5 h-3.5 text-ap-link" /> Purge All Offline Caches
+                        </span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Application Cache Card */}
+                <div className="lg:col-span-5 space-y-6">
+                  <div className="ap-card space-y-4">
+                    <div className="flex items-center gap-3 border-b border-carbon-20 pb-3">
+                      <div className="w-10 h-10 bg-carbon-10 text-carbon-80 flex items-center justify-center font-bold text-lg">
+                        <MaterialIcon name="psychology" className="w-4 h-4 inline-block mr-1" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-black text-carbon-90">Forecast Data & App Bundles</h4>
+                        <p className="text-xs text-carbon-60 font-mono">Model weights remain server-side</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2.5 text-xs">
+                      <div className="p-3 bg-carbon-05 border border-carbon-20 rounded-xl flex items-center justify-between">
+                        <div>
+                          <span className="font-bold text-carbon-80 block">HazardNet forecast product</span>
+                          <span className="text-xs text-carbon-60 font-mono">Authorized prediction responses only</span>
+                        </div>
+                        <span className="px-2 py-0.5 bg-carbon-10 text-carbon-80 font-mono font-bold text-xs rounded">
+                          Protected
+                        </span>
+                      </div>
+
+                      <div className="p-3 bg-carbon-05 border border-carbon-20 rounded-xl flex items-center justify-between">
+                        <div>
+                          <span className="font-bold text-carbon-80 block">
+                            Saved Districts ({savedDistricts.length})
+                          </span>
+                          <span className="text-xs text-carbon-60 font-mono">Pinned Locations LocalStorage</span>
+                        </div>
+                        <span className="px-2 py-0.5 bg-carbon-10 text-ap-link font-mono font-bold text-xs rounded">
+                          Persisted
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 text-xs text-carbon-60 space-y-1">
+                      <p>
+                        <strong>Service Worker Status:</strong> Active & Registered
+                      </p>
+                      <p>
+                        The Service Worker caches app assets only; map tiles are never persisted. Model weights and
+                        preprocessing assets are never sent to or stored in the browser.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* VIEW 4: PRIMARY GIS MAP — summary first on mobile; map stays mounted */}
+          {activeView === 'gis' && (
+            <>
+              <div className="flex flex-col lg:flex-row gap-4 items-stretch">
+                <div className="order-1 lg:order-2 lg:w-[360px] shrink-0 space-y-4">
+                  <RegionSelector
+                    selectedDistrictId={selectedDistrict?.id || ''}
+                    onSelectDistrict={(dist) => setSelectedDistrict(dist)}
+                  />
+                  {selectedDistrict && (
+                    <DistrictForecastPanel
+                      district={selectedDistrict}
+                      view={forecastView}
+                      onRetry={() => runPrediction(selectedDistrict)}
+                    />
+                  )}
+                </div>
+                <div className="order-2 lg:order-1 lg:flex-1 min-h-[360px] lg:min-h-[560px]">
+                  <Map
+                    selectedDistrictId={selectedDistrict?.id}
+                    onOpenDisasterModal={handleOpenDisasterModal}
+                    pinpointLat={userProfile?.pinpointLat}
+                    pinpointLng={userProfile?.pinpointLng}
+                    onSelectDistrict={(dist) => {
+                      if (!dist) {
+                        setSelectedDistrict(null);
+                        return;
+                      }
+                      const fullDistrict = ALL_64_DISTRICTS.find((d) => d.id === dist.id) || dist;
+                      setSelectedDistrict(fullDistrict as District);
+                    }}
+                  />
+                </div>
+              </div>
+
+              {selectedDistrict ? (
+                <>
+                  {/* Selected District HUD Banner */}
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-40px' }}
+                    transition={{ duration: 0.45 }}
+                    className="bg-transparent border-0 rounded-xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 shadow-none"
+                  >
+                    <div className="flex items-center gap-5">
+                      <div className="w-16 h-16 rounded-xl bg-transparent border-0 flex items-center justify-center font-bold text-carbon-80 text-xs shrink-0 shadow-none">
+                        LOC
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <h2 className="text-2xl sm:text-3xl font-black text-carbon-90">
+                            {selectedDistrict.name} District
+                          </h2>
+                          <span
+                            className={`px-4 py-1 text-xs sm:text-sm font-extrabold rounded-full border ${
+                              selectedDistrict.risk === 'High'
+                                ? 'bg-carbon-10 text-ap-link border-carbon-20'
+                                : selectedDistrict.risk === 'Moderate'
+                                  ? 'bg-amber-100 text-amber-800 border-amber-200'
+                                  : 'bg-carbon-10 text-carbon-80 border-carbon-20'
+                            }`}
+                          >
+                            {selectedDistrict.risk} Risk Category
+                          </span>
+                        </div>
+                        <p className="text-sm text-carbon-60 leading-relaxed">
+                          Division:{' '}
+                          <strong className="text-carbon-90 font-extrabold">{selectedDistrict.division}</strong> |
+                          Primary Crop:{' '}
+                          <strong className="text-carbon-90 font-extrabold">{selectedDistrict.mainCrop}</strong> |
+                          Primary Hazard:{' '}
+                          <strong className="text-carbon-90 font-extrabold">{selectedDistrict.hazardType}</strong>
                         </p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button
+                        onClick={() => setSelectedDistrict(null)}
+                        className="px-4 py-3 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 border border-carbon-80 text-xs font-mono font-bold rounded-full transition-all flex items-center gap-2 active:scale-95 min-h-[48px] cursor-pointer"
+                        title="Return to National Overview Mode"
+                      >
+                        <span className="inline-flex items-center gap-2">
+                          <ArrowLeft className="h-4 w-4" aria-hidden="true" /> National Overview
+                        </span>
+                      </button>
+
+                      <div className="flex items-center gap-4 text-xs sm:text-sm font-mono bg-transparent px-4 py-3 border-0">
+                        <div>
+                          <span className="text-carbon-60 text-xs uppercase font-bold block">Coordinates</span>
+                          <span className="text-carbon-80 font-bold">
+                            {selectedDistrict.lat}°N, {selectedDistrict.lng}°E
+                          </span>
+                        </div>
+                        <div className="w-px h-8 bg-carbon-20"></div>
+                        <div>
+                          <span className="text-carbon-60 text-xs uppercase font-bold block">Severity Head</span>
+                          <span className="text-carbon-90 font-bold">Softmax + Severity</span>
+                        </div>
                       </div>
 
                       <button
                         onClick={() => selectedDistrict?.id && handleOpenDisasterModal(selectedDistrict.id)}
-                        className="px-5 py-2.5 bg-primary hover:bg-primary-strong text-ap-action-fg font-black text-xs transition-all cursor-pointer flex items-center justify-center gap-2"
+                        className="px-5 py-3 bg-primary hover:bg-primary-strong text-ap-action-fg font-extrabold text-sm rounded-full transition-all duration-200 flex items-center gap-2 active:scale-98 hover:scale-[1.02] min-h-[48px] cursor-pointer"
                       >
-                        <span>Granular Report & Directives</span>
+                        <span>Granular Data Report</span>
                       </button>
                     </div>
+                  </motion.div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-                      <div className="rounded-xl p-3 bg-carbon-05 border border-carbon-20/80">
-                        <span className="text-xs text-carbon-60 font-mono uppercase font-bold block">Division</span>
-                        <strong className="text-sm font-black text-carbon-80">{selectedDistrict.division}</strong>
-                      </div>
-                      <div className="rounded-xl p-3 bg-carbon-05 border border-carbon-20/80">
-                        <span className="text-xs text-carbon-60 font-mono uppercase font-bold block">Primary Crop</span>
-                        <strong className="text-sm font-black text-carbon-80">{selectedDistrict.mainCrop}</strong>
-                      </div>
-                      <div className="rounded-xl p-3 bg-carbon-05 border border-carbon-20/80">
-                        <span className="text-xs text-carbon-60 font-mono uppercase font-bold block">Coordinates</span>
-                        <strong className="text-xs font-mono font-black text-carbon-80">
-                          {selectedDistrict.lat}°N, {selectedDistrict.lng}°E
-                        </strong>
-                      </div>
-                      <div className="rounded-xl p-3 bg-carbon-05 border border-carbon-20/80">
-                        <span className="text-xs text-carbon-60 font-mono uppercase font-bold block">
-                          Primary Hazard
-                        </span>
-                        <strong className="text-sm font-black text-amber-700">{selectedDistrict.hazardType}</strong>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* VIEW 3: MULTI-DISTRICT COMPARISON */}
-        {activeView === 'compare' && (
-          <div className="space-y-6">
-            <div className="ap-card space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-2xl font-black text-carbon-90">Multi-District Agricultural Hazard Comparison</h2>
-                  <p className="text-xs text-carbon-60 mt-1">
-                    Side-by-side assessment of neural risk scores, crop vulnerability, and primary climate hazards
-                    across Bangladesh.
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-                {savedDistricts.slice(0, 3).map((dist) => (
-                  <div key={dist.id} className="p-5 bg-carbon-05 border border-carbon-20 rounded-2xl space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-black text-carbon-90">{dist.name}</h3>
-                      <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-800">
-                        {dist.risk} Risk
-                      </span>
-                    </div>
-                    <div className="space-y-2 text-xs">
-                      <div className="flex justify-between border-b pb-1">
-                        <span className="text-carbon-60">Division:</span>
-                        <span className="font-bold text-carbon-80">{dist.division}</span>
-                      </div>
-                      <div className="flex justify-between border-b pb-1">
-                        <span className="text-carbon-60">Main Crop:</span>
-                        <span className="font-bold text-carbon-80">{dist.mainCrop}</span>
-                      </div>
-                      <div className="flex justify-between border-b pb-1">
-                        <span className="text-carbon-60">Primary Hazard:</span>
-                        <span className="font-bold text-amber-700">{dist.hazardType}</span>
-                      </div>
-                      <div className="flex justify-between pt-1">
-                        <span className="text-carbon-60">Coordinates:</span>
-                        <span className="font-mono font-bold text-carbon-70">
-                          {dist.lat}°N, {dist.lng}°E
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setSelectedDistrict(dist);
-                        setActiveView('saved');
-                      }}
-                      className="w-full rounded-full py-2.5 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 font-black text-xs transition-all cursor-pointer"
-                    >
-                      <span className="inline-flex items-center justify-center gap-2">
-                        Focus GIS Map Stage <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                      </span>
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* VIEW 5: SETTINGS & OFFLINE CACHE MANAGEMENT */}
-        {activeView === 'settings' && (
-          <div className="space-y-8">
-            {/* Section Banner Header */}
-            <div className="bg-carbon-90 rounded-xl p-6 sm:p-8 text-carbon-05 border border-carbon-80 flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-96 h-96 bg-ap-primary/10 rounded-full blur-3xl pointer-events-none"></div>
-              <div className="space-y-2 relative z-10 max-w-2xl">
-                <div className="flex items-center gap-2.5">
-                  <span className="px-3 py-1 rounded-full text-xs font-mono font-black uppercase tracking-wider bg-primary text-ap-action-fg">
-                    Storage & Offline Control
-                  </span>
-                  <span className="text-xs font-mono text-carbon-30">ServiceWorker Cache Engine</span>
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-black text-ap-on-inverse tracking-tight">
-                  Offline Storage Settings
-                </h2>
-                <p className="text-xs sm:text-sm text-carbon-30 leading-relaxed font-normal">
-                  HazardNet keeps map tiles in the normal browser cache only and never writes them to offline storage:
-                  tile servers ask us not to bulk-download or persist their tiles. Forecast snapshots and app assets can
-                  still be purged here at any time.
-                </p>
-              </div>
-            </div>
-
-            {/* Cards Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-              {/* Tile policy card */}
-              <div className="lg:col-span-7 ap-card space-y-6">
-                <div className="flex items-center justify-between border-b border-carbon-20 pb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-full w-12 h-12 bg-ap-primary/15 border border-ap-primary/30 text-amber-700 flex items-center justify-center font-bold text-xl">
-                      <MaterialIcon name="public" className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-black text-carbon-90">Map Tiles</h3>
-                      <p className="text-xs text-carbon-60 font-mono">OpenTopoMap · OpenStreetMap data</p>
-                    </div>
-                  </div>
-                  <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-carbon-05 text-carbon-80 border border-carbon-20">
-                    Not stored offline
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs font-mono">
-                  <div className="rounded-2xl p-4 bg-carbon-05 border border-carbon-20">
-                    <span className="text-xs text-carbon-60 font-bold uppercase block">Persisted Tiles</span>
-                    <strong className="text-xl font-black text-carbon-90">0</strong>
-                    <span className="text-xs text-carbon-60 block mt-0.5">by design</span>
-                  </div>
-
-                  <div className="rounded-2xl p-4 bg-carbon-05 border border-carbon-20">
-                    <span className="text-xs text-carbon-60 font-bold uppercase block">Tile Source</span>
-                    <strong className="text-sm font-black text-carbon-90">tile.opentopomap.org</strong>
-                    <span className="text-xs text-carbon-60 block mt-0.5">renders OSM data</span>
-                  </div>
-
-                  <div className="p-4 bg-carbon-05 border border-carbon-20 rounded-2xl col-span-2 sm:col-span-1">
-                    <span className="text-xs text-carbon-60 font-bold uppercase block">Caching</span>
-                    <strong className="text-sm font-black text-carbon-90">Browser HTTP cache</strong>
-                    <span className="text-xs text-carbon-60 block mt-0.5">honours server headers</span>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl p-4 bg-carbon-05 border border-amber-200 text-xs text-amber-900 space-y-2">
-                  <div className="flex items-center gap-2 font-bold">
-                    <MaterialIcon name="lightbulb" className="w-4 h-4 inline-block mr-1" />
-                    <span>Why tiles are not downloadable for offline use</span>
-                  </div>
-                  <p className="leading-relaxed">
-                    Map tiles (rendered from OpenStreetMap data) are never bulk-downloaded or permanently stored: the
-                    earlier OpenStreetMap tile servers IP-blocked this site after an old build pre-cached them, and that
-                    lesson stuck. Tiles load on demand and live only in your browser's ordinary HTTP cache.
-                  </p>
-                </div>
-
-                <div className="pt-2 flex flex-wrap items-center gap-3">
-                  <button
-                    onClick={handleClearAllCaches}
-                    disabled={isClearingAllCache}
-                    className="px-5 py-3.5 bg-carbon-10 hover:bg-carbon-10 hover:text-ap-link hover:border-carbon-20 border border-carbon-20 rounded-full text-carbon-70 font-bold text-xs transition-all cursor-pointer"
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-40px' }}
+                    transition={{ duration: 0.45 }}
+                    className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start"
                   >
-                    {isClearingAllCache ? (
-                      'Purging All Caches...'
-                    ) : (
-                      <span className="flex items-center gap-1.5">
-                        <MaterialIcon name="delete" className="w-3.5 h-3.5 text-ap-link" /> Purge All Offline Caches
-                      </span>
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Application Cache Card */}
-              <div className="lg:col-span-5 space-y-6">
-                <div className="ap-card space-y-4">
-                  <div className="flex items-center gap-3 border-b border-carbon-20 pb-3">
-                    <div className="w-10 h-10 bg-carbon-10 text-carbon-80 flex items-center justify-center font-bold text-lg">
-                      <MaterialIcon name="psychology" className="w-4 h-4 inline-block mr-1" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-black text-carbon-90">Forecast Data & App Bundles</h4>
-                      <p className="text-xs text-carbon-60 font-mono">Model weights remain server-side</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2.5 text-xs">
-                    <div className="p-3 bg-carbon-05 border border-carbon-20 rounded-xl flex items-center justify-between">
-                      <div>
-                        <span className="font-bold text-carbon-80 block">HazardNet forecast product</span>
-                        <span className="text-xs text-carbon-60 font-mono">Authorized prediction responses only</span>
-                      </div>
-                      <span className="px-2 py-0.5 bg-carbon-10 text-carbon-80 font-mono font-bold text-xs rounded">
-                        Protected
-                      </span>
-                    </div>
-
-                    <div className="p-3 bg-carbon-05 border border-carbon-20 rounded-xl flex items-center justify-between">
-                      <div>
-                        <span className="font-bold text-carbon-80 block">
-                          Saved Districts ({savedDistricts.length})
-                        </span>
-                        <span className="text-xs text-carbon-60 font-mono">Pinned Locations LocalStorage</span>
-                      </div>
-                      <span className="px-2 py-0.5 bg-carbon-10 text-ap-link font-mono font-bold text-xs rounded">
-                        Persisted
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="pt-2 text-xs text-carbon-60 space-y-1">
-                    <p>
-                      <strong>Service Worker Status:</strong> Active & Registered
-                    </p>
-                    <p>
-                      The Service Worker caches app assets only; map tiles are never persisted. Model weights and
-                      preprocessing assets are never sent to or stored in the browser.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* VIEW 4: PRIMARY GIS MAP — summary first on mobile; map stays mounted */}
-        {activeView === 'gis' && (
-          <>
-            <div className="flex flex-col lg:flex-row gap-4 items-stretch">
-              <div className="order-1 lg:order-2 lg:w-[360px] shrink-0 space-y-4">
-                <RegionSelector
-                  selectedDistrictId={selectedDistrict?.id || ''}
-                  onSelectDistrict={(dist) => setSelectedDistrict(dist)}
-                />
-                {selectedDistrict && (
-                  <DistrictForecastPanel
-                    district={selectedDistrict}
-                    view={forecastView}
-                    onRetry={() => runPrediction(selectedDistrict)}
-                  />
-                )}
-              </div>
-              <div className="order-2 lg:order-1 lg:flex-1 min-h-[360px] lg:min-h-[560px]">
-                <Map
-                  selectedDistrictId={selectedDistrict?.id}
-                  onOpenDisasterModal={handleOpenDisasterModal}
-                  pinpointLat={userProfile?.pinpointLat}
-                  pinpointLng={userProfile?.pinpointLng}
-                  onSelectDistrict={(dist) => {
-                    if (!dist) {
-                      setSelectedDistrict(null);
-                      return;
-                    }
-                    const fullDistrict = ALL_64_DISTRICTS.find((d) => d.id === dist.id) || dist;
-                    setSelectedDistrict(fullDistrict as District);
-                  }}
-                />
-              </div>
-            </div>
-
-            {selectedDistrict ? (
-              <>
-                {/* Selected District HUD Banner */}
-
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-40px' }}
-                  transition={{ duration: 0.45 }}
-                  className="bg-transparent border-0 rounded-xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 shadow-none"
-                >
-                  <div className="flex items-center gap-5">
-                    <div className="w-16 h-16 rounded-xl bg-transparent border-0 flex items-center justify-center font-bold text-carbon-80 text-xs shrink-0 shadow-none">
-                      LOC
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex flex-wrap items-center gap-3">
-                        <h2 className="text-2xl sm:text-3xl font-black text-carbon-90">
-                          {selectedDistrict.name} District
-                        </h2>
-                        <span
-                          className={`px-4 py-1 text-xs sm:text-sm font-extrabold rounded-full border ${
-                            selectedDistrict.risk === 'High'
-                              ? 'bg-carbon-10 text-ap-link border-carbon-20'
-                              : selectedDistrict.risk === 'Moderate'
-                                ? 'bg-amber-100 text-amber-800 border-amber-200'
-                                : 'bg-carbon-10 text-carbon-80 border-carbon-20'
-                          }`}
-                        >
-                          {selectedDistrict.risk} Risk Category
-                        </span>
-                      </div>
-                      <p className="text-sm text-carbon-60 leading-relaxed">
-                        Division: <strong className="text-carbon-90 font-extrabold">{selectedDistrict.division}</strong>{' '}
-                        | Primary Crop:{' '}
-                        <strong className="text-carbon-90 font-extrabold">{selectedDistrict.mainCrop}</strong> | Primary
-                        Hazard: <strong className="text-carbon-90 font-extrabold">{selectedDistrict.hazardType}</strong>
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-3">
-                    <button
-                      onClick={() => setSelectedDistrict(null)}
-                      className="px-4 py-3 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 border border-carbon-80 text-xs font-mono font-bold rounded-full transition-all flex items-center gap-2 active:scale-95 min-h-[48px] cursor-pointer"
-                      title="Return to National Overview Mode"
-                    >
-                      <span className="inline-flex items-center gap-2">
-                        <ArrowLeft className="h-4 w-4" aria-hidden="true" /> National Overview
-                      </span>
-                    </button>
-
-                    <div className="flex items-center gap-4 text-xs sm:text-sm font-mono bg-transparent px-4 py-3 border-0">
-                      <div>
-                        <span className="text-carbon-60 text-xs uppercase font-bold block">Coordinates</span>
-                        <span className="text-carbon-80 font-bold">
-                          {selectedDistrict.lat}°N, {selectedDistrict.lng}°E
-                        </span>
-                      </div>
-                      <div className="w-px h-8 bg-carbon-20"></div>
-                      <div>
-                        <span className="text-carbon-60 text-xs uppercase font-bold block">Severity Head</span>
-                        <span className="text-carbon-90 font-bold">Softmax + Severity</span>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => selectedDistrict?.id && handleOpenDisasterModal(selectedDistrict.id)}
-                      className="px-5 py-3 bg-primary hover:bg-primary-strong text-ap-action-fg font-extrabold text-sm rounded-full transition-all duration-200 flex items-center gap-2 active:scale-98 hover:scale-[1.02] min-h-[48px] cursor-pointer"
-                    >
-                      <span>Granular Data Report</span>
-                    </button>
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-40px' }}
-                  transition={{ duration: 0.45 }}
-                  className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start"
-                >
-                  <div className="lg:col-span-12">
-                    {storedForecast && (
-                      <AdvisoryPanel
-                        districtName={selectedDistrict.name}
-                        hazardType={storedForecast.prediction.hazard}
-                        severityScore={severity}
-                        confidence={storedForecast.prediction.confidence}
-                      />
-                    )}
-                  </div>
-                </motion.div>
-
-                {/* Historical 30-Day Severity Trend Recharts Component */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-40px' }}
-                  transition={{ duration: 0.45 }}
-                >
-                  <ThirtyDayTrendChart districtName={selectedDistrict.name} districtId={selectedDistrict.id} />
-                </motion.div>
-
-                {/* National Overview Comparison Card */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-40px' }}
-                  transition={{ duration: 0.45 }}
-                >
-                  <NationalOverview
-                    onSelectDistrict={(dist) => setSelectedDistrict(dist ? (dist as District) : null)}
-                  />
-                </motion.div>
-              </>
-            ) : (
-              <div className="space-y-8">
-                {/* Primary National Overview Component */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-40px' }}
-                  transition={{ duration: 0.45 }}
-                >
-                  <NationalOverview
-                    onSelectDistrict={(dist) => setSelectedDistrict(dist ? (dist as District) : null)}
-                  />
-                </motion.div>
-
-                {/* National Predictive AI Risk Analysis & Advisory Section */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-40px' }}
-                  transition={{ duration: 0.45 }}
-                  className="space-y-4"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-2">
-                    <div>
-                      <h3 className="text-xl sm:text-2xl font-black text-carbon-90 flex items-center gap-2.5">
-                        <span>National Predictive AI Risk Analysis & Advisory</span>
-                      </h3>
-                      <p className="text-xs text-carbon-60 font-mono mt-0.5">
-                        Hazard Probability Matrix & Agricultural Emergency Directives (National Aggregate)
-                      </p>
-                    </div>
-                    <span className="text-xs font-mono text-amber-900 bg-amber-50 px-3.5 py-1.5 rounded-full border border-amber-200 shrink-0">
-                      Stored Forecast • Published Results
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                    <div className="lg:col-span-7">
-                      <StoredForecastPanel forecast={storedForecast} loading={loading} requested={false} />
-                    </div>
-                    <div className="lg:col-span-5">
+                    <div className="lg:col-span-12">
                       {storedForecast && (
                         <AdvisoryPanel
-                          districtName="National Overview (Bangladesh)"
-                          hazardType="Monsoon Flood & Cyclone"
+                          districtName={selectedDistrict.name}
+                          hazardType={storedForecast.prediction.hazard}
                           severityScore={severity}
-                          confidence={0.92}
+                          confidence={storedForecast.prediction.confidence}
                         />
                       )}
                     </div>
-                  </div>
-                </motion.div>
+                  </motion.div>
 
-                {/* National 30-Day Historical Telemetry Trend Component */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-40px' }}
-                  transition={{ duration: 0.45 }}
-                >
-                  <ThirtyDayTrendChart districtName="National Overview (64 Districts)" districtId="kurigram" />
-                </motion.div>
-              </div>
-            )}
-          </>
-        )}
+                  {/* Historical 30-Day Severity Trend Recharts Component */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-40px' }}
+                    transition={{ duration: 0.45 }}
+                  >
+                    <ThirtyDayTrendChart districtName={selectedDistrict.name} districtId={selectedDistrict.id} />
+                  </motion.div>
+
+                  {/* National Overview Comparison Card */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-40px' }}
+                    transition={{ duration: 0.45 }}
+                  >
+                    <NationalOverview
+                      onSelectDistrict={(dist) => setSelectedDistrict(dist ? (dist as District) : null)}
+                    />
+                  </motion.div>
+                </>
+              ) : (
+                <div className="space-y-8">
+                  {/* Primary National Overview Component */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-40px' }}
+                    transition={{ duration: 0.45 }}
+                  >
+                    <NationalOverview
+                      onSelectDistrict={(dist) => setSelectedDistrict(dist ? (dist as District) : null)}
+                    />
+                  </motion.div>
+
+                  {/* National Predictive AI Risk Analysis & Advisory Section */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-40px' }}
+                    transition={{ duration: 0.45 }}
+                    className="space-y-4"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-2">
+                      <div>
+                        <h3 className="text-xl sm:text-2xl font-black text-carbon-90 flex items-center gap-2.5">
+                          <span>National Predictive AI Risk Analysis & Advisory</span>
+                        </h3>
+                        <p className="text-xs text-carbon-60 font-mono mt-0.5">
+                          Hazard Probability Matrix & Agricultural Emergency Directives (National Aggregate)
+                        </p>
+                      </div>
+                      <span className="text-xs font-mono text-amber-900 bg-amber-50 px-3.5 py-1.5 rounded-full border border-amber-200 shrink-0">
+                        Stored Forecast • Published Results
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                      <div className="lg:col-span-7">
+                        <StoredForecastPanel forecast={storedForecast} loading={loading} requested={false} />
+                      </div>
+                      <div className="lg:col-span-5">
+                        {storedForecast && (
+                          <AdvisoryPanel
+                            districtName="National Overview (Bangladesh)"
+                            hazardType="Monsoon Flood & Cyclone"
+                            severityScore={severity}
+                            confidence={0.92}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  {/* National 30-Day Historical Telemetry Trend Component */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-40px' }}
+                    transition={{ duration: 0.45 }}
+                  >
+                    <ThirtyDayTrendChart districtName="National Overview (64 Districts)" districtId="kurigram" />
+                  </motion.div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+        {/* /console tabpanel */}
 
         {/* Interactive Granular Disaster Data Modal */}
         <DisasterDetailModal

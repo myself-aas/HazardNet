@@ -10,6 +10,7 @@ import {
   ForecastFeed,
 } from '../lib/eventsClient';
 import { DataStateEmpty, DataStateError, DataStateLoading } from '../components/ui/DataState';
+import { KeyFigures } from '../components/ui/KeyFigures';
 
 interface DivisionCardData {
   id: string;
@@ -163,40 +164,30 @@ export const DivisionsPage: React.FC = () => {
         <span className="text-carbon-80 font-medium">Divisions</span>
       </div>
 
-      {/* Header Banner */}
-      <div className="bg-white border border-carbon-20 rounded-2xl p-6 sm:p-8 mb-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold bg-carbon-05 text-ap-link border border-carbon-20 rounded-full mb-3">
-              <Layers className="w-3.5 h-3.5" />
-              <span>National Administrative Tiers</span>
-            </div>
-            <h1 className="text-ap-lead font-bold sm:text-ap-display-md text-carbon-90 tracking-tight">
-              Bangladesh Regional Divisions
-            </h1>
-            <p className="mt-2 text-base leading-[1.62] text-carbon-70 max-w-2xl leading-relaxed">
-              Real-time multi-hazard exposure, 26-year historical disaster analysis (2000–2026), and active record
-              forecasts across all 8 administrative divisions.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full md:w-auto">
-            <div className="rounded-xl bg-carbon-05 border border-carbon-20/80 p-3 text-center">
-              <div className="text-xl sm:text-2xl font-bold text-carbon-90">8</div>
-              <div className="text-xs text-carbon-60 font-medium">Divisions</div>
-            </div>
-            <div className="rounded-xl bg-carbon-05 border border-carbon-20/80 p-3 text-center">
-              <div className="text-xl sm:text-2xl font-bold text-carbon-90">64</div>
-              <div className="text-xs text-carbon-60 font-medium">Districts</div>
-            </div>
-            <div className="rounded-xl bg-carbon-05 border border-carbon-20/80 p-3 text-center col-span-2 sm:col-span-1">
-              <div className="text-xl sm:text-2xl font-bold text-ap-link">
-                {archiveLoaded ? summary!.totalEvents.toLocaleString() : '—'}
-              </div>
-              <div className="text-xs text-carbon-60 font-medium">Recorded Events</div>
-            </div>
-          </div>
-        </div>
+      {/* Header: the title and a flat figure row. The three-tile version led the page with
+          "8 divisions" and "64 districts" — constants of Bangladesh, set at the visual weight of
+          live data — while the one live number sat third. Key figures read in a line instead. */}
+      <div className="mb-8">
+        <h1 className="text-ap-lead font-bold sm:text-ap-display-md text-carbon-90 tracking-tight">
+          Bangladesh Regional Divisions
+        </h1>
+        <p className="mt-2 text-base leading-[1.62] text-carbon-70 max-w-2xl">
+          Multi-hazard exposure, 26-year historical disaster analysis (2000–2026) and active record forecasts across all
+          eight administrative divisions.
+        </p>
+        <KeyFigures
+          className="mt-4"
+          label="Division coverage"
+          figures={[
+            { label: 'Divisions', value: 8 },
+            { label: 'Districts', value: 64 },
+            {
+              label: 'Recorded events',
+              value: archiveLoaded ? summary!.totalEvents.toLocaleString() : '—',
+              emphasis: true,
+            },
+          ]}
+        />
       </div>
 
       {/* Interactive Division Comparative Chart */}

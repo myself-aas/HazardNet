@@ -12,7 +12,6 @@ import {
   Flame,
   ArrowRight,
   TrendingUp,
-  ShieldAlert,
 } from 'lucide-react';
 import {
   fetchEventsSummary,
@@ -23,6 +22,7 @@ import {
 } from '../lib/eventsClient';
 import { getHazardColor, getHazardSurface } from '../lib/hazardPalette';
 import { DataStateEmpty, DataStateError, DataStateLoading } from '../components/ui/DataState';
+import { KeyFigures } from '../components/ui/KeyFigures';
 
 interface HazardCardData {
   id: string;
@@ -32,6 +32,8 @@ interface HazardCardData {
   icon: any;
   season: string;
   description: string;
+  /** False for Earthquake: the archive records it, the model does not forecast it. */
+  modelled: boolean;
   totalHistoricalEvents: number;
   /** null when no archive is loaded, so there is no denominator to compute a share from. */
   percentage: number | null;
@@ -39,7 +41,18 @@ interface HazardCardData {
   topDivisions: string[];
 }
 
-const HAZARDS_CATALOG = [
+interface CatalogEntry {
+  id: string;
+  slug: string;
+  name: string;
+  icon: any;
+  season: string;
+  description: string;
+  /** Absent means modelled; only Earthquake carries `false`. */
+  modelled?: boolean;
+}
+
+const HAZARDS_CATALOG: CatalogEntry[] = [
   {
     id: 'cyclone',
     slug: 'cyclone',
@@ -103,6 +116,10 @@ const HAZARDS_CATALOG = [
       'Extreme thermal stress with ambient temperatures exceeding 40°C triggering power grid strain and livestock mortality.',
   },
   {
+    // Earthquake is tracked in the archive but is not one of the eight climatic classes
+    // the hazard model scores — see `frontend/src/lib/hazardPalette.ts`, which states the
+    // same exclusion. The flag keeps the page's count honest instead of adding a ninth.
+    modelled: false,
     id: 'earthquake',
     slug: 'earthquake',
     name: 'Earthquake',
@@ -178,13 +195,19 @@ export const HazardsPage: React.FC = () => {
 
     return {
       ...h,
+      modelled: h.modelled !== false,
       color: getHazardColor(h.slug),
       totalHistoricalEvents: histEvents,
-      percentage: pct,
+      // A share of the archive is a claim about the hazard model. Earthquake has archive
+      // volume but no modelled class, so it reports no share rather than a misleading one.
+      percentage: h.modelled === false ? null : pct,
       activeForecastsCount: activeFc.length,
       topDivisions: ['Dhaka', 'Chattogram', 'Sylhet'],
     };
   });
+
+  const modelledCount = hazardsList.filter((h) => h.modelled).length;
+  const archiveOnlyCount = hazardsList.length - modelledCount;
 
   const chartData = hazardsList
     .map((h) => ({
@@ -205,42 +228,29 @@ export const HazardsPage: React.FC = () => {
         <span className="text-carbon-80 font-medium">Hazards</span>
       </div>
 
-      {/* Header Banner */}
-      <div className="bg-white border border-carbon-20 rounded-2xl p-6 sm:p-8 mb-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold bg-carbon-05 text-ap-link border border-carbon-20 rounded-full mb-3">
-              <ShieldAlert className="w-3.5 h-3.5" />
-              <span>Multi-Hazard Classification Framework</span>
-            </div>
-            <h1 className="text-ap-lead font-bold sm:text-ap-display-md text-carbon-90 tracking-tight">
-              Climatic Hazards of Bangladesh
-            </h1>
-            <p className="mt-2 text-base leading-[1.62] text-carbon-70 max-w-2xl leading-relaxed">
-              Comprehensive taxonomy and real-time record monitoring for the 9 primary disaster perils documented in
-              Bangladesh (2000–2026), grounded in the BGD Climatic Hazards Dataset and HazardNet forecasts.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full md:w-auto">
-            <div className="rounded-xl bg-carbon-05 border border-carbon-20/80 p-3 text-center">
-              <div className="text-xl sm:text-2xl font-bold text-carbon-90">9</div>
-              <div className="text-xs text-carbon-60 font-medium">Hazard Types</div>
-            </div>
-            <div className="rounded-xl bg-carbon-05 border border-carbon-20/80 p-3 text-center">
-              <div className="text-xl sm:text-2xl font-bold text-ap-link">
-                {archiveLoaded ? summary!.totalEvents.toLocaleString() : '—'}
-              </div>
-              <div className="text-xs text-carbon-60 font-medium">Historical Records</div>
-            </div>
-            <div className="rounded-xl bg-carbon-05 border border-carbon-20/80 p-3 text-center col-span-2 sm:col-span-1">
-              <div className="text-xl sm:text-2xl font-bold text-amber-700">
-                {feed === 'none' ? '—' : forecasts.length}
-              </div>
-              <div className="text-xs text-carbon-60 font-medium">Active Forecasts</div>
-            </div>
-          </div>
-        </div>
+      {/* Header: the title, the count that is true, and a row of figures rather than tiles. */}
+      <div className="mb-8">
+        <h1 className="text-ap-lead font-bold sm:text-ap-display-md text-carbon-90 tracking-tight">
+          Hazards of Bangladesh
+        </h1>
+        <p className="mt-2 text-base leading-[1.62] text-carbon-70 max-w-2xl">
+          The eight climatic classes the hazard model scores, and earthquake — tracked in the 2000–2026 archive but
+          outside the model. Grounded in the BGD Climatic Hazards Dataset and HazardNet forecasts.
+        </p>
+        <KeyFigures
+          className="mt-4"
+          label="Hazard coverage"
+          figures={[
+            { label: 'Climatic classes', value: modelledCount },
+            { label: 'Archive-only classes', value: archiveOnlyCount },
+            {
+              label: 'Recorded events',
+              value: archiveLoaded ? summary!.totalEvents.toLocaleString() : '—',
+              emphasis: true,
+            },
+            { label: 'Active forecasts', value: feed === 'none' ? '—' : forecasts.length },
+          ]}
+        />
       </div>
 
       {/* Interactive National Hazards Frequency Chart */}
@@ -334,11 +344,17 @@ export const HazardsPage: React.FC = () => {
                     >
                       <Icon className="w-5 h-5" />
                     </div>
-                    <span className="text-xs font-semibold px-2 py-0.5 bg-carbon-10 text-carbon-70">
-                      {hazard.percentage === null
-                        ? 'Share of events not available'
-                        : `${hazard.percentage}% of all events`}
-                    </span>
+                    {hazard.modelled ? (
+                      <span className="text-xs font-semibold px-2 py-0.5 bg-carbon-10 text-carbon-70">
+                        {hazard.percentage === null
+                          ? 'Share of events not available'
+                          : `${hazard.percentage}% of all events`}
+                      </span>
+                    ) : (
+                      <span className="text-xs font-semibold px-2 py-0.5 bg-carbon-10 text-carbon-70">
+                        Archive only · not modelled
+                      </span>
+                    )}
                   </div>
 
                   <h3 className="text-lg font-bold text-carbon-90 group-hover:text-ap-link transition-colors">
@@ -360,7 +376,11 @@ export const HazardsPage: React.FC = () => {
                     <div className="flex justify-between items-center">
                       <span className="text-carbon-60">Active Warning Records:</span>
                       <span className="font-bold text-ap-link">
-                        {feed === 'none' ? 'Not loaded' : `${hazard.activeForecastsCount} active`}
+                        {!hazard.modelled
+                          ? 'Not modelled'
+                          : feed === 'none'
+                            ? 'Not loaded'
+                            : `${hazard.activeForecastsCount} active`}
                       </span>
                     </div>
                   </div>

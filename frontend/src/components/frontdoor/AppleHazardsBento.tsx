@@ -23,11 +23,10 @@ interface AppleHazardsBentoProps {
 
 /**
  * Curated Apple Store bento card definitions for Bangladesh's 8 climatic hazard classes.
- * High-fidelity, domain-accurate typography, kicker tags, and custom SVG visual motifs.
+ * Type-led cards: the hazard's own name, one reading of it, the horizon it is published on, and
+ * an authored SVG motif. No label above the heading — the heading is the label.
  */
 interface HazardCardConfig {
-  kickerEn: string;
-  kickerBn: string;
   taglineEn: string;
   taglineBn: string;
   leadTime: string;
@@ -37,8 +36,6 @@ interface HazardCardConfig {
 
 const HAZARD_CONFIGS: Record<string, HazardCardConfig> = {
   'tropical-cyclone': {
-    kickerEn: 'COASTAL THREAT · BAY OF BENGAL',
-    kickerBn: 'উপকূলীয় ঝুঁকি · বঙ্গোপসাগর',
     taglineEn: 'Wind-driven coastal storm hazard with sustained gusts above 50 km/h and marine surge risk.',
     taglineBn: 'ঘূর্ণিঝড়জনিত সামুদ্রিক জলোচ্ছ্বাস ও ঘণ্টায় ৫০ কিমির বেশি গতিবেগের তীব্র ঝড়ো বাতাস।',
     leadTime: '7 & 15-day multi-horizon · Skill + Physics model',
@@ -79,8 +76,6 @@ const HAZARD_CONFIGS: Record<string, HazardCardConfig> = {
     ),
   },
   flood: {
-    kickerEn: 'MONSOON INUNDATION · BASIN-WIDE',
-    kickerBn: 'মৌসুমি বন্যা · নদী অববাহিকা',
     taglineEn: 'Riverine and monsoon inundation across the Brahmaputra, Jamuna and Padma floodplains.',
     taglineBn: 'ব্রহ্মপুত্র, যমুনা ও পদ্মা অববাহিকায় মৌসুমি বৃষ্টিপাত ও ব্যাপক প্লাবন।',
     leadTime: 'June–Sept peak · Daily ERA5 & GFS precipitation telemetry',
@@ -126,8 +121,6 @@ const HAZARD_CONFIGS: Record<string, HazardCardConfig> = {
     ),
   },
   'flash-flood': {
-    kickerEn: 'RAPID ONSET · HAOR BASIN',
-    kickerBn: 'আকস্মিক বন্যা · হাওর অববাহিকা',
     taglineEn: 'Torrential mountain runoff submerging northeastern boro paddies within hours.',
     taglineBn: 'মেঘালয় ও আসামের পাহাড়ি ঢলে সিলেট-সুনামগঞ্জের হাওরে আকস্মিক পানির প্লাবন।',
     leadTime: 'March–May window · High-intensity burst scoring',
@@ -164,8 +157,6 @@ const HAZARD_CONFIGS: Record<string, HazardCardConfig> = {
     ),
   },
   'severe-local-storm': {
-    kickerEn: 'CONVECTIVE EXTREME · KALBAISHAKHI',
-    kickerBn: 'কালবৈশাখী · তীব্র স্থানীয় ঝড়',
     taglineEn: 'High-shear squall lines, destructive hail, and lightning strikes along pre-monsoon drylines.',
     taglineBn: 'চৈত্র-বৈশাখ মাসের তীব্র ��ালবৈশাখী, শিলাবৃষ্টি ও বজ্রপাত।',
     leadTime: 'Pre-monsoon afternoon hours · Convective CAPE index',
@@ -199,8 +190,6 @@ const HAZARD_CONFIGS: Record<string, HazardCardConfig> = {
     ),
   },
   'heat-wave': {
-    kickerEn: 'THERMAL ANOMALY · PRE-MONSOON',
-    kickerBn: 'তাপপ্রবাহ · তীব্র গরম',
     taglineEn: 'Extreme temperature anomaly exceeding 36°C with multi-day persistence stressing crops and health.',
     taglineBn: 'টানা কয়েকদিন ৩৬-৪০ ডিগ্রি সেলসিয়াস তাপমাত্রায় খরতাপ ও স্বাস্থ্যঝুঁকি।',
     leadTime: 'March–June pre-monsoon · Exceedance duration scoring',
@@ -225,8 +214,6 @@ const HAZARD_CONFIGS: Record<string, HazardCardConfig> = {
     ),
   },
   drought: {
-    kickerEn: 'SOIL DEFICIT · BARIND TRACT',
-    kickerBn: 'খরা ও পানিশূন্যতা · বরেন্দ্র অঞ্চল',
     taglineEn: 'Prolonged moisture deficit and high evapotranspiration threatening rainfed transplanted aman.',
     taglineBn: 'বৃষ্টির দীর্ঘস্থায়ী ঘাটতি ও শুষ্ক মাটিতে ফসলের মারাত্মক পানিশূন্যতা।',
     leadTime: 'November–April dry season · Inverted precipitation index',
@@ -263,8 +250,6 @@ const HAZARD_CONFIGS: Record<string, HazardCardConfig> = {
     ),
   },
   'cold-wave': {
-    kickerEn: 'WINTER INVERSION · NORTHERN BORDER',
-    kickerBn: 'শৈত্যপ্রবাহ · উত্তর জনপদ',
     taglineEn: 'Dense radiation fog, temperature inversions, and sub-10°C minimums endangering winter seedbeds.',
     taglineBn: 'উত্তরাঞ্চলের ঘন কুয়াশা ও তীব্র শীতের শৈত্যপ্রবাহে বোরো বীজতলা ও জনজীবন বিপর্যস্ত।',
     leadTime: 'December–February · Sub-16°C anomaly scoring',
@@ -286,8 +271,6 @@ const HAZARD_CONFIGS: Record<string, HazardCardConfig> = {
     ),
   },
   fire: {
-    kickerEn: 'DRY BIOMASS · AGRICULTURAL RESIDUE',
-    kickerBn: 'অগ্নিকাণ্ড · শুষ্ক মৌসুম',
     taglineEn: 'Dry-season biomass ignition and crop residue flare-ups under low humidity and high winds.',
     taglineBn: 'শুষ্ক মৌসুমে ফসলের অবশিষ্টাংশ ও খড়ের গাদায় হঠাৎ অগ্নিকাণ্ডের ঝুঁকি।',
     leadTime: 'February–May dry season · Low relative humidity index',
@@ -524,35 +507,24 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
               '--ap-hazard-accent': config.isDark ? pal.onDark : pal.text,
               '--ap-hazard-accent-dark': pal.onDark,
             } as React.CSSProperties;
-            const kicker = language === 'bn' ? config.kickerBn : config.kickerEn;
             const tagline = language === 'bn' ? config.taglineBn : (hazard.summary || config.taglineEn);
 
             return (
               <Link
                 key={hazard.slug}
                 to={`/hazards/${hazard.slug}`}
-                className={`group flex-shrink-0 w-72 sm:w-80 md:w-96 snap-start flex flex-col justify-between rounded-[28px] p-6 sm:p-7 relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 ${
+                className={`group flex-shrink-0 w-72 sm:w-80 md:w-96 snap-start flex flex-col justify-between rounded-[28px] p-6 sm:p-7 relative overflow-hidden transition-colors duration-300 hover:border-[color:var(--ap-hazard-accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 ${
                   config.isDark
-                    ? 'bg-carbon-black text-white border border-white/10 shadow-md'
-                    : 'bg-ap-grouped text-ap-label border border-ap-hairline shadow-sm'
+                    ? 'bg-carbon-black text-white border border-white/10'
+                    : 'bg-ap-grouped text-ap-label border border-ap-hairline'
                 }`}
                 style={{
                   minHeight: '440px',
                   ...hazardVars,
                 }}
               >
-                {/* Background ambient radial glow */}
-                <div
-                  className="absolute -top-12 -right-12 w-48 h-48 rounded-full blur-3xl pointer-events-none opacity-40 transition-opacity group-hover:opacity-60 bg-[color:var(--ap-hazard-accent)] dark:bg-[color:var(--ap-hazard-accent-dark)]"
-                />
-
-                {/* Top Section: Kicker, Title, Description */}
+                {/* Top section: the hazard's own name, its one-line reading, the horizon. */}
                 <div className="relative z-10">
-                  <span
-                    className="text-xs font-semibold uppercase tracking-wider block mb-1.5 text-[color:var(--ap-hazard-accent)] dark:text-[color:var(--ap-hazard-accent-dark)]"
-                  >
-                    {kicker}
-                  </span>
                   <div className="flex items-center justify-between gap-2">
                     <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-inherit">
                       {hazard.class}
@@ -624,7 +596,6 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
               '--ap-hazard-accent': config.isDark ? pal.onDark : pal.text,
               '--ap-hazard-accent-dark': pal.onDark,
             } as React.CSSProperties;
-            const kicker = language === 'bn' ? config.kickerBn : config.kickerEn;
             const tagline = language === 'bn' ? config.taglineBn : (hazard.summary || config.taglineEn);
             const isWide = index === 0 || index === 1 || index === 6 || index === 7;
 
@@ -632,30 +603,20 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
               <Link
                 key={hazard.slug}
                 to={`/hazards/${hazard.slug}`}
-                className={`group flex flex-col justify-between rounded-[28px] p-6 sm:p-7 relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 ${
+                className={`group flex flex-col justify-between rounded-[28px] p-6 sm:p-7 relative overflow-hidden transition-colors duration-300 hover:border-[color:var(--ap-hazard-accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 ${
                   isWide ? 'sm:col-span-2 lg:col-span-2' : 'sm:col-span-1 lg:col-span-1'
                 } ${
                   config.isDark
-                    ? 'bg-carbon-black text-white border border-white/10 shadow-md'
-                    : 'bg-ap-grouped text-ap-label border border-ap-hairline shadow-sm'
+                    ? 'bg-carbon-black text-white border border-white/10'
+                    : 'bg-ap-grouped text-ap-label border border-ap-hairline'
                 }`}
                 style={{
                   minHeight: isWide ? '420px' : '390px',
                   ...hazardVars,
                 }}
               >
-                {/* Background ambient radial glow */}
-                <div
-                  className="absolute -top-12 -right-12 w-48 h-48 rounded-full blur-3xl pointer-events-none opacity-40 transition-opacity group-hover:opacity-60 bg-[color:var(--ap-hazard-accent)] dark:bg-[color:var(--ap-hazard-accent-dark)]"
-                />
-
-                {/* Top Section */}
+                {/* Top section: the hazard's own name, its one-line reading, the horizon. */}
                 <div className="relative z-10">
-                  <span
-                    className="text-xs font-semibold uppercase tracking-wider block mb-1.5 text-[color:var(--ap-hazard-accent)] dark:text-[color:var(--ap-hazard-accent-dark)]"
-                  >
-                    {kicker}
-                  </span>
                   <div className="flex items-center justify-between gap-2">
                     <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-inherit">
                       {hazard.class}

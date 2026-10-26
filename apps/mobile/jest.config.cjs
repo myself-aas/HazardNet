@@ -7,6 +7,11 @@
 const fs = require('fs');
 const path = require('path');
 
+// `@testing-library/react-native` is hoisted to the repo root, so its own
+// `require('react-test-renderer')` resolves against the ROOT node_modules, not this
+// workspace's. That is why `react-test-renderer` stays a root devDependency even though
+// this package also declares it: the moduleNameMapper below cannot help a dependency's
+// internal require. Removing it from the root manifest fails 10 of the 12 suites here.
 const localReact = path.resolve(__dirname, 'node_modules/react');
 const localRtr = path.resolve(__dirname, 'node_modules/react-test-renderer');
 

@@ -154,7 +154,11 @@ const ChannelCard: React.FC<{ channel: DownloadChannel; state: ChannelState }> =
       {/* Live release assets */}
       {state.release && downloadAssets.length > 0 && (
         <div className="flex flex-wrap items-center gap-2.5">
-          {primary && <span className="text-xs font-mono font-extrabold text-carbon-60 uppercase tracking-wider">Release files:</span>}
+          {primary && (
+            <span className="text-xs font-mono font-extrabold text-carbon-60 uppercase tracking-wider">
+              Release files:
+            </span>
+          )}
           {rest.map((asset) => (
             <AssetButton key={asset.url} asset={asset} onDownload={onDownload} />
           ))}
@@ -231,10 +235,7 @@ export const DownloadCenter: React.FC = () => {
   const channels = useMemo(() => resolveChannels(import.meta.env as Record<string, string | undefined>), []);
   // Release lookups are opt-in (ADR 0011): with no product repository published
   // yet, the default deployment makes no request from this page at all.
-  const live = useMemo(
-    () => liveReleaseLookupsEnabled(import.meta.env as Record<string, string | undefined>),
-    [],
-  );
+  const live = useMemo(() => liveReleaseLookupsEnabled(import.meta.env as Record<string, string | undefined>), []);
   const states = useReleaseChannels(channels, live);
 
   // Deep links: /download?platform=<channel> switches to the right tab and
@@ -256,8 +257,7 @@ export const DownloadCenter: React.FC = () => {
     { id: 'npm', icon: 'code', label: 'JavaScript' },
   ];
 
-  const channelsForTab = (tab: TabId) =>
-    channels.filter((c) => TAB_BY_CHANNEL[c.id] === tab);
+  const channelsForTab = (tab: TabId) => channels.filter((c) => TAB_BY_CHANNEL[c.id] === tab);
 
   return (
     <motion.div
@@ -271,25 +271,23 @@ export const DownloadCenter: React.FC = () => {
       {/* Hero Header */}
       <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 md:p-8 shadow-md relative overflow-hidden space-y-3">
         <div className="absolute top-0 left-0 w-full h-1 bg-primary"></div>
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-full text-xs font-mono font-extrabold bg-amber-50 text-amber-900 border border-amber-300 uppercase tracking-wider shadow-2xs">
-            Open Software Center
-          </span>
+        <h1 className="text-2xl md:text-3xl font-brand font-black text-carbon-90 tracking-tight">
+          Hazard<span className="text-ap-link">Net</span> Multi-Platform Downloads
+        </h1>
+        <div className="mt-3 flex items-center gap-2">
+          <span className="text-xs font-medium text-carbon-60">Open Software Center</span>
           <span className="text-carbon-60">•</span>
           <span className="text-xs text-carbon-60 font-semibold">HazardNet Software, Daemons & Libraries</span>
         </div>
 
-        <h1 className="text-2xl md:text-3xl font-brand font-black text-carbon-90 tracking-tight">
-          Hazard<span className="text-ap-link">Net</span> Multi-Platform Downloads
-        </h1>
         <p className="text-carbon-60 text-xs md:text-sm leading-relaxed max-w-3xl">
-          Every artifact below is produced automatically by the HazardNet product repositories&apos; release
-          pipelines: native Android and Windows apps, the Linux daemon/CLI, and the Python &amp; JavaScript libraries.
-          Files are served straight from GitHub Releases with SHA-256 checksums attached to every release; nothing is
-          hosted or proxied by this website. <strong className="text-carbon-80">HazardNet packages are not published
-          to npm or PyPI</strong>, so no install command is offered and this page queries no package registry. Each
-          card states its own state: a channel with no published release is marked <em>awaiting first release</em>{' '}
-          rather than shown as downloadable.
+          Every artifact below is produced automatically by the HazardNet product repositories&apos; release pipelines:
+          native Android and Windows apps, the Linux daemon/CLI, and the Python &amp; JavaScript libraries. Files are
+          served straight from GitHub Releases with SHA-256 checksums attached to every release; nothing is hosted or
+          proxied by this website.{' '}
+          <strong className="text-carbon-80">HazardNet packages are not published to npm or PyPI</strong>, so no install
+          command is offered and this page queries no package registry. Each card states its own state: a channel with
+          no published release is marked <em>awaiting first release</em> rather than shown as downloadable.
         </p>
       </div>
 
@@ -351,7 +349,10 @@ export const DownloadCenter: React.FC = () => {
             Each release ships a <span className="font-mono font-bold">SHA256SUMS.txt</span>; verify downloads against
             it before deployment (<span className="font-mono">sha256sum -c SHA256SUMS.txt</span>).
           </li>
-          <li>Android builds are signed when release signing is configured; Windows installers are Authenticode-signed when a certificate is present.</li>
+          <li>
+            Android builds are signed when release signing is configured; Windows installers are Authenticode-signed
+            when a certificate is present.
+          </li>
           <li>
             {/* Decision, not an omission (ADR 0011, owner 2026-09-19): HazardNet does not publish
                 packages to npm or PyPI. This page previously queried both registries on every load —
@@ -360,9 +361,9 @@ export const DownloadCenter: React.FC = () => {
                 itself and the browser logged two failing requests per visit. The lookups and the
                 install commands are gone; the Python SDK and the JavaScript library are distributed
                 as source and build artifacts from their product repositories. */}
-            The Python SDK and the JavaScript library are <strong>not</strong> published to PyPI or npm
-            and carry no install command. Both are distributed as source and as the build artifacts
-            their release workflow attaches to GitHub Releases, exactly like the native channels.
+            The Python SDK and the JavaScript library are <strong>not</strong> published to PyPI or npm and carry no
+            install command. Both are distributed as source and as the build artifacts their release workflow attaches
+            to GitHub Releases, exactly like the native channels.
           </li>
         </ul>
       </div>

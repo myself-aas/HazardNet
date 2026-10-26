@@ -163,11 +163,6 @@ function useLiveFacts(): LiveFacts {
 
 /* ─────────────────────────────── presentation ──────────────────────────────── */
 
-/** Eyebrow: uppercase caption, weight over size, secondary label colour. */
-const Eyebrow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <p className="ap-caption-strong text-ap-link">{children}</p>
-);
-
 /**
  * One figure in the trust strip.
  *
@@ -240,7 +235,7 @@ const SectionBody: React.FC<{ section: Section }> = ({ section }) => {
       {section.callout?.text && (
         <p
           role={section.callout.tone === 'warning' ? 'note' : undefined}
-          className="rounded-xl border border-carbon-20 border-l-[2px] border-l-severity-high bg-white p-4 text-base leading-[1.62] text-carbon-80"
+          className="rounded-xl border border-severity-high bg-white p-4 text-base leading-[1.62] text-carbon-80"
         >
           {section.callout.text}
         </p>
@@ -306,9 +301,6 @@ export const FrontDoor: React.FC = () => {
   // used to sit in is gone), clamped to two lines at every width with this disclosure — claim,
   // tagline and action come first, and the reader asks for the rest.
   const [standfirstOpen, setStandfirstOpen] = useState(false);
-  // The evidence pointer under the action reads the same artifact the proof card does: one fact
-  // from the run, pointing at the page that carries the card (/last-run).
-  const coverageArtifact = freshness?.coverage ?? null;
   const {
     alerts,
     assessed,
@@ -366,17 +358,13 @@ export const FrontDoor: React.FC = () => {
   }, [blogsReload]);
 
   /**
-   * The two counts the strip and the hero card print. Both come from the alert artifact:
-   * `not_published` can sit inside `counts` (as the current snapshot has it) or at the top
-   * level (as an older one did), so both places are read. A null stays null — it renders as
-   * an em dash or as the sentence that says the file could not be read, never as a zero.
-   *
-   * `published` is null rather than 0 when the artifact itself was unreadable: "0 alerts"
-   * and "we could not read the file" are different facts, and on a hazard page the second
-   * one must never be dressed as the first.
+   * The withheld count comes from the alert artifact. `not_published` can sit inside
+   * `counts` (as the current snapshot has it) or at the top level (as an older one did), so
+   * both places are read. A null stays null — it renders as an em dash or as the sentence
+   * that says the file could not be read, never as a zero, because "0 alerts" and "we could
+   * not read the file" are different facts and on a hazard page the second one must never
+   * be dressed as the first.
    */
-  const alertsReadable = counts !== null || alerts.length > 0;
-  const published = alertsReadable ? alerts.length : null;
   const withheld = counts?.not_published ?? notPublished ?? null;
 
   if (!content) return null;
@@ -448,20 +436,24 @@ export const FrontDoor: React.FC = () => {
           </div>
 
           <div className="mt-4 grid grid-cols-1 items-center gap-6 sm:mt-6 sm:gap-8">
-            {/* One flat scrim, not a two-stop gradient. The gradient existed to keep the
-                authority paragraph (12px `text-white/75`) off the weak end of its own surface:
-                at the old `to-black/35` the same pixel measured 2.45:1 over a light frame, at
-                `to-black/60` 6.40:1. A single `bg-carbon-black/65` clears that everywhere on the
-                card instead of only at the bottom of it, and `carbon-black` is pinned dark in
-                both themes (it is a scrim, see dark.css §1) so this holds in dark mode too. */}
+            {/* One flat scrim, not a two-stop gradient, and the scrim is a token. The gradient
+                existed to keep the authority paragraph off the weak end of its own surface: at
+                `to-black/35` the same pixel measured 2.45:1 over a light frame. A flat scrim
+                clears that everywhere on the card instead of only at the bottom of it, and it is
+                pinned dark in both themes (it is a scrim, see dark.css §1).
+                Since the 2026-10-26 critique the three text tiers read `--hero-text-*` rather
+                than a baked alpha, so the composited ratio is computable:
+                `__tests__/heroContrast.test.js` puts the scrim over a white photograph and
+                requires 4.5:1 for the 12px and 16px tiers. */}
             <div
-              className="min-w-0 rounded-xl border border-white/15 bg-carbon-black/65 p-4 sm:p-5"
+              className="min-w-0 rounded-xl border border-white/15 p-4 sm:p-5"
               style={{
+                background: 'var(--hero-scrim)',
                 backdropFilter: 'blur(var(--hero-glass-blur))',
                 WebkitBackdropFilter: 'blur(var(--hero-glass-blur))',
               }}
             >
-              <h1 className="ap-hero max-w-3xl text-balance text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+              <h1 className="ap-hero hero-text-strong max-w-3xl text-balance drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                 {localised.h1 ?? localised.title}
               </h1>
               {language === 'bn' && (
@@ -485,7 +477,7 @@ export const FrontDoor: React.FC = () => {
                       evidence pointer (docs/audits/2026-10-03-landing-live-hero-audit.md, H-P1-3). */}
                   <p
                     id="front-door-standfirst"
-                    className={`mt-5 max-w-2xl text-base leading-[1.62] text-white/90 md:text-lg md:leading-[1.5] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] ${
+                    className={`hero-text-body mt-4 max-w-2xl text-base leading-[1.62] md:text-lg md:leading-[1.5] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] ${
                       standfirstOpen ? '' : 'line-clamp-2 sm:line-clamp-none'
                     }`}
                   >
@@ -516,7 +508,7 @@ export const FrontDoor: React.FC = () => {
                   links, and the scorecard has a whole section below that argues for it. The
                   run card used to sit beside this copy as the hero's second column; since
                   2026-10-05 it has a page of its own, and the hero reaches it as a link. */}
-              <div className="mt-5 sm:mt-7">
+              <div className="mt-4 sm:mt-6">
                 <ButtonLink href="/live" intent="primary" size="lg" className="w-full sm:w-auto">
                   <MaterialIcon name="public" className="text-base" />
                   {t('frontdoor.hero.ctaMap')}
@@ -543,30 +535,15 @@ export const FrontDoor: React.FC = () => {
                 </div>
               </div>
 
-              {/* The one evidence pointer is deliberately the last hero element on a phone. It
-                  borrows the run card's own text (it is not a second copy) and links to the card's
-                  page, so the hierarchy stands - claim, action, then the card that checks the
-                  claim. The card moved to `/last-run` on 2026-10-05, so this anchor is now a
-                  route link rather than an in-page fragment; on the wide layout the text link above
-                  already reaches it and this line does not render.
-                  docs/audits/2026-10-03-landing-live-hero-audit.md, H-P1-3. */}
-              {coverageArtifact?.districts_covered != null && coverageArtifact?.districts_expected ? (
-                <Link
-                  to="/last-run"
-                  className="mt-3 inline-flex min-h-[44px] min-w-[44px] items-center text-xs font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white sm:hidden"
-                >
-                  {t('frontdoor.hero.evidencePointer', {
-                    covered: formatNumber(coverageArtifact.districts_covered),
-                    expected: formatNumber(coverageArtifact.districts_expected),
-                    published:
-                      published != null
-                        ? t('frontdoor.hero.evidencePointerAlerts', { count: formatNumber(published) })
-                        : t('frontdoor.hero.evidencePointerNoAlerts'),
-                  })}
-                </Link>
-              ) : null}
+              {/* The mobile-only evidence pointer that used to sit here is gone (2026-10-26
+                  critique, P1). It cost a 44px line in the one viewport the page cannot
+                  spare, and it duplicated both of its own facts: the coverage numbers it
+                  printed are the live strip's first line, two elements below, and `/last-run`
+                  is already one of the three text links above, which render at every width.
+                  Nothing was lost but a second route to a destination the reader had just
+                  been handed. docs/audits/2026-10-26-front-door-critique.md. */}
 
-              <p className="mt-6 max-w-2xl border-t border-white/20 pt-4 text-xs leading-[1.62] text-white/75">
+              <p className="hero-text-meta mt-4 max-w-2xl border-t border-white/20 pt-3 text-xs leading-[1.62]">
                 {t('frontdoor.hero.authority')}{' '}
                 <Link to="/live" className="font-bold text-white underline underline-offset-2 hover:text-white/90">
                   {t('frontdoor.hero.authorityMap')}
@@ -631,7 +608,7 @@ export const FrontDoor: React.FC = () => {
           </div>
 
           <div className="rounded-2xl border border-carbon-20 bg-white p-5">
-            <Eyebrow>{t('frontdoor.run.publishedEyebrow')}</Eyebrow>
+            <h3 className="text-sm font-semibold text-carbon-90">{t('frontdoor.run.publishedEyebrow')}</h3>
             {alertsLoading && <p className="mt-3 text-sm text-carbon-60">{t('frontdoor.run.reading')}</p>}
 
             {!alertsLoading && topAlerts.length > 0 && (
@@ -730,7 +707,7 @@ export const FrontDoor: React.FC = () => {
             <div
               role="alert"
               aria-live="polite"
-              className="rounded-xl border border-carbon-20 border-l-[2px] border-l-severity-high bg-white p-4 space-y-3"
+              className="rounded-xl border border-severity-high bg-white p-4 space-y-3"
             >
               <p className="text-sm leading-[1.62] text-carbon-70">{t('frontdoor.run.failed')}</p>
               <div className="flex flex-wrap gap-3">
@@ -781,7 +758,7 @@ export const FrontDoor: React.FC = () => {
           </div>
 
           <div>
-            <Eyebrow>{t('frontdoor.products.horizonsEyebrow')}</Eyebrow>
+            <h3 className="text-sm font-semibold text-carbon-90">{t('frontdoor.products.horizonsEyebrow')}</h3>
             <div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-2">
               <Link
                 to="/docs/forecasts"
@@ -963,8 +940,7 @@ export const FrontDoor: React.FC = () => {
           aria-labelledby="attribution-heading"
           className="rounded-2xl border border-carbon-20 bg-white p-6 lg:p-8"
         >
-          <Eyebrow>{t('frontdoor.attribution.eyebrow')}</Eyebrow>
-          <h2 id="attribution-heading" className="mt-3 text-ap-tagline font-bold tracking-tight text-carbon-90">
+          <h2 id="attribution-heading" className="text-ap-tagline font-bold tracking-tight text-carbon-90">
             {t('frontdoor.attribution.h2')}
           </h2>
           <p className="mt-3 max-w-3xl text-base leading-[1.62] text-carbon-70">

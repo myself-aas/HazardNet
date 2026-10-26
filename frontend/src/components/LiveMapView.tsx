@@ -965,8 +965,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         const userPinIcon = L.divIcon({
           html: `
             <div style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; outline: none; cursor: pointer;">
-              <div style="position: absolute; inset: -8px; border-radius: 50%; background: rgba(2, 132, 199, 0.4); filter: blur(4px);" class="radar-ping-ring"></div>
-              <div style="position: relative; width: 32px; height: 32px; border-radius: 50%; background: ${MAP_INTERACTIVE.blue}; border: 2.5px solid ${MAP_CHROME.surface}; display: flex; align-items: center; justify-content: center; color: ${MAP_CHROME.surface}; box-shadow: 0 4px 16px rgba(2, 132, 199, 0.6);">
+              <div style="position: absolute; inset: -8px; border-radius: 50%; background: color-mix(in srgb, ${MAP_INTERACTIVE.blue} 40%, transparent); filter: blur(4px);" class="radar-ping-ring"></div>
+              <div style="position: relative; width: 32px; height: 32px; border-radius: 50%; background: ${MAP_INTERACTIVE.blue}; border: 2.5px solid ${MAP_CHROME.surface}; display: flex; align-items: center; justify-content: center; color: ${MAP_CHROME.surface}; box-shadow: 0 4px 16px color-mix(in srgb, ${MAP_INTERACTIVE.blue} 60%, transparent);">
                 ${PIN_GLYPH_SVG}
               </div>
             </div>
@@ -1039,8 +1039,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         const userGpsIcon = L.divIcon({
           html: `
             <div style="position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; outline: none; cursor: pointer;">
-              <div style="position: absolute; inset: -10px; border-radius: 50%; background: rgba(2, 132, 199, 0.45); filter: blur(6px);" class="radar-ping-ring"></div>
-              <div style="position: relative; width: 36px; height: 36px; border-radius: 50%; background: ${MAP_INTERACTIVE.blue}; border: 2.5px solid ${MAP_CHROME.surface}; display: flex; align-items: center; justify-content: center; color: ${MAP_CHROME.surface}; box-shadow: 0 4px 20px rgba(2, 132, 199, 0.7);">
+              <div style="position: absolute; inset: -10px; border-radius: 50%; background: color-mix(in srgb, ${MAP_INTERACTIVE.blue} 45%, transparent); filter: blur(6px);" class="radar-ping-ring"></div>
+              <div style="position: relative; width: 36px; height: 36px; border-radius: 50%; background: ${MAP_INTERACTIVE.blue}; border: 2.5px solid ${MAP_CHROME.surface}; display: flex; align-items: center; justify-content: center; color: ${MAP_CHROME.surface}; box-shadow: 0 4px 20px color-mix(in srgb, ${MAP_INTERACTIVE.blue} 70%, transparent);">
                 ${PIN_GLYPH_SVG}
               </div>
             </div>
@@ -1159,8 +1159,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       const inspectIcon = L.divIcon({
         html: `
           <div style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; outline: none; cursor: pointer;">
-            <div style="position: absolute; inset: -12px; border-radius: 50%; background: rgba(249, 168, 37, 0.45); filter: blur(6px);" class="radar-ping-ring"></div>
-            <div style="position: relative; width: 30px; height: 30px; border-radius: 50%; background: ${MAP_CHROME.surface}; border: 3px solid ${MAP_RISK_RAMP.severe}; display: flex; align-items: center; justify-content: center; color: ${MAP_CHROME.inkStrong}; font-size: 14px; font-weight: 900; box-shadow: 0 4px 16px rgba(249, 168, 37, 0.5);">
+            <div style="position: absolute; inset: -12px; border-radius: 50%; background: color-mix(in srgb, ${MAP_RISK_RAMP.severe} 45%, transparent); filter: blur(6px);" class="radar-ping-ring"></div>
+            <div style="position: relative; width: 30px; height: 30px; border-radius: 50%; background: ${MAP_CHROME.surface}; border: 3px solid ${MAP_RISK_RAMP.severe}; display: flex; align-items: center; justify-content: center; color: ${MAP_CHROME.inkStrong}; font-size: 14px; font-weight: 900; box-shadow: 0 4px 16px color-mix(in srgb, ${MAP_RISK_RAMP.severe} 50%, transparent);">
               <MaterialIcon name="search" className="w-4 h-4 inline-block align-middle" />
             </div>
           </div>
