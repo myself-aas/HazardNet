@@ -314,11 +314,11 @@ jobs:
     # docs/audits/2026-09-13-e2e-green-and-codebase-audit.md.
     #
     # Second 2026-09-13 defect, same job: `<Analytics />` injected a classic
-    # `/_vercel/insights/script.js`, which only Vercel's edge serves. Against
-    # this job's preview server (and on Firebase Hosting) the path fell through
-    # to the SPA rewrite, came back as `index.html` + `text/html`, and the
-    # browser threw `SyntaxError: Unexpected token '<'` once per page load.
-    # Gated behind a Vercel-build flag; see
+    # `/_vercel/insights/script.js`. Against this job's preview server the path
+    # fell through to the SPA rewrite, came back as `index.html` + `text/html`,
+    # and the browser threw `SyntaxError: Unexpected token '<'` once per page
+    # load. The analytics loader and its build-time gate were removed on
+    # 2026-10-26 with the rest of the Vercel deployment, so this cannot recur.
   test-e2e:
     name: End-to-End Tests
     runs-on: ubuntu-latest
@@ -489,13 +489,6 @@ jobs:
             }
           })();
           NODE
-
-      # Vercel rejects a Hobby deployment that carries more than 12 Serverless Functions,
-      # and every file under api/ is one function. The build succeeds and only the deploy
-      # step fails, so this belongs in the source checks, before the build — not after.
-      # See docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget.
-      - name: "Vercel function budget (Hobby: 12)"
-        run: npm run check:functions
 
       # PRD REQ-006 / TASK-008 / TRD INT-CLAIM-01: every metric-shaped number
       # in public copy must be registered in docs/CLAIMS.md with a strategy

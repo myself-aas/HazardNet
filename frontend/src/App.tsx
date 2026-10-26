@@ -4,7 +4,6 @@ import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'r
 import { AnimatePresence, useReducedMotion, LazyMotion, domAnimation } from 'framer-motion';
 import { Interactive } from './components/interactive/Interactive';
 import { useWebFrame, interpolate, Easing } from './lib/motion-interpolate';
-const Analytics = () => null;
 import { AuthProvider, useAuth } from './context/AuthContext';
 import SignUpPage from './pages/SignUpPage';
 import LoginPage from './pages/LoginPage';
@@ -14,7 +13,6 @@ import AuthCallbackPage from './pages/AuthCallbackPage';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ErrorBoundary from './components/ErrorBoundary';
-import { vercelAnalyticsEnabled } from './lib/vercelAnalytics';
 import { isConsoleTrack } from './lib/navigation';
 import { useHazardNotifications } from './hooks/useHazardNotifications';
 import { initializeAttributionCapture } from './services/conversionTracking';
@@ -432,15 +430,6 @@ const App: React.FC = () => (
         </LazyMotion>
       </QueryClientProvider>
     </AuthProvider>
-    {/*
-      Vercel Web Analytics loads ONLY where Vercel's edge can serve it:
-      `/_vercel/insights/script.js` is a Vercel system route, and on any other
-      host an SPA rewrite answers it with index.html, which the browser parses
-      as JavaScript and rejects with `SyntaxError: Unexpected token '<'` once
-      per page load. See lib/vercelAnalytics.ts for the full story and the
-      build-time gate in frontend/vite.config.ts.
-    */}
-    {vercelAnalyticsEnabled && <Analytics />}
   </ErrorBoundary>
 );
 

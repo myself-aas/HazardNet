@@ -1,17 +1,18 @@
 /**
  * The Content-Security-Policy, in one place (Phase 6, SEC-10).
  *
- * The policy was authored three times — the deployed `vercel.json`, the frontend
- * `vercel.json`, and helmet in `backend/server.js` — and they drifted: one config got the
- * AdSense allowlist, the other did not, and the live host served no CSP at all. A policy
- * that exists in three slightly different editions is a policy nobody can reason about,
- * so the string below is the single source and the others are checked against it:
+ * The policy used to be authored four times — two `vercel.json` files, `firebase.json`,
+ * and helmet in `backend/server.js` — and they drifted: one config got the AdSense
+ * allowlist, another did not, and the live host served no CSP at all. A policy that exists
+ * in several slightly different editions is a policy nobody can reason about, so the string
+ * below is the single source and the others are checked against it:
  *
- *   - `vercel.json`, `frontend/vercel.json` and `firebase.json` carry exactly this value
- *     (asserted by `__tests__/securityHeadersParity.test.js`, which reads the canonical
- *     export). `firebase.json` is the one that actually answers `www.hazardnet.live`: the
- *     deployment moved to Firebase Hosting, and it is the surface that silently drifted
- *     on 2026-10-04. Edit all three JSON copies with this file, or the suite fails.
+ *   - `frontend/public/_headers` (Cloudflare Pages — the deployment that answers
+ *     `hazardnet.live` and `www.hazardnet.live`) and `firebase.json` carry exactly this
+ *     value, asserted by `__tests__/securityHeadersParity.test.js`, which reads the
+ *     canonical export. The two `vercel.json` copies were deleted with the rest of that
+ *     deployment on 2026-10-26. Edit both remaining copies with this file, or the suite
+ *     fails.
  *   - `backend/server.js` runs helmet over `cspDirectivesFromString(CSP)`, so the
  *     self-hosted Docker deployment cannot disagree with the deployed one.
  *

@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  *
- * Vercel /api/metrics handler (backlog #5 — replaced the placeholder), deployed through
+ * /api/metrics handler (backlog #5 — replaced the placeholder), deployed through
  * api/[endpoint].js and implemented in serverless/metrics.js.
  * Stateless endpoint exposing the forecast freshness SLO computed live from
  * the (mocked) forecast store.

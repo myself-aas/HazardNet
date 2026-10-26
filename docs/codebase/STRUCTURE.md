@@ -31,8 +31,8 @@ git ls-files '<dir>' | sort              # one subtree
 | `data/` | 20 | `historical-sources/` (9 CSVs, ~24 MB), `design/` (6 baselines + icon registry), `security/`, `site-health/` | `data/design/*.json`, `data/site-health/latest.json` |
 | `Models/` | **8** (was 10) | `README.md`, `REGISTRY.json`, `VERSION.json`, `labels.json`, `normalization_stats.json`, `preprocessing_config.json`, `calibration/confidence_map.template.json`, `inference_example.py` — **the two `.tflite` binaries were deleted** (owner decision 2026-10-10, publication policy) | `Models/README.md`, `docs/PUBLICATION_POLICY.md` |
 | `e2e/` | 7 | Six Playwright specs + `helpers.ts` | `playwright.config.ts` |
-| `api/` | 6 | The six Vercel function **entry points** (12-function Hobby budget) | `scripts/check-vercel-functions.mjs` |
-| `serverless/` | **2** (was 20) | `dispatch.js` + `v1/historical.js` — **the other 18 handler files were deleted** while the `api/` dispatchers still import them (CONCERNS §1) | `find serverless -type f` |
+| `api/` | 6 | The six Node-function **entry points**: route tables + literal loaders, no handler logic | `__tests__/api/serverlessRouting.test.js` |
+| `serverless/` | 20 | The platform-agnostic handlers, each also mounted by an Express router | `find serverless -type f` |
 | `monitoring/` | 4 | Prometheus/Grafana config to run outside the repo (`setup_monitoring.sh` deleted) | `monitoring/README.md` |
 | `plugins/` | 2 | `plugin_manifest.json` + one real widget; declared-not-implemented entries | `plugins/plugin_manifest.json` |
 | `assets/` | 2 | `docs/MODEL_CARD.md`, `icons/hazard_profiles.json` | `git ls-files assets` |
@@ -47,8 +47,8 @@ git ls-files '<dir>' | sort              # one subtree
 |---|---|
 | `package.json` | workspaces, ~40 scripts, root runtime deps, `engines.node >=20` |
 | `package-lock.json` | **a 41-line stub at HEAD** — 3 `packages` entries; `npm ci` fails (CONCERNS §1) |
-| `vercel.json` / `frontend/vercel.json` | the two Vercel configs; CSP + rewrites + `.well-known` content types |
-| `firebase.json` / `.firebaserc` / `firestore.rules` | the Firebase Hosting path and 308 lines of collection rules |
+| `frontend/public/_headers` / `frontend/public/_redirects` | the Cloudflare Pages config that is actually served: full CSP + security policy, cache rules, one legacy redirect. Copied verbatim into `dist/` by Vite |
+| `firebase.json` / `.firebaserc` / `firestore.rules` | Firestore config, project alias, and 308 lines of collection rules (no Hosting block since 2026-10-26) |
 | `jest.config.cjs` / `jest.setup.ts` / `babel.config.cjs` | the root test project and its transform |
 | `playwright.config.ts` / `playwright.qa.config.ts` | E2E, plus a sandbox variant that drives an npm-published Chromium |
 | `eslint.config.js` / `.prettierrc` / `.npmrc` | flat lint config, formatter, `legacy-peer-deps=true` |
@@ -67,14 +67,15 @@ git ls-files '<dir>' | sort              # one subtree
   `frontend/scripts/prerender.mjs` (953 lines) → `frontend/scripts/export-blog-index.mjs`.
 
 **API — two runtimes, one contract**
-- Vercel: the six files under `api/` are the *only* functions. Each is a thin
+- Node functions: the six files under `api/` are the *only* functions. Each is a thin
   `createDispatcher({...})` call over `serverless/dispatch.js`; handlers live in
-  `serverless/` — **of which 17 of 18 were deleted at HEAD** (see CONCERNS §1):
-  the dispatchers import `serverless/{forecasts,historical,ingest,metrics,predict}.js`,
+  `serverless/` (20 modules), which a function host never scans. The dispatchers import
+  `serverless/{forecasts,historical,ingest,metrics,predict}.js`,
   `serverless/chat/{query,sample-questions}.js`, `serverless/v1/{alerts/index,kaggle,telemetry,weather}.js`,
   `serverless/v1/alerts/{evidence-card,policy,review,run}.js` and
-  `serverless/v1/forecasts/{bulk,history,metadata}.js`; **only `serverless/v1/historical.js`
-  and the self-contained `api/v1/weather/batch.js` survive**.
+  `serverless/v1/forecasts/{bulk,history,metadata}.js`, plus the self-contained
+  `api/v1/weather/batch.js`. **Neither runtime is hosted today**: the site is a static
+  Cloudflare Pages deployment (`docs/ops/deployment.md`).
 - Self-host: `backend/server.js` (854 lines) — `npm start` / `npm run dev:api`. Mounts 12
   routers plus `.well-known/*` endpoints, `/health` and `/metrics`.
 
@@ -94,8 +95,8 @@ git ls-files '<dir>' | sort              # one subtree
   and a manual run would fail at `node scripts/fetch_live_wind.mjs` (`live-wind-update.yml:74`).
 
 **How entry is selected:** `package.json` scripts for local runs; `.github/workflows/*.yml`
-for scheduled/CI runs; `vercel.json` (`buildCommand: npm run build`, `outputDirectory: dist`)
-and `firebase.json` for the two deploy paths.
+for scheduled/CI runs; `npm run build` + `dist` for the Cloudflare Pages deployment
+(`docs/ops/deployment.md`).
 
 ### 3) Module Boundaries
 
@@ -105,8 +106,8 @@ and `firebase.json` for the two deploy paths.
 | `packages/api` | Typed HTTP client, endpoint table, retry, error normalisation | Business rules (they live in `core`) |
 | `packages/design-system` | **One** system: `apple.ts` (557 lines) is the single source of colour/type/radius/spacing/elevation/motion; `appleNative.ts` resolves it into RN units; `mapPalette.ts` and the severity/hazard scales are the declared data-encoding layers; `icons.ts` (818 lines) is **generated** from `data/design/icon-registry.json` — *but its generator `scripts/generate-icon-glyphs.mjs` was deleted at HEAD, breaking `icons:check` and `__tests__/iconFamily.test.js`* | React. A second design system — `tokens.ts`, `meridian.ts`, `material3Expressive.ts`, `useTokens.ts` were deleted and must not return (`packages/design-system/src/index.ts` header) |
 | `packages/analytics` | Opt-in streaming tracker: batching, queue cap, one retry then drop, `sendBeacon` on unload, PII-shaped key stripping, Do-Not-Track — **its sink `serverless/v1/telemetry.js` is deleted at HEAD** | Persistence decisions (open owner Action 12) |
-| `backend/` | Express runtime: `routes/` (11 modules), `middleware/` (7), `alerts/` (11 files — engine, policy, channels, lifecycle), `services/` (4), `utils/` (19), `security/csp.js`, `db.js`, `forecastStore.js`, `forecastPersistence.js`, `metrics.js` | Anything Vercel-specific. Shared serving logic goes in `backend/utils/forecastServe.js` so both runtimes are byte-identical |
-| `serverless/` | The real Vercel handlers — **currently just `dispatch.js` + `v1/historical.js`; restore the other 17 or trim the `api/` route tables** | Being placed under `api/` — Vercel would count each as a function and break the 12-budget |
+| `backend/` | Express runtime: `routes/` (11 modules), `middleware/` (7), `alerts/` (11 files — engine, policy, channels, lifecycle), `services/` (4), `utils/` (19), `security/csp.js`, `db.js`, `forecastStore.js`, `forecastPersistence.js`, `metrics.js` | Anything host-specific. Shared serving logic goes in `backend/utils/forecastServe.js` so both runtimes are byte-identical |
+| `serverless/` | The platform-agnostic handlers (20 modules) — the shared implementation both runtimes mount | Being placed under `api/` — a function host counts each file there as a function |
 | `api/` | Six dispatcher entry points only: route tables + literal `() => import(...)` loaders | Handler logic |
 | `frontend/src/components` | 59 root components + 12 sub-trees (141 `.tsx` total, 129 PascalCase): `alerts`, `ui`, `district`, `map`, `user`, `frontdoor`, `brand`, `auth`, `blog`, `apple`, `interactive`, `status`, `unlumen-ui` | Model/dataset/training detail — `docs/PUBLICATION_POLICY.md` is binding |
 | `frontend/src/lib` | 52 framework-agnostic modules + 33 co-located tests + fixtures (forecasts, freshness, i18n, seoHead, glide, geo, alerts, analytics, oauthProviders, pdf…) — **`wind.ts` is orphaned** (its only importer chain ends at an unused `map/windOverlay.ts`) | React components |

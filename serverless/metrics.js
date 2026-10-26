@@ -1,5 +1,5 @@
 /**
- * GET /api/metrics — Prometheus exposition of the Vercel process (backlog #5).
+ * GET /api/metrics — Prometheus exposition of the Node function process (backlog #5).
  *
  * Deployed through api/[endpoint].js; stateless apart from the prom-client register,
  * whose series populate from scrape-driven refresh (see backend/utils/forecastFreshness.js

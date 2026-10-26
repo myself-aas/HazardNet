@@ -1,7 +1,12 @@
 # Live-map real-time plan — free, keyless-first, with fallback ladders
 
 Date: 2026-10-05 · Status: PROPOSED (awaiting owner approval before implementation)
-Scope: `/live` (LiveMapView) · Deployment target: Vercel · Branch: `arena/01a1045f-hazardnet`
+Scope: `/live` (LiveMapView) · Branch: `arena/01a1045f-hazardnet`
+
+> **Superseded constraint, 2026-10-26:** this plan was written when the deployment target was
+> a function host with a 12-function budget. The site is now a static Cloudflare Pages
+> deployment with no API (`docs/ops/deployment.md`); the budget references below are history,
+> and any server-side piece of this plan needs a host before it can ship.
 
 Knowledge base: the full `DATA_SOURCES.md` of `bilawalsidhu/gods-eye-view` (47.5k-star
 real-time globe) was read end to end on 2026-10-05. Every architecture pattern below is

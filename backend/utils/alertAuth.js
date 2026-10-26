@@ -1,6 +1,6 @@
 /**
  * Access control for the alert surface, shared by the Express router and the
- * Vercel serverless handlers so the two deployments cannot drift apart.
+ * Node-function handlers so the two runtimes cannot drift apart.
  *
  * Three kinds of caller, in increasing privilege:
  *

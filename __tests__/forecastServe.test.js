@@ -5,10 +5,10 @@
  * Unit tests — shared forecast-serving helpers (backend/utils/forecastServe.js).
  *
  * This module is the single implementation behind BOTH the Express routes and
- * the Vercel serverless handlers, so these tests pin the query contract and
+ * the Node-function handlers, so these tests pin the query contract and
  * CSV export both runtimes inherit. Runtime wiring is covered by
  * __tests__/api/forecasts.test.js (Express) and
- * __tests__/vercelForecasts.test.js (Vercel).
+ * __tests__/forecastHandlers.test.js.
  */
 const {
   HISTORY_MAX_WINDOW_DAYS,

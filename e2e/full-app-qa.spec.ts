@@ -63,7 +63,6 @@ const ENVIRONMENTAL: Array<{ pattern: RegExp; why: string }> = [
     why: 'IP-geolocation fallback host rate-limits shared CI egress and omits CORS headers',
   },
   { pattern: /net::ERR_(CONNECTION_CLOSED|FAILED|ABORTED|NAME_NOT_RESOLVED)/i, why: 'network egress restricted' },
-  { pattern: /_vercel\/insights/i, why: 'Vercel-only analytics asset' },
 ];
 
 function isEnvironmental(text: string): boolean {
@@ -86,8 +85,9 @@ function isEnvironmental(text: string): boolean {
  * from "the API ran and answered with an error".
  *
  *  - 404/501 — the deployment serves nothing at that path. Production answers
- *    /api/v1/forecasts/* this way (Vercel Root Directory; site-health.yml probes
- *    it and docs/ops/owner-actions.md §2a-bis tracks the owner action).
+ *    /api/v1/forecasts/* this way: the site is a Cloudflare Pages static
+ *    deployment with no Node runtime behind it (site-health.yml probes it and
+ *    docs/ops/owner-actions.md Action 17 tracks the owner action).
  *  - 502/503/504 — `vite preview` proxies /api to `127.0.0.1:3001`
  *    (frontend/vite.config.ts), and the CI E2E job starts no backend, so the
  *    proxy itself answers for every API call. This is what the 18 red tests of
@@ -112,14 +112,13 @@ const ENVIRONMENTAL_URLS: Array<{ pattern: RegExp; why: string; statuses?: numbe
   { pattern: /cartocdn|arcgis(online)?\.com|tile\.map-data|opentopomap/i, why: 'basemap tiles blocked; service worker serves its offline tile' },
   { pattern: /ipapi\.co/i, why: 'IP-geolocation fallback host rate-limits shared CI egress', statuses: [403, 429] },
   { pattern: /\/api\/v1\/(weather|alerts)/i, why: 'upstream weather/alert feeds unreachable without egress' },
-  { pattern: /_vercel\/insights/i, why: 'Vercel-only analytics asset' },
   {
     // The forecast API is not served by the environment this suite runs in. The
     // CI job serves the built frontend with `vite preview` (static assets only —
     // no Node API runtime), and the production deployment answers
-    // /api/v1/forecasts/* with 404 for the same reason (Vercel Root Directory;
-    // site-health.yml probes it and docs/ops/owner-actions.md §2a-bis tracks the
-    // owner action). ADR 0008 makes the committed snapshot the fallback, so a
+    // /api/v1/forecasts/* with 404 for the same reason (Cloudflare Pages, static
+    // only; site-health.yml probes it and docs/ops/owner-actions.md Action 17
+    // tracks the owner action). ADR 0008 makes the committed snapshot the fallback, so a
     // 404 here is the documented delivery path, not a defect — and the
     // `forecast data comes from a documented source` test below asserts the
     // fallback actually resolved instead of trusting the mute.

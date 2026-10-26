@@ -182,11 +182,22 @@ router.get('/', alertLimiter, async (req, res) => {
     const view = alerts.map((alert) => publicAlertView(alert, {
       includeReviewerContact: privileged,
     }));
+    /* The level ledger, in the same shape the serverless copy serves and the web client reads
+       (`counts`). `state_counts` answers a different question. Keep the two routes identical:
+       a client cannot tell which one answered, so a field missing from one is a bug that only
+       shows up on the host that happens to serve it. */
+    const counts = view.reduce((acc, alert) => {
+      const alertLevel = String(alert.level || '');
+      if (alertLevel) acc[alertLevel] = (acc[alertLevel] || 0) + 1;
+      return acc;
+    }, {});
+
     res.set('Cache-Control', privileged ? 'no-store' : 'public, max-age=60');
     res.json({
       generated_at: new Date().toISOString(),
       policy_version: policy.version,
       count: view.length,
+      counts,
       state_counts: stateCounts(alerts),
       states_visible: privileged ? 'all' : ['PUBLISHED'],
       filters: { state, level, horizon: req.query.horizon || null,

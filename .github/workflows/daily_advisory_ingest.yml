@@ -241,20 +241,47 @@ jobs:
             echo "committed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Trigger Vercel Production Deployment
+      # The deploy trigger. Until 2026-10-26 this job ended with `npx vercel deploy --prod`,
+      # gated on `committed == 'true'` and on a VERCEL_TOKEN the repository never held, so the
+      # step silently deferred to a Git trigger that was not doing anything either.
+      #
+      # Why a hook and not "the push is the trigger": the artifact commit above carries
+      # `[skip ci]`, which is deliberate (a data commit must not re-run the 20-minute test
+      # matrix) and which Cloudflare Pages honours with the same skip tokens. So the push by
+      # itself will NOT rebuild the site — the hook is the trigger, not a redundancy.
+      # `docs/ops/deployment.md` §4 records the dashboard side (Deploy hooks → main).
+      #
+      # It fails loudly on purpose: an unset secret, a non-2xx answer or a network failure
+      # means the site keeps serving the previous artifacts, and a green run that says
+      # "deployed" while nothing deployed is the exact failure this replaces.
+      - name: Trigger Cloudflare Pages Production Deployment
         if: steps.commit-artifacts.outputs.committed == 'true'
+        shell: bash
         env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          CF_PAGES_DEPLOY_HOOK: ${{ secrets.CF_PAGES_DEPLOY_HOOK }}
         run: |
-          if [ -z "${VERCEL_TOKEN:-}" ]; then
-            echo "[deploy] VERCEL_TOKEN unset — relying on GitHub push trigger for deployment."
-            exit 0
+          set -uo pipefail
+          if [ -z "${CF_PAGES_DEPLOY_HOOK}" ]; then
+            echo "::error::Artifacts were committed, but CF_PAGES_DEPLOY_HOOK is unset, so the site will keep serving the previous build. Create the deploy hook (Cloudflare Pages -> project -> Settings -> Builds & deployments -> Deploy hooks -> main) and store its URL as the repository secret CF_PAGES_DEPLOY_HOOK. See docs/ops/deployment.md section 4."
+            exit 1
           fi
-
-          echo "[deploy] Triggering Vercel deployment..."
-          npx --yes vercel deploy --prod --token="$VERCEL_TOKEN"
+          HTTP=$(curl -sS -o /tmp/pages-hook.txt -w '%{http_code}' \
+            -X POST "$CF_PAGES_DEPLOY_HOOK" \
+            -H 'Content-Type: application/json' --data '{}' \
+            --retry 3 --retry-delay 10 --retry-connrefused --max-time 30) || HTTP=000
+          echo "deploy hook answered HTTP $HTTP"
+          case "$HTTP" in
+            2??) echo "[deploy] Cloudflare Pages build triggered." ;;
+            000)
+              echo "::error::could not reach the Cloudflare Pages deploy hook (no HTTP response after 4 attempts). The artifacts are committed; trigger a build from the dashboard or run: npx wrangler pages deploy frontend/dist --project-name=<project>"
+              exit 1
+              ;;
+            *)
+              echo "::error::the Cloudflare Pages deploy hook rejected the request with HTTP $HTTP:"
+              head -c 500 /tmp/pages-hook.txt || true
+              exit 1
+              ;;
+          esac
 
       # Retired 2026-10-26: the trailing "Dispatch Operational Monitoring & Slack
       # Alert" step used to sit here. It is now the inert template

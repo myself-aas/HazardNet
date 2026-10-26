@@ -309,6 +309,7 @@ export const FrontDoor: React.FC = () => {
     generatedAt,
     loading: alertsLoading,
     error,
+    source: alertsSource,
     refresh: refreshAlerts,
   } = useAlertsData();
   const hazardLabel = useHazardLabel();
@@ -566,6 +567,9 @@ export const FrontDoor: React.FC = () => {
           loading={alertsLoading}
           error={error}
           coverage={coverage}
+          /* "Unreadable" is a fact about the load, not about the numbers: only the loader's
+             `source: 'none'` means nothing could be read at all. See the prop's comment. */
+          readFailed={!alertsLoading && alertsSource === 'none'}
           onRetry={refreshAlerts}
         />
 

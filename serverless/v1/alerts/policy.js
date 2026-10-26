@@ -5,7 +5,7 @@
  * probe hits this one. The response is identical to the Express twin's
  * (backend/routes/alerts.js GET /policy). Deployed through api/v1/alerts/[action].js;
  * the 12-function budget and the dispatch contract live in serverless/dispatch.js and
- * docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget.
+ * docs/codebase/ARCHITECTURE.md#the-node-function-surface-api.
  */
 
 import { guardRequest } from '../../../backend/middleware/serverlessGuard.js';

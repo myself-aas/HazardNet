@@ -1,5 +1,5 @@
 /**
- * Vercel Serverless Function — the `/api/v1` resource surface.
+ * Node Serverless Function — the `/api/v1` resource surface.
  *
  * GET  /api/v1/alerts      deployed alert list (reads the same policy/store as the alerts below)
  * GET  /api/v1/historical  paginated historical events (public read, large JSON)
@@ -7,9 +7,9 @@
  * POST /api/v1/telemetry   anonymous product-analytics batches from @hazardnet/analytics
  *                          (validated, never persisted — see serverless/v1/telemetry.js)
  *
- * Handlers live in `serverless/v1/` (not scanned for functions), keeping the deployment
- * inside the 12-function Hobby budget — docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget. Loaders are
- * literal (bundler traceability) and per request (fault and cold-start isolation).
+ * Handlers live in `serverless/v1/` (not scanned for functions) — one entry point for five
+ * URLs (docs/codebase/ARCHITECTURE.md#the-node-function-surface-api). Loaders are literal
+ * (bundler traceability) and per request (fault and cold-start isolation).
  */
 
 import { createDispatcher } from '../../serverless/dispatch.js';

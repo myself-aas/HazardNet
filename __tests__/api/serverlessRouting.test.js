@@ -1,18 +1,19 @@
 /**
  * @jest-environment node
  *
- * Serverless routing and the Hobby function budget.
+ * Serverless routing: the entry points under `api/` and the dispatcher behind them.
  *
- * The deployment may carry at most 12 Serverless Functions (Hobby plan) and every file
- * under `api/` is one function, so the entry points are URL *families* that dispatch to
- * the per-endpoint handlers in `serverless/` (see docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget).
- * That consolidation must not change the public surface: a route that quietly stops being
- * served is worse than the deployment failing outright, because nothing reports it.
+ * Every file under `api/` is one Node function, and the entry points are URL *families* that
+ * dispatch to the per-endpoint handlers in `serverless/`. The consolidation was originally
+ * forced by a 12-function plan limit on the host that has since been dropped (Cloudflare
+ * Pages serves the site statically; `serverless/` is shared with the Express backend in
+ * `backend/`), but the layout is kept because it is what makes the handler modules
+ * platform-agnostic — and because the shape must not silently change: a route that quietly
+ * stops being served is worse than a deployment failing outright, because nothing reports it.
  *
  * This suite pins the surface three ways:
- *   1. the function count is within budget (scripts/check-vercel-functions.mjs runs the
- *      same count in CI; here it also fails when a file appears in `api/` that is not a
- *      declared entry point);
+ *   1. every file in `api/` is a declared entry point (no stray file joins the surface
+ *      unnoticed), and the declared set is the whole set;
  *   2. every public URL still resolves to a handler — asserted per entry point, and by
  *      driving one request through the real entry file;
  *   3. the dispatcher is transparent: it removes its own routing parameter before the
@@ -28,11 +29,11 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { createDispatcher, routeSegment, stripRouteParam } from '../../serverless/dispatch.js';
-import { listFunctions, HOBBY_FUNCTION_LIMIT } from '../../scripts/check-vercel-functions.mjs';
 import { resetGuardsForTests } from '../../backend/middleware/serverlessGuard.js';
 
 /**
- * The public surface of the Vercel deployment: entry file → the URL segments it serves.
+ * The public surface of the Node function deployment: entry file → the URL segments it
+ * serves.
  * A static entry (`api/v1/weather/batch.js`) serves exactly its own path and therefore has
  * an empty list.
  */
@@ -43,6 +44,18 @@ const PUBLIC_SURFACE = {
   'api/v1/alerts/[action].js': ['evidence-card', 'policy', 'review', 'run'],
   'api/v1/forecasts/[action].js': ['bulk', 'history', 'metadata'],
   'api/v1/weather/batch.js': [],
+};
+
+/** Every `.js` file under `api/`, repository-relative and sorted — the entries that exist. */
+const listFunctions = () => {
+  const walk = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) return walk(full);
+    return entry.name.endsWith('.js') ? [full] : [];
+  });
+  return walk(join(process.cwd(), 'api'))
+    .map((file) => file.split(process.cwd() + '/')[1])
+    .sort();
 };
 
 const makeRes = () => {
@@ -64,11 +77,9 @@ beforeEach(() => {
   delete process.env.HAZARDNET_DISABLE_SERVERLESS_RATELIMIT;
 });
 
-describe('the deployment stays inside the Hobby function budget', () => {
-  it('deploys at most 12 functions, and every one of them is a declared entry point', () => {
-    const functions = listFunctions();
-    expect(functions.length).toBeLessThanOrEqual(HOBBY_FUNCTION_LIMIT);
-    expect(functions).toEqual(Object.keys(PUBLIC_SURFACE).sort());
+describe('the entry-point surface is declared, not discovered', () => {
+  it('serves exactly the declared entry points — no more, no fewer', () => {
+    expect(listFunctions()).toEqual(Object.keys(PUBLIC_SURFACE).sort());
   });
 
   it('never imports a handler at module scope', () => {
@@ -262,7 +273,7 @@ describe('every deployed module is loadable', () => {
   });
 
   it('resolves every relative import under api/ and serverless/ to a real file', () => {
-    // A specifier that climbs out of the repository still *builds* — Vercel emits the
+    // A specifier that climbs out of the repository still *builds* — a bundler emits the
     // function and it throws on the first request. That is how the weather handlers were
     // deployed with `../../../backend/...` from a directory that needed `../../`: a 500 on
     // GET /api/v1/weather and POST /api/v1/weather/batch, invisible until a user hit them.

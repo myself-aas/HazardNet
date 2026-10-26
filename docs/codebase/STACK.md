@@ -128,7 +128,7 @@ Root `dependencies` (the serverless + self-host runtime):
 | `supertest`, `node-mocks-http` | HTTP-level API tests | root `devDependencies` |
 | ~~`pytest` + `PyYAML`~~ | **removed from the tree** (`scripts/tests/`, `scripts/requirements-pipeline.txt` deleted) but **still referenced by `ci.yml`** | `ci.yml:213,221`, `test -e` → ABSENT |
 | `impeccable` 4.1 | design-quality scanner (`npm run design:detect`); four agent definitions in `.github/agents/` and a hook pack in `.github/hooks/` | `.impeccable/config.json`, `.github/agents/` |
-| ~30 bespoke `scripts/check-*.mjs` gates | token compliance, contrast, `!important`, SVG paint, prose dashes, icon family, bundle size, Vercel function budget, claims registry, secret rotation, public paths | `package.json` scripts, `data/design/*.json` baselines |
+| ~30 bespoke `scripts/check-*.mjs` gates | token compliance, contrast, `!important`, SVG paint, prose dashes, icon family, bundle size, claims registry, secret rotation, public paths | `package.json` scripts, `data/design/*.json` baselines |
 | `@babel/preset-env`/`-typescript`/`-react` + `babel-plugin-transform-import-meta` | Jest transform; rewrites `import.meta` for CJS output | `babel.config.cjs` |
 | Dependabot | dependency + Actions updates | `.github/dependabot.yml` |
 | **Broken gate scripts at HEAD** | `scripts/generate-icon-glyphs.mjs`, `scripts/validate_env.mjs`, `scripts/npm-audit-ci.mjs`, `scripts/fetch_live_wind.mjs`, `scripts/lib/{public-text,infinity-geometry,token-resolver}.mjs` are **deleted** while `package.json` scripts, `ci.yml`, workflows and ~13 test suites still invoke them (CONCERNS §1) | `test -e` on each path → ABSENT |
@@ -163,7 +163,6 @@ npm run lint            # tsc -p frontend/tsconfig.json --noEmit  (clean at HEAD
 npm run lint:eslint     # eslint . --max-warnings 685  (measured 580 warnings / 0 errors at HEAD)
 npm run format          # prettier --write over frontend/src, backend, api
 npm run check:device    # BREAKS at icons:check — scripts/generate-icon-glyphs.mjs deleted
-npm run check:functions # Vercel 12-function budget (measured 6/12 at HEAD)
 npm run check:claims    # CLAIMS.md registry vs public copy (measured 16/16 at HEAD)
 npm run check:rotation  # secret-rotation register (15 credentials, 0 overdue, 13 unrecorded)
 npm run check:env       # BROKEN AT HEAD — scripts/validate_env.mjs deleted
@@ -179,8 +178,8 @@ npm run check:bundle    # gzip budget: 800 KiB/chunk, 1600 KiB total
 | `.env.example` | 38 documented variables, all committed **empty** |
 | `firebase-applet-config.json`, `firebase-blueprint.json` | Firebase **web** config (public by design) + hosting blueprint |
 | `.firebaserc` | project alias `default: hazardnet-aas48424` |
-| `firebase.json` | Hosting headers/rewrites for the Firebase deploy path |
-| `vercel.json` (root) + `frontend/vercel.json` | the Vercel deploy path; CSP duplicated here and in `backend/security/csp.js` |
+| `firebase.json` | Firestore config only — the Hosting block was retired 2026-10-26 (Action 22) |
+| `frontend/public/_headers` + `frontend/public/_redirects` | the Cloudflare Pages deploy path (the only one): security policy, cache rules, the one legacy redirect. CSP duplicated from `backend/security/csp.js` and pinned by `__tests__/securityHeadersParity.test.js` |
 | `firestore.rules` | 308 lines of collection rules |
 | `Models/VERSION.json` + `Models/REGISTRY.json` | model-artifact handshake (sha256 + version) |
 | `data/security/secret-rotation.json` | rotation register, 15 credentials |
@@ -201,7 +200,7 @@ npm run check:bundle    # gzip budget: 800 KiB/chunk, 1600 KiB total
 - **Store selection** — `FORECAST_STORE`, `FORECAST_DATASET` — *the `check:env` validator that
   used to verify these is among the deleted scripts*
 - **Frontend build-time** — `VITE_FIREBASE_*` (9 vars), `VITE_VAPID_PUBLIC_KEY`,
-  `VITE_VERCEL_ANALYTICS`, `VITE_CONTACT_EMAIL`, `VITE_DOWNLOAD_GITHUB_OWNER`,
+  `VITE_ANALYTICS_ENABLED`, `VITE_CONTACT_EMAIL`, `VITE_DOWNLOAD_GITHUB_OWNER`,
   `VITE_DOWNLOAD_REPO_ANDROID`
 - **Behaviour switches** — `CSP_ENFORCE`, `FRONTEND_ORIGIN` (production **fails closed** if
   unset), `ALERT_AUTO_PUBLISH`, `ALERT_AUTO_PUBLISH_MINUTES`, `ALERT_DUTY_OFFICERS`
@@ -212,14 +211,16 @@ production misconfig) from `warnings`, non-fatally so local dev still boots.
 
 **Deployment / runtime constraints**
 
-- **Vercel Hobby: at most 12 Serverless Functions.** Measured **6/12** at HEAD
-  (`node scripts/check-vercel-functions.mjs`). The whole `api/` layout exists to stay under
-  it — see ARCHITECTURE.md extended section. **Warning:** 17 of the 18 handler modules the
-  `api/` dispatchers import were deleted between `b321083f` and HEAD, so the deployed budget
-  check passes while the surface itself is broken (CONCERNS §1).
-- **Two deploy paths coexist**: `vercel.json` at the root, `firebase.json` for Hosting.
-  Owner decision on record (2026-10-04, restated 2026-10-10): `www` stays canonical, deploys
-  stay with Vercel and stay owner-run. 63 tracked files reference `www.hazardnet.live`.
+- **One deploy path**: Cloudflare Pages, root directory = repository root, build
+  `npm run build`, output `dist`. Both hostnames CNAME to the same project. Recorded, with
+  the reason for each setting, in `docs/ops/deployment.md`.
+- **No API runtime is hosted.** The site is static, so `/api/**` answers 404 and the client
+  falls back to committed snapshots (ADR 0008). `api/` keeps 6 entry points over 20 handler
+  modules for a future Node-function host, and `backend/` runs only when someone starts it.
+  The 12-function plan limit that shaped `api/` no longer applies; the shape is kept because
+  it keeps the handlers shared with Express.
+- **63 tracked files reference `www.hazardnet.live`** as the canonical origin, and it now
+  serves the same deployment as the apex.
 - Bundle budget is enforced post-build: 800 KiB gzip per chunk, 1,600 KiB total
   (`scripts/check-bundle.mjs`).
 - Target devices are low-end Android on 2G/3G — a stated design constraint, not a fallback
@@ -234,11 +235,11 @@ production misconfig) from `warnings`, non-fatally so local dev still boots.
 - `eslint.config.js`, `.prettierrc`, `.npmrc`
 - `.github/workflows/ci.yml` (seven jobs), `.github/workflows/app-releases.yml`,
   `.github/workflows/{android_release,windows-compile}.yml`, `.github/dependabot.yml`
-- `.env.example`, `firebase.json`, `.firebaserc`, `vercel.json`, `firestore.rules`
+- `.env.example`, `firebase.json`, `.firebaserc`, `frontend/public/{_headers,_redirects}`, `firestore.rules`
 - `docs/codebase/.codebase-scan.txt` §STACK DETECTION, §CODE METRICS, §CI/CD PIPELINES
 - Terminal output (this sandbox, 2026-10-25): `npm install` (2,311 packages / 59 s),
   `npm run lint` (clean), `npx eslint .` (0 errors / 580 warnings),
-  `node scripts/check-vercel-functions.mjs` (6 functions), `node scripts/verify_claims.mjs`
+  `node scripts/check-workflows.mjs` (8 workflows), `node scripts/verify_claims.mjs`
   (16/16), `node scripts/check-secret-rotation.mjs` (15 credentials, 0 overdue, 13 unrecorded),
   `npm run check:env` / `npm run icons:check` (**crash — missing script files**),
   `npm ls --depth=0` (expo 51.0.39, @google/genai 2.31.0, typescript 5.9.3, zod 3.25.76)
@@ -251,15 +252,15 @@ production misconfig) from `warnings`, non-fatally so local dev still boots.
 |---|---|---|---|---|
 | Local dev | Vite `:3000`, proxies `/api`,`/metrics`,`/health` → `:3001` | Express (`backend/server.js`) | `FORECAST_STORE_MEMORY=true` or Firestore | Report-Only (`cspEnforce` false) |
 | Local prod-like | Express `:3000` serving `frontend/dist` | Express | Firestore | Enforcing (`NODE_ENV=production`) |
-| Vercel | `www.hazardnet.live` (declared canonical; resolves and serves through Cloudflare) | 6 serverless functions from `api/` → `serverless/` — **handlers 17/18 deleted at HEAD; measured symptom: the front door renders "live API: HTTP 503"** | committed JSON snapshots + Firestore | `vercel.json` header, enforcing |
-| Firebase Hosting | `hazardnet.live` | none — static only | committed JSON snapshots | `firebase.json` headers |
+| Cloudflare Pages | `hazardnet.live` **and** `www.hazardnet.live` — one deployment | **none** — static only, so `/api/**` is 404 and the front door reads the committed snapshots | committed JSON snapshots (Firestore is unreachable from the site) | `frontend/public/_headers`, enforcing |
+| Firebase Hosting | *(retired — config deleted, site to be disabled: Action 22)* | none | the 2026-09-24 build, still publicly served at `hazardnet-aas48424.web.app` | its old `firebase.json` headers, no longer declared |
 | GitHub Actions | n/a | n/a | commits `backend/data/forecasts/**` + `frontend/public/data/**` — **pipeline resumed: latest ingest 2026-10-24, `prediction_date 2026-10-24`, 128 rows, snapshot built 2026-10-25T10:49Z** | n/a |
 
 ### Process-manager / container posture
 
 The scan reports **"No containerization configs detected"** and that is accurate at HEAD: no
 `Dockerfile`, no Compose file, no Kubernetes manifest. Deployment is platform-native
-(Vercel / Firebase Hosting / Expo prebuild / MSBuild). `monitoring/{prometheus.yml,alerts.yml,
+(Cloudflare Pages for the site; Expo prebuild / MSBuild for the native apps). `monitoring/{prometheus.yml,alerts.yml,
 grafana-dashboard.json,README.md}` plus `MONITORING_SETUP_GUIDE.md` describe a
 Prometheus+Grafana stack to be run **outside** the repo; `scripts/setup_monitoring.sh`, which
 previously seeded it, was **deleted** between `b321083f` and HEAD.

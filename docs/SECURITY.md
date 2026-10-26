@@ -93,8 +93,8 @@ provided you:
 
 - Attacks requiring pre-existing physical access to an authenticated administrator's workstation.
 - Self-XSS, tab-nabbing, or missing headers on static documentation pages without state-changing actions.
-- Denial-of-service through volumetric request flooding (handled at Cloudflare / Vercel edge).
-- Issues in upstream third-party infrastructure (Vercel edge, Firebase hosting, Kaggle platform, Open-Meteo API).
+- Denial-of-service through volumetric request flooding (handled at the Cloudflare edge).
+- Issues in upstream third-party infrastructure (Cloudflare edge, Firebase hosting, Kaggle platform, Open-Meteo API).
 
 ---
 
@@ -132,7 +132,7 @@ Outbound links to ReliefWeb, FAO, WHO, ADRC, and IFRC GO are:
 
 ### 4.5 Secrets Management & CI/CD Protection
 - Zero credentials or API keys in tracked repository code.
-- Operational secrets (`KAGGLE_USERNAME`, `KAGGLE_KEY`, `FIREBASE_SERVICE_ACCOUNT`, `VERCEL_TOKEN`) reside exclusively in encrypted GitHub Actions secrets.
+- Operational secrets (`KAGGLE_USERNAME`, `KAGGLE_KEY`, `FIREBASE_SERVICE_ACCOUNT`) reside exclusively in encrypted GitHub Actions secrets.
 - Automated secret scanning (`scripts/check-secrets.sh`) runs on every commit and pull request.
 - Automated dependency auditing (`scripts/npm-audit-ci.mjs`) fails CI on unresolved high/critical vulnerabilities.
 

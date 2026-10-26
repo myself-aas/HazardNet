@@ -3,7 +3,7 @@ import express from 'express';
 import request from 'supertest';
 import { createMocks } from 'node-mocks-http';
 import routes from '../../backend/routes/predict.js';
-// The deployed Vercel entry point, not the handler module: this is the file whose
+// The deployed entry point (api/[endpoint].js), not the handler module: this is the file whose
 // dispatch decides whether /api/predict reaches the stored-prediction handler.
 import handler from '../../api/[endpoint].js';
 import { getForecastStore } from '../../backend/forecastStore.js';
@@ -28,8 +28,8 @@ beforeEach(() => {
   getForecastStore.mockReturnValue({ getLatestForecastsByHorizon: read });
   process.env.HAZARDNET_DISABLE_SERVERLESS_RATELIMIT = '1';
 });
-const vercel = async (body, method = 'POST') => {
-  // `endpoint` is the segment Vercel appends for `/api/predict`; the entry point routes on
+const callEntry = async (body, method = 'POST') => {
+  // `endpoint` is the query parameter the entry point receives for `/api/predict`; it routes on
   // it and removes it again before the handler runs.
   const { req, res } = createMocks({ method, body, query: { endpoint: 'predict' } });
   await handler(req, res);
@@ -37,7 +37,7 @@ const vercel = async (body, method = 'POST') => {
 };
 for (const [name, invoke] of Object.entries({
   express: (body) => request(app).post('/api/predict').send(body),
-  vercel,
+  callEntry,
 }))
   describe(`${name} stored prediction`, () => {
     test.each([{ districtId: 'dhaka' }, { district_id: 19 }])(
@@ -85,6 +85,6 @@ for (const [name, invoke] of Object.entries({
       expect(res.body.error).toBe('Stored forecast unavailable');
     });
   });
-test('Vercel rejects unsupported methods', async () => {
-  expect((await vercel({}, 'GET')).status).toBe(405);
+test('the entry point rejects unsupported methods', async () => {
+  expect((await callEntry({}, 'GET')).status).toBe(405);
 });

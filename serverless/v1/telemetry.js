@@ -5,10 +5,10 @@
  * refusal-shaped: a stranger's bytes must not become storage, a log line of unbounded
  * length, or a reflected value. Events are validated, case-folded to the canonical
  * lowercase vocabulary shape, and written as one bounded JSON log line each — stdout is
- * the storage (Vercel log drains are the sink); nothing is persisted from this
+ * the storage (the platform's log drain is the sink); nothing is persisted from this
  * process memory. Deployed through api/v1/[resource].js; the 12-function budget and the
  * dispatch contract live in serverless/dispatch.js and
- * docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget.
+ * docs/codebase/ARCHITECTURE.md#the-node-function-surface-api.
  */
 
 import { guardRequest } from '../../backend/middleware/serverlessGuard.js';
@@ -105,7 +105,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'method not allowed' });
   }
 
-  // Vercel gives us a parsed body for application/json; the streaming beacon sends
+  // A function host gives us a parsed body for application/json; the streaming beacon sends
   // text/plain keepalive flushes, which arrive as a raw string. Both are bounded and
   // parsed here; anything else (or anything over the cap) is refused before a byte
   // of it is logged.

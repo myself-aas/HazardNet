@@ -23,7 +23,7 @@ const advisoryCache = new Map();
 const CACHE_TTL_MS = 10 * 60 * 1000;
 
 // Per-provider timeout: a hung upstream must not eat the whole cascade (the
-// chat serverless function has a hard wall-clock budget on Vercel).
+// chat function has a hard wall-clock budget on a function host).
 const PROVIDER_TIMEOUT_MS = 12_000;
 
 // Human-readable provenance stamped onto successful LLM responses

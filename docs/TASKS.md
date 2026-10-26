@@ -54,7 +54,8 @@ and `TRD.md`.
   5. Updates `manifest.json` with `prediction_date`, `row_count`, and `csv_sha256`.
   6. Rebuilds static snapshot (`frontend/public/data/forecasts-latest.json`).
   7. Ingests atomically into Firestore (`scripts/ingest_forecast_csv.mjs --mode=replace`).
-  8. Triggers Vercel production deployment and sends Slack notification on success/failure.
+  8. Leaves the Cloudflare Pages build to pick the new artifacts up from `main` (retired
+     2026-10-26: the Vercel deploy step and the Slack notification).
 - **TRD Verification**: §4.1 through §4.6, §7.1, §8.1.
 
 #### TASK-002: Column Mapper (Advisory CSV → ForecastRow)
@@ -344,7 +345,7 @@ graph TD
 
 ## 5. Definition of Done Checklist
 
-- [x] Unattended daily pipeline execution verified (Kaggle → GitHub Actions → Vercel)
+- [x] Unattended daily pipeline execution verified (Kaggle → GitHub Actions → Cloudflare Pages)
 - [x] 128 forecast records published daily with correct advisory tiers and weather fields
 - [x] 26-year historical disaster catalog (3,062 events, 64 districts) bundled into static client JSON files
 - [x] District vulnerability index calculated, ranked, and mapped across all 64 districts and 8 divisions

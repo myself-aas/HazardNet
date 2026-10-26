@@ -1,123 +1,160 @@
 /**
  * @jest-environment node
  *
- * Phase 6 (SEC-10): the four places that describe the same security policy must agree.
+ * The places that describe the same security policy must agree.
  *
- * The headers are declared four times — the root `vercel.json` (the deployed a-facing
- * surface), `frontend/vercel.json` (frontend-project scope), `firebase.json` (the surface
- * that answered `hazardnet.live` while the deployment was Firebase Hosting) and
- * `backend/server.js` (helmet, for the self-hosted/Docker deployment). A fifth copy,
- * `frontend/public/_headers`, is the Cloudflare one: measured on 2026-10-26, the host
- * answering `hazardnet.live` sends none of `firebase.json`'s policy beyond `nosniff` and
- * `Referrer-Policy` and identifies itself only as Cloudflare
- * (docs/audits/2026-10-26-live-security-headers.md), so the Cloudflare static-asset header
- * file is the only one that can take effect there. They drifted before:
- * the CSP was added to a config that was not the one serving production.
+ * Since 2026-10-26 there are two, and the deployment target is Cloudflare Pages:
  *
- * The Firebase copy is the one that drifted silently for real. On 2026-10-04 the live site
- * answered with only `Referrer-Policy`, `X-Content-Type-Options` and `X-Frame-Options`; the
- * `site-health.yml` security-header probe had been red on every scheduled run because
- * `Strict-Transport-Security` carried no `includeSubDomains` and there was no
- * `Content-Security-Policy` and no `Permissions-Policy` — all three present in both Vercel
- * configs, none of them present in `firebase.json`, which was not covered here. This suite
- * makes that drift visible in CI instead of only in a live-header probe.
+ *   · `frontend/public/_headers` — the ONLY copy read by the deployment (Pages serves it
+ *     from the asset root), pinned to `backend/security/csp.js` and to helmet;
+ *   · `backend/server.js` — helmet, for the self-hosted/Docker deployment.
+ *
+ * They used to be four. The root/frontend `vercel.json` pair was deleted with the rest of
+ * the Vercel deployment, and the Firebase Hosting block was retired the same day: the
+ * `hazardnet-aas48424.web.app` origin was measured still serving the **2026-09-24** build
+ * (`data/freshness.json` `built_at 2026-09-24T20:35:20Z`, 0 published alerts, 7/7 probe
+ * checks failing), so keeping a second hosting policy "correct" was maintaining drift for a
+ * deployment nobody wanted. `docs/ops/owner-actions.md` Action 22 tracks disabling it in the
+ * console. The copies
+ * drifted for real before: on 2026-10-04 the live site answered with only `Referrer-Policy`,
+ * `X-Content-Type-Options` and `X-Frame-Options`, because the config serving production was
+ * the one nobody had updated. This suite makes that drift visible in CI rather than only in a
+ * live-header probe.
  */
 
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { CSP } from '../backend/security/csp.js';
 
 const root = process.cwd();
 const readJson = (rel) => JSON.parse(readFileSync(join(root, rel), 'utf8'));
+const readText = (rel) => readFileSync(join(root, rel), 'utf8');
 
-const headerMap = (config, source = '/(.*)') => {
+const headerMap = (config, source = '**') => {
   const entry = (config.headers || []).find((h) => h.source === source);
   if (!entry) return {};
   return Object.fromEntries(entry.headers.map(({ key, value }) => [key, value]));
 };
 
-describe('redirect parity', () => {
-  const rootCfg = readJson('vercel.json');
-  const frontendCfg = readJson('frontend/vercel.json');
-  const apexRedirect = (config) =>
-    (config.redirects || []).find(
-      (rule) =>
-        rule.destination === 'https://www.hazardnet.live/:path*' &&
-        (rule.has || []).some((condition) => condition.type === 'host' && condition.value === 'hazardnet.live')
-    );
+/**
+ * Parse a Cloudflare `_headers` file into `matcher -> { header: value }`, ignoring `#`
+ * comments and blank lines. Parsed rather than eyeballed because a header file Cloudflare
+ * cannot read fails silently: the deployment then serves the origin's headers, which is the
+ * state this suite exists to end.
+ */
+const parseHeadersFile = (text) => {
+  const rules = {};
+  let current = null;
+  for (const line of text.split('\n')) {
+    if (!line.trim() || line.trim().startsWith('#')) continue;
+    if (!/^\s/.test(line)) {
+      current = line.trim();
+      rules[current] = {};
+      continue;
+    }
+    const match = /^\s+([A-Za-z0-9-]+):\s*(.+)$/.exec(line);
+    expect(current).not.toBeNull();
+    expect(match).not.toBeNull();
+    rules[current][match[1]] = match[2].trim();
+  }
+  return rules;
+};
 
-  // Phase 8: the canonical host is www. The apex answered 308 → www before this change only
-  // because of a dashboard-level domain setting, which is not in the repository and not
-  // reviewable; both configs now state the redirect. A canonical tag pointing at www while the
-  // apex serves the same page under its own URL is the duplicate-content case this closes.
-  it('redirects the apex host to www in both configs', () => {
-    expect(apexRedirect(rootCfg)).toBeDefined();
-    expect(apexRedirect(frontendCfg)).toBeDefined();
-    expect(apexRedirect(rootCfg).permanent).toBe(true);
-    expect(apexRedirect(frontendCfg).permanent).toBe(true);
+const cfRules = parseHeadersFile(readText('frontend/public/_headers'));
+const cloudflareHeaders = cfRules['/*'] || {};
+
+describe('redirects', () => {
+  const redirects = readText('frontend/public/_redirects');
+
+  /* The legacy URL lived in each `vercel.json`'s `redirects` array until 2026-10-26. On
+     Cloudflare Pages the equivalent is `_redirects`, which Vite copies into `dist/` from
+     `frontend/public/`, so it is served from the asset root exactly as `_headers` is. */
+  it('keeps the legacy /documentation redirect', () => {
+    expect(redirects).toMatch(/^\/documentation\s+\/docs\s+301$/m);
   });
 
-  it('keeps the legacy /documentation redirect in both configs', () => {
-    for (const config of [rootCfg, frontendCfg]) {
-      expect(
-        (config.redirects || []).some(
-          (rule) => rule.source === '/documentation' && rule.destination === '/docs' && rule.permanent
-        )
-      ).toBe(true);
+  /* Deliberately absent: a catch-all `/* /index.html 200`. The prerenderer emits a real file
+     per route, and an unknown URL must reach Cloudflare's 404.html (the noindex shell that
+     still boots the SPA) rather than answer 200 with the indexable homepage — the soft-404
+     case __tests__/seoFoundations.test.js pins. */
+  it('does not rewrite unknown URLs onto the indexable homepage', () => {
+    expect(redirects).not.toMatch(/^\/\*\s+\/index\.html/m);
+  });
+
+  /* The site's primary read path is `/data/*.json` (ADR 0008) and `/api/*` belongs to a host
+     this repository does not run. No rule may come between a request for either and its
+     answer, and — because a `_redirects` rule that matches an existing asset can shadow it —
+     no rule may name them at all. Asserted here rather than expressed as a `404` rule in the
+     file itself, for the reason given in `_redirects`. */
+  it('carries no rule that can intercept /api/ or /data/', () => {
+    const rules = redirects
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line && !line.startsWith('#'));
+    for (const rule of rules) {
+      expect(rule).not.toMatch(/^\/(api|data)\//);
+      expect(rule).not.toMatch(/\s\/(api|data)\//);
     }
   });
 });
 
 describe('security header parity', () => {
-  const rootCfg = readJson('vercel.json');
-  const frontendCfg = readJson('frontend/vercel.json');
-  const rootHeaders = headerMap(rootCfg);
-  const frontendHeaders = headerMap(frontendCfg);
-  // Firebase Hosting wraps its config in `hosting`, and its source patterns are globs (`**`)
-  // rather than the `/(.*)` both Vercel configs use.
-  const firebaseHeaders = headerMap(readJson('firebase.json').hosting, '**');
-  const server = readFileSync(join(root, 'backend/server.js'), 'utf8');
+  const server = readText('backend/server.js');
 
-  const EXPECTED = [
-    'Content-Security-Policy',
-    'X-Content-Type-Options',
-    'X-Frame-Options',
-    'Referrer-Policy',
-    'Permissions-Policy',
-    'Strict-Transport-Security',
-  ];
+  /* The five headers every public response must carry, with the exact value the policy
+     requires. Written as a table rather than a list of names because "the header is present"
+     was never the failure mode: on 2026-10-04 the live host answered with a weaker
+     `Referrer-Policy` and no CSP at all, and a presence check would have passed. */
+  const EXPECTED = {
+    'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
+    'Content-Security-Policy': CSP,
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=(self), payment=(), usb=()',
+  };
 
-  it('both vercel configs set every expected header for all paths', () => {
-    for (const config of [rootHeaders, frontendHeaders]) {
-      for (const header of EXPECTED) {
-        expect(config[header]).toBeTruthy();
-      }
+  it('the Cloudflare _headers file sets every required header for all paths', () => {
+    for (const [header, value] of Object.entries(EXPECTED)) {
+      expect(`${header}: ${cloudflareHeaders[header]}`).toBe(`${header}: ${value}`);
     }
   });
 
-  it('the Firebase Hosting config sets every expected header for all paths', () => {
-    // This is the config that serves production, so a missing header here is a live gap no
-    // matter what the Vercel configs say — which is exactly how the 2026-10-04 probe failed.
-    for (const header of EXPECTED) {
-      expect(firebaseHeaders[header]).toBeTruthy();
+  /* Cloudflare's parser is line-based: one rule per matcher, one `key: value` per line, a
+     2,000-character limit per line and 100 rules per file. A CSP wrapped across two lines, or
+     an overlong line, does not fail the deploy — the file simply stops applying, and the site
+     serves the origin's headers. Both are silent failures, so both are asserted. */
+  it('stays inside the limits Cloudflare Pages will actually parse', () => {
+    const lines = readText('frontend/public/_headers').split('\n');
+    expect(lines.length).toBeLessThanOrEqual(100);
+    for (const line of lines) {
+      expect(line.length).toBeLessThanOrEqual(2000);
     }
+    // One physical line per header: the CSP must not be folded.
+    const cspLines = lines.filter((line) => line.includes('Content-Security-Policy:'));
+    expect(cspLines).toHaveLength(1);
   });
 
-  it('serves an identical browser policy from all three hosts', () => {
-    for (const header of EXPECTED) {
-      expect(frontendHeaders[header]).toBe(rootHeaders[header]);
-      // Firebase Hosting cannot interpolate or share a value, so it must carry the same
-      // literal string; `csp.js` equality below pins the absolute truth for the CSP itself.
-      expect(firebaseHeaders[header]).toBe(rootHeaders[header]);
-    }
+  /* An all-origin source turns the policy into decoration. `https:` IS deliberately present —
+     the client talks to several third-party APIs (Open-Meteo, ipapi.co, Firebase RTDB, the
+     GitHub API) and a static CSP cannot know their hostnames at build time — but a bare `*`
+     or a `data:`/`blob:` script source never appears. */
+  it('never falls back to a bare wildcard source', () => {
+    expect(cloudflareHeaders['Content-Security-Policy']).not.toMatch(/\s\*(\s|;|$)/);
+    const scriptSrc = /script-src([^;]*)/.exec(cloudflareHeaders['Content-Security-Policy'])[1];
+    expect(scriptSrc).not.toMatch(/https?:\s/);
+  });
+
+  /* The Firebase Hosting block was removed on 2026-10-26 (see the file comment). Pinned as a
+     fact so nobody restores a second static-host policy by accident: with one deployment there
+     is one place headers can be declared, and this suite is what keeps it honest. */
+  it('declares no second static-host policy', () => {
+    expect(readJson('firebase.json')).not.toHaveProperty('hosting');
   });
 
   it('keeps HSTS preload-eligible (includeSubDomains + preload + long max-age)', () => {
-    for (const value of [
-      rootHeaders['Strict-Transport-Security'],
-      frontendHeaders['Strict-Transport-Security'],
-      firebaseHeaders['Strict-Transport-Security'],
-    ]) {
+    for (const value of [cloudflareHeaders['Strict-Transport-Security']]) {
       expect(value).toMatch(/includeSubDomains/);
       expect(value).toMatch(/preload/);
       const maxAge = Number(/max-age=(\d+)/.exec(value)[1]);
@@ -126,11 +163,7 @@ describe('security header parity', () => {
   });
 
   it('keeps the CSP enforcing, and locks down the dangerous directives', () => {
-    for (const value of [
-      rootHeaders['Content-Security-Policy'],
-      frontendHeaders['Content-Security-Policy'],
-      firebaseHeaders['Content-Security-Policy'],
-    ]) {
+    for (const value of [cloudflareHeaders['Content-Security-Policy']]) {
       expect(value).not.toMatch(/Content-Security-Policy-Report-Only/i);
       expect(value).toContain("default-src 'self'");
       expect(value).toContain("object-src 'none'");
@@ -152,7 +185,7 @@ describe('security header parity', () => {
     // The site carries no advertising (2026-09-30). An allowlist that outlives the
     // thing it allowed is how these three configs drifted apart the first time, so
     // the absence is asserted rather than assumed.
-    const scriptSrc = /script-src([^;]*)/.exec(rootHeaders['Content-Security-Policy'])[1];
+    const scriptSrc = /script-src([^;]*)/.exec(cloudflareHeaders['Content-Security-Policy'])[1];
     for (const origin of [
       'https://pagead2.googlesyndication.com',
       'https://partner.googleadservices.com',
@@ -179,7 +212,7 @@ describe('security header parity', () => {
   });
 
   it('allows Firebase Auth origins for Google/GitHub sign-in', () => {
-    const csp = rootHeaders['Content-Security-Policy'];
+    const csp = cloudflareHeaders['Content-Security-Policy'];
     // Auth script origins
     expect(csp).toContain('https://www.gstatic.com');
     expect(csp).toContain('https://apis.google.com');
@@ -192,9 +225,8 @@ describe('security header parity', () => {
     expect(csp).toContain('https://github.com');
   });
 
-  it('is the same string in the shared module, both configs and helmet', async () => {
+  it('is the same string in the shared module, the served file and helmet', async () => {
     const {
-      CSP,
       cspDirectivesFromString,
       AUTH_SCRIPT_ORIGINS,
       ANALYTICS_SCRIPT_ORIGINS,
@@ -202,9 +234,7 @@ describe('security header parity', () => {
     } = await import('../backend/security/csp.js');
 
     // One source of truth: every host config carries exactly the canonical string.
-    expect(rootHeaders['Content-Security-Policy']).toBe(CSP);
-    expect(frontendHeaders['Content-Security-Policy']).toBe(CSP);
-    expect(firebaseHeaders['Content-Security-Policy']).toBe(CSP);
+    expect(cloudflareHeaders['Content-Security-Policy']).toBe(CSP);
 
     // helmet runs the parsed canonical policy, so the self-hosted deployment cannot drift.
     const directives = cspDirectivesFromString();
@@ -267,60 +297,24 @@ describe('security header parity', () => {
     expect(INLINE_THEME_SCRIPT_HASH).toBe(`'sha256-${digest}'`);
 
     // A correct constant that no surface ships is still a blocked script.
-    for (const headers of [rootHeaders, frontendHeaders, firebaseHeaders]) {
+    for (const headers of [cloudflareHeaders]) {
       expect(headers['Content-Security-Policy']).toContain(INLINE_THEME_SCRIPT_HASH);
     }
     expect(cspDirectivesFromString().scriptSrc).toContain(INLINE_THEME_SCRIPT_HASH);
   });
 
   /**
-   * The Cloudflare copy (`frontend/public/_headers`) has a different syntax from JSON: a
-   * matcher line, then indented `Name: value` lines. Cloudflare serves it from the asset
-   * root, and Vite copies `frontend/public/` into `dist/` verbatim, so it lands next to
-   * `index.html` where Cloudflare looks for it.
-   *
-   * It is parsed here rather than eyeballed because a header file that Cloudflare cannot
-   * parse fails silently — the deployment then serves the origin's headers, which is the
-   * state this file exists to end.
+   * The Cloudflare file also carries the cache rules that used to live in `vercel.json`.
+   * They are not security policy, but losing them silently would serve every visitor an
+   * immutable cache header on `/data/*`, and the front door reads those artifacts on every
+   * load.
    */
-  it('declares the same policy in the Cloudflare _headers file', () => {
-    const raw = readFileSync(join(root, 'frontend/public/_headers'), 'utf8');
-
-    /** matcher -> { header: value }, ignoring `#` comments and blank lines. */
-    const parseHeadersFile = (text) => {
-      const rules = {};
-      let current = null;
-      for (const line of text.split('\n')) {
-        if (!line.trim() || line.trim().startsWith('#')) continue;
-        if (!/^\s/.test(line)) {
-          current = line.trim();
-          rules[current] = {};
-          continue;
-        }
-        const match = /^\s+([A-Za-z0-9-]+):\s*(.+)$/.exec(line);
-        expect(current).not.toBeNull();
-        expect(match).not.toBeNull();
-        rules[current][match[1]] = match[2].trim();
-      }
-      return rules;
-    };
-
-    const rules = parseHeadersFile(raw);
-    const all = rules['/*'];
-    expect(all).toBeDefined();
-
-    // Same literal values as `frontend/vercel.json` — the frontend-project surface whose
-    // build this file ships inside.
-    for (const header of EXPECTED) {
-      expect(all[header]).toBe(frontendHeaders[header]);
-    }
-
-    // The cache rules the Cloudflare deployment would otherwise lose.
-    expect(rules['/assets/*']).toEqual(
+  it('carries the cache rules the old config supplied', () => {
+    expect(cfRules['/assets/*']).toEqual(
       expect.objectContaining({ 'Cache-Control': 'public, max-age=31536000, immutable' })
     );
-    expect(rules['/serviceWorker.js']).toEqual(expect.objectContaining({ 'Cache-Control': 'no-cache' }));
-    expect(rules['/data/*']).toEqual(
+    expect(cfRules['/serviceWorker.js']).toEqual(expect.objectContaining({ 'Cache-Control': 'no-cache' }));
+    expect(cfRules['/data/*']).toEqual(
       expect.objectContaining({ 'Cache-Control': 'public, max-age=0, must-revalidate' })
     );
   });

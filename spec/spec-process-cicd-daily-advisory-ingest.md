@@ -28,7 +28,7 @@ graph TD
     F --> H[Rebuild snapshots: forecast → alert → freshness]
     H --> I[Tier 0/1 pipeline tests]
     I --> J{Artifacts changed?}
-    J -->|Yes| K[Commit + push + Vercel redeploy]
+    J -->|Yes| K[Commit + push → Pages rebuild]
     J -->|No| L[Clean stop]
     B -.->|always| M[Ops monitoring + Slack alert]
     style A fill:#e1f5fe
@@ -85,7 +85,6 @@ KAGGLE_KEY: secret                             # Kaggle API token
 FIREBASE_SERVICE_ACCOUNT: secret               # firestore pre-flight (JSON string form)
 FIREBASE_SERVICE_ACCOUNT_JSON: secret          # same SA, full JSON for the write path
 FIREBASE_PROJECT_ID: secret                    # project bootstrap (hazardnet-aas48424)
-VERCEL_TOKEN / VERCEL_ORG_ID / VERCEL_PROJECT_ID: secret   # prod redeploy trigger
 SLACK_WEBHOOK_URL: secret                      # ops monitoring alert channel
 GITHUB_TOKEN: builtin                          # artifact commit/push
 ```
@@ -94,7 +93,7 @@ GITHUB_TOKEN: builtin                          # artifact commit/push
 
 ```yaml
 # Step outputs
-commit-artifacts.committed: bool  # gates the Vercel redeploy step
+commit-artifacts.committed: bool  # whether anything changed (reported, not gated)
 
 # Committed artifacts (public data the frontend ships)
 backend/data/forecasts/manifest.json        # ingest manifest (row_count, sha256, prediction_date)
@@ -113,9 +112,6 @@ frontend/public/data/freshness.json         # hazardnet-freshness/v1 ledger over
 | Secret | FIREBASE_SERVICE_ACCOUNT | pre-flight form of the same identity | Repo | same JSON (string form expected by `validateServiceAccountEnv`) |
 | Secret | FIREBASE_PROJECT_ID | project bootstrap | Repo | `hazardnet-aas48424` |
 | Secret | SLACK_WEBHOOK_URL | ops failure alerting | Workflow | Slack app → Incoming Webhooks — **not yet added to this repo's secrets** |
-| Secret | VERCEL_TOKEN | prod deploy trigger | Env + Repo | Vercel → Account → Tokens |
-| Secret | VERCEL_ORG_ID | deploy targeting | Env + Repo | `.vercel/project.json` |
-| Secret | VERCEL_PROJECT_ID | deploy targeting | Env + Repo | `.vercel/project.json` |
 
 ## Execution Constraints
 
@@ -125,7 +121,7 @@ frontend/public/data/freshness.json         # hazardnet-freshness/v1 ledger over
 
 ### Environmental Constraints
 - **Runner**: ubuntu-latest; Node 20; Python 3.11; Kaggle CLI from pip
-- **Network**: kaggle.com API, `*.googleapis.com` (Firestore), Vercel API, Slack webhook (optional)
+- **Network**: kaggle.com API, `*.googleapis.com` (Firestore), Slack webhook (optional)
 - **Permissions**: `contents: write` (artifact commit)
 
 ## Error Handling Strategy
@@ -157,7 +153,7 @@ frontend/public/data/freshness.json         # hazardnet-freshness/v1 ledger over
 |--------|------------------|---------------|------------------|
 | Kaggle Dataset API | HTTP pull (Basic auth) | advisory CSV | dataset refreshes after the daily notebook run |
 | Firestore | Admin SDK writes | forecast rows | write skipped fail-soft when credentials missing |
-| Vercel | Deploy trigger | production redeploy | only when artifacts changed |
+| Cloudflare Pages | Hosting | rebuilds on the push itself — no deploy call, no token | automatic |
 | Slack | Webhook POST | ops alert | optional (fail-soft when unset) |
 
 ### Dependent Workflows

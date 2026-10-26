@@ -1,12 +1,26 @@
 # HazardNet Monitoring Setup Guide
 
-This guide walks you through setting up comprehensive monitoring for HazardNet production deployment using Grafana, Prometheus, UptimeRobot, and Sentry.
+> **Rewritten 2026-10-26.** The public site is a **static Cloudflare Pages deployment**
+> (`docs/ops/deployment.md`): it serves `dist/` and runs no API, so `/api/metrics`, `/health`
+> and `/api/v1/forecasts` all answer **404** at `hazardnet.live`. Everything below that scrapes
+> or probes an API therefore describes **an API host that does not exist yet** — the placeholders
+> read `<api-host>` and the day-one monitoring that actually runs is
+> `.github/workflows/site-health.yml` plus `monitoring/{alerts.yml,README.md}`.
+>
+> What works today without an API host: the site-health probe (availability, headers, sitemap,
+> artifact freshness), the committed `hazardnet_forecast_age_hours` value in
+> `/data/freshness.json`, and Sentry for browser errors. Prometheus needs a process to scrape.
+
+This guide walks you through setting up comprehensive monitoring for a HazardNet API
+deployment using Grafana, Prometheus, UptimeRobot, and Sentry.
 
 ---
 
 ## Prerequisites
 
-- Production deployment live at `https://hazardnet.vercel.app`
+- An API deployment reachable at some host (`<api-host>`) — **none exists today**; start one
+  from `backend/` (`npm run dev:api`, or the container) before using this guide
+- The static site live at `https://hazardnet.live` / `https://www.hazardnet.live`
 - Grafana instance (Cloud or self-hosted)
 - UptimeRobot account (free tier available)
 - Sentry project (already configured in frontend)
@@ -20,7 +34,7 @@ This guide walks you through setting up comprehensive monitoring for HazardNet p
 Prometheus metrics are already exposed at `/api/metrics`. Verify they're accessible:
 
 ```bash
-curl https://hazardnet.vercel.app/api/metrics
+curl https://<api-host>/api/metrics
 
 # Should return metrics like:
 # hazardnet_inference_latency_ms_bucket{le="100"} 45
@@ -85,7 +99,7 @@ docker run -d -p 3000:3000 --name=grafana grafana/grafana-oss
 3. Select **Prometheus**
 4. Configure:
    - **Name:** HazardNet Prometheus
-   - **URL:** `https://hazardnet.vercel.app/api/metrics`
+   - **URL:** `https://<api-host>/api/metrics`
    - **Access:** Server (default)
    - **Scrape interval:** 15s
 5. Click **Save & Test**
@@ -160,7 +174,7 @@ bash scripts/setup_monitoring.sh
 **Automated:**
 ```bash
 export UPTIMEROBOT_API_KEY=your-api-key
-export PRODUCTION_URL=https://hazardnet.vercel.app
+export PRODUCTION_URL=https://<api-host>
 export ALERT_EMAIL=alerts@yourdomain.com
 
 bash scripts/setup_monitoring.sh
@@ -170,27 +184,27 @@ bash scripts/setup_monitoring.sh
 
 #### Monitor 1: Homepage Availability
 - **Type:** HTTP(s)
-- **URL:** `https://hazardnet.vercel.app`
+- **URL:** `https://<api-host>`
 - **Monitoring Interval:** 5 minutes
 - **Alert Contacts:** Your email/SMS
 - **Keyword:** (leave empty for status code check)
 
 #### Monitor 2: API Health Endpoint
 - **Type:** HTTP(s)
-- **URL:** `https://hazardnet.vercel.app/health`
+- **URL:** `https://<api-host>/health`
 - **Monitoring Interval:** 5 minutes
 - **Keyword:** `"status":"ok"`
 
 #### Monitor 3: Forecast Data Freshness
 - **Type:** Keyword
-- **URL:** `https://hazardnet.vercel.app/api/v1/forecasts?district_id=1`
+- **URL:** `https://<api-host>/api/v1/forecasts?district_id=1`
 - **Monitoring Interval:** 30 minutes
 - **Keyword:** `prediction_date`
 - **Alert:** If keyword not found (indicates stale data)
 
 #### Monitor 4: ML Prediction Endpoint
 - **Type:** Keyword
-- **URL:** `https://hazardnet.vercel.app/api/metrics`
+- **URL:** `https://<api-host>/api/metrics`
 - **Monitoring Interval:** 10 minutes
 - **Keyword:** `hazardnet_predictions_total`
 
@@ -228,7 +242,8 @@ Sentry.init({
 
 ### 4.2 Set Environment Variable
 
-Add to Vercel production environment:
+`VITE_SENTRY_DSN` is a **build** variable: add it to the Cloudflare Pages project's
+variables (Settings → Variables and Secrets) and redeploy, because it is baked into the bundle.
 ```bash
 VITE_SENTRY_DSN=https://your-dsn@sentry.io/project-id
 ```
@@ -260,20 +275,23 @@ Add to CI/CD pipeline (`.github/workflows/ci.yml`):
 
 ## 5. Log Aggregation (Optional)
 
-### 5.1 Vercel Logs
-Access via:
-```bash
-vercel logs hazardnet --prod
-vercel logs hazardnet --prod --follow  # Real-time
-```
+### 5.1 Where the logs actually are
 
-### 5.2 Papertrail/Logtail Integration
-1. Add papertrail destination in Vercel integrations
-2. Configure log drains:
-   ```bash
-   vercel env add LOG_DRAIN_URL production
-   # Value: syslog+tls://logs.papertrailapp.com:12345
-   ```
+Two separate streams, and they are not interchangeable:
+
+| What | Where | Retention |
+|---|---|---|
+| Static-site build + edge requests | Cloudflare dashboard → **Workers & Pages → hazardnet → Deployments** (build log) and **Analytics** for traffic | build log per deployment; analytics per plan |
+| API process (Express) | the container's stdout, wherever it runs — `docker logs` locally | whatever the host keeps |
+| CI/pipeline | GitHub Actions run logs | 90 days |
+
+### 5.2 Log drain (API host only)
+
+If an API host exists, forward its stdout with that platform's log-drain feature:
+```
+LOG_DRAIN_URL=syslog+tls://logs.papertrailapp.com:12345
+```
+There is no drain to configure for the static site: it has no server-side process.
 
 ---
 
@@ -353,18 +371,19 @@ After setup, verify all monitoring is working:
 ## 9. Troubleshooting
 
 ### Grafana shows "No Data"
-1. Check Prometheus endpoint: `curl https://hazardnet.vercel.app/api/metrics`
+1. Check Prometheus endpoint: `curl https://<api-host>/api/metrics`
 2. Verify data source URL in Grafana settings
 3. Check time range (default: last 6 hours)
-4. Verify Vercel functions are running (not cold-started)
+4. Verify the API process is running (a `curl https://<api-host>/health` answers)
 
 ### UptimeRobot false positives
 1. Increase monitoring interval from 5 min to 10 min
 2. Add retry attempts (Settings → Advanced)
-3. Whitelist UptimeRobot IPs in Vercel (if using IP allowlist)
+3. Whitelist UptimeRobot IPs at the edge (Cloudflare WAF) if using an IP allow list
 
 ### Sentry not capturing errors
-1. Verify `VITE_SENTRY_DSN` set in Vercel
+1. Verify `VITE_SENTRY_DSN` is set in the Pages build variables **and** that the site was
+   redeployed since it was added (it is baked in at build time)
 2. Check browser console for Sentry init errors
 3. Test with manual error: `Sentry.captureException(new Error('Test'))`
 
@@ -377,9 +396,9 @@ After setup, verify all monitoring is working:
 | **Grafana Cloud** | Free | $0 | 10K metrics, 50GB logs, 14-day retention |
 | **UptimeRobot** | Free | $0 | 50 monitors, 5-min checks |
 | **Sentry** | Team | $26/mo | 100K errors, 10K perf transactions |
-| **Vercel** | Pro | $20/mo | Included in deployment cost |
+| **Cloudflare Pages** | Free | $0 | static hosting for both hostnames; 500 builds/month |
 
-**Total:** $26-46/month (Sentry optional for MVP)
+**Total:** $26/month at most (Sentry optional), and $0 for hosting.
 
 ---
 

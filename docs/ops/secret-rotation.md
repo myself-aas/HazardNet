@@ -28,11 +28,11 @@ access and no longer does.
 
 1. Create the new credential **before** deleting the old one (except where a procedure says
    otherwise — the two Gemini keys deliberately stagger).
-2. Set it everywhere the register says (`scope`: `vercel`, `github`, or both). A key that is
+2. Set it everywhere the register says (`scope`: `api-host`, `github`, or both). A key that is
    rotated in one place and not the other is an outage, not a rotation.
 3. Run the verification path for that credential — at minimum
    `verify-secrets.yml` (Actions → Run workflow) for GitHub secrets, and a deploy plus a
-   `site-health.yml` run for Vercel ones.
+   `site-health.yml` run for API-host ones.
 4. Update `data/security/secret-rotation.json`: set `last_rotated` to today (`YYYY-MM-DD`) and
    append to `history`: `{ "id": "…", "rotated_on": "…", "by": "…", "reason": "scheduled|incident" }`.
 5. `node scripts/check-secret-rotation.mjs --strict` should now count one fewer unknown.
@@ -44,10 +44,10 @@ becomes a failure instead of a warning.
 
 ### BACKEND_API_KEY
 
-`openssl rand -hex 32` (or §1.7 of `docs/ENVIRONMENT_SECRETS.md`). Set it in **Vercel**
+`openssl rand -hex 32` (or §1.7 of `docs/ENVIRONMENT_SECRETS.md`). Set it in **the API host's environment**
 (Production + Preview) and in **GitHub → Secrets** in the same sitting:
 
-- Vercel first, then GitHub. The nightly `daily_advisory_ingest.yml` uses the GitHub copy and
+- The API host first, then GitHub. The nightly `daily_advisory_ingest.yml` uses the GitHub copy and
   will 503 until it is updated; the site keeps serving either way because the key is fail-closed
   rather than fail-open.
 - Verify: `curl -s -o /dev/null -w '%{http_code}' -X POST "$API/api/ingest" -H "x-api-key: $NEW"`
@@ -55,9 +55,39 @@ becomes a failure instead of a warning.
 - `HAZARDNET_API_KEY` is the same shape pointing at an external ingest API: rotate at the API
   end first, then update GitHub.
 
+### CLOUDFLARE_API_TOKEN
+
+Cloudflare dashboard → **My Profile → API Tokens → Create Token**, using the *Edit Cloudflare
+Pages* template (scope: the account + the Pages project). Nothing in CI uses it — it exists for
+the manual `wrangler pages deploy` fallback and for `wrangler pages deployment list` during an
+incident, so it is deliberately not mapped into any workflow.
+
+- Store it in **GitHub → Secrets** as `CLOUDFLARE_API_TOKEN`, next to `CLOUDFLARE_ACCOUNT_ID`
+  and `CLOUDFLARE_PAGES_PROJECT` (neither is sensitive; they are secrets only because they live
+  in the same place).
+- Rotate by creating the new token **before** deleting the old one, then run one manual
+  `npx wrangler pages deployment list` with the new value to prove it works.
+- The token must not carry DNS or zone-admin scopes. If it does, it is over-privileged for a
+  deploy fallback — recreate it from the template.
+
+### CF_PAGES_DEPLOY_HOOK
+
+Pages → the project → **Settings → Builds & deployments → Deploy hooks → Add** (branch: `main`).
+
+- The URL is the credential: anyone holding it can start a production build. Store it as the
+  repository secret `CF_PAGES_DEPLOY_HOOK` and nowhere else.
+- **Deleting the hook is the rotation** — create a new one, replace the secret, then delete the
+  old hook. There is no "value" to re-issue.
+- Verify with the ingest job (`Actions → Daily Advisory Ingest → Run workflow`): the
+  *Trigger Cloudflare Pages Production Deployment* step must print a 2xx. A 404 means the hook
+  was deleted; an unset secret fails the job with the dashboard path in the message.
+- Leaked? Delete the hook first, then the secret. The failure mode of a stolen hook is a build,
+  not a breach — but a build runs the repository's build command, so treat it as a code-execution
+  surface for anything reachable from the build environment.
+
 ### Provider API keys
 
-Create the replacement in the provider console, set it in **Vercel → Environment Variables**,
+Create the replacement in the provider console, set it in **the API host's environment**,
 then redeploy or wait for the next deploy — keys are read per request, so no restart logic is
 involved.
 
@@ -72,7 +102,7 @@ involved.
 
 Google Cloud → IAM → Service Accounts → the HazardNet account → **Keys** → *Add key* → JSON.
 
-- `FIREBASE_SERVICE_ACCOUNT_JSON` (Vercel) is the whole JSON blob; `FIREBASE_PRIVATE_KEY`
+- `FIREBASE_SERVICE_ACCOUNT_JSON` (API host) is the whole JSON blob; `FIREBASE_PRIVATE_KEY`
   (GitHub) is the same key's `private_key` with real newlines. Rotate both in one sitting and
   record one date.
 - Verify with `Firebase-Store-Verify.yml` (dispatch) before deleting the old key.
@@ -81,7 +111,7 @@ Google Cloud → IAM → Service Accounts → the HazardNet account → **Keys**
 
 ### VAPID pair
 
-`npx web-push generate-vapid-keys`. Both values must be replaced together in **Vercel**:
+`npx web-push generate-vapid-keys`. Both values must be replaced together in **the API host**:
 a public key that does not match the private one fails every push with a 400.
 
 Because rotation **invalidates every existing browser subscription**, treat it as a planned

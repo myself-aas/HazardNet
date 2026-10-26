@@ -12,9 +12,10 @@
 const { isOriginAllowed, allowedOrigins, isProductionEnv } = require('../backend/middleware/cors.js');
 
 describe('isProductionEnv', () => {
-  test('is true for NODE_ENV or VERCEL_ENV production', () => {
+  test('is true when the runtime says production (NODE_ENV / DEPLOY_ENV / CF_PAGES)', () => {
     expect(isProductionEnv({ NODE_ENV: 'production' })).toBe(true);
-    expect(isProductionEnv({ VERCEL_ENV: 'production' })).toBe(true);
+    expect(isProductionEnv({ DEPLOY_ENV: 'production' })).toBe(true);
+    expect(isProductionEnv({ CF_PAGES: '1' })).toBe(true);
     expect(isProductionEnv({ NODE_ENV: 'test' })).toBe(false);
     expect(isProductionEnv({})).toBe(false);
   });
@@ -42,21 +43,21 @@ describe('isOriginAllowed', () => {
   });
 
   test('allows configured origins and local loopbacks', () => {
-    const env = { FRONTEND_ORIGIN: 'https://hazardnet.vercel.app' };
-    expect(isOriginAllowed('https://hazardnet.vercel.app', env)).toBe(true);
+    const env = { FRONTEND_ORIGIN: 'https://www.hazardnet.live' };
+    expect(isOriginAllowed('https://www.hazardnet.live', env)).toBe(true);
     expect(isOriginAllowed('http://localhost:3000', env)).toBe(true);
     expect(isOriginAllowed('http://127.0.0.1:3000', env)).toBe(true);
   });
 
   test('rejects unknown origins when an allowlist is configured', () => {
-    const env = { FRONTEND_ORIGIN: 'https://hazardnet.vercel.app' };
+    const env = { FRONTEND_ORIGIN: 'https://www.hazardnet.live' };
     expect(isOriginAllowed('https://evil.com', env)).toBe(false);
     // Near-miss subdomains must not match by suffix.
-    expect(isOriginAllowed('https://hazardnet.vercel.app.evil.com', env)).toBe(false);
+    expect(isOriginAllowed('https://www.hazardnet.live.evil.com', env)).toBe(false);
   });
 
   test('fails CLOSED in production when FRONTEND_ORIGIN is unset', () => {
-    for (const env of [{ NODE_ENV: 'production' }, { VERCEL_ENV: 'production' }]) {
+    for (const env of [{ NODE_ENV: 'production' }, { DEPLOY_ENV: 'production' }, { CF_PAGES: '1' }]) {
       expect(isOriginAllowed('https://anything.com', env)).toBe(false);
     }
   });

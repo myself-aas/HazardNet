@@ -18,17 +18,15 @@ concurrency:
   group: site-health-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  # `write` for exactly one step: publishing the machine-readable probe result
-  # (data/site-health/latest.json + the derived freshness artifact) that the
-  # /status page renders. Everything else in this workflow only reads. If the
-  # repository's workflow permissions are set to read-only, the publish step
-  # degrades to a warning and the result is still uploaded as an artifact —
-  # see docs/ops/owner-actions.md, Action 9.
-  contents: write
+# No file-level permissions block: the default is read-only, and the single job below asks
+# for `contents: write` so it can publish one file. A file-level `write` would grant the same
+# scope to every present and future job in this workflow.
 
 env:
   SITE_URL: https://hazardnet.live
+  # The hostname the sitemap, the canonical tags and security.txt all name. It must answer
+  # with the same deployment as SITE_URL — see the "Probe the canonical www host" step.
+  CANONICAL_URL: https://www.hazardnet.live
   MAX_DATA_AGE_DAYS: '10'
   # Use a browser-like signature for probe requests so edge bot defenses do not
   # challenge the health checks themselves.
@@ -51,6 +49,14 @@ env:
 jobs:
   probe:
     runs-on: ubuntu-latest
+    permissions:
+      # `write` for exactly one step: publishing the machine-readable probe result
+      # (data/site-health/latest.json + the derived freshness artifact) that the
+      # /status page renders. Every other step in this job only reads. If the
+      # repository's workflow permissions are set to read-only, the publish step
+      # degrades to a warning and the result is still uploaded as an artifact —
+      # see docs/ops/owner-actions.md, Action 9.
+      contents: write
     timeout-minutes: 10
 
     steps:
@@ -196,12 +202,13 @@ jobs:
           fi
           echo "✅ Homepage serves the app shell"
 
-      # Deep-link probe (2026-09-17 audit, P0). Every non-root route returned
-      # Vercel's platform 404 in production — /login, /dashboard, /about,
-      # /blogs, /documentation — because the project was built from frontend/
-      # and the root vercel.json rewrites never applied. The build now emits a
-      # real HTML file per route (frontend/scripts/prerender.mjs) and
-      # frontend/vercel.json carries the rewrite, so this must stay green.
+      # Deep-link probe (2026-09-17 audit, P0). Every non-root route once
+      # returned the platform's 404 in production — /login, /dashboard, /about,
+      # /blogs, /documentation — because the deployment built from the wrong
+      # root and its rewrites never applied. The build now emits a real HTML
+      # file per route (frontend/scripts/prerender.mjs), and Cloudflare Pages
+      # serves those files directly, so no rewrite is involved and this must
+      # stay green.
       - name: Probe deep links resolve with prerendered content
         id: deep_links
         continue-on-error: true
@@ -216,7 +223,7 @@ jobs:
             code="${response##*$'\n'}"
             html="${response%$'\n'*}"
             if [ "$code" != "200" ]; then
-              echo "::error::$label ($path) returned HTTP $code — deep links are broken. Check the Vercel Root Directory (docs/ops/owner-actions.md §2a-bis) and that the prerender step ran."
+              echo "::error::$label ($path) returned HTTP $code — deep links are broken. Confirm the Pages build ran the prerender step (frontend/scripts/prerender.mjs) and that the deployment's output directory is dist (docs/ops/deployment.md)."
               FAILED=1
               return
             fi
@@ -237,18 +244,17 @@ jobs:
           check_route '/.well-known/security.txt' 'contact:' 'security.txt'
           exit "$FAILED"
 
-      # Security-header probe (SEC-03/SEC-04). The policy is declared in three
-      # host configs — vercel.json (both copies) and firebase.json — plus helmet
-      # in backend/server.js for the self-hosted deployment; if the one that
-      # applies to production is not among the copies you updated, the headers
-      # disappear silently. That is what this probe caught on 2026-10-04: the
-      # domain is answered by Firebase Hosting (deploys themselves stay
-      # owner-run on Vercel — docs/ops/owner-actions.md Action 17), and
-      # firebase.json carried only Referrer-Policy / X-Content-Type-Options /
-      # X-Frame-Options, so there was no CSP, no Permissions-Policy and an HSTS
-      # value without includeSubDomains in production while both Vercel configs
-      # were complete. The Firebase copy is now covered by
-      # __tests__/securityHeadersParity.test.js too.
+      # Security-header probe (SEC-03/SEC-04). The policy is declared for the
+      # Cloudflare Pages deployment in `frontend/public/_headers`, for the
+      # an earlier Firebase Hosting deployment, and for the self-hosted
+      # backend by helmet (backend/server.js); if the one that applies to
+      # production is not among the copies you updated, the headers disappear
+      # silently. That is what this probe caught on 2026-10-04, when the domain
+      # was answered by Firebase Hosting and firebase.json carried only
+      # Referrer-Policy / X-Content-Type-Options / X-Frame-Options, so there was
+      # no CSP, no Permissions-Policy and an HSTS value without includeSubDomains
+      # in production while the config that was not serving carried everything.
+      # All three copies are now covered by __tests__/securityHeadersParity.test.js.
       - name: Probe security headers
         id: security_headers
         continue-on-error: true
@@ -282,13 +288,13 @@ jobs:
 
           # Which host answered? This is the only probe that says anything about
           # the deployment's own configuration, so record the fingerprint of the
-          # thing it measured. Measured 2026-10-26 (docs/audits/2026-10-26-live-security-headers.md):
-          # the answers on hazardnet.live carry `server: cloudflare` and none of
-          # `x-fh-requested-host` / `x-served-by` / `x-vercel-id`, and the two
-          # headers they do carry (nosniff, referrer-policy) are a subset of the
-          # repo's set — i.e. the host answering the domain is not applying any
-          # of `firebase.json` / `vercel.json` / `frontend/vercel.json`.
-          FINGERPRINT=$(grep -iE '^(server|x-fh-requested-host|x-served-by|x-vercel-id|x-vercel-cache|via):' <<< "$HEADERS" | paste -sd ' | ' - || true)
+          # thing it measured. Since 2026-10-26 the answer should be Cloudflare
+          # (`server: cloudflare`) in front of Cloudflare Pages, whose `_headers`
+          # file is the policy this step checks. `x-fh-requested-host` would mean
+          # Firebase Hosting answered instead — a different config in this repo,
+          # so the probe would be measuring a host this repository no longer configures
+          # (the Hosting block was retired; Action 22 disables the site).
+          FINGERPRINT=$(grep -iE '^(server|x-fh-requested-host|x-served-by|cf-ray|via):' <<< "$HEADERS" | paste -sd ' | ' - || true)
           echo "[headers] answering host: ${FINGERPRINT:-no identifying header}"
           LAST_MODIFIED=$(grep -iE '^last-modified:' <<< "$HEADERS" | head -1 | sed 's/^[^:]*: *//' || true)
           if [ -n "$LAST_MODIFIED" ]; then
@@ -313,11 +319,30 @@ jobs:
             fi
             echo "✅ $name"
           }
+          # Six headers, and — for the five that carry a policy — the value, not just the
+          # presence. A presence-only probe is how the 2026-10-04 drift stayed invisible: the
+          # host answered with *a* Referrer-Policy and no CSP at all, which "is the header
+          # there?" reported as green.
           require 'strict-transport-security' 'includeSubDomains'
           require 'content-security-policy' "frame-ancestors 'none'"
+          require 'content-security-policy' "object-src 'none'"
           require 'x-content-type-options' 'nosniff'
-          require 'referrer-policy'
-          require 'permissions-policy'
+          require 'x-frame-options' 'DENY'
+          require 'referrer-policy' 'strict-origin-when-cross-origin'
+          require 'permissions-policy' 'geolocation=(self)'
+
+          # The deployment that answers is Cloudflare Pages (docs/ops/deployment.md). If the
+          # response is not Cloudflare-fronted, the headers above were measured on *some*
+          # origin — worth a warning, not a failure: the site can legitimately sit behind an
+          # extra proxy. `x-fh-requested-host` would mean the retired Firebase origin answered.
+          if ! grep -qiE '^(server: *cloudflare|cf-ray:)' <<< "$HEADERS"; then
+            echo "::warning::no Cloudflare fingerprint (server: cloudflare / cf-ray) on the answer — the headers above may describe a different origin than the Pages deployment"
+          fi
+          if grep -qi '^x-fh-requested-host:' <<< "$HEADERS"; then
+            echo "::error::Firebase Hosting answered instead of Cloudflare Pages — the retired origin is still serving hazardnet-aas48424 (docs/ops/owner-actions.md Action 22)"
+            FAILED=1
+            MISSING+=("answered-by-firebase-hosting")
+          fi
 
           # Publish what is missing, not just that something is. `latest.json` used to
           # carry `detail: null` for every check, so a red run and the committed
@@ -332,7 +357,7 @@ jobs:
               DETAIL="$DETAIL (deployment last-modified $LAST_MODIFIED)"
             fi
             echo "detail=$DETAIL" >> "$GITHUB_OUTPUT"
-            echo "::error::security-header gap — $DETAIL. The header set is declared in firebase.json, vercel.json and frontend/vercel.json; whichever host answers $SITE_URL must be redeployed with it (or the headers added at the edge). docs/audits/2026-10-26-live-security-headers.md"
+            echo "::error::security-header gap — $DETAIL. The header set is declared in frontend/public/_headers (Cloudflare Pages), firebase.json and backend/server.js (helmet); whichever host answers $SITE_URL must be redeployed with it (or the headers added at the edge). docs/audits/2026-10-26-live-security-headers.md"
             {
               echo ""
               echo "> ## ⚠️ security headers: $DETAIL"
@@ -342,7 +367,7 @@ jobs:
               echo "> The requirement set is 5 headers (HSTS with includeSubDomains, CSP with"
               echo "> \`frame-ancestors 'none'\`, \`X-Content-Type-Options: nosniff\`,"
               echo "> \`Referrer-Policy\`, \`Permissions-Policy\`). The repo declares all five in"
-              echo "> \`firebase.json\`, \`vercel.json\` and \`frontend/vercel.json\`, so this is a"
+              echo "> \`frontend/public/_headers\`, \`firebase.json\` and helmet, so this is a"
               echo "> deployment/edge gap, not a source gap: see"
               echo "> \`docs/audits/2026-10-26-live-security-headers.md\` (measured) and"
               echo "> docs/ops/owner-actions.md Action 17."
@@ -412,8 +437,9 @@ jobs:
           # same apex→www 308.
           #
           # Production currently ships the SPA plus the committed snapshot and
-          # serves NO /api/* route at all (Vercel Root Directory — see
-          # docs/ops/owner-actions.md §2a-bis). While PUSH_TO_API=false the
+          # serves NO /api/* route at all: Cloudflare Pages hosts static assets,
+          # and the Node API (backend/) runs on its own host — see
+          # docs/ops/deployment.md. While PUSH_TO_API=false the
           # snapshot IS the documented delivery path (daily_forecast.yml
           # commits it), so a 404 on the API must not go red as long as the
           # snapshot the site actually serves is present and fresh. The probe
@@ -454,7 +480,7 @@ jobs:
             exit 1
           fi
 
-          echo "::warning::$API_URL returned HTTP $HTTP_CODE — this deployment serves no /api/v1/forecasts/* route (Vercel Root Directory, docs/ops/owner-actions.md §2a-bis). Probing the committed snapshot instead: it is the active delivery path while PUSH_TO_API=false. Set the API_METADATA_URL repository variable if the API runs on another host."
+          echo "::warning::$API_URL returned HTTP $HTTP_CODE — this deployment serves no /api/v1/forecasts/* route: Cloudflare Pages serves static assets only, and the Node API lives in backend/ on its own host. Probing the committed snapshot instead, which is the active delivery path. Set the API_METADATA_URL repository variable if the API runs on another host."
           SNAP_CODE=$(curl -sSL --max-redirs 5 -A "$PROBE_USER_AGENT" -H 'Accept: application/json,text/plain;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.9' -o /tmp/metadata.json -w "%{http_code}" --max-time 30 "$SNAPSHOT_URL")
           echo "snapshot HTTP $SNAP_CODE ($SNAPSHOT_URL)"
           if [ "$SNAP_CODE" != "200" ] || ! jq -e . /tmp/metadata.json >/dev/null 2>&1; then
@@ -585,6 +611,42 @@ jobs:
           [ "$FAILED" = "0" ] && echo "✅ generated content paths are served with their own bodies (prerendered HTML / JSON artifact)"
           exit "$FAILED"
 
+      # The canonical host, probed on its own. Every `<link rel="canonical">`, the whole
+      # sitemap (103 URLs) and security.txt's `Canonical:` name www.hazardnet.live, so a
+      # deployment that answers on the apex and not on www is a site that search engines and
+      # the status page treat as canonical while it fails to load. Measured 2026-10-26, the
+      # day both hostnames were CNAMEd to the Pages project: the apex served the new build and
+      # www answered Cloudflare 522 until the custom domain finished issuing. This step exists
+      # so that gap is a red run rather than something a reader has to notice.
+      - name: Probe the canonical www host
+        id: canonical_host
+        continue-on-error: true
+        shell: bash
+        run: |
+          CODE=$(curl -sS -o /tmp/www.html -w '%{http_code}' --max-time 30 \
+            -A "$PROBE_USER_AGENT" -H 'Accept: text/html' "$CANONICAL_URL/" 2>/dev/null) || CODE=000
+          echo "canonical host HTTP $CODE ($CANONICAL_URL/)"
+          case "$CODE" in
+            200)
+              if grep -qiE 'hazardnet|__vite__|react' /tmp/www.html; then
+                echo "✅ the canonical host serves the app shell"
+                echo "detail=" >> "$GITHUB_OUTPUT"
+              else
+                echo "::error::$CANONICAL_URL answered 200 but the body is not the app"
+                head -c 300 /tmp/www.html
+                exit 1
+              fi
+              ;;
+            522|523|524)
+              echo "::error::$CANONICAL_URL answered HTTP $CODE (Cloudflare could not reach the origin). Add www.hazardnet.live as a custom domain on the Pages project — docs/ops/deployment.md §4, docs/ops/owner-actions.md Action 20."
+              exit 1
+              ;;
+            *)
+              echo "::error::$CANONICAL_URL answered HTTP $CODE — the canonical hostname in the sitemap, canonical tags and security.txt is not serving"
+              exit 1
+              ;;
+          esac
+
       # The result is published in two forms: a machine-readable record the status
       # page reads, and a run artifact. Neither invents a pass: the outcomes are
       # read back from the steps themselves.
@@ -601,6 +663,7 @@ jobs:
           OUT_FORECAST_DATA: ${{ steps.forecast_data.outcome }}
           OUT_STATUS_PAGE: ${{ steps.status_page.outcome }}
           OUT_CONTENT_PAGES: ${{ steps.content_pages.outcome }}
+          OUT_CANONICAL_HOST: ${{ steps.canonical_host.outcome }}
           OUT_EDGE_CHALLENGED: ${{ steps.edge_challenge.outputs.challenged }}
         run: |
           set -uo pipefail
@@ -618,13 +681,14 @@ jobs:
             --arg forecast_data "$OUT_FORECAST_DATA" \
             --arg status_page "$OUT_STATUS_PAGE" \
             --arg content_pages "$OUT_CONTENT_PAGES" \
+            --arg canonical_host "$OUT_CANONICAL_HOST" \
             '{
               schema: "hazardnet-site-probe/v1",
               ran_at: $ran_at,
               run_url: $run_url,
               site_url: $site_url,
               edge_challenged: ($edge_challenged == "1"),
-              outcome: (if ([$homepage, $deep_links, $security_headers, $sitemap, $forecast_data, $status_page, $content_pages] | all(. == "success")) then "pass" else "fail" end),
+              outcome: (if ([$homepage, $deep_links, $security_headers, $sitemap, $forecast_data, $status_page, $content_pages, $canonical_host] | all(. == "success")) then "pass" else "fail" end),
               checks: [
                 { id: "homepage", outcome: $homepage, detail: null },
                 { id: "deep_links", outcome: $deep_links, detail: null },
@@ -633,7 +697,8 @@ jobs:
                 { id: "sitemap", outcome: $sitemap, detail: null },
                 { id: "forecast_data", outcome: $forecast_data, detail: null },
                 { id: "status_page", outcome: $status_page, detail: null },
-                { id: "content_pages", outcome: $content_pages, detail: null }
+                { id: "content_pages", outcome: $content_pages, detail: null },
+                { id: "canonical_host", outcome: $canonical_host, detail: null }
               ]
             }' > data/site-health/latest.json
           # Rebuild the derived artifact so the published page quotes this run.
@@ -703,7 +768,14 @@ jobs:
 
           OUTCOME=$(jq -r '.outcome' data/site-health/latest.json)
           git pull --rebase --autostash origin main || true
-          git commit -m "chore(ops): site-health probe ${OUTCOME} $(date -u +%Y-%m-%dT%H:%MZ)"
+          # `[skip ci]` is load-bearing. The site is built by Cloudflare Pages on every push
+          # to `main`, and Pages honours the same skip tokens, so a probe commit without it
+          # would redeploy the whole site every time a check changed state — turning a
+          # monitoring loop into a deploy loop. The build watch paths
+          # (`data/site-health/**` excluded, docs/ops/deployment.md §2) are the second guard;
+          # this is the first, and it is the one that works even if someone clears the
+          # watch-path list in the dashboard.
+          git commit -m "chore(ops): site-health probe ${OUTCOME} $(date -u +%Y-%m-%dT%H:%MZ) [skip ci]"
           # HEAD:main rather than a bare `git push`: a scheduled run checks the ref
           # out at a sha, and pushing a detached HEAD without an explicit refspec
           # fails with "You are not currently on a branch" even when the token has

@@ -20,7 +20,7 @@ jest.mock('@google/genai', () => ({ GoogleGenAI: jest.fn() }));
 jest.mock('../../backend/db.js', () => ({}));
 
 process.env.BACKEND_API_KEY = 'test-api-key-secure-12345';
-process.env.FRONTEND_ORIGIN = 'https://hazardnet.vercel.app';
+process.env.FRONTEND_ORIGIN = 'https://www.hazardnet.live';
 
 const app = require('../../backend/server').default;
 
@@ -28,10 +28,10 @@ describe('CORS Security', () => {
   test('reflects the configured origin', async () => {
     const response = await request(app)
       .get('/health')
-      .set('Origin', 'https://hazardnet.vercel.app')
+      .set('Origin', 'https://www.hazardnet.live')
       .expect(200);
 
-    expect(response.headers['access-control-allow-origin']).toBe('https://hazardnet.vercel.app');
+    expect(response.headers['access-control-allow-origin']).toBe('https://www.hazardnet.live');
   });
 
   test('does not reflect unknown origins', async () => {
@@ -43,7 +43,7 @@ describe('CORS Security', () => {
   test('answers preflight with the allowed methods', async () => {
     const response = await request(app)
       .options('/api/predict')
-      .set('Origin', 'https://hazardnet.vercel.app')
+      .set('Origin', 'https://www.hazardnet.live')
       .set('Access-Request-Method', 'POST')
       .expect(204);
 

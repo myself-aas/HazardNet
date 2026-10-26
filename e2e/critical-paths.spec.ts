@@ -381,44 +381,48 @@ test.describe('Editorial front door', () => {
  * failure — three identical `pageerror: Unexpected token '<'` (one per route)
  * on both projects.
  *
- * `<Analytics />` from `@vercel/analytics` injects a classic
- * `<script src="/_vercel/insights/script.js">`, a route only Vercel's edge
- * answers. Against the CI preview server the path fell through to the SPA
- * rewrite (`sirv` `single: true`), the response was `200 text/html` carrying
- * index.html, and the browser threw parsing it as JavaScript — once per page
- * load. The build now only wires the loader in for Vercel builds
- * (frontend/src/lib/vercelAnalytics.ts), so a locally served build must never
- * request it at all.
+ * The trigger then was `<Analytics />` from `@vercel/analytics`, which injected a
+ * classic `<script src="/_vercel/insights/script.js">` — a route only the Vercel edge
+ * answers. Against the CI preview server the path fell through to the SPA rewrite
+ * (`sirv` `single: true`), the response was `200 text/html` carrying index.html, and
+ * the browser threw parsing it as JavaScript, once per page load.
+ *
+ * The loader is gone: Vercel is no longer a deployment target at all, so the module,
+ * the `<Analytics />` stub and the `define` that gated it were deleted on 2026-10-26.
+ * The guard stays because the *failure mode* is not Vercel-specific — any
+ * platform-injected script path is answered with `index.html` by a static host, and
+ * the E2E suite is the only place that would notice.
  */
 test.describe('Deployment environment', () => {
-  test('does not request Vercel-only assets off Vercel', async ({ page }) => {
-    // The gate is decided at build time and the E2E suite always runs against
-    // a locally built preview, so scope this guard to loopback hosts: a real
-    // deployment may legitimately be Vercel (where the loader exists).
+  test('requests no platform-injected asset the static host cannot answer', async ({ page }) => {
+    // Scope to a locally built preview: a real deployment's edge may inject its own paths
+    // (Cloudflare's Web Analytics beacon, for one), which is not a defect in this bundle.
     const hostname = new URL(BASE).hostname;
     test.skip(
       !['localhost', '127.0.0.1', '::1', '[::1]'].includes(hostname),
-      `BASE is ${BASE} — not a locally built preview, so Vercel routes are expected.`
+      `BASE is ${BASE} — not a locally built preview, so edge-injected paths are expected.`
     );
 
+    // Paths owned by a hosting platform rather than by this repository.
+    const PLATFORM_PREFIXES = ['/_vercel/', '/_next/', '/.netlify/'];
     const requested: string[] = [];
     page.on('request', (request) => {
       const { pathname } = new URL(request.url());
-      if (pathname.startsWith('/_vercel/')) requested.push(pathname);
+      if (PLATFORM_PREFIXES.some((prefix) => pathname.startsWith(prefix))) requested.push(pathname);
     });
 
-    // One route is enough: <Analytics /> mounts once at the app root, outside the
-    // router. Wait for the GIS stage (not just the shell) so the mount effect has
-    // demonstrably run — a loader injected after this assertion would otherwise
-    // slip through. `/live` is the route with the map; on `/` the equivalent wait
-    // would be for an <h1>, which renders before the lazy map chunk is requested.
+    // One route is enough: the loader that caused the original failure mounted once at the app
+    // root, outside the router. Wait for the GIS stage (not just the shell) so the mount effect
+    // has demonstrably run — a loader injected after this assertion would otherwise slip
+    // through. `/live` is the route with the map; on `/` the equivalent wait would be for an
+    // <h1>, which renders before the lazy map chunk is requested.
     await page.goto(`${BASE}/live`);
     await waitForAppShell(page);
     await expect(page.locator('.leaflet-container').first()).toBeVisible({ timeout: 20_000 });
 
     expect(
       requested,
-      'Vercel system routes must not be requested from a non-Vercel deployment'
+      'platform-owned asset paths must not be requested from a static deployment'
     ).toEqual([]);
   });
 });

@@ -1,14 +1,13 @@
 /**
- * Vercel Serverless Function — the AI Advisor chat surface.
+ * Node Serverless Function — the AI Advisor chat surface.
  *
  * GET  /api/chat/sample-questions   quick-start chips (no middleware, minimal cold start)
  * POST /api/chat/query              the widget's question endpoint (identity + AI limiter)
  *
- * Both handlers live in `serverless/chat/`, which Vercel does not scan for functions —
- * one entry file, two URLs, under the 12-function Hobby budget
- * (docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget). The loaders are literal so the bundler can trace
- * them, and per request so the (Express-based) query handler's graph never loads for a
- * sample-questions request.
+ * Both handlers live in `serverless/chat/`, which no function host scans for functions —
+ * one entry file, two URLs (docs/codebase/ARCHITECTURE.md#the-node-function-surface-api).
+ * The loaders are literal so a bundler can trace them, and per request so the
+ * (Express-based) query handler's graph never loads for a sample-questions request.
  */
 
 import { createDispatcher } from '../../serverless/dispatch.js';

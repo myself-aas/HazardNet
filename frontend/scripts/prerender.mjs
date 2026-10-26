@@ -7,9 +7,9 @@
  * hazardnet.live is a Vite SPA: `dist/index.html` is an empty shell and every
  * real route (`/about`, `/blogs`, `/login`, `/dashboard`, `/methodology`, …)
  * 404s unless the host applies an SPA rewrite. On 2026-09-17 the production
- * Vercel project was building from `frontend/` (see docs/ops/owner-actions.md
- * §2a-bis), so the root `vercel.json` rewrites never applied and *every*
- * deep link returned Vercel's platform 404 — including `/login` and the whole
+ * host project was building from `frontend/` (see docs/ops/owner-actions.md
+ * Action 17), so the root config's rewrites never applied and *every*
+ * deep link returned the platform 404 — including `/login` and the whole
  * SEO surface. See docs/audits/2026-09-17-live-surface-audit.md.
  *
  * Emitting a real HTML file per route fixes that in the build output itself,
@@ -532,7 +532,7 @@ function writeRoute(route, html, { allowIndex = false } = {}) {
   const dir = path.join(distDir, clean);
   mkdirSync(dir, { recursive: true });
   writeFileSync(path.join(dir, 'index.html'), html);
-  // Also emit the extension-less sibling Vercel resolves directly
+  // Also emit the extension-less sibling a static host resolves directly
   // (`/about` → about.html) so deep links work even without directory-index
   // handling or an SPA rewrite.
   mkdirSync(path.dirname(path.join(distDir, `${clean}.html`)), { recursive: true });
@@ -968,7 +968,7 @@ if (existsSync(robotsSource)) {
   writeFileSync(path.join(distDir, 'robots.txt'), robots);
 }
 
-// A 404 route for hosts that honour 404.html (Vercel does). Unknown deep links
+// A 404 route for hosts that honour 404.html (Cloudflare Pages does). Unknown deep links
 // still fall through to the SPA (needed for /blogs/:slug and district pages),
 // which marks itself noindex.
 //

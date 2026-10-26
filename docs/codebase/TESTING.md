@@ -179,6 +179,12 @@ npx jest --ci --coverage      # measured at HEAD: 65.26 stmts / 60.26 branch / 6
 | Python (`pytest scripts/tests -q`) | — | **suite deleted; `ci.yml` still invokes it** | — |
 | E2E (Playwright) | **`[TODO]` unverified** — no browser can be downloaded in this sandbox (`cdn.playwright.dev` not on the allowlist); the `ci.yml` `test-e2e` job exists but currently fails at its `npm ci` install step | — | — |
 
+> **Correction, 2026-10-26.** This section is the 2026-10-25 measurement, kept for the record.
+> The suite is green now: `npx jest --ci --silent` → **184 suites, 1,969 passed, 24 skipped**.
+> Cause A is gone (`__tests__/api/*` all pass — the handler modules exist and are exercised by
+> 8 suites); C and D were fixed with the lockfile and the refreshed artifacts. The comments
+> below that name a deleted module or a Vercel budget gate describe that earlier state, not HEAD.
+
 **The 25 failing suites, by cause** (each name verified by an individual run):
 
 | Cause | Suites | First action |
@@ -217,7 +223,7 @@ npx jest --ci --coverage      # measured at HEAD: 65.26 stmts / 60.26 branch / 6
   |---|---|---|
   | Type-check | `npm run lint` (tsc, `frontend/tsconfig.json`) | **clean** |
   | Lint | `npm run lint:eslint` (`--max-warnings 685`) | **0 errors, 580 warnings** — 105 of headroom; 15 are unused `eslint-disable` directives, `--fix`-able |
-  | Vercel function budget | `node scripts/check-vercel-functions.mjs` | **6 functions** (gate passes *while the surface is severed* — it counts files, not imports) |
+  | Node-function surface | `npx jest __tests__/api/serverlessRouting.test.js` | **22 passed** — pins the declared entry points, resolves every literal import, and fails on an orphaned handler |
   | Claims registry | `node scripts/verify_claims.mjs` | **16/16 claims verified** |
   | Env shape | `npm run check:env` | **crashes** — `scripts/validate_env.mjs` deleted |
   | Icon sync | `npm run icons:check` | **crashes** — `scripts/generate-icon-glyphs.mjs` deleted |
@@ -273,7 +279,7 @@ npx jest --ci --coverage      # measured at HEAD: 65.26 stmts / 60.26 branch / 6
   `npx jest --ci --silent --coverage --coverageReporters=text-summary` (**65.26/60.26/64.88/
   66.19**); per-suite re-runs for all 25 failures; `npx jest --config
   apps/mobile/jest.config.cjs --ci --forceExit` (**12/108, 25.3 s**, still open-handles);
-  `npm run lint` (clean); `npx eslint .` + `-f json`; `node scripts/check-vercel-functions.mjs`;
+  `npm run lint` (clean); `npx eslint .` + `-f json`; `node scripts/check-workflows.mjs`;
   `node scripts/verify_claims.mjs`; `node scripts/check-secret-rotation.mjs`;
   `npm run check:env` / `npm run icons:check` (**crash**)
 

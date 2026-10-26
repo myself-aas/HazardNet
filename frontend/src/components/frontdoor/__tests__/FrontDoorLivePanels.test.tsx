@@ -94,6 +94,7 @@ const strip = (over: Partial<React.ComponentProps<typeof LiveStatusStrip>> = {})
       loading={false}
       error={null}
       coverage={coverage as FreshnessArtifact['coverage']}
+      readFailed={false}
       {...over}
     />,
   );
@@ -128,13 +129,24 @@ describe('the live status strip', () => {
   });
 
   it('never turns an unreadable artifact into a zero', () => {
-    strip({ counts: null, assessed: null, withheld: null });
+    strip({ counts: null, assessed: null, withheld: null, readFailed: true });
     expect(screen.getByText(/could not be read on this load/i)).toBeInTheDocument();
     // no count list at all: a missing file produces no chips, not four zeroed ones.
     // (Query the counts list itself, by hook: the strip also carries a list of its own links,
     // which is not evidence about the artifact either way.)
     expect(screen.getByRole('status').querySelector('[data-testid="strip-counts"]')).toBeNull();
     expect(screen.queryByText(/withheld/i)).not.toBeInTheDocument();
+  });
+
+  /* The distinction that cost a false alarm on 2026-10-26: www.hazardnet.live answered from a
+     live API with no level ledger, and the strip — testing `counts === null` — told readers the
+     artifact could not be read. A readable answer with nothing in it is a different sentence. */
+  it('does not call a readable answer with no ledger an unreadable file', () => {
+    strip({ counts: null, assessed: null, withheld: null, readFailed: false });
+    expect(screen.queryByText(/could not be read on this load/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/carried no level-by-level ledger/i)).toBeInTheDocument();
+    // ...and still never renders the missing counts as zeros.
+    expect(screen.getByRole('status').querySelector('[data-testid="strip-counts"]')).toBeNull();
   });
 
   it('is announced, so a reader who leaves the page open hears it change', () => {

@@ -111,19 +111,14 @@ const EN = {
   'advisory.action.WATCH': 'Stay aware. Check the forecast again tomorrow morning.',
   'advisory.action.WARNING': 'Prepare now, while roads and markets are still open.',
   'advisory.action.SEVERE': 'Act now. Do not wait for the next update.',
-  'advisory.hint.Cold Wave':
-    'Protect seedlings and young animals from the cold, and cover nursery beds at night.',
+  'advisory.hint.Cold Wave': 'Protect seedlings and young animals from the cold, and cover nursery beds at night.',
   'advisory.hint.Drought': 'Save water, mulch to hold soil moisture, and delay fertiliser.',
   'advisory.hint.Fire': 'Keep dry residue away from the homestead, and light no fire.',
-  'advisory.hint.Flash Flood':
-    'Move to high ground, and keep seed, fodder and animals out of the water.',
+  'advisory.hint.Flash Flood': 'Move to high ground, and keep seed, fodder and animals out of the water.',
   'advisory.hint.Flood': 'Move seed, fodder and animals to higher ground early.',
-  'advisory.hint.Heat Wave':
-    'Water crops early and late, and keep people and animals in the shade at midday.',
-  'advisory.hint.Severe Local Storm':
-    'Bring in what can blow away, and keep clear of tin roofs and trees.',
-  'advisory.hint.Tropical Cyclone':
-    'Secure the roof and the animal shelter, and cover drinking water.',
+  'advisory.hint.Heat Wave': 'Water crops early and late, and keep people and animals in the shade at midday.',
+  'advisory.hint.Severe Local Storm': 'Bring in what can blow away, and keep clear of tin roofs and trees.',
+  'advisory.hint.Tropical Cyclone': 'Secure the roof and the animal shelter, and cover drinking water.',
   'advisory.action.advice': 'Advice',
   'advisory.action.fullProtocol': 'Full protocol for this hazard',
   'advisory.action.notInPlace': 'Standard practice for this hazard.',
@@ -142,8 +137,7 @@ const EN = {
   'advisory.card.listen': 'Listen',
   'advisory.card.stop': 'Stop',
   'advisory.card.spoken': 'Read this advisory aloud',
-  'advisory.card.derivedNote':
-    'Tier derived on this device. The pipeline did not publish one for this row.',
+  'advisory.card.derivedNote': 'Tier derived on this device. The pipeline did not publish one for this row.',
   'advisory.card.reviewRequired':
     'Not yet an official alert: this tier needs a named duty officer to review it before it is issued.',
   'advisory.tts.sentence': '{district}. {hazard}. Level: {tier}. Confidence: {confidence}. {horizon}.',
@@ -338,6 +332,8 @@ const EN = {
   'frontdoor.strip.reading': 'Reading the alerts artifact …',
   'frontdoor.strip.unreadable':
     'The alerts artifact could not be read on this load, so no count is shown here. An unread file is never reported as zero.',
+  'frontdoor.strip.noLedger':
+    'The read succeeded but the answer carried no level-by-level ledger, so no count is shown here. That is not the same as a count of zero.',
   'frontdoor.strip.districts': 'Districts covered',
   'frontdoor.strip.assessed': 'Assessed rows',
   'frontdoor.strip.updated': 'Updated',
@@ -511,8 +507,7 @@ const EN = {
   'advisory.track.physics': 'Physics track',
   'advisory.track.final': 'Final (fused)',
   'advisory.physicsOverride': 'Physics-grounded',
-  'advisory.noSignal':
-    'This row predates the dual-track severity columns. Only the fused score is available.',
+  'advisory.noSignal': 'This row predates the dual-track severity columns. Only the fused score is available.',
   'advisory.distribution': 'Ranked hazard distribution',
   'advisory.rank': 'Rank',
   'advisory.source': 'Source',
@@ -576,7 +571,8 @@ const BN: Record<string, string> = {
   'verdict.reading': 'সতর্কবার্তার ফাইল পড়া হচ্ছে…',
   'verdict.quiet.lead': 'সতর্ক দৃষ্টির সীমার উপরে কোনো সতর্কবার্তা প্রকাশিত হয়নি।',
   'verdict.quiet.body': 'এই রানে কোনো জেলার জন্য পর্যবেক্ষণ, সতর্কবার্তা বা গুরুতর স্তর প্রকাশিত হয়নি।',
-  'verdict.quiet.detail': '{assessed}টি জেলার পূর্বাভাস পর্যালোচনা করা হয়েছে, {withheld}টি যাচাইয়ের জন্য রাখা হয়েছে।',
+  'verdict.quiet.detail':
+    '{assessed}টি জেলার পূর্বাভাস পর্যালোচনা করা হয়েছে, {withheld}টি যাচাইয়ের জন্য রাখা হয়েছে।',
   'verdict.active.lead': 'সতর্কবার্তা সক্রিয়।',
   'verdict.active.body': '{count}টি জেলার সতর্কবার্তা পর্যবেক্ষণ বা তার উপরের স্তরে প্রকাশিত হয়েছে।',
   'verdict.active.link': 'সতর্কবার্তাগুলো দেখুন',
@@ -589,17 +585,13 @@ const BN: Record<string, string> = {
   'advisory.action.WATCH': 'সতর্ক থাকুন। আগামীকাল সকালে আবার পূর্বাভাস দেখুন।',
   'advisory.action.WARNING': 'এখনই প্রস্তুতি নিন, রাস্তা ও বাজার খোলা থাকতেই।',
   'advisory.action.SEVERE': 'এখনই ব্যবস্থা নিন। পরের খবরের জন্য অপেক্ষা করবেন না।',
-  'advisory.hint.Cold Wave':
-    'চারাগাছ ও ছোট গবাদি পশুকে ঠান্ডা থেকে বাঁচান, রাতে বীজতলা ঢেকে রাখুন।',
+  'advisory.hint.Cold Wave': 'চারাগাছ ও ছোট গবাদি পশুকে ঠান্ডা থেকে বাঁচান, রাতে বীজতলা ঢেকে রাখুন।',
   'advisory.hint.Drought': 'পানি সাশ্রয় করুন, মাটিতে আর্দ্রতা ধরে রাখতে মালচ করুন, সার প্রয়োগ পিছিয়ে দিন।',
   'advisory.hint.Fire': 'শুকনো খড়কুটো ঘর থেকে দূরে রাখুন, আগুন জ্বালাবেন না।',
-  'advisory.hint.Flash Flood':
-    'উঁচু জায়গায় যান, বীজ, গো-খাদ্য ও পশু পানি থেকে দূরে রাখুন।',
+  'advisory.hint.Flash Flood': 'উঁচু জায়গায় যান, বীজ, গো-খাদ্য ও পশু পানি থেকে দূরে রাখুন।',
   'advisory.hint.Flood': 'বীজ, গো-খাদ্য ও পশু আগেই উঁচু জায়গায় সরিয়ে নিন।',
-  'advisory.hint.Heat Wave':
-    'সকাল ও বিকেলে ফসলে পানি দিন, দুপুরে মানুষ ও পশুকে ছায়ায় রাখুন।',
-  'advisory.hint.Severe Local Storm':
-    'যা উড়ে যেতে পারে তা ঘরে তুলুন, টিনের চাল ও গাছ থেকে দূরে থাকুন।',
+  'advisory.hint.Heat Wave': 'সকাল ও বিকেলে ফসলে পানি দিন, দুপুরে মানুষ ও পশুকে ছায়ায় রাখুন।',
+  'advisory.hint.Severe Local Storm': 'যা উড়ে যেতে পারে তা ঘরে তুলুন, টিনের চাল ও গাছ থেকে দূরে থাকুন।',
   'advisory.hint.Tropical Cyclone': 'ঘরের চাল ও পশুর আশ্রয় মজবুত করুন, খাবার পানি ঢেকে রাখুন।',
   'advisory.action.advice': 'পরামর্শ',
   'advisory.action.fullProtocol': 'এই দুর্যোগের সম্পূর্ণ নির্দেশিকা',
@@ -616,8 +608,7 @@ const BN: Record<string, string> = {
   'advisory.card.listen': 'শুনুন',
   'advisory.card.stop': 'থামান',
   'advisory.card.spoken': 'এই সতর্কতা শুনুন',
-  'advisory.card.derivedNote':
-    'স্তরটি এই যন্ত্রেই নির্ণয় করা হয়েছে। পাইপলাইন এই সারির জন্য কোনো স্তর প্রকাশ করেনি।',
+  'advisory.card.derivedNote': 'স্তরটি এই যন্ত্রেই নির্ণয় করা হয়েছে। পাইপলাইন এই সারির জন্য কোনো স্তর প্রকাশ করেনি।',
   'advisory.card.reviewRequired':
     'এখনো সরকারি সতর্কবার্তা নয়: প্রকাশের আগে এই স্তরটি একজন দায়িত্বপ্রাপ্ত কর্মকর্তার যাচাই দরকার।',
   'advisory.tts.sentence': '{district}। {hazard}। স্তর: {tier}। নির্ভরযোগ্যতা: {confidence}। {horizon}।',
@@ -794,6 +785,8 @@ const BN: Record<string, string> = {
   'frontdoor.strip.reading': 'সতর্কবার্তার আর্টিফ্যাক্ট পড়া হচ্ছে…',
   'frontdoor.strip.unreadable':
     'এইবার আর্টিফ্যাক্টটি পড়া যায়নি, তাই এখানে কোনো সংখ্যা দেখানো হচ্ছে না. ফাইল পড়া না গেলে তা শূন্য হিসেবে দেখানো হয় না।',
+  'frontdoor.strip.noLedger':
+    'পাঠ সফল হয়েছে, তবে উত্তরে স্তরভিত্তিক হিসাব ছিল না; তাই এখানে কোনো সংখ্যা দেখানো হচ্ছে না। এটি শূন্য সংখ্যার সমান নয়।',
   'frontdoor.strip.districts': 'আওতাভুক্ত জেলা',
   'frontdoor.strip.assessed': 'মূল্যায়িত সারি',
   'frontdoor.strip.updated': 'হালনাগাদ',
@@ -877,8 +870,7 @@ const BN: Record<string, string> = {
     'প্রতিটি রানে প্রতিটি জেলাকে আটটি শ্রেণির একটি দিয়ে চিহ্নিত করা হয়। প্রতিটি কার্ড সেই শ্রেণির পূর্ণ পদ্ধতিগত বিবরণের সঙ্গে যুক্ত।',
   'frontdoor.products.horizonsEyebrow': 'পূর্বাভাসের সময়সীমা',
   'frontdoor.products.horizon7': '৭ দিনের পূর্বাভাস',
-  'frontdoor.products.horizon7desc':
-    'স্বল্প সময়সীমা: আগামী এক সপ্তাহে আবহাওয়া চালকগুলো জেলাভিত্তিক কোন রূপ নেয়।',
+  'frontdoor.products.horizon7desc': 'স্বল্প সময়সীমা: আগামী এক সপ্তাহে আবহাওয়া চালকগুলো জেলাভিত্তিক কোন রূপ নেয়।',
   'frontdoor.products.horizon15': '১৫ দিনের পূর্বাভাস',
   'frontdoor.products.horizon15desc':
     'বর্ধিত সময়সীমা: পনেরো দিনের জন্য গণনা করা একই রেকর্ড, সপ্তাহের পূর্বাভাসের পাশেই প্রকাশিত।',
@@ -926,14 +918,12 @@ const BN: Record<string, string> = {
   'lookup.error.offline.body':
     'এই যন্ত্র অফলাইন থাকায় সংরক্ষিত পূর্বাভাস লোড করা যায়নি। সংযোগ ফিরলে আবার চেষ্টা করুন। ফল না আসা মানে নিরাপদ নয়।',
   'lookup.error.rateLimited.title': 'অনুরোধের সংখ্যা বেশি',
-  'lookup.error.rateLimited.body':
-    'সেবা এই পাতাকে একটু অপেক্ষা করতে বলেছে। কিছুক্ষণ পর আবার চেষ্টা করুন।',
+  'lookup.error.rateLimited.body': 'সেবা এই পাতাকে একটু অপেক্ষা করতে বলেছে। কিছুক্ষণ পর আবার চেষ্টা করুন।',
   'lookup.error.server.title': 'সংরক্ষিত পূর্বাভাস লোড করা যায়নি',
   'lookup.error.server.body':
     'সেবা কোনো সংরক্ষিত পূর্বাভাস ফেরত দেয়নি। পরে আবার চেষ্টা করুন। এটি আবহাওয়ার অবস্থা সম্পর্কে কোনো বিবৃতি নয়।',
   'lookup.error.invalid.title': 'সংরক্ষিত পূর্বাভাস পড়া যায়নি',
-  'lookup.error.invalid.body':
-    'সেবার উত্তর এই পাতা ব্যবহার করতে পারেনি। অনুমান করে কোনো স্কোর দেখানো হয়নি।',
+  'lookup.error.invalid.body': 'সেবার উত্তর এই পাতা ব্যবহার করতে পারেনি। অনুমান করে কোনো স্কোর দেখানো হয়নি।',
   'lookup.ready.title': 'সংরক্ষিত পূর্বাভাস: {hazard}',
   'lookup.source.stored': 'সংরক্ষিত পূর্বাভাস',
   'lookup.freshness.label': 'তারিখ',
@@ -951,8 +941,7 @@ const BN: Record<string, string> = {
   'lookup.evidence.summary': 'প্রমাণের নোট',
   'lookup.evidence.missingDrivers':
     'এই অনুরোধে কোনো ইনফারেন্স চালানো হয়নি। শ্রেণিভিত্তিক সম্ভাবনা, শীর্ষ তিন শ্রেণি ও উপগ্রহ চালক এই সারিতে নথিভুক্ত নেই।',
-  'lookup.disclaimer':
-    'কেবল সিদ্ধান্ত সহায়তা। সরকারি নির্দেশনার জন্য বিএমডি, এফএফডব্লিউসি ও ডিডিএম অনুসরণ করুন।',
+  'lookup.disclaimer': 'কেবল সিদ্ধান্ত সহায়তা। সরকারি নির্দেশনার জন্য বিএমডি, এফএফডব্লিউসি ও ডিডিএম অনুসরণ করুন।',
 
   'advisory.signal.title': 'সতর্কতা সংকেত',
   'advisory.signal.hint': 'পাইপলাইন যে তীব্রতা প্রকাশ করে এবং সেগুলি থেকে নির্ধারিত স্তর',
@@ -963,8 +952,7 @@ const BN: Record<string, string> = {
   'advisory.track.physics': 'পদার্থবিদ্যা ট্র্যাক',
   'advisory.track.final': 'চূড়ান্ত (সমন্বিত)',
   'advisory.physicsOverride': 'পদার্থবিদ্যা-ভিত্তিক',
-  'advisory.noSignal':
-    'এই সারি দ্বৈত-ট্র্যাক তীব্রতা কলামের আগের. শুধুমাত্র সমন্বিত স্কোর পাওয়া যাচ্ছে।',
+  'advisory.noSignal': 'এই সারি দ্বৈত-ট্র্যাক তীব্রতা কলামের আগের. শুধুমাত্র সমন্বিত স্কোর পাওয়া যাচ্ছে।',
   'advisory.distribution': 'ক্রমান্বিত ঝুঁকি বন্টন',
   'advisory.rank': 'ক্রম',
   'advisory.source': 'উৎস',

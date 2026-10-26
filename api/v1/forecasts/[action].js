@@ -1,14 +1,14 @@
 /**
- * Vercel Serverless Function — the forecast read surface.
+ * Node Serverless Function — the forecast read surface.
  *
  * GET /api/v1/forecasts/bulk?horizon=7_days|15_days   all districts in one payload
  * GET /api/v1/forecasts/history                       persisted predictions over time
  * GET /api/v1/forecasts/metadata                      dataset freshness for the banner
  *
  * The handlers live in `serverless/v1/forecasts/` (not scanned for functions), so the
- * three URLs share one function against the 12-function Hobby budget —
- * docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget. Literal loaders keep the bundler able to trace them;
- * per-request loaders keep each URL's import graph out of its siblings'.
+ * three URLs share one entry point (docs/codebase/ARCHITECTURE.md#the-node-function-surface-api).
+ * Literal loaders keep a bundler able to trace them; per-request loaders keep each URL's
+ * import graph out of its siblings'.
  */
 
 import { createDispatcher } from '../../../serverless/dispatch.js';

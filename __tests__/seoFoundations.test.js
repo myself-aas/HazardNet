@@ -215,26 +215,25 @@ maybe('robots.txt and the content index', () => {
 
   // An unknown URL is an unbounded space. Serving it the homepage HTML (HTTP 200, canonical and
   // index,follow pointing at `/`) is the classic soft 404: the crawler has to fetch and compare
-  // every one of them. Both deployment configs therefore rewrite unmatched paths to the noindex
-  // shell, and the shell still boots the SPA so a real-but-unlisted route (a profile URL, an alert
-  // id) renders for the visitor.
-  it('routes unknown URLs to the noindex shell in both deployment configs, not to the homepage', () => {
-    for (const configPath of [join(repoRoot, 'vercel.json'), join(frontend, 'vercel.json')]) {
-      const config = JSON.parse(readFileSync(configPath, 'utf8'));
-      const catchAll = (config.rewrites ?? []).filter((rewrite) => !rewrite.destination?.includes('.'));
-      expect(catchAll).toEqual([]);
-      const shells = (config.rewrites ?? []).map((rewrite) => rewrite.destination);
-      expect(shells).toContain('/404.html');
-      expect(shells).not.toContain('/index.html');
-      // …while still excluding dotted paths, so `/.well-known/security.txt` and `/data/*.json`
-      // are served as files rather than swallowed by the rewrite.
-      for (const rewrite of config.rewrites ?? []) {
-        expect(rewrite.source).toContain('.*\\.[a-zA-Z0-9]+$');
-      }
+  // every one of them. Both deployment configs used to rewrite unmatched paths to the noindex
+  // shell; on Cloudflare Pages (the only deployment since 2026-10-26) that job belongs to
+  // `dist/404.html`, which the platform serves automatically for a path with no file — provided
+  // `_redirects` does not catch everything first.
+  it('leaves unknown URLs to the noindex 404 shell, not to the homepage', () => {
+    const redirects = readFileSync(join(frontend, 'public/_redirects'), 'utf8');
+    const rules = redirects
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line && !line.startsWith('#'));
+    // A catch-all would answer every unknown URL with 200 + the indexable homepage.
+    expect(rules.some((rule) => /^\/\*\s/.test(rule))).toBe(false);
+    for (const rule of rules) {
+      expect(rule).not.toContain('/index.html');
     }
-    // The shell the rewrite points at is the one that boots the app.
+    // The shell that appears instead is the one that boots the app and says noindex.
     const fourOhFour = readDist('404.html');
     expect(fourOhFour).toMatch(/<script[^>]+src="\/assets\//);
+    expect(fourOhFour).toMatch(/<meta name="robots" content="noindex/);
   });
 
   it('keeps every generated page below a sane size', () => {

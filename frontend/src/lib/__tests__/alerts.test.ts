@@ -14,14 +14,27 @@
  */
 
 import {
-  ALERTS_API_URL, ALERTS_SNAPSHOT_URL, ALERT_LEVELS, alertLevelRank, alertsByDistrict,
-  alertsForDistrict, districtKey, freshnessOf, isAlertLevel, loadAlertPolicy, loadAlerts,
-  parseAlertsPayload, parsePolicyPayload, sortAlerts, summariseAlerts,
+  ALERTS_API_URL,
+  ALERTS_SNAPSHOT_URL,
+  ALERT_LEVELS,
+  alertLevelRank,
+  alertsByDistrict,
+  alertsForDistrict,
+  districtKey,
+  freshnessOf,
+  isAlertLevel,
+  loadAlertPolicy,
+  loadAlerts,
+  parseAlertsPayload,
+  parsePolicyPayload,
+  sortAlerts,
+  summariseAlerts,
 } from '../alerts';
 
-const DISCLAIMER = 'HazardNet is a research-based decision-support tool. It is not an official '
-  + 'warning service. Always follow instructions from the Bangladesh Meteorological Department, '
-  + 'FFWC and your local administration.';
+const DISCLAIMER =
+  'HazardNet is a research-based decision-support tool. It is not an official ' +
+  'warning service. Always follow instructions from the Bangladesh Meteorological Department, ' +
+  'FFWC and your local administration.';
 
 const row = (over: Record<string, unknown> = {}) => ({
   id: 'a-1',
@@ -39,12 +52,13 @@ const row = (over: Record<string, unknown> = {}) => ({
   ...over,
 });
 
-const jsonResponse = (body: unknown, { ok = true, stale = false }: { ok?: boolean; stale?: boolean } = {}) => ({
-  ok,
-  status: ok ? 200 : 500,
-  headers: { get: (name: string) => (stale && name === 'X-HazardNet-Stale' ? '1' : null) },
-  json: async () => body,
-}) as unknown as Response;
+const jsonResponse = (body: unknown, { ok = true, stale = false }: { ok?: boolean; stale?: boolean } = {}) =>
+  ({
+    ok,
+    status: ok ? 200 : 500,
+    headers: { get: (name: string) => (stale && name === 'X-HazardNet-Stale' ? '1' : null) },
+    json: async () => body,
+  }) as unknown as Response;
 
 describe('parseAlertsPayload', () => {
   it('keeps PUBLISHED rows and reports how many it dropped', () => {
@@ -99,9 +113,14 @@ describe('parseAlertsPayload', () => {
 
 describe('loadAlerts', () => {
   it('prefers the live API and labels the source', async () => {
-    const fetcher = jest.fn(async () => jsonResponse({
-      generated_at: '2026-09-18T06:00:00Z', assessed: 74, counts: { WATCH: 1 }, alerts: [row()],
-    }));
+    const fetcher = jest.fn(async () =>
+      jsonResponse({
+        generated_at: '2026-09-18T06:00:00Z',
+        assessed: 74,
+        counts: { WATCH: 1 },
+        alerts: [row()],
+      }),
+    );
     const result = await loadAlerts({ fetcher: fetcher as unknown as typeof fetch });
     expect(result.source).toBe('api');
     expect(result.alerts).toHaveLength(1);
@@ -115,14 +134,76 @@ describe('loadAlerts', () => {
     const fetcher = jest.fn(async (url: string) => {
       if (String(url).includes(ALERTS_API_URL)) return jsonResponse({}, { ok: false });
       return jsonResponse({
-        schema: 'hazardnet-alerts/v1', generated_at: '2026-09-17T20:00:00Z',
-        assessed: 74, alerts: [row()],
+        schema: 'hazardnet-alerts/v1',
+        generated_at: '2026-09-17T20:00:00Z',
+        assessed: 74,
+        alerts: [row()],
       });
     });
     const result = await loadAlerts({ fetcher: fetcher as unknown as typeof fetch });
     expect(result.source).toBe('snapshot');
     expect(result.alerts).toHaveLength(1);
     expect(result.error).toContain('live API');
+  });
+
+  /* Measured on 2026-10-26, while www.hazardnet.live was still answered by the legacy host
+     (it now CNAMEs to the Cloudflare Pages project): that host's /api/v1/alerts replied 200
+     with `{count: 0, state_counts: {}, alerts: []}` because nothing was wired behind it, while
+     the snapshot committed to the same deployment held the published advisories. The loader used to return that empty answer as the truth, so the front door
+     reported "the alerts artifact could not be read" on a deployment that was shipping 106
+     advisories. An answer that states no ledger is not an answer. */
+  it('falls through to the snapshot when the live API answers with an empty ledger', async () => {
+    const fetcher = jest.fn(async (url: string) => {
+      if (String(url).includes(ALERTS_API_URL)) {
+        return jsonResponse({
+          generated_at: '2026-10-26T09:24:00.365Z',
+          policy_version: 'alert-policy/1.0.0',
+          count: 0,
+          state_counts: {},
+          states_visible: ['PUBLISHED'],
+          alerts: [],
+        });
+      }
+      return jsonResponse({
+        schema: 'hazardnet-alerts/v1',
+        generated_at: '2026-10-25T19:21:16.916Z',
+        assessed: 128,
+        counts: { WATCH: 106, WARNING: 0, SEVERE: 0 },
+        alerts: [row()],
+      });
+    });
+    const result = await loadAlerts({ fetcher: fetcher as unknown as typeof fetch });
+    expect(result.source).toBe('snapshot');
+    expect(result.alerts).toHaveLength(1);
+    expect(result.counts).toEqual({ WATCH: 106, WARNING: 0, SEVERE: 0 });
+    // The divergence is reported, not silently resolved in favour of either source.
+    expect(result.warnings.join(' ')).toMatch(/live API answered with no published alert/i);
+    expect(result.error).toMatch(/live API/);
+  });
+
+  it('still prefers the API when it answers with a ledger, even an all-zero one', async () => {
+    const fetcher = jest.fn(async (url: string) => {
+      if (String(url).includes(ALERTS_API_URL)) {
+        return jsonResponse({ generated_at: '2026-09-18T06:00:00Z', counts: { WATCH: 0 }, alerts: [] });
+      }
+      return jsonResponse({ schema: 'hazardnet-alerts/v1', alerts: [row()] });
+    });
+    const result = await loadAlerts({ fetcher: fetcher as unknown as typeof fetch });
+    expect(result.source).toBe('api');
+    expect(result.alerts).toHaveLength(0);
+  });
+
+  it('never invents a generation time for a snapshot that carries none', async () => {
+    const fetcher = jest.fn(async (url: string) => {
+      if (String(url).includes(ALERTS_API_URL)) return jsonResponse({}, { ok: false });
+      return jsonResponse({ schema: 'hazardnet-alerts/v1', alerts: [row()] });
+    });
+    const result = await loadAlerts({
+      fetcher: fetcher as unknown as typeof fetch,
+      now: new Date('2026-10-26T09:00:00Z'),
+    });
+    expect(result.generated_at).toBeNull();
+    expect(result.fetched_at).toBe('2026-10-26T09:00:00.000Z');
   });
 
   it('flags a snapshot whose schema tag is not the one the client understands', async () => {
@@ -139,7 +220,9 @@ describe('loadAlerts', () => {
   });
 
   it('never throws: an unreachable API and snapshot become source "none"', async () => {
-    const fetcher = jest.fn(async () => { throw new Error('offline'); });
+    const fetcher = jest.fn(async () => {
+      throw new Error('offline');
+    });
     const result = await loadAlerts({ fetcher: fetcher as unknown as typeof fetch });
     expect(result.source).toBe('none');
     expect(result.alerts).toEqual([]);
@@ -149,9 +232,12 @@ describe('loadAlerts', () => {
 
 describe('loadAlertPolicy', () => {
   it('reads the policy from the API when it can', async () => {
-    const fetcher = jest.fn(async () => jsonResponse({
-      version: 'alert-policy/1.0.0', thresholds: { watch_probability: 0.4 },
-    }));
+    const fetcher = jest.fn(async () =>
+      jsonResponse({
+        version: 'alert-policy/1.0.0',
+        thresholds: { watch_probability: 0.4 },
+      }),
+    );
     const policy = await loadAlertPolicy({ fetcher: fetcher as unknown as typeof fetch });
     expect(policy?.version).toBe('alert-policy/1.0.0');
     expect(policy?.thresholds?.watch_probability).toBe(0.4);
@@ -162,10 +248,13 @@ describe('loadAlertPolicy', () => {
       if (String(url).includes('/policy')) throw new Error('nope');
       return jsonResponse({ policy: { version: 'alert-policy/0.9.0' } });
     });
-    expect((await loadAlertPolicy({ fetcher: fetcher as unknown as typeof fetch }))?.version)
-      .toBe('alert-policy/0.9.0');
+    expect((await loadAlertPolicy({ fetcher: fetcher as unknown as typeof fetch }))?.version).toBe(
+      'alert-policy/0.9.0',
+    );
 
-    const dead = jest.fn(async () => { throw new Error('down'); });
+    const dead = jest.fn(async () => {
+      throw new Error('down');
+    });
     expect(await loadAlertPolicy({ fetcher: dead as unknown as typeof fetch })).toBeNull();
   });
 
