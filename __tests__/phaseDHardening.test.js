@@ -199,9 +199,15 @@ describe('TASK-014: Operational Monitoring & Slack Alerts (TRD §8.3, §11)', ()
 
     const ingestPath = path.resolve(process.cwd(), '.github', 'workflows', 'daily_advisory_ingest.yml');
     const ingest = fs.readFileSync(ingestPath, 'utf8');
+    // The header comment may still *name* the script (it explains where the wiring went);
+    // what must be gone is an invocation of it, and the channel flag only it used.
     assert.ok(
-      !ingest.includes('scripts/notify_ops.mjs'),
+      !/run:[\s\S]{0,400}notify_ops\.mjs/.test(ingest),
       'daily_advisory_ingest.yml must not run a notifier that cannot deliver'
+    );
+    assert.ok(
+      !ingest.includes('--channel="#hazardnet-ops"'),
+      'daily_advisory_ingest.yml must not target a Slack channel'
     );
     assert.ok(
       !/secrets\.SLACK_WEBHOOK_URL/.test(ingest),

@@ -23,7 +23,7 @@ to one (or more) of them:
 | Surface | Where it is set | Consumed by |
 | --- | --- | --- |
 | **A. Vercel project environment** | vercel.com → Project → Settings → Environment Variables (or `vercel env add`) | the serverless functions in `api/` + `backend/` at runtime, and the Vite build that produces `frontend/dist` |
-| **B. GitHub Actions secrets/variables** | github.com → repo → Settings → Secrets and variables → Actions (or `gh secret set`) | the workflows in `.github/workflows/` (`ci.yml`, `verify-secrets.yml`, `site-health.yml`, `Firebase-Store-Verify.yml`, `app-releases.yml`) |
+| **B. GitHub Actions secrets/variables** | github.com → repo → Settings → Secrets and variables → Actions (or `gh secret set`) | the workflows in `.github/workflows/` (`ci.yml`, `verify-secrets.yml`, `site-health.yml`, `Firebase-Store-Verify.yml`, `daily_advisory_ingest.yml`, `live-wind-update.yml`, `windows-compile.yml`, `secret-rotation-audit.yml`) |
 | **C. Local `.env`** | `cp .env.example .env` in the repo root, then fill values (never committed) | local dev servers, local rebuilds of the snapshots (`node scripts/build_forecast_snapshot.mjs`, …) |
 
 **Golden rules**

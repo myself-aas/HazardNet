@@ -8,32 +8,37 @@ HazardNet ships two native clients that live in the `apps/` workspace:
 | **HazardNet Windows** | `apps/windows` | React Native for Windows (UWP/WinUI, C++ host) | `.msix` / `.exe` |
 
 This repository stores **source only** — no compiled binaries are committed.
-Executables are produced by CI and published to
-[GitHub Releases](https://github.com/myself-aas/HazardNet/releases) by the
-`App Releases (Windows MSIX)` workflow
-(`.github/workflows/app-releases.yml`).
+Executables were produced by CI and published to
+[GitHub Releases](https://github.com/myself-aas/HazardNet/releases).
 
-> **Android is currently a template, not a live pipeline** (retired 2026-10-26).
-> `Android Release (React Native APK & AAB)` and the `android-apk` job of
-> `app-releases.yml` are gone from `.github/workflows/`; the complete APK + AAB
-> pipeline is preserved — inert — in
-> `.github/workflow-templates/hazardnet-mobile-android-release.yml`. Reasons and
-> restoration steps: [§ Android is a template](#android-is-a-template-right-now)
-> below.
+> **Both native release pipelines are templates as of 2026-10-26.** Nothing
+> publishes an executable on push any more: `app-releases.yml` (Windows MSIX)
+> and `android_release.yml` (Android APK/AAB) were red on every push to `main`
+> and were moved, unchanged, to `.github/workflow-templates/`:
+>
+> | Pipeline | Template | Restore checklist |
+> | --- | --- | --- |
+> | Android APK + AAB | `hazardnet-mobile-android-release.yml` | file header, [§ Android](#android-is-a-template-right-now) |
+> | Windows MSIX + EXE | `hazardnet-windows-msix-release.yml` | file header, [§ Windows](#windows-is-a-template-right-now) |
+>
+> Release notes and assets from before that date remain on the Releases page.
 
 ## Where the executables come from
 
-- **Android APK / AAB** — *not published from this repository right now.* The
+- **Android APK / AAB** — *not published from this repository right now* (see
+  [§ Android](#android-is-a-template-right-now)). The
   pipeline is `apps/mobile` (an Expo app): `expo prebuild` generates the
   `android/` Gradle project from `app.json` + `eas.json`, then
   `./gradlew assembleRelease bundleRelease` builds the artifacts. It lives in
   `.github/workflow-templates/hazardnet-mobile-android-release.yml` until the
   signing secrets exist. The `android/` and `ios/` directories are generated
   artifacts and are git-ignored by design.
-- **Windows MSIX/EXE** — `apps/windows/windows/` is a **committed** Visual
-  Studio solution (React Native for Windows). CI restores NuGet, builds
-  `Release|x64` with the JS bundle embedded (Hermes bytecode), and uploads
-  `HazardNet.exe` plus the packaged `HazardNet.appx` (renamed `.msix`).
+- **Windows MSIX/EXE** — *not published from this repository right now* (see
+  [§ Windows](#windows-is-a-template-right-now)). The pipeline was:
+  `apps/windows/windows/` is a **committed** Visual Studio solution (React
+  Native for Windows); CI restored NuGet, built `Release|x64` with the JS bundle
+  embedded (Hermes bytecode), and uploaded `HazardNet.exe` plus the packaged
+  `HazardNet.appx` (renamed `.msix`).
 
 ## Getting the binaries
 
@@ -49,13 +54,29 @@ Executables are produced by CI and published to
 
 ## Triggering a build
 
-- **Tag a release:** `git tag v2.3.0 && git push origin v2.3.0` — CI builds the
-  Windows app and attaches the artifacts to that tag's release.
-- **Manual:** Actions → *App Releases (Windows MSIX)* → *Run workflow*. A
-  (pre-)release named `v<windows-version>-windows-<short-sha>` is created.
-- **Android:** copy the template back into `.github/workflows/` first (see
-  below); it keeps its own trigger set and publishes
-  `v<mobile-version>-android-<short-sha>`.
+- **Nothing triggers today.** No release workflow is live. Tagging `v2.3.0` and
+  pushing builds nothing until a template is restored.
+- **Windows:** copy `.github/workflow-templates/hazardnet-windows-msix-release.yml`
+  back to `.github/workflows/` and run *App Releases (Windows MSIX)* manually
+  first; it names its release `v<windows-version>-windows-<short-sha>`.
+- **Android:** copy `.github/workflow-templates/hazardnet-mobile-android-release.yml`
+  back after the signing secrets exist; it keeps its own trigger set and
+  publishes `v<mobile-version>-android-<short-sha>`.
+
+## Windows is a template right now
+
+`App Releases (Windows MSIX)` (`.github/workflows/app-releases.yml`) failed on
+every push to `main` in its **Build Windows x64** job — run 40253981990 is the
+last one: `Resolve release metadata` passed, `Build Windows x64` failed,
+`Publish Windows artifacts` was skipped. It needs no repository secrets, so the
+missing-secret story does not apply: the React Native for Windows build itself
+fails. It also held a `windows-2022` runner for up to 90 minutes per push.
+
+The complete pipeline is preserved verbatim in
+`.github/workflow-templates/hazardnet-windows-msix-release.yml` (install,
+NuGet restore, `npx react-native run-windows --release …`, artifact staging,
+`softprops/action-gh-release`, and the `Push logs on failure` steps that were
+the only window into the failure). Restore steps are in its header.
 
 ## Android is a template right now
 

@@ -113,9 +113,39 @@ in `firebase.json` (added 2026-10-04). It sends HSTS + `nosniff` +
    gap is between the declaration and the deployment.
 3. Two different hosts are involved and both are behind the same Cloudflare
    zone: the apex answer has no origin fingerprint, and the Firebase origin is a
-   month old. The owner action is therefore *"identify the origin that answers
-   `hazardnet.live` and deploy the current build (or apply the same header set at
-   the edge)"* — docs/ops/owner-actions.md **Action 17**.
+   month old. The owner identified the deployment platform on 2026-10-26 as
+   **Cloudflare Pages / Workers**, which explains the fingerprint-less answer: a
+   Cloudflare deployment serves only the headers it is given, and none of
+   `firebase.json` / `vercel.json` / `frontend/vercel.json` is a Cloudflare
+   config. Owner action: docs/ops/owner-actions.md **Action 17**.
+
+## The fix this repository can make: `frontend/public/_headers`
+
+Cloudflare Pages (and Workers static assets) honour a `_headers` file served from
+the asset root, with its own syntax:
+
+```
+/*
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  Content-Security-Policy: …
+```
+
+`frontend/public/_headers` now carries the full policy — the same literal
+values as `frontend/vercel.json`, plus the `/assets/*`, `/serviceWorker.js` and
+`/data/*` cache rules that were Vercel/Firebase-only. Vite copies
+`frontend/public/` into `dist/` verbatim, so the file lands next to `index.html`
+where Cloudflare looks for it. `__tests__/securityHeadersParity.test.js` parses
+it and pins every value, because a `_headers` file that Cloudflare cannot parse
+fails **silently** — the deployment simply keeps serving the origin's headers,
+which is the state that made this probe red.
+
+Two caveats, both recorded in the file's own header:
+
+- `Strict-Transport-Security` may be ignored by Cloudflare depending on plan
+  tier; there it is the **SSL/TLS → Edge Certificates → HSTS** switch, not the
+  header file. If HSTS is still the only missing header after a deploy, that
+  switch is why.
+- The file only takes effect on the next Cloudflare deployment of this build.
 
 ## Making the probe useful in the meantime
 
@@ -130,7 +160,10 @@ Changed in this pass (`.github/workflows/site-health.yml`):
 - the aggregate gate prints every failing check **with its detail** before it
   exits non-zero, so the reason is in the run summary and not only in a step log.
 
-Repeat the measurement with:
+Repeat the measurement with (add `-H "x-hazardnet-probe: $SITE_PROBE_TOKEN"`
+if the WAF skip rule from Action 18 is in place; without it Cloudflare answers
+403 `cf-mitigated: challenge` for `/`, `/data/*` and `/status` from a datacenter
+IP, which no probe can read):
 
 ```sh
 curl -sSL -D - -o /dev/null https://hazardnet.live/ | tr -d '\r'

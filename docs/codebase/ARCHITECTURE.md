@@ -23,7 +23,7 @@ previous map's churn numbers cannot be re-measured from this clone.
   2. Scheduling is **the CI platform's**, not the app's — cron-triggered workflows
      (`daily_advisory_ingest` 05:30 UTC, `site-health` every 30 min,
      `secret-rotation-audit` monthly), tag/main-triggered release workflows
-     (`app-releases.yml`, `android_release.yml`), and dispatch-only ones
+     (both retired 2026-10-26 — see `.github/workflow-templates/`), and dispatch-only ones
      (`verify-secrets`, `Firebase-Store-Verify`, and — at HEAD — `live-wind-update`).
   3. The same API surface is implemented twice — Express (`backend/routes/**`) and Vercel
      functions (`serverless/**`) — and parity is maintained by **sharing the logic modules**, not
@@ -240,7 +240,7 @@ Step 4 is severed at HEAD for 17 of 18 handlers (CONCERNS §1).
 - `packages/core/src/contracts.ts`, `packages/design-system/src/index.ts`
 - `frontend/src/App.tsx` (447 L, 76 routes), `frontend/src/lib/forecasts.ts:419`,
   `frontend/vite.config.ts` (273 L)
-- `.github/workflows/{ci,daily_advisory_ingest,live-wind-update,site-health,app-releases,android_release,windows-compile}.yml`
+- `.github/workflows/{ci,daily_advisory_ingest,live-wind-update,site-health,windows-compile,secret-rotation-audit,Firebase-Store-Verify,verify-secrets}.yml`; the retired release pipelines are inert in `.github/workflow-templates/` (`hazardnet-mobile-android-release.yml`, `hazardnet-windows-msix-release.yml`, `hazardnet-ops-slack-notify.yml`)
 - `scripts/process_advisory_ingest.mjs`, `scripts/fetch_kaggle_advisory.mjs`,
   `scripts/check-vercel-functions.mjs`, `scripts/check-bundle.mjs`
 - `backend/data/forecasts/manifest.json` (prediction_date **2026-10-24**, 128 rows, model
@@ -320,7 +320,7 @@ There is no message broker. The asynchronous surface is:
 
 | Mechanism | Where | Trigger |
 |---|---|---|
-| GitHub Actions cron | 2 workflows at HEAD | `daily_advisory_ingest` 05:30 UTC; `site-health` every 30 min; `secret-rotation-audit` monthly (`15 7 1 * *`; never run yet, first due 2026-11-01 — 0 runs per the previous map). `live-wind-update` is **dispatch-only** at HEAD (schedule disabled, its script deleted). `app-releases` and `android_release` fire on `v*` tags / pushes to `main`; `verify-secrets` and `Firebase-Store-Verify` are dispatch-only |
+| GitHub Actions cron | 2 workflows at HEAD | `daily_advisory_ingest` 05:30 UTC; `site-health` every 30 min; `secret-rotation-audit` monthly (`15 7 1 * *`; never run yet, first due 2026-11-01 — 0 runs per the previous map). `live-wind-update` is **dispatch-only** at HEAD (schedule disabled, its script deleted). `windows-compile` is PR-triggered; `verify-secrets` and `Firebase-Store-Verify` are dispatch-only; the two app-release workflows are **no longer live** (retired to `.github/workflow-templates/` on 2026-10-26) |
 | Bot commits back into the branch | `daily_advisory_ingest`, `site-health` (`permissions: contents: write`) | the artifacts they rebuild — **the ingest pipeline resumed: latest commit-side artifacts are from 2026-10-24/25** |
 | WebSocket | `backend/routes/liveVoice.js` `setupLiveVoiceWebSocket` (`ws`) | client upgrade on the self-host runtime only |
 | Web Push | `backend/routes/push.js` + `backend/utils/vapid.js` (`web-push`, VAPID) | subscriber-triggered |

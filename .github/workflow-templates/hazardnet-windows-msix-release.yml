@@ -1,13 +1,37 @@
-# Builds the HazardNet Windows app and publishes its executable to GitHub
-# Releases:
+# =============================================================================
+# TEMPLATE — NOT A LIVE WORKFLOW.
 #
-#   * Windows: Release x64 build — packaged .msix (and unpacked .exe)
-#              (apps/windows, React Native for Windows / WinUI)
+# GitHub Actions only executes files in `.github/workflows/`. This file lives in
+# `.github/workflow-templates/` and is therefore inert: it does not run, it does
+# not occupy a windows-2022 runner for up to 90 minutes on every push to `main`,
+# and it cannot publish a release.
 #
-# The Android job was retired on 2026-10-26 (see the note where it used to sit,
-# and `.github/workflow-templates/hazardnet-mobile-android-release.yml`): it
-# needs `ANDROID_KEYSTORE_*` signing secrets this repository does not have, and
-# its Gradle step failed on every push to `main`.
+# Why it was retired (measured, not assumed)
+#   * "Build Windows x64" failed on every push to `main` — the last run before
+#     retirement, 40253981990, failed in that job while `Resolve release metadata`
+#     passed and `Publish Windows artifacts` was skipped, so the `windows-release`
+#     job could never run.
+#   * It needs no repository secrets, so "add the missing secret" was not the fix;
+#     the React Native for Windows build itself fails and the failure cannot be
+#     reproduced or iterated on from this repository's CI alone.
+#   * It duplicated the compile-only signal `windows-compile.yml` is meant to give
+#     (docs/ops/owner-actions.md Action 14).
+#
+# To re-enable, when the RNW build is fixed:
+#   1. Copy this file back to `.github/workflows/windows-msix-release.yml`.
+#   2. Run it with `workflow_dispatch` and watch "Build Windows x64"; only then
+#      restore the `push` trigger.
+#   3. Confirm the release body and tag name are still what the Download Center
+#      expects (v<windows-version>-windows-<sha>).
+#
+# The pipeline itself is unchanged from the live workflow: install workspace
+# dependencies, restore NuGet, `npx react-native run-windows --release --no-launch
+# --no-deploy --no-packager`, stage HazardNet.exe + the .appx renamed .msix, then
+# publish with softprops/action-gh-release. The `Push logs on failure` steps are
+# kept as they were — they were the only way to see what the Windows build said.
+# =============================================================================
+#
+# HazardNet Windows MSIX release (React Native for Windows)
 #
 # Triggers
 #   * push to `main` branch        -> builds the Windows app & publishes GitHub Release `v<windows_version>-windows-<sha>`
@@ -18,7 +42,7 @@
 # No repository secrets are required: the Windows build is unsigned and
 # publishes with the runner's own `GITHUB_TOKEN`.
 #
-# See docs/APP_RELEASES.md for the full operator guide.
+# See docs/APP_RELEASES.md for the operator guide.
 
 name: App Releases (Windows MSIX)
 
@@ -339,7 +363,7 @@ jobs:
 
             - **Windows:** `HazardNet-windows-v<version>-x64.msix` — packaged x64 app (double-click to install on Windows 10/11), plus the unpacked `HazardNet-windows-v<version>-x64.exe`.
 
-            Built by the `App Releases (Windows MSIX)` workflow from `${{ github.sha }}`.
+            Built by the HazardNet Windows MSIX release workflow from `${{ github.sha }}`.
             Android binaries are not published from this repository right now — see
             `.github/workflow-templates/hazardnet-mobile-android-release.yml`.
           prerelease: ${{ fromJSON(needs.meta.outputs.prerelease) }}

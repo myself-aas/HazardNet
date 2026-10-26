@@ -125,22 +125,26 @@ describe('Phase 2 — Android release pipeline is preserved as a template, not a
     }
   });
 
-  it('leaves app-releases.yml building Windows only, with no Android steps', () => {
-    const workflowPath = join(process.cwd(), '.github/workflows/app-releases.yml');
-    expect(existsSync(workflowPath)).toBe(true);
-    const workflow = readFileSync(workflowPath, 'utf8');
+  it('parks the Windows release in .github/workflow-templates too, and leaves no live app-release workflow', () => {
+    // Windows was retired in the same pass — for a different reason: run 40253981990 failed
+    // in "Build Windows x64" with no secret involved, on a windows-2022 runner held for up
+    // to 90 minutes per push.
+    for (const retired of ['app-releases.yml', 'android_release.yml']) {
+      expect(existsSync(join(process.cwd(), '.github/workflows', retired))).toBe(false);
+    }
 
-    expect(workflow).toMatch(/push:\s+branches:\s+-\s+main/);
-    expect(workflow).toContain('windows-build:');
-    expect(workflow).toContain('uses: softprops/action-gh-release@v3');
+    const windowsTemplate = readFileSync(
+      join(process.cwd(), '.github/workflow-templates/hazardnet-windows-msix-release.yml'),
+      'utf8'
+    );
+    expect(windowsTemplate).toContain('TEMPLATE — NOT A LIVE WORKFLOW');
+    expect(windowsTemplate).toContain('windows-build:');
+    expect(windowsTemplate).toContain('npx react-native run-windows');
+    expect(windowsTemplate).toContain('uses: softprops/action-gh-release@v3');
+    expect(windowsTemplate).toContain('Push logs on failure');
 
-    // No Android build, no keystore secret references, no APK/AAB asset names — the job
-    // moved. (`ANDROID_KEYSTORE_*` may still be mentioned in prose: the workflow says
-    // where the Android pipeline went, and a missing signing secret is the reason.)
-    expect(workflow).not.toContain('npx expo prebuild');
-    expect(workflow).not.toContain('assembleRelease');
-    expect(workflow).not.toMatch(/secrets\.ANDROID_/);
-    expect(workflow).not.toContain('-android.apk');
-    expect(workflow).not.toContain('android-apk:');
+    // No Android build or signing material rides along with the Windows pipeline.
+    expect(windowsTemplate).not.toContain('npx expo prebuild');
+    expect(windowsTemplate).not.toMatch(/secrets\.ANDROID_/);
   });
 });

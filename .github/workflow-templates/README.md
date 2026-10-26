@@ -30,6 +30,7 @@ Two kinds of file live here:
 | `hazardnet-python-package.yml` | Python package | Linux, pip/build/twine | PyPI **and** GitHub Releases (sdist/wheel) |
 | `hazardnet-npm-package.yml` | npm package | Linux, Node/npm | npm registry **and** GitHub Releases (tarball) |
 | `hazardnet-mobile-android-release.yml` | **HazardNet's own** `apps/mobile` Android app (retired from `main` 2026-10-26) | Linux, Expo prebuild + Gradle | GitHub Releases (APK + AAB + `SHA256SUMS.txt`) |
+| `hazardnet-windows-msix-release.yml` | **HazardNet's own** `apps/windows` desktop app (retired from `main` 2026-10-26) | Windows, RNW / MSBuild | GitHub Releases (MSIX + EXE) |
 | `hazardnet-ops-slack-notify.yml` | **HazardNet's own** ops reporting (retired from `daily_advisory_ingest.yml` 2026-10-26) | Linux, Node | Slack `#hazardnet-ops` (once a POST is added) |
 
 ---
@@ -301,7 +302,18 @@ restore checklist is in the file header; in short: add
 `.github/workflows/`, and verify the Gradle step with a `workflow_dispatch`
 run before re-enabling the `push` trigger.
 
-### 7. Ops Slack notify (retired pipeline, `hazardnet-ops-slack-notify.yml`)
+### 7. HazardNet Windows MSIX release (retired pipeline, `hazardnet-windows-msix-release.yml`)
+
+The WinUI/RNW packaging pipeline that used to run as
+`.github/workflows/app-releases.yml`: npm install with the monorepo hoisting
+fixes, RNW layout verification, NuGet restore, `npx react-native run-windows
+--release --no-launch --no-deploy --no-packager`, `.exe` + `.appx`→`.msix`
+staging, and publication via `softprops/action-gh-release`. It needs no secrets,
+so it is not a credentials problem: the build itself failed on every push to
+`main` (run 40253981990, job *Build Windows x64*) while occupying a
+`windows-2022` runner for up to 90 minutes. Restore steps are in the file header.
+
+### 8. Ops Slack notify (retired pipeline, `hazardnet-ops-slack-notify.yml`)
 
 The `Dispatch Operational Monitoring & Slack Alert` step that used to close the
 ingest job, promoted to a `workflow_call` reusable workflow. Retired because
