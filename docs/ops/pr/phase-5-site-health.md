@@ -244,6 +244,25 @@ dist/index.json
 A page fetch cannot dispatch a workflow, and `wrangler`/Cloudflare dashboard access is not
 available here. **These are commands for the owner, not claims of results:**
 
+**Attempted here, and refused — captured, not assumed:**
+
+```
+$ gh workflow run site-health.yml --ref arena/02ded3da-hazardnet -f site_url=https://hazardnet.live -f expect=healthy
+could not create workflow dispatch event: HTTP 403: Resource not accessible by integration (https://api.github.com/repos/myself-aas/HazardNet/actions/workflows/357143298/dispatches)
+$ echo $?
+1
+$ gh api repos/myself-aas/HazardNet/actions/permissions
+{"message":"Resource not accessible by integration","documentation_url":"https://docs.github.com/rest/actions/permissions#get-github-actions-permissions-for-a-repository","status":"403"}
+$ gh run list --workflow=site-health.yml --limit 3
+completed   success   Site Health Probe   Site Health Probe   main   schedule   40523871728   25s   4h
+completed   failure   Site Health Probe   Site Health Probe   main   schedule   40471061044   26s   9h
+completed   failure   Site Health Probe   Site Health Probe   main   schedule   40437149658   19s   16h
+```
+
+So the token can **read** runs but cannot dispatch or read the Actions permission setting, and
+no new run appeared. That is also why Action 9's repository-wide `permissions` setting cannot
+be inspected from here: the dashboard/owner is the only source of truth for it.
+
 ```bash
 # Healthy dispatch — record must land on the dispatched branch, weather_api: success.
 gh workflow run site-health.yml --ref <this-branch> \

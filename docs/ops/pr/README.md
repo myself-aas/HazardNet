@@ -36,9 +36,12 @@ Consequences, recorded rather than papered over:
   `/data/freshness.json`, Open-Meteo docs and fixtures).
 - **Cannot** POST to `/api/v1/telemetry`, dispatch `site-health.yml`, list Pages deployments,
   read Cloudflare Analytics Engine, bind `ANALYTICS`, set `VITE_ANALYTICS_ENABLED`, or read
-  access logs / first-live-call timestamps. Those steps are written as owner actions with
-  the exact command and the expected output; their status stays **Open** until an owner
-  runs them. No phase claims a closed action on unverified evidence.
+  access logs / first-live-call timestamps. Phase 5 attempted the dispatch from the `gh`
+  CLI on 2026-10-27 and captured `HTTP 403: Resource not accessible by integration` (the
+  token can list runs but not create a dispatch or read the Actions permissions setting);
+  the raw output is in `docs/ops/pr/phase-5-site-health.md`. Those steps are written as
+  owner actions with the exact command and the expected output; their status stays **Open**
+  until an owner runs them. No phase claims a closed action on unverified evidence.
 
 Owner actions that need the dashboard are in `docs/ops/owner-actions.md` (Actions 12 and 21,
 § Cost constraints, and the Action 21 route disposition register).
