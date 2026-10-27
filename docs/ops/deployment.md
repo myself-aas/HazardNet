@@ -162,6 +162,15 @@ policy, but Cloudflare ignores `Strict-Transport-Security` from `_headers` on so
 so the switch is what makes it real. Keep the apex → www redirect where it is; it is the
 single reason there is one canonical origin rather than two.
 
+> **Update 2026-10-27 — blocker applied.** `www.hazardnet.live` is now attached as a Pages
+> custom domain and serves the deployment. Independently fetched the same day from outside the
+> Actions network: `https://www.hazardnet.live/` (200, full app shell), `/sitemap.xml` (the
+> complete `www` `<urlset>`) and the previously-522 `/status` and `/about` all return 200; the
+> 2026-10-26 HTTP 522 is gone. The red *Site Health Probe* runs predate this — the next
+> scheduled run (or a manual **Run workflow**) re-probes and is the authoritative confirmation;
+> see `docs/ops/owner-actions.md` Action 16. The 522 row above is retained as the point-in-time
+> 2026-10-26 record, not overwritten.
+
 ## 6. Rollback
 
 - **Site:** Pages deployments are immutable. **Deployments → ⋯ → Rollback** (or
