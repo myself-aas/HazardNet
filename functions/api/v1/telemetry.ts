@@ -22,11 +22,23 @@
  * `wrangler.toml` in this repository and adding one would not affect the deployment. That is
  * why the fallback is code and the binding is an owner action
  * (`docs/ops/owner-actions.md` Action 12), rather than an "assumed present" dependency that
- * fails closed on the first request.
+ * fails closed on the first request. Cloudflare's own docs add two constraints the owner has
+ * to honour: a binding only takes effect after a **redeploy**, and an Analytics Engine
+ * binding **cannot be used locally** — so the bound path is pin-able only by tests with a
+ * stub, and by a SQL query against the live dataset.
  *
  * One data point per event, not per batch: Analytics Engine counts writes per data point, and
  * the batch cap (50) is what keeps a single invocation inside the 250-writes-per-invocation
  * limit with a factor of five to spare.
+ *
+ * Phase 6 — **Production-only, fail-open.** Bindings can be scoped to Production or Preview
+ * in the Pages dashboard. If someone binds `ANALYTICS` to a Preview deployment by mistake,
+ * unreleased builds would write into the production dataset. The request hostname is the one
+ * fact the Function has without a new binding, so a request that is not on the two production
+ * hosts never touches `writeDataPoint` — it takes the log sink instead and emits one warning.
+ * A `writeDataPoint` that throws (quota, bad dataset, transient edge error) is caught and
+ * falls back to the same log line: a telemetry sink must never turn a valid beacon into a
+ * 500. `env` itself is optional for the same reason.
  */
 
 import {
@@ -45,7 +57,29 @@ interface AnalyticsEngineDataset {
 
 interface PagesContext {
   request: Request;
-  env: { ANALYTICS?: AnalyticsEngineDataset };
+  // Optional: a Page Function can be invoked in a context without bindings (unit tests,
+  // local dev, a Preview deployment with no Production bindings). Never dereference blindly.
+  env?: { ANALYTICS?: AnalyticsEngineDataset };
+}
+
+/** The only hosts whose telemetry belongs in the production Analytics Engine dataset. */
+const PRODUCTION_HOSTS = new Set(['www.hazardnet.live', 'hazardnet.live']);
+
+/**
+ * `*.pages.dev` previews and `localhost` are never production, even if a Production-scoped
+ * binding is accidentally visible there. No new env var is needed — a Vite build flag is
+ * baked into frontend code and cannot be trusted by a server-side write decision.
+ */
+function requestHostname(request: Request): string {
+  try {
+    return new URL(request.url).hostname.toLowerCase();
+  } catch {
+    return '(unparseable url)';
+  }
+}
+
+function isProductionRequest(request: Request): boolean {
+  return PRODUCTION_HOSTS.has(requestHostname(request));
 }
 
 function json(body: unknown, status: number, extraHeaders: Record<string, string> = {}): Response {
@@ -68,21 +102,11 @@ function json(body: unknown, status: number, extraHeaders: Record<string, string
  * `double1..double20`: they are heterogeneous (string, number, boolean, null), and JSON keeps
  * them queryable with `JSONExtractString` without inventing one column per key.
  */
-function record(
-  analytics: AnalyticsEngineDataset | undefined,
+/** The documented fallback: one bounded line per event, the Node handler's exact shape. */
+function logEvent(
   event: { event: string; at: number; properties: Record<string, unknown> },
   sessionId: string
 ): void {
-  if (analytics && typeof analytics.writeDataPoint === 'function') {
-    analytics.writeDataPoint({
-      blobs: [event.event, sessionId, JSON.stringify(event.properties)],
-      doubles: [event.at],
-      indexes: [sessionId],
-    });
-    return;
-  }
-  // The documented fallback: one bounded line per event, the same shape the Node handler
-  // emits, so a log-based reader keeps working before the binding is added.
   // eslint-disable-next-line no-console -- stdout IS the fallback sink, as in the Node handler.
   console.log(JSON.stringify({
     tag: 'analytics',
@@ -93,8 +117,33 @@ function record(
   }));
 }
 
+function record(
+  analytics: AnalyticsEngineDataset | undefined,
+  event: { event: string; at: number; properties: Record<string, unknown> },
+  sessionId: string
+): void {
+  if (analytics && typeof analytics.writeDataPoint === 'function') {
+    try {
+      analytics.writeDataPoint({
+        blobs: [event.event, sessionId, JSON.stringify(event.properties)],
+        doubles: [event.at],
+        indexes: [sessionId],
+      });
+      return;
+    } catch (error) {
+      // A broken binding is a monitoring problem, not a visitor-facing error. Name it once
+      // per event so `wrangler pages deployment tail` shows the reason, then keep the event.
+      // eslint-disable-next-line no-console -- the only channel for a non-fatal sink failure.
+      console.warn('[telemetry] ANALYTICS.writeDataPoint failed; using the log sink:',
+        error instanceof Error ? error.message : String(error));
+    }
+  }
+  logEvent(event, sessionId);
+}
+
 export async function onRequest(context: PagesContext): Promise<Response> {
-  const { request, env } = context;
+  const { request } = context;
+  const env = context.env ?? {};
 
   if (request.method !== 'POST') {
     return json({ error: 'method not allowed' }, 405, { allow: 'POST' });
@@ -119,8 +168,17 @@ export async function onRequest(context: PagesContext): Promise<Response> {
     return json({ error: result.error }, 400);
   }
 
+  // Production-only guard: a Preview deployment with an accidentally shared binding must
+  // not write unreleased-build traffic into the production dataset.
+  const production = isProductionRequest(request);
+  if (!production && env.ANALYTICS) {
+    // eslint-disable-next-line no-console -- one warning per request, not one per event.
+    console.warn('[telemetry] ANALYTICS is bound on a non-production host; using the log sink:',
+      requestHostname(request));
+  }
+  const analytics = production ? env.ANALYTICS : undefined;
   for (const event of result.batch.events) {
-    record(env.ANALYTICS, event, result.batch.sessionId);
+    record(analytics, event, result.batch.sessionId);
   }
 
   // 204 with no body, matching the Node runtime and the beacon's expectations. The middleware

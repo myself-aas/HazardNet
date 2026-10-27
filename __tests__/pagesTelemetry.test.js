@@ -107,15 +107,20 @@ describe('POST /api/v1/telemetry — acceptance', () => {
     });
   });
 
-  test('a binding that throws does not turn a valid beacon into an error response', async () => {
+  test('a binding that throws still answers 204 and keeps the event in the log (Phase 6 fail-open)', async () => {
     const { onRequest } = require('../functions/api/v1/telemetry.ts');
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
     const broken = { writeDataPoint: jest.fn(() => { throw new Error('quota exceeded'); }) };
 
-    // Not caught by the route: Analytics Engine's own contract is that a write never fails the
-    // request, and swallowing here would hide a binding that is misconfigured. Asserted so a
-    // future "make it never throw" change is a deliberate decision, not a drive-by.
-    await expect(onRequest({ request: post(batch()), env: { ANALYTICS: broken } }))
-      .rejects.toThrow('quota exceeded');
+    const response = await onRequest({ request: post(batch()), env: { ANALYTICS: broken } });
+
+    // A telemetry sink is not allowed to turn a valid beacon into a 500. The failure is
+    // named in the log and the event is kept in the fallback transport.
+    expect(response.status).toBe(204);
+    expect(broken.writeDataPoint).toHaveBeenCalledTimes(2);
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('ANALYTICS.writeDataPoint failed'), 'quota exceeded');
+    expect(logSpy).toHaveBeenCalledTimes(2);
+    expect(JSON.parse(logSpy.mock.calls[0][0]).event).toBe(BATCH_FIXTURE.events[0].event);
   });
 });
 

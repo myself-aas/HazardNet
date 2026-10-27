@@ -292,6 +292,15 @@ read a file, and each difference is the reason it can exist at the edge at all:
   the `ANALYTICS` binding; without that binding it falls back to exactly the log line the Node
   runtime emits, so a project that has not added the binding yet still answers 204 instead of
   dropping the beacon. The owner step for the binding is `docs/ops/owner-actions.md` Action 12.
+  **Production-only (Phase 6):** the Function only calls `writeDataPoint` for
+  `www.hazardnet.live` and `hazardnet.live`. A `*.pages.dev` preview that somehow sees a
+  Production-scoped `ANALYTICS` binding takes the log sink and warns instead of writing
+  unreleased-build traffic into the production dataset; a `writeDataPoint` that throws is
+  caught and logged, never returned as a 500. Bind `ANALYTICS` → `hazardnet_telemetry` and set
+  `VITE_ANALYTICS_ENABLED=true` in the **Production** scope only, then **redeploy** —
+  Cloudflare's docs say the binding is inactive until a redeploy and cannot be used locally.
+  Verify with `SELECT blob1, blob2, double1 FROM hazardnet_telemetry WHERE index1 = '<session id>'`
+  through the read-only SQL API; `SHOW TABLES` must list the dataset after the first write.
 
 `site-health.yml` probes the weather routes on every run (`weather_api`): one point and a batch,
 each required to carry a numeric `current.temperature_2m`, because a 200 carrying only ids and

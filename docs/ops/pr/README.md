@@ -6,7 +6,7 @@ The prompt asks for **one PR per phase** on branches `fix/openmeteo-shape-audit`
 
 This Arena session is pinned to **one branch, `arena/02ded3da-hazardnet`**: the environment
 forbids creating, switching to or pushing any other branch, because it tracks the session by
-that branch name. Six remote head branches therefore cannot exist here. Nothing is hidden by
+that branch name. Seven remote head branches therefore cannot exist here. Nothing is hidden by
 that: each phase lands as **one isolated commit** on the session branch, with its own
 description document in this directory (the PR body to paste when the phase is split out),
 and the whole stack is offered as a single PR from the session branch at the end.
@@ -45,3 +45,15 @@ Consequences, recorded rather than papered over:
 
 Owner actions that need the dashboard are in `docs/ops/owner-actions.md` (Actions 12 and 21,
 § Cost constraints, and the Action 21 route disposition register).
+
+## Owner-action status after all seven phases
+
+| Action | State at the end of Phase 6 | Why |
+|---|---|---|
+| Action 9 — probe can publish its record | **Open** | Repository and workflow side complete (Phase 5). Needs one observed scheduled run, a `gh workflow run` with `expect=healthy`, the artifact `diff`, the served URL and an unchanged `wrangler pages deployment list`. A dispatch attempted here returned HTTP 403. |
+| Action 12 — Analytics Engine | **Open** | Repository side complete (Phase 6): Production-only guard, fail-open 204 on both sinks, shared blob-size rule, dual-binding tests and the corrected SQL runbook. Needs the Production-scoped binding, `VITE_ANALYTICS_ENABLED=true`, a redeploy and a live SQL result. Cloudflare states the binding cannot be used locally. |
+| Action 21 — bring the API to the same origin | **Open** | Seven edge routes shipped; Phase 4 deleted the two unexercised ones and scheduled `kaggle`; Phase 5/6 added the monitors and the sink. Closure needs the Action 12 and Action 9 observations. |
+| Action 24 — Kaggle R2 artifact | **Open** (opened in Phase 4) | Named follow-up PR `feat/kaggle-r2-artifact`; plan in `phase-4b-kaggle-r2.md`. |
+
+No phase claims a closed action on an intention. The exact commands and expected output for
+each are in the corresponding phase description and in `docs/ops/owner-actions.md`.

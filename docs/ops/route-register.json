@@ -117,6 +117,7 @@
       "calledByFrontend": true,
       "cutover404": true,
       "firstLiveCall": "2026-10-27 (GET probe returned 405, proving the route exists). A live POST from outside a browser has NOT been recorded in this sandbox; the POST path is exercised locally in __tests__/routeValueAssertions.test.js and __tests__/pagesTelemetry.test.js, and the exact curl is an owner verification in Action 12.",
+      "phase6": "Production-only ANALYTICS guard (www.hazardnet.live / hazardnet.live), catch around writeDataPoint with a log fallback, optional env, and an 8 KiB properties-JSON cap shared with the Node handler. Thin dual-binding tests: __tests__/analyticsEngineBinding.test.js. The live dataset is still owner-side (Action 12 open).",
       "valueAssertion": "__tests__/routeValueAssertions.test.js",
       "status": "exercised"
     }

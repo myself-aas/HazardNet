@@ -93,6 +93,9 @@ describe('validateTelemetryBatch', () => {
     ['a NaN timestamp', { event: 'app_opened', at: Number.NaN }, 'event.at must be a finite number'],
     ['an object property', { event: 'a', at: 1, properties: { nested: { deep: true } } }, 'must be a string, number, boolean or null'],
     ['an over-long property value', { event: 'a', at: 1, properties: { bio: 'x'.repeat(257) } }, 'exceeds 256 characters'],
+    // Phase 6: a 9 KB *key* passes the per-value cap but would blow Analytics Engine's
+    // 16 KB-per-data-point blob budget. Both runtimes must refuse the same payload.
+    ['an over-long property key', { event: 'a', at: 1, properties: { ['k'.repeat(9000)]: 'v' } }, 'event.properties is too large'],
     ['too many properties', { event: 'a', at: 1, properties: Object.fromEntries(Array.from({ length: 21 }, (_, i) => [`k${i}`, 1])) }, 'too many properties'],
   ])('%s', (_label, event, expected) => {
     const result = validateEvent(event);
