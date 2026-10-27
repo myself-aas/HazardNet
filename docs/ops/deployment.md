@@ -253,7 +253,12 @@ read a file, and each difference is the reason it can exist at the edge at all:
   cache of its own — `max-age=900` is the cache — and it never sees a key, because Open-Meteo's
   free endpoints need none. The batch route bounds its own body at **256 KiB** before parsing,
   which is the `bodyParser.sizeLimit` the Node entry declared and a Pages Function has no parser
-  to enforce.
+  to enforce. **A live probe of the first deployment found the batch route answering with
+  point ids and no weather at all** — Open-Meteo returns a JSON *array* for N coordinates and the
+  shared normaliser indexed into it as if it were the nested-object form — so the fix went into
+  `backend/utils/openMeteo.js`, where the Node handler gets it too. It is the reason the parity
+  tests compare point *payloads* rather than counts and ids: agreement between two runtimes is
+  not correctness, and only a request to the deployed route showed the difference.
 - **`/api/v1/telemetry` is the only endpoint a stranger can write to**, so its input rules live
   in one dependency-free module (`backend/utils/telemetryBatch.js`) that both runtimes import,
   and the 64 KiB body cap is checked on the raw text *before* `JSON.parse` — parsing first would

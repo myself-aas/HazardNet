@@ -16,6 +16,10 @@
  *   · **parity with the Node handler**, asserted by running both against one upstream fixture.
  */
 
+/**
+ * The upstream payload for one location — a flat object, which is what
+ * `GET /v1/forecast?latitude=23.81&longitude=90.41` returns.
+ */
 const UPSTREAM = {
   latitude: 23.8103,
   longitude: 90.4125,
@@ -24,6 +28,35 @@ const UPSTREAM = {
   hourly: { time: ['2026-10-27T06:00', '2026-10-27T07:00'], temperature_2m: [28.4, 29.1] },
   daily: { time: ['2026-10-27'], temperature_2m_max: [31.2], temperature_2m_min: [22.8], precipitation_sum: [1.4] },
 };
+
+/**
+ * What the same endpoint returns for **several** coordinates
+ * (`latitude=23.81,22.36&longitude=90.41,91.78`): a JSON **array** of complete per-location
+ * objects, not the nested-array-per-variable form the normaliser's comment describes.
+ *
+ * This shape is the point of the fixture. On 2026-10-27 the deployed batch route answered
+ * `{count: 2, points: [{id, _meta}, {id, _meta}]}` — no `current` block at all — because
+ * `_extractPoint` indexed into an object that was really an array. The suite that was
+ * supposed to catch it stubbed every request with the flat object and compared point ids,
+ * so it passed. Both are fixed: the stub answers in the shape upstream uses, and the
+ * assertions below compare values.
+ */
+const UPSTREAM_MULTI = [
+  {
+    latitude: 23.796133,
+    longitude: 90.38055,
+    timezone: 'Asia/Dhaka',
+    current: { time: '2026-10-27T06:00', temperature_2m: 32, wind_speed_10m: 1 },
+    current_units: { time: 'iso8601', temperature_2m: '°C' },
+  },
+  {
+    latitude: 22.390158,
+    longitude: 91.77019,
+    timezone: 'Asia/Dhaka',
+    current: { time: '2026-10-27T06:00', temperature_2m: 28.5, wind_speed_10m: 2.4 },
+    current_units: { time: 'iso8601', temperature_2m: '°C' },
+  },
+];
 
 const URL_BASE = 'https://www.hazardnet.live';
 
@@ -36,9 +69,17 @@ beforeEach(() => {
   require('../backend/utils/openMeteo.js').clearCache();
   // `openMeteo` reads `globalThis.fetch`, so replacing it is the whole upstream stub — and it
   // doubles as the assertion that the edge route is a *proxy* and not a second data source.
-  fetchSpy = jest.spyOn(globalThis, 'fetch').mockImplementation(async () =>
-    new Response(JSON.stringify(UPSTREAM), { status: 200, headers: { 'content-type': 'application/json' } })
-  );
+  fetchSpy = jest.spyOn(globalThis, 'fetch').mockImplementation(async (url) => {
+    // A comma in `latitude` is how Open-Meteo is asked for several locations, and the
+    // response shape changes with it — so the stub has to follow the request rather than
+    // always answering with the single-point object. `URLSearchParams` encodes the comma as
+    // `%2C`, which is worth matching explicitly: the first version of this stub only looked
+    // for a literal comma, silently answered every batch with the single-point object, and
+    // the two tests below still passed.
+    const multi = /[?&]latitude=[^&]*(,|%2C)/.test(String(url));
+    const payload = multi ? UPSTREAM_MULTI : UPSTREAM;
+    return new Response(JSON.stringify(payload), { status: 200, headers: { 'content-type': 'application/json' } });
+  });
   jest.spyOn(console, 'error').mockImplementation(() => {});
 });
 
@@ -158,6 +199,43 @@ describe('POST /api/v1/weather/batch', () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
+  test('returns the current conditions for every point, not just their ids', async () => {
+    const { onRequest } = require('../functions/api/v1/weather/batch.ts');
+    const response = await onRequest(ctx('/api/v1/weather/batch', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        points: [{ id: 'dhaka', lat: 23.8103, lng: 90.4125 }, { id: 'chattogram', lat: 22.3569, lng: 91.7832 }],
+      }),
+    }));
+    const body = await response.json();
+
+    // The regression: the deployment answered 200 with two points whose only content was
+    // `_meta`, because upstream returns an ARRAY for N coordinates and the normaliser
+    // indexed into it as if it were the nested-object form.
+    expect(body.points.map((point) => point.current?.temperature_2m)).toEqual([32, 28.5]);
+    expect(body.points[0]._meta.current_vars).toBeGreaterThan(0);
+    expect(body.points[0].latitude).toBe(23.796133);
+  });
+
+  test('one upstream call for N points, and the cache does not swallow the first', async () => {
+    const { onRequest } = require('../functions/api/v1/weather/batch.ts');
+    const { onRequestGet } = require('../functions/api/v1/weather.ts');
+
+    await onRequest(ctx('/api/v1/weather/batch?coords=23.8103,90.4125,dhaka|22.3569,91.7832,chattogram'));
+    // One request carrying both coordinates, not two requests.
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(String(fetchSpy.mock.calls[0][0])).toContain('latitude=23.8103%2C22.3569');
+
+    // A `mini` request for the same coordinate is served from the cache the batch just
+    // filled — which is only safe because the cached point is a complete one. Before the
+    // fix this returned an empty bundle for 15 minutes.
+    const mini = await onRequestGet(ctx('/api/v1/weather?lat=23.8103&lng=90.4125&mini=1'));
+    const miniBody = await mini.json();
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(miniBody.current?.temperature_2m).toBe(32);
+  });
+
   test('an unsupported method is a 405 that names what is allowed', async () => {
     const { onRequest } = require('../functions/api/v1/weather/batch.ts');
     const response = await onRequest(ctx('/api/v1/weather/batch', { method: 'DELETE' }));
@@ -213,10 +291,10 @@ describe('the edge routes are the Node routes', () => {
       .toEqual(Object.keys(JSON.parse(JSON.stringify(node.body))).sort());
   });
 
-  test('batch: same count, same point ids, same cache header on both runtimes', async () => {
+  test('batch: same count, same point payloads, same cache header on both runtimes', async () => {
     const nodeHandler = require('../serverless/v1/weather/batch.js').default;
     const { onRequest } = require('../functions/api/v1/weather/batch.ts');
-    const points = [{ id: 'dhaka', lat: 23.8103, lng: 90.4125 }];
+    const points = [{ id: 'dhaka', lat: 23.8103, lng: 90.4125 }, { id: 'chattogram', lat: 22.3569, lng: 91.7832 }];
 
     const node = await invoke(nodeHandler, { method: 'POST', body: { points } });
     const edgeResponse = await onRequest(ctx('/api/v1/weather/batch', {
@@ -228,9 +306,17 @@ describe('the edge routes are the Node routes', () => {
 
     expect(node.statusCode).toBe(200);
     expect(edgeBody.count).toBe(node.body.count);
-    expect(edgeBody.points.map((point) => point.id)).toEqual(node.body.points.map((point) => point.id));
     expect(edgeResponse.headers.get('cache-control')).toBe(node.headers['cache-control']);
     expect(Object.keys(edgeBody).sort())
       .toEqual(Object.keys(JSON.parse(JSON.stringify(node.body))).sort());
+
+    // The payload, not just the ids. `cached_at` is a timestamp per request, so it is the
+    // one field that legitimately differs between the two invocations.
+    const normalise = (body) => body.points.map((point) => {
+      const { _meta, ...rest } = point;
+      const { cached_at: _cachedAt, ...meta } = _meta;
+      return { ...rest, _meta: meta };
+    });
+    expect(normalise(edgeBody)).toEqual(normalise(node.body));
   });
 });
