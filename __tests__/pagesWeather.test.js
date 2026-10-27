@@ -32,7 +32,8 @@ const UPSTREAM = {
 /**
  * What the same endpoint returns for **several** coordinates
  * (`latitude=23.81,22.36&longitude=90.41,91.78`): a JSON **array** of complete per-location
- * objects, not the nested-array-per-variable form the normaliser's comment describes.
+ * objects. The old normaliser comment claimed a nested-array-per-variable form; that form
+ * does not exist in the Open-Meteo API and the comment is gone (Phase 0 shape audit).
  *
  * This shape is the point of the fixture. On 2026-10-27 the deployed batch route answered
  * `{count: 2, points: [{id, _meta}, {id, _meta}]}` — no `current` block at all — because
@@ -211,8 +212,10 @@ describe('POST /api/v1/weather/batch', () => {
     const body = await response.json();
 
     // The regression: the deployment answered 200 with two points whose only content was
-    // `_meta`, because upstream returns an ARRAY for N coordinates and the normaliser
-    // indexed into it as if it were the nested-object form.
+    // `_meta`, because upstream returns an ARRAY for N coordinates and the old normaliser
+    // indexed into it as if it were the nested-object form its comment described. Phase 0
+    // replaced that with `_normalisePoint` → one contract; this assertion stays as the
+    // value-level guard against reintroducing the bug.
     expect(body.points.map((point) => point.current?.temperature_2m)).toEqual([32, 28.5]);
     expect(body.points[0]._meta.current_vars).toBeGreaterThan(0);
     expect(body.points[0].latitude).toBe(23.796133);

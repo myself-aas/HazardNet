@@ -11,11 +11,29 @@
  *    accepts comma-separated lat/lng lists) so the overview page doesn't fire
  *    64 separate HTTP requests on load.
  *
+ * **Upstream response shapes (https://open-meteo.com/en/docs, "API Documentation",
+ * latitude/longitude row: "Multiple coordinates can be comma separated. … To return
+ * data for multiple locations the JSON output changes to a list of structures."):**
+ *
+ *    single query  `latitude=23.8103&longitude=90.4125`            → one JSON **object**
+ *    multi query   `latitude=23.8103,22.3569&longitude=90.4125,91.7832`
+ *                  (URL-encoded as `latitude=23.8103%2C22.3569…`)    → JSON **array**
+ *                                                                       of complete objects
+ *
+ * `%2C` in the outgoing URL is the tell, not a comment. Every element of the array is a
+ * complete per-location object with **scalar** metadata and its own `current`, `hourly`,
+ * `daily` and `*_units` blocks. There is no documented "nested form" in which one object
+ * carries an array of values per variable — that story lived only in the old comment below
+ * and in the code that believed it. `_normalisePoint()` is the single place that turns both
+ * real shapes into one internal contract; `_extractPoint()` only maps that contract.
+ *
  * Entry points:
- *    fetchWeather(lat, lng)            → single-point 16-day bundle
- *    fetchCurrentWeather(lat, lng)     → single-point current-only (mini)
- *    fetchCurrentWeatherBatch(coords)  → N-point current-only (one upstream call)
+ *    fetchWeather(lat, lng)            → single-point 16-day bundle (object response)
+ *    fetchCurrentWeather(lat, lng)     → single-point current-only (mini, object response)
+ *    fetchCurrentWeatherBatch(coords)  → N-point current-only (array response)
  *    clearCache()                      → tests / admin
+ *    _normalisePoint(raw)              → internal contract, exported for shape tests
+ *    _extractPoint(record)             → pure mapping, exported for shape tests
  *
  * Variable reference: https://open-meteo.com/en/docs (forecast_days=16)
  */
@@ -225,72 +243,88 @@ function _baseParams({ timezone, forecast_days, windSpeedUnit = 'ms' }) {
 }
 
 /**
- * Extract point `i` from an Open-Meteo response.
+ * Internal contract for one Open-Meteo response — **always an array of per-location
+ * records**, one element per requested coordinate, in request order.
  *
- * Two response shapes exist and both are handled here so every caller can pass the raw
- * body through unchanged:
+ * A single-coordinate query (`latitude=x&longitude=y`) answers one **object**; a
+ * multi-coordinate query (`latitude=a,b&longitude=c,d`, encoded `%2C`) answers an
+ * **array** of those objects. This is the only place that knows the difference. Both
+ * `fetchWeather`/`fetchCurrentWeather` and `fetchCurrentWeatherBatch` call it, so a shape
+ * fix lands on the Node and Pages runtimes together.
  *
- *   1. **A JSON array** — what `/v1/forecast` returns when the request names several
- *      coordinates (`latitude=23.81,22.36&longitude=90.41,91.78`). Each element is a
- *      complete per-location object, so the point is simply `raw[i]`.
- *   2. **A flat object** — one location, either a single value per variable or, for a
- *      multi-location request made in the nested form, an array per variable with the
- *      index selecting the location:
- *      `latitude: [lat0, lat1]`, `current.temperature_2m: [v0, v1]`,
- *      `hourly.temperature_2m: [[t0…], [t1…]]`.
+ * Each record has scalar location metadata and the upstream's own `current`, `hourly`,
+ * `daily` and `*_units` blocks, unchanged. Blocks are **never** indexed here: inside a
+ * record, an array is a time series (hourly/daily), not a list of locations. Suggesting
+ * otherwise was the comment that caused the 2026-10-27 batch outage.
  *
- * **Fixed 2026-10-27:** shape 1 was not handled, so a batch lookup returned one point per
- * coordinate with every field `undefined` — `_meta` was all the caller got — and the empty
- * point was then written to the shared cache, where a following `mini` request for the same
- * coordinate read it back for 15 minutes. It survived because nothing asserted the *values*
- * of a batch response; `__tests__/pagesWeather.test.js` now does, over a fixture that is an
- * array, which is what upstream actually sends.
+ * Exported so `backend/utils/__tests__/openMeteo.test.js` can pin the contract over one
+ * object fixture and one array fixture. Not a runtime API for call sites.
+ *
+ * @param {object|object[]} raw parsed upstream JSON
+ * @returns {object[]} one record per location
  */
-function _extractPoint(raw, i) {
-  // Shape 1: an array of complete per-location objects.
-  if (Array.isArray(raw)) {
-    const location = raw[i];
-    if (!location || typeof location !== 'object') return {};
-    raw = location;
-  }
-  const scalar = (key) => {
-    const v = raw[key];
-    if (v == null) return undefined;
-    return Array.isArray(v) ? v[i] : v;
-  };
-  const pickSub = (block) => {
-    if (!block) return undefined;
-    const out = {};
-    for (const [k, v] of Object.entries(block)) {
-      if (v == null) { out[k] = undefined; continue; }
-      if (Array.isArray(v)) {
-        // Nested → multi-point time series: v[i] is the array for point i
-        if (Array.isArray(v[0])) { out[k] = v[i]; }
-        // Flat + i=0 → single-point series (return as-is)
-        else if (i === 0) { out[k] = v; }
-        // Flat + i>0 → scalar-per-point (current-block for multi-point)
-        else { out[k] = v[i]; }
-      } else {
-        out[k] = v;
-      }
-    }
-    return out;
-  };
+export function _normalisePoint(raw) {
+  if (Array.isArray(raw)) return raw.map((location, i) => _onePoint(location, i));
+  if (raw && typeof raw === 'object') return [_onePoint(raw, 0)];
+  return [];
+}
 
+/** Scalar metadata keys; blocks must never be treated as per-location arrays. */
+function _onePoint(location, i) {
+  if (!location || typeof location !== 'object' || Array.isArray(location)) return {};
+  // Multi-location responses are documented as complete per-location objects with scalar
+  // metadata. If a proxy or a future upstream sends an array here, select by position
+  // rather than leaking an array into a scalar field — never into a *block*.
+  const scalar = (key) => {
+    const value = location[key];
+    return Array.isArray(value) ? value[i] : value;
+  };
   return {
     latitude: scalar('latitude'),
     longitude: scalar('longitude'),
-    generationtime_ms: raw.generationtime_ms,
+    generationtime_ms: scalar('generationtime_ms'),
     utc_offset_seconds: scalar('utc_offset_seconds'),
     timezone: scalar('timezone'),
     timezone_abbreviation: scalar('timezone_abbreviation'),
     elevation: scalar('elevation'),
-    current_units: raw.current_units,
-    hourly_units: raw.hourly_units,
-    daily_units: raw.daily_units,
-    current: pickSub(raw.current),
-    hourly: pickSub(raw.hourly),
-    daily: pickSub(raw.daily),
+    location_id: scalar('location_id'),
+    current_units: scalar('current_units'),
+    hourly_units: scalar('hourly_units'),
+    daily_units: scalar('daily_units'),
+    current: location.current,
+    hourly: location.hourly,
+    daily: location.daily,
+  };
+}
+
+/**
+ * Pure mapping from one **normalised record** (see `_normalisePoint`) to the point object
+ * this module returns. No shape detection, no indexing into per-variable arrays, no
+ * heuristics about `i`: by the time this runs, an array is a time series and a scalar is
+ * a reading. Both the single and the batch path call this with an element of the same
+ * contract, which is what the shape-contract test asserts.
+ *
+ * Exported for shape tests; call sites use the public fetch functions.
+ */
+export function _extractPoint(record) {
+  const p = record || {};
+  return {
+    latitude: p.latitude,
+    longitude: p.longitude,
+    generationtime_ms: p.generationtime_ms,
+    utc_offset_seconds: p.utc_offset_seconds,
+    timezone: p.timezone,
+    timezone_abbreviation: p.timezone_abbreviation,
+    elevation: p.elevation,
+    // Only multi-location responses carry one; do not add an `undefined` key to the
+    // single-point contract callers already parse.
+    ...(p.location_id !== undefined ? { location_id: p.location_id } : {}),
+    current_units: p.current_units,
+    hourly_units: p.hourly_units,
+    daily_units: p.daily_units,
+    current: p.current,
+    hourly: p.hourly,
+    daily: p.daily,
   };
 }
 
@@ -333,6 +367,11 @@ export async function fetchCurrentWeather(lat, lng, opts = {}) {
  * Batch: current-only for many points in ONE upstream HTTP call. Open-Meteo
  * accepts comma-separated lat/lng lists, so one round-trip covers all 64
  * districts and we cache each point independently.
+ *
+ * Query shape: **multi** (`latitude=a,b&longitude=c,d`). Response shape per the
+ * Open-Meteo docs: a JSON **array** of complete per-location objects — NOT one object
+ * with an array per variable. `_normalisePoint` handles it; the mapping is identical to
+ * the single-point path.
  *
  * @param coords Array of {id, lat, lng} — id is echoed back to the caller.
  * @returns Array of { id, ...weatherObject } in the same order as `coords`
@@ -378,9 +417,15 @@ export async function fetchCurrentWeatherBatch(coords, opts = {}) {
         ..._baseParams({ timezone, forecast_days: 1 }),
       });
       const raw = await _fetchUpstream(params);
+      // `%2C` in the URL → upstream answers an ARRAY of complete per-location objects.
+      // The same normaliser the single-point path uses turns that into one contract;
+      // there is no batch-specific shape handling below this line.
+      const normalised = _normalisePoint(raw);
       for (let j = 0; j < slice.length; j++) {
         const { idx, coord } = slice[j];
-        const point = _addMeta(_extractPoint(raw, j), 1, timezone);
+        const record = normalised[j];
+        if (!record || !record.current) continue;   // missing location: drop, never invent
+        const point = _addMeta(_extractPoint(record), 1, timezone);
         cache.set(cacheKey(coord.lat, coord.lng), { ts: Date.now(), data: point });
         results[idx] = { id: coord.id, ...point };
       }
@@ -418,7 +463,15 @@ async function _fetchSingle({ lat, lng, forecast_days, timezone, skipCache,
   if (wantDaily) params.set('daily', DAILY_VARS.join(','));
 
   const raw = await _fetchUpstream(params);
-  const data = _addMeta(_extractPoint(raw, 0), forecast_days, timezone);
+  // A single-coordinate query answers one OBJECT. `_normalisePoint` wraps it in the same
+  // one-element contract the batch path gets, so both runtimes map the same shape.
+  const normalised = _normalisePoint(raw);
+  if (!normalised[0] || !normalised[0].current) {
+    const err = new Error('Open-Meteo response has no current block');
+    err.status = 502;
+    throw err;
+  }
+  const data = _addMeta(_extractPoint(normalised[0]), forecast_days, timezone);
   cache.set(key, { ts: Date.now(), data });
   return data;
 }

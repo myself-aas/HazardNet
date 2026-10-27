@@ -10,9 +10,10 @@
  * browser *could* call it directly — but then the user's coordinates, and the API's rate
  * limiting, would be the browser's problem, and the deployment would have no single place to
  * cache or to change source. The proxy is also where the payload is normalised — by the same
- * `_extractPoint`/`_addMeta` pair in `backend/utils/openMeteo.js` that the Node handler uses,
- * so a second client does not have to re-learn the shape and a normalisation change lands on
- * both runtimes at once.
+ * `_normalisePoint`/`_extractPoint`/`_addMeta` chain in `backend/utils/openMeteo.js` that the
+ * Node handler uses, so a second client does not have to re-learn the shape and a normalisation
+ * change lands on both runtimes at once. A single coordinate is an upstream object; a comma-
+ * separated list is an upstream array — the normaliser owns that distinction, not this route.
  *
  * Query contract and cache header are the Node handler's
  * (`serverless/v1/weather.js`), deliberately: two runtimes answering different shapes for the
