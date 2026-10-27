@@ -28,6 +28,15 @@ also ran *before* the aggregate check, so a broken site's record was easy to los
 aggregate check runs first, every publish step has `if: always()`, the record is verified
 against the run summary and the derived artifact, and the CDN URL is produced at build time.
 
+**Updated 2026-10-27 (conflict resolution with `main`).** That 8-check paragraph describes the
+state *before* Phase 5, not HEAD. A later scheduled run
+([40571687781](https://github.com/myself-aas/HazardNet/actions/runs/40571687781)) published
+`2026-10-27T19:43:55Z` with **10 checks**, now including `alerts_api` and `weather_api`, and
+was merged into the phase branch. It still has no `runtime_paths` check and no served copy of
+this URL: those arrive with this PR's workflow and `scripts/copy-dist.mjs`. Its freshness
+artifact was rebuilt with the old generator, so the merge regenerated it with the Phase 4
+generator to keep `gauges.series[]`.
+
 When the repository's workflow permissions are read-only, the workflow still writes this file
 and uploads it as a run artifact, but cannot commit it; the publish step degrades to a warning
 and says so (`docs/ops/owner-actions.md`, Action 9).

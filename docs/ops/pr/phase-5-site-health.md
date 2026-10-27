@@ -25,7 +25,7 @@ built-ins), `PUSH_TO_API` stays `false`.
 
 | Symptom | Evidence | Fix |
 |---|---|---|
-| The committed record had **no weather check at all** | `data/site-health/latest.json` @ `ran_at 2026-10-27T14:43:47Z` lists 8 checks; `weather_api` and `alerts_api` are absent even though `#107` added both steps to the workflow. The last successful scheduled run (`40523871728`, 14:43Z) predates that merge; no run has republished since. | The publish step now records `weather_api` **with a `detail` that names the missing field**, a new `runtime_paths` check, and `alerts_api` is already in the outcome list. `scripts/verify_site_health_record.mjs` rejects a failing check whose `detail` is `null` — a hollow failure is not accepted. |
+| The committed record had **no weather check at all** (state when this phase was written) | `data/site-health/latest.json` @ `ran_at 2026-10-27T14:43:47Z` listed 8 checks; `weather_api` and `alerts_api` were absent even though `#107` added both steps to the workflow. The last successful scheduled run at that time (`40523871728`, 14:43Z) predated that merge; no run had republished since. **Post-merge 2026-10-27:** `main`'s run [`40571687781`](https://github.com/myself-aas/HazardNet/actions/runs/40571687781) at 19:43:55Z published a 10-check record with both checks, now merged into this branch — so this row is a dated diagnosis, not a claim about HEAD. That newer record still lacks `runtime_paths`. | The publish step now records `weather_api` **with a `detail` that names the missing field**, a new `runtime_paths` check, and `alerts_api` is already in the outcome list. `scripts/verify_site_health_record.mjs` rejects a failing check whose `detail` is `null` — a hollow failure is not accepted. |
 | `/data/site-health/latest.json` was **not a URL** | The record lives in the repo root; Cloudflare Pages publishes `dist/`. A page fetch of the URL returned the SPA/noindex shell. | `scripts/copy-dist.mjs` copies the canonical record into `dist/data/site-health/latest.json` at the next ordinary build. The probe still triggers **no** build, so the CDN copy can lag by one deploy; the repo file and the run artifact are canonical. Documented in `data/site-health/README.md` and `deployment.md` §4. |
 | The commit step ran **before** the aggregate check and was easy to lose on a red site | Step order in the old workflow: publish → commit → artifact → summary → enforce. | Aggregate check moved to step 18 with `continue-on-error: true`; commit is step 19 with `if: always()`; a final gate (step 23) makes the job red by reading `steps.aggregate.outcome`. A failing check therefore still writes the record. |
 | A dispatch could never prove the record lands | The old publish step had `if: "${GITHUB_REF_NAME}" != "main" → exit 0`, and committed only on a **state change** — so a healthy dispatch produced no commit at all. | `workflow_dispatch` now adds `site_url` + `expect` (healthy/broken), publishes to `HEAD:${GITHUB_REF_NAME}` (never `main` from a dispatch), forces a publish for the dispatch event, and fails loudly if the push fails. |
@@ -260,8 +260,21 @@ completed   failure   Site Health Probe   Site Health Probe   main   schedule   
 ```
 
 So the token can **read** runs but cannot dispatch or read the Actions permission setting, and
-no new run appeared. That is also why Action 9's repository-wide `permissions` setting cannot
-be inspected from here: the dashboard/owner is the only source of truth for it.
+no new run appeared at that moment. That is also why Action 9's repository-wide `permissions`
+setting cannot be inspected from here: the dashboard/owner is the only source of truth for it.
+**Later that day** (captured when the conflict with `main` was resolved) a scheduled run did
+publish — the output above is a point-in-time capture, not the current run list:
+
+```
+$ gh run list --workflow=site-health.yml --limit 2
+completed   success   Site Health Probe   Site Health Probe   main   schedule   40571687781
+completed   success   Site Health Probe   Site Health Probe   main   schedule   40523871728
+```
+
+`40571687781` produced `data/site-health/latest.json` @ `2026-10-27T19:43:55Z` with 10 checks
+(`alerts_api` and `weather_api` present, `runtime_paths` still absent) and regenerated
+`frontend/public/data/freshness.json` with the **pre-Phase-4** generator — the source of the
+merge conflict resolved in `26f28dd`.
 
 ```bash
 # Healthy dispatch — record must land on the dispatched branch, weather_api: success.

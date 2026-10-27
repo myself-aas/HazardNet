@@ -83,6 +83,35 @@ $ node scripts/check-workflows.mjs
 Two unused `eslint-disable no-console` directives (`console.warn` is allowlisted) were removed
 from `functions/api/v1/telemetry.ts` in the same fix; `npx eslint` on the file is clean.
 
+## Conflict with `main` resolved (2026-10-27, merge `26f28dd`)
+
+While the PR was open, a scheduled **Site Health Probe** run on `main`
+([40571687781](https://github.com/myself-aas/HazardNet/actions/runs/40571687781)) published
+`data/site-health/latest.json` @ `2026-10-27T19:43:55Z` (10 checks) and regenerated
+`frontend/public/data/freshness.json` with the **pre-Phase-4** generator. That collided with
+Phase 4, which changed the generator to emit `gauges.series[]`. GitHub reported one conflict:
+`frontend/public/data/freshness.json`.
+
+Resolution: merge `origin/main` (bringing the newer probe record), then **regenerate** the
+artifact from the merged inputs instead of hand-merging JSON lines —
+
+```
+$ node scripts/build_freshness_artifact.mjs --now 2026-10-27T20:40:27Z
+[freshness] wrote frontend/public/data/freshness.json — overall stale (alert_engine=stale)
+$ node scripts/build_freshness_artifact.mjs --check
+[freshness] --check: artifact matches its inputs (stale overall).
+$ jq '{built_at, site_probe: (.sources[]|select(.id=="site_probe")|.generated_at),
+       gauges: [.gauges.series[].name], checks: [.sources[]|select(.id=="site_probe")|.detail.checks[].id]}' \
+    frontend/public/data/freshness.json
+```
+
+The result carries `site_probe.generated_at = 2026-10-27T19:43:55Z`, all 10 of `main`'s
+checks, **and** the three Phase 4 gauges (`hazardnet_forecast_age_hours`,
+`hazardnet_alert_snapshot_age_hours`, `hazardnet_site_probe_age_hours`). `runtime_paths` will
+appear in the record after the first run of the merged Phase 5 workflow. Docs and fixture
+provenance that quoted the older 14:43Z / 8-check record were updated in the same push so the
+dated diagnoses are not mistaken for claims about HEAD.
+
 ## Owner-action status after all seven phases
 
 | Action | State at the end of Phase 6 | Why |
