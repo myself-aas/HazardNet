@@ -21,6 +21,16 @@
  *   3. **Provenance is preserved.** `generated_at`, the policy copy, the counts and each
  *      row's freshness/provenance blocks are carried through untouched — the banner on
  *      the page is only honest if the snapshot carries the truth.
+ *   3a. **The policy is stamped, not assumed (2026-10-26).** The engine's payload carries
+ *      a `policy` block only when it was produced by a run report; the replay path writes
+ *      none, and for months the committed artifact shipped `policy: null`. That was
+ *      harmless while the policy was only ever read from a live Node process — and became
+ *      a hole the moment Cloudflare Pages Functions served `/api/v1/alerts{,/policy}`
+ *      from this artifact, because a Worker has no `process.env` to recompute the
+ *      thresholds from. So the builder now stamps the **effective** policy and the
+ *      delivery transports from its own environment, which is the same job, the same
+ *      environment and therefore the same configuration the engine ran under. An engine
+ *      that supplies its own `policy` still wins: it is the record of what was used.
  *   4. **Refuse to publish an empty snapshot over a good one.** A failed engine run
  *      produces zero alerts; silently overwriting yesterday's file with an empty list
  *      would turn a pipeline failure into "all clear". `--allow-empty` is required to do
@@ -41,6 +51,9 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ALERT_LEVELS as POLICY_LEVELS, describePolicy, getPolicy } from '../backend/alerts/policy.js';
+import { describeSmsTransport, getSmsConfig } from '../backend/alerts/channels/sms.js';
+import { getTelegramConfig } from '../backend/alerts/channels/telegram.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -142,12 +155,37 @@ export function consideredRowCount(payload, fallback = 0) {
 }
 
 /**
+ * The policy block and delivery transports, as this job sees them.
+ *
+ * Read from the environment the builder runs in — in `daily_advisory_ingest.yml` that is
+ * the same job and the same `env:` block that produced the rows, so the stamped policy is
+ * the one the engine used, not a guess about it. Every field is what
+ * `GET /api/v1/alerts/policy` returns over the same process, which is what lets the edge
+ * serve that endpoint from the artifact instead of inventing thresholds.
+ *
+ * No secret material: `describeSmsTransport` exposes the provider, whether it is
+ * configured, the sender id and the run cap — never the API key (`SMS_API_KEY`,
+ * `BULKSMSBD_API_KEY`); `getTelegramConfig` is reduced to `configured` exactly as the
+ * endpoint reduces it. `__tests__/alertSnapshot.test.js` asserts that.
+ */
+export function stampPolicy(env = process.env) {
+  const policy = getPolicy(env);
+  return {
+    policy: describePolicy(policy),
+    transports: {
+      sms: describeSmsTransport(getSmsConfig(env)),
+      telegram: { channel: 'telegram', configured: getTelegramConfig(env).configured },
+    },
+  };
+}
+
+/**
  * Pure transform. Deliberately **total**: a payload with no recognisable rows yields an
  * empty snapshot rather than a throw, so this function stays usable by callers that have
  * already decided what an empty result means. The CLI is where the refusal lives (an
  * unrecognised payload is an integration error and exits 2 — see `main`).
  */
-export function buildSnapshot(payload, { generatedAt = new Date().toISOString() } = {}) {
+export function buildSnapshot(payload, { generatedAt = new Date().toISOString(), env = process.env } = {}) {
   const extracted = extractAlertRows(payload);
   const rows = extracted?.rows || [];
   // When the engine tells us which rows it published, that list is the answer even if the
@@ -171,7 +209,12 @@ export function buildSnapshot(payload, { generatedAt = new Date().toISOString() 
       : ALERT_DISCLAIMER,
   }));
 
-  const policy = payload && typeof payload === 'object' && payload.policy ? payload.policy : null;
+  // The engine's own record wins; otherwise stamp what this job is configured with.
+  const enginePolicy = payload && typeof payload === 'object' && payload.policy ? payload.policy : null;
+  const stamped = enginePolicy ? null : stampPolicy(env);
+  const policy = enginePolicy || stamped.policy;
+  const transports = (payload && typeof payload === 'object' && payload.transports)
+    || (stamped ? stamped.transports : null);
 
   return {
     schema: ALERTS_SNAPSHOT_SCHEMA,
@@ -194,6 +237,9 @@ export function buildSnapshot(payload, { generatedAt = new Date().toISOString() 
       ...(notPublished === null ? {} : { not_published: notPublished }),
     },
     policy,
+    /** Where the policy block came from: 'engine' (its run report) or 'builder' (this job). */
+    policy_source: enginePolicy ? 'engine' : 'builder',
+    transports,
     disclaimer: policy?.disclaimer || ALERT_DISCLAIMER,
     alerts,
   };
@@ -237,6 +283,11 @@ function main() {
     }
   }
 
+  if (snapshot.policy && !POLICY_LEVELS.every((level) => ALERT_LEVELS.includes(level))) {
+    console.error('[alerts-snapshot] the policy module and this builder disagree about ALERT_LEVELS');
+    process.exit(5);
+  }
+
   for (const alert of snapshot.alerts) {
     if (!ALERT_LEVELS.includes(alert.level)) {
       console.warn(`[alerts-snapshot] alert ${alert.id} has an unexpected level "${alert.level}"`);
@@ -251,7 +302,9 @@ function main() {
   writeFileSync(args.out, `${JSON.stringify(snapshot, null, 2)}\n`);
   console.log(
     `[alerts-snapshot] wrote ${args.out} — ${snapshot.alerts.length} published alert(s), ` +
-    `${snapshot.counts.dropped_unpublished} non-published row(s) dropped, schema ${snapshot.schema}`,
+    `${snapshot.counts.dropped_unpublished} non-published row(s) dropped, schema ${snapshot.schema}, ` +
+    `policy ${snapshot.policy?.version || 'absent'} (${snapshot.policy_source}), ` +
+    `max auto-publish ${snapshot.policy?.human_in_the_loop?.max_auto_publish_level || 'unset'}`,
   );
 }
 

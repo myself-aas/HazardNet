@@ -34,49 +34,14 @@ import { notifyAlert } from '../alerts/notify.js';
 import { describeSmsTransport, getSmsConfig } from '../alerts/channels/sms.js';
 import { getTelegramConfig } from '../alerts/channels/telegram.js';
 import { ALERT_STATES, isDutyOfficer } from '../alerts/lifecycle.js';
+import { publicAlertView } from '../alerts/publicView.js';
 
 const router = express.Router();
 
-/**
- * Public projection of a stored alert. §1.6 requires the reviewer identity to be
- * *stored*; publishing a volunteer's email address to the open internet is a
- * different act, so the public view keeps the decision, the timestamp and the
- * reason (which is what makes an alert auditable) and drops the contact details
- * and the raw event log.
- */
-const redactActor = (actor) => {
-  if (!actor) return actor;
-  const value = String(actor);
-  if (value === 'alert-pipeline') return value;
-  if (value.includes('@')) return 'reviewer (contact redacted)';
-  return value;
-};
-
-export const publicAlertView = (alert, { includeReviewerContact = false } = {}) => {
-  const view = { ...alert };
-  delete view.assessment;
-  if (!includeReviewerContact) {
-    view.history = (alert.history || []).map((entry) => ({
-      at: entry.at,
-      from: entry.from,
-      to: entry.to,
-      level: entry.level,
-      automatic: entry.actor === 'alert-pipeline',
-      actor: redactActor(entry.actor),
-      reason: entry.reason,
-      rejection_reason: entry.rejection_reason,
-    }));
-    if (view.review) view.review = { ...view.review, reviewer: redactActor(view.review.reviewer) };
-    if (view.published) {
-      view.published = {
-        ...view.published,
-        reviewer: redactActor(view.published.reviewer),
-        contact_redacted: 'reviewer email is available to duty officers only',
-      };
-    }
-  }
-  return view;
-};
+/* The public projection lives in `backend/alerts/publicView.js` since 2026-10-26, when a
+   third runtime (Cloudflare Pages Functions) needed the same rule. Re-exported here because
+   this is the module the alert report/evidence tests import it from. */
+export { publicAlertView } from '../alerts/publicView.js';
 
 /** Who is calling? Returns {ok, via, actor} or a refusal. */
 async function resolveReviewer(req) {

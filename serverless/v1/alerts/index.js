@@ -5,8 +5,10 @@
  * key unlocks the operational states and reviewer contact details (§1.6: the reviewer
  * identity is *stored* on every alert, never *published*). The projection logic and
  * response envelope are kept byte-identical to the Express twin in
- * backend/routes/alerts.js (publicAlertView is duplicated here deliberately — pulling
- * the Express module in would drag multer and the route graph into this cold start).
+ * backend/routes/alerts.js. Since 2026-10-26 the projection itself is not duplicated:
+ * both runtimes, and the Cloudflare Pages Function, import
+ * `backend/alerts/publicView.js` — a dependency-free module, so it costs this cold start
+ * nothing (the reason the copy existed).
  *
  * Deployed through api/v1/[resource].js; see serverless/dispatch.js and
  * docs/codebase/ARCHITECTURE.md#the-node-function-surface-api.
@@ -19,44 +21,7 @@ import {
   getAlertStore, listAlerts, stateCounts,
 } from '../../../backend/alerts/service.js';
 import { ALERT_STATES } from '../../../backend/alerts/lifecycle.js';
-
-/**
- * Public projection of a stored alert — mirror of the export in
- * backend/routes/alerts.js (keep them in lockstep if either changes).
- */
-const redactActor = (actor) => {
-  if (!actor) return actor;
-  const value = String(actor);
-  if (value === 'alert-pipeline') return value;
-  if (value.includes('@')) return 'reviewer (contact redacted)';
-  return value;
-};
-
-const publicAlertView = (alert, { includeReviewerContact = false } = {}) => {
-  const view = { ...alert };
-  delete view.assessment;
-  if (!includeReviewerContact) {
-    view.history = (alert.history || []).map((entry) => ({
-      at: entry.at,
-      from: entry.from,
-      to: entry.to,
-      level: entry.level,
-      automatic: entry.actor === 'alert-pipeline',
-      actor: redactActor(entry.actor),
-      reason: entry.reason,
-      rejection_reason: entry.rejection_reason,
-    }));
-    if (view.review) view.review = { ...view.review, reviewer: redactActor(view.review.reviewer) };
-    if (view.published) {
-      view.published = {
-        ...view.published,
-        reviewer: redactActor(view.published.reviewer),
-        contact_redacted: 'reviewer email is available to duty officers only',
-      };
-    }
-  }
-  return view;
-};
+import { publicAlertView } from '../../../backend/alerts/publicView.js';
 
 export default async function handler(req, res) {
   if (guardRequest(req, res, { bucket: 'alerts' })) {

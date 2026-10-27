@@ -222,16 +222,38 @@ From 2026-10-26 the API has a host for its **read** surface, and only for that:
 
 | Route | Served by | Data |
 |---|---|---|
-| `GET /api/v1/forecasts/bulk` | `functions/api/v1/forecasts/bulk.ts` (Pages Function) | the deployed `/data/forecasts-latest.json` |
-| `GET /api/v1/forecasts/metadata` | `functions/api/v1/forecasts/metadata.ts` (Pages Function) | the same artifact's dates and counts |
+| `GET /api/v1/forecasts/bulk` | `functions/api/v1/forecasts/bulk.ts` | the deployed `/data/forecasts-latest.json` |
+| `GET /api/v1/forecasts/metadata` | `functions/api/v1/forecasts/metadata.ts` | the same artifact's dates and counts |
+| `GET /api/v1/alerts` | `functions/api/v1/alerts/index.ts` | the deployed `/data/alerts-latest.json`, `PUBLISHED` rows only |
+| `GET /api/v1/alerts/policy` | `functions/api/v1/alerts/policy.ts` | the policy block **stamped into** that artifact |
 | everything else under `/api/**` | nothing — **404** | — |
 
-These two are snapshot-backed, not store-backed (`backend/utils/forecastSnapshotServe.js` has
-the long version). Three reasons, in the order they matter: a Worker cannot load
+The `.ts` paths drop the `functions/` prefix and, where a route ends in `index.ts`, the
+`index` too: `functions/api/v1/alerts/index.ts` answers `/api/v1/alerts`. That split mirrors
+the Node surface, where `api/v1/[resource].js` serves the list and
+`api/v1/alerts/[action].js` serves the actions.
+
+All four are snapshot-backed, not store-backed (`backend/utils/forecastSnapshotServe.js` and
+`backend/utils/alertSnapshotServe.js` have the long version). Three reasons, in the order they matter: a Worker cannot load
 `firebase-admin`; Firestore's Spark plan allows 50k reads/day and a per-request store query
 would spend it re-serving bytes already on the CDN; and serving the API from the same artifact
 the client falls back to means the two can never disagree about "the latest forecast". Cost: **0
 reads, ~2 ms CPU** against the 10 ms ceiling, and no `fs`, no `process`, no native module.
+
+**The policy is stamped, not recomputed.** `/api/v1/alerts/policy` answers with the
+thresholds *the engine ran under*, and the edge cannot derive those: a Worker has no
+`process.env`, and the Cloudflare project's environment is not the pipeline's. So
+`scripts/build_alert_snapshot.mjs` writes a `policy` block (plus the delivery transports) into
+`alerts-latest.json` from the environment of the job that ran the engine — same job, same
+`env:`, therefore the same configuration. An engine run report that carries its own `policy`
+still wins; `policy_source` records which (`engine` or `builder`). If the deployed artifact ever
+lacks the block, `/policy` answers **503** rather than inventing thresholds, and
+`site-health.yml` fails on the snapshot that lost it.
+
+The practical consequence for an owner: changing `ALERT_*` thresholds takes effect on the
+**pipeline**, and reaches the public policy endpoint through the artifact at the next ingest —
+not by editing a Pages environment variable. That is deliberate: the endpoint's value is that
+it describes the policy the alerts in force were produced under.
 
 Two facts that make the difference between a working edge API and a broken one:
 
@@ -244,13 +266,16 @@ Two facts that make the difference between a working edge API and a broken one:
 
 Still unhosted, and still expected to 404 — not breakage:
 
-- **The front door** tries the live alert API, gets a 404, and falls back to the committed
-  snapshot at `/data/alerts-latest.json`, saying so in the status strip. That is the documented
-  delivery path (ADR 0008), not a degraded mode. Porting `alerts` is the next endpoint, not a
-  prerequisite for the site working.
-- **`telemetry`, `metrics`, `weather/batch`, `kaggle`, `historical`, `alerts/**`** — Action 21's
-  queue. Telemetry deliberately lands with Action 12's Analytics Engine binding, so the sink and
-  its writer change in one PR.
+- **The front door** now reaches the live list at `/api/v1/alerts` (from 2026-10-26) and only
+  falls back to `/data/alerts-latest.json` when that call fails. Both paths serve the same
+  artifact, so a fallback is a latency event, not a data event — that is the point of serving
+  the API from the file the client would fall back to.
+- **`alerts/evidence-card`, `alerts/review`, `alerts/run`** stay unhosted: the first is
+  store-backed, and the other two are authenticated writes that must not live on a metered edge
+  runtime.
+- **`telemetry`, `metrics`, `weather/batch`, `kaggle`, `historical`** — Action 21's queue.
+  Telemetry deliberately lands with Action 12's Analytics Engine binding, so the sink and its
+  writer change in one PR.
 - **`backend/` (Express)** still runs in a container when someone starts one — `npm run dev:api`,
   `docker compose up`, or any host that runs Node 20 — and **`api/**`** remains the
   function-shaped surface for a Node host. Neither is deployed.

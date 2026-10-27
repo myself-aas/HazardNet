@@ -36,6 +36,9 @@ env:
   # the production pipeline pushes to HAZARDNET_API_URL, which need not be the
   # website's own host.
   API_METADATA_URL: ${{ vars.API_METADATA_URL || '' }}
+  # Optional override for the alerts list host. Same default as the metadata probe:
+  # the site's own origin, which is where the Pages Function answers it.
+  API_ALERTS_URL: ${{ vars.API_ALERTS_URL || '' }}
   # Shared secret the probe sends as `x-hazardnet-probe` on every request
   # (docs/ops/owner-actions.md Action 18). Cloudflare's managed challenge
   # answers GitHub runners with its "Just a moment..." interstitial, so no
@@ -492,6 +495,67 @@ jobs:
           check_freshness "$PREDICTION_DATE" "$SNAPSHOT_URL" || exit 1
           echo "✅ Committed snapshot serves fresh data"
 
+      # The front door's live path. `/api/v1/alerts` 404'd from the Pages cutover until
+      # 2026-10-26, and because the client silently falls back to the committed snapshot
+      # nothing ever went red — the site simply always took the fallback. This check makes
+      # the fallback visible when it is not the intended state any more.
+      #
+      # It also asserts the one thing the endpoint must never do: serve a row that is not
+      # PUBLISHED. `functions/api/v1/alerts/index.ts` filters defensively for exactly this,
+      # and a probe is the only place that can see the deployed artefact's behaviour rather
+      # than the test double's.
+      - name: Probe the alerts API (the front door's live path)
+        id: alerts_api
+        shell: bash
+        run: |
+          set -uo pipefail
+          ALERTS_URL="${API_ALERTS_URL:-$SITE_URL/api/v1/alerts}"
+          SNAPSHOT_URL="$SITE_URL/data/alerts-latest.json"
+
+          HTTP_CODE=$(curl -sSL --max-redirs 5 -A "$PROBE_USER_AGENT" -H 'Accept: application/json,text/plain;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.9' -o /tmp/alerts.json -w "%{http_code}" --max-time 30 "$ALERTS_URL")
+          echo "alerts HTTP $HTTP_CODE ($ALERTS_URL)"
+
+          if [ "$HTTP_CODE" = "200" ] && jq -e '.alerts | type == "array"' /tmp/alerts.json >/dev/null 2>&1; then
+            COUNT=$(jq -r '.count' /tmp/alerts.json)
+            LEVELS=$(jq -rc '.counts' /tmp/alerts.json)
+            STATES=$(jq -rc '.states_visible' /tmp/alerts.json)
+            echo "count: $COUNT  levels: $LEVELS  states_visible: $STATES"
+
+            # A state leak is not a warning: it would publish an unreviewed alert.
+            NON_PUBLISHED=$(jq -r '[.alerts[] | select(.state != "PUBLISHED")] | length' /tmp/alerts.json)
+            if [ "$NON_PUBLISHED" != "0" ]; then
+              echo "::error::$ALERTS_URL served $NON_PUBLISHED alert(s) that are not PUBLISHED — an anonymous caller can read unreviewed operational state (PRODUCT_SPEC §1.6)."
+              jq -r '[.alerts[] | select(.state != "PUBLISHED") | .id] | .[0:5][]' /tmp/alerts.json || true
+              exit 1
+            fi
+            if [ "$STATES" != '["PUBLISHED"]' ]; then
+              echo "::error::$ALERTS_URL reported states_visible=$STATES — an anonymous caller must see PUBLISHED only."
+              exit 1
+            fi
+            echo "✅ Alerts API serves the public list (no non-published rows)"
+            exit 0
+          fi
+
+          # Not a hard failure on its own: the snapshot IS the documented delivery path
+          # (ADR 0008), and the client takes it. But the artifact must be there, and it must
+          # still carry the stamped policy the /policy endpoint serves from.
+          echo "::warning::$ALERTS_URL returned HTTP $HTTP_CODE — the alerts API should answer from functions/api/v1/alerts/index.ts (Pages Function, snapshot-backed) since 2026-10-26. Checking the committed snapshot the front door falls back to."
+          SNAP_CODE=$(curl -sSL --max-redirs 5 -A "$PROBE_USER_AGENT" -H 'Accept: application/json,text/plain;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.9' -o /tmp/alerts-snapshot.json -w "%{http_code}" --max-time 30 "$SNAPSHOT_URL")
+          echo "snapshot HTTP $SNAP_CODE ($SNAPSHOT_URL)"
+          if [ "$SNAP_CODE" != "200" ] || ! jq -e '.alerts | type == "array"' /tmp/alerts-snapshot.json >/dev/null 2>&1; then
+            echo "::error::Neither the alerts API (HTTP $HTTP_CODE) nor the committed snapshot (HTTP $SNAP_CODE) is being served — the front door has no alert data path at all."
+            head -c 300 /tmp/alerts-snapshot.json || true
+            exit 1
+          fi
+          POLICY_VERSION=$(jq -r '.policy.version // "absent"' /tmp/alerts-snapshot.json)
+          POLICY_SOURCE=$(jq -r '.policy_source // "absent"' /tmp/alerts-snapshot.json)
+          echo "snapshot carries policy $POLICY_VERSION (source: $POLICY_SOURCE)"
+          if [ "$POLICY_VERSION" = "absent" ]; then
+            echo "::error::$SNAPSHOT_URL carries no policy block — /api/v1/alerts/policy would answer 503 when the API returns. Re-run scripts/build_alert_snapshot.mjs (it stamps the effective policy) and redeploy."
+            exit 1
+          fi
+          echo "✅ Committed alerts snapshot is served and carries a stamped policy"
+
       # Phase 7: the status page is part of the product surface now, and so is the
       # artifact it renders. Both are probed here — a page that says "within SLO"
       # while its artifact contradicts the data the site serves is exactly the
@@ -661,6 +725,7 @@ jobs:
           OUT_SECURITY_HEADERS_DETAIL: ${{ steps.security_headers.outputs.detail }}
           OUT_SITEMAP: ${{ steps.sitemap.outcome }}
           OUT_FORECAST_DATA: ${{ steps.forecast_data.outcome }}
+          OUT_ALERTS_API: ${{ steps.alerts_api.outcome }}
           OUT_STATUS_PAGE: ${{ steps.status_page.outcome }}
           OUT_CONTENT_PAGES: ${{ steps.content_pages.outcome }}
           OUT_CANONICAL_HOST: ${{ steps.canonical_host.outcome }}
@@ -679,6 +744,7 @@ jobs:
             --arg security_headers_detail "$OUT_SECURITY_HEADERS_DETAIL" \
             --arg sitemap "$OUT_SITEMAP" \
             --arg forecast_data "$OUT_FORECAST_DATA" \
+            --arg alerts_api "$OUT_ALERTS_API" \
             --arg status_page "$OUT_STATUS_PAGE" \
             --arg content_pages "$OUT_CONTENT_PAGES" \
             --arg canonical_host "$OUT_CANONICAL_HOST" \
@@ -688,7 +754,7 @@ jobs:
               run_url: $run_url,
               site_url: $site_url,
               edge_challenged: ($edge_challenged == "1"),
-              outcome: (if ([$homepage, $deep_links, $security_headers, $sitemap, $forecast_data, $status_page, $content_pages, $canonical_host] | all(. == "success")) then "pass" else "fail" end),
+              outcome: (if ([$homepage, $deep_links, $security_headers, $sitemap, $forecast_data, $alerts_api, $status_page, $content_pages, $canonical_host] | all(. == "success")) then "pass" else "fail" end),
               checks: [
                 { id: "homepage", outcome: $homepage, detail: null },
                 { id: "deep_links", outcome: $deep_links, detail: null },
@@ -696,6 +762,7 @@ jobs:
                   detail: (if $security_headers_detail == "" then null else $security_headers_detail end) },
                 { id: "sitemap", outcome: $sitemap, detail: null },
                 { id: "forecast_data", outcome: $forecast_data, detail: null },
+                { id: "alerts_api", outcome: $alerts_api, detail: null },
                 { id: "status_page", outcome: $status_page, detail: null },
                 { id: "content_pages", outcome: $content_pages, detail: null },
                 { id: "canonical_host", outcome: $canonical_host, detail: null }
