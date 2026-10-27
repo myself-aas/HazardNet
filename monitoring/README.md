@@ -1,3 +1,7 @@
+> **Retired 2026-10-27 (Phase 4).** The `/metrics` route is gone; gauges live in
+> `/data/freshness.json` (`gauges.series[]`). This directory is an historical record of the
+> Node-only Prometheus design. See `docs/ops/owner-actions.md` Action 21.
+
 # HazardNet Monitoring (backlog #5 — forecast freshness SLO)
 
 Covers the deployment guide's Phase 4 monitoring gap (see

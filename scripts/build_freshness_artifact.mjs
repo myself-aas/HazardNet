@@ -348,6 +348,41 @@ export function coverageBlock(snapshot) {
 }
 
 /**
+ * The gauges that replaced `/metrics` (Phase 4, 2026-10-27).
+ *
+ * A Worker isolate has no Node process to scrape: heap, event loop, GC and request counters
+ * do not exist there. The one series that meant anything across both runtimes was
+ * `hazardnet_forecast_age_hours`, and this artifact already computes its input. Publishing
+ * the number here — with the same name, unit and SLO — costs zero Function invocations and
+ * cannot go stale relative to the data it describes. `null` means **unknown**, not zero:
+ * absence is the alert, exactly as `hideForecastAgeHours()` did for the Prometheus gauge.
+ */
+export function gaugeBlock(sources) {
+  const byId = Object.fromEntries(sources.map((source) => [source.id, source]));
+  const gauge = (name, source, sloHours, help) => ({
+    name,
+    value: Number.isFinite(byId[source]?.age_hours) ? byId[source].age_hours : null,
+    unit: 'hours',
+    source: `${source}.age_hours`,
+    slo_hours: sloHours,
+    help,
+  });
+  return {
+    what_this_is:
+      'The deployment-wide gauges, published as data instead of a Prometheus scrape. There is no metrics route: a Worker isolate has no process series, and the site-health probe plus this artifact are the observable surfaces.',
+    emitted_by: 'scripts/build_freshness_artifact.mjs',
+    series: [
+      gauge('hazardnet_forecast_age_hours', 'forecast_snapshot', FORECAST_SLO_HOURS,
+        'Age of the newest prediction_date in the deployed forecast snapshot. null = unknown.'),
+      gauge('hazardnet_alert_snapshot_age_hours', 'alert_engine', ALERTS_SLO_HOURS,
+        'Age of the deployed alert snapshot. null = unknown.'),
+      gauge('hazardnet_site_probe_age_hours', 'site_probe', PROBE_SLO_HOURS,
+        'Age of the last published site-health probe record. null = no record.'),
+    ],
+  };
+}
+
+/**
  * Facts a reader of the page must not have to infer. Only statements that are true of the
  * inputs are emitted — no boilerplate, no reassurance.
  */
@@ -448,6 +483,7 @@ export function buildFreshnessArtifact({
       not_fresh: sources.filter((source) => source.state !== 'fresh').map((source) => source.id),
     },
     sources,
+    gauges: gaugeBlock(sources),
     coverage,
     model,
     honesty: honestyNotes({ sources, coverage, model, alerts }),

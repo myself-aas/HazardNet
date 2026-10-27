@@ -38,9 +38,9 @@ import { resetGuardsForTests } from '../../backend/middleware/serverlessGuard.js
  * an empty list.
  */
 const PUBLIC_SURFACE = {
-  'api/[endpoint].js': ['forecasts', 'historical', 'ingest', 'metrics', 'predict'],
+  'api/[endpoint].js': ['forecasts', 'ingest', 'predict'],
   'api/chat/[action].js': ['query', 'sample-questions'],
-  'api/v1/[resource].js': ['alerts', 'historical', 'kaggle', 'telemetry', 'weather'],
+  'api/v1/[resource].js': ['alerts', 'kaggle', 'telemetry', 'weather'],
   'api/v1/alerts/[action].js': ['evidence-card', 'policy', 'review', 'run'],
   'api/v1/forecasts/[action].js': ['bulk', 'history', 'metadata'],
   'api/v1/weather/batch.js': [],
@@ -140,16 +140,17 @@ describe('every public URL still resolves to a handler', () => {
     const { default: handler } = await import('../../api/[endpoint].js');
     const req = {
       method: 'GET',
-      url: '/api/metrics?x=1&endpoint=metrics',
-      query: { x: '1', endpoint: 'metrics' },
+      url: '/api/forecasts?x=1&endpoint=forecasts',
+      query: { x: '1', endpoint: 'forecasts' },
       headers: {},
     };
     const res = makeRes();
     await handler(req, res);
-    // /api/metrics answers with the Prometheus exposition, not with JSON.
+    // Phase 4: /api/metrics is retired, so the dispatcher's own query-stripping rule is
+    // exercised against a route that still exists.
     expect(res.statusCode).not.toBe(404);
     expect(req.query).toEqual({ x: '1' });
-    expect(req.url).toBe('/api/metrics?x=1');
+    expect(req.url).toBe('/api/forecasts?x=1');
   }, 30000);
 
   it('serves /api/v1/alerts and /api/v1/weather/batch through the files that declare them', async () => {
@@ -197,10 +198,10 @@ describe('the dispatcher is transparent', () => {
   });
 
   it('folds a duplicated parameter from an attacker into a routing miss, not a route', () => {
-    // `/api/metrics?endpoint=admin` arrives as ["admin", "metrics"]; the appended value is
-    // the one the filesystem matched, so routing cannot be steered by the query string.
-    const req = { url: '/api/metrics?endpoint=admin&endpoint=metrics', query: { endpoint: ['admin', 'metrics'] } };
-    expect(routeSegment(req, 'endpoint', new Map([['metrics', 'handler']]))).toBe('metrics');
+    // `/api/forecasts?endpoint=admin` arrives as ["admin", "forecasts"]; the appended value
+    // is the one the filesystem matched, so routing cannot be steered by the query string.
+    const req = { url: '/api/forecasts?endpoint=admin&endpoint=forecasts', query: { endpoint: ['admin', 'forecasts'] } };
+    expect(routeSegment(req, 'endpoint', new Map([['forecasts', 'handler']]))).toBe('forecasts');
   });
 
   it('answers an unknown path as a metered JSON 404', async () => {

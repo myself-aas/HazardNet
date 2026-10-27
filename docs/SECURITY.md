@@ -72,7 +72,7 @@ provided you:
   - Interactive components: `<DistrictRiskMap />`, `<DistrictVulnerabilityTable />`, `<HistoricalHazardCatalog />`, `<TemporalTrendChart />`, and `<EventReportModal />`.
 - **API Endpoints (`/api/v1/**`)**:
   - Forecast endpoints: `GET /api/v1/forecasts/bulk`, `GET /api/v1/forecasts/metadata`.
-  - Historical endpoints: `GET /api/v1/historical/hazards`, `GET /api/v1/historical/vulnerability`, `GET /api/v1/historical/trends`, `GET /api/v1/historical/events/:id`.
+  - Historical archive (static, CDN-served): `/data/historical/*.json`. The `/api/v1/historical/*` REST endpoints were retired on 2026-10-27 (Phase 4: no callers, ~8.4 ms re-serialise against a 10 ms isolate budget); see `docs/ops/owner-actions.md` Action 21.
   - Alert review & management: `POST /v1/alerts/{id}/review`, `POST /v1/feedback`.
 - **Daily Advisory Automation Pipeline**:
   - GitHub Actions ingestion workflow (`.github/workflows/daily_advisory_ingest.yml`).

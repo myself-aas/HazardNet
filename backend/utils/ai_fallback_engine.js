@@ -17,10 +17,19 @@
  */
 
 import { createHash } from 'node:crypto';
+import { assertAdvisory, createVerifiedCache } from './cacheContract.js';
 
-// In-Memory Cache for Advisory Requests (10-minute TTL)
-const advisoryCache = new Map();
+// In-Memory Cache for Advisory Requests (10-minute TTL).
+// Phase 2: a generated advisory is only cached after a value assertion, and a cached
+// advisory is re-checked before it is served. A truncated/failed generation must never
+// become the answer to the next ten minutes of identical prompts.
 const CACHE_TTL_MS = 10 * 60 * 1000;
+const advisoryCache = createVerifiedCache({
+  ttlMs: CACHE_TTL_MS,
+  label: 'advisory',
+  validate: (entry) => assertAdvisory(entry && entry.data),
+  age: (entry, now) => now - (entry?.timestamp ?? 0),
+});
 
 // Per-provider timeout: a hung upstream must not eat the whole cascade (the
 // chat function has a hard wall-clock budget on a function host).
@@ -456,11 +465,13 @@ async function generateAdvisoryWithFallback(params, systemInstruction, prompt) {
     .digest('hex')
     .slice(0, 16);
   const cacheKey = `${params.district_name || 'dist'}:${params.hazard_type || 'haz'}:${Math.round((params.severity_score || 0) * 10)}:${promptHash}`;
-  const cachedEntry = advisoryCache.get(cacheKey);
-  if (cachedEntry && (Date.now() - cachedEntry.timestamp < CACHE_TTL_MS)) {
+  // Post-read guard: `get` re-runs assertAdvisory and deletes a hollow entry, so a bad
+  // generation is a miss that re-runs the cascade rather than a cached answer.
+  const cached = advisoryCache.get(cacheKey);
+  if (cached.hit) {
     engineStats.cacheHits += 1;
     console.info(`[AI Fallback Engine] Serving cached advisory for key: ${cacheKey}`);
-    return { ...cachedEntry.data, cached: true };
+    return { ...cached.entry.data, cached: true };
   }
 
   // Define multi-tier fallback cascade array
@@ -487,8 +498,13 @@ async function generateAdvisoryWithFallback(params, systemInstruction, prompt) {
         result.provider_source = PROVIDER_LABELS[provider.key];
       }
 
-      // Store in cache for concurrent request deduplication
-      advisoryCache.set(cacheKey, { timestamp: Date.now(), data: result });
+      // Store in cache for concurrent request deduplication. Pre-write guard: a hollow
+      // generation is NOT cached; the caller still gets whatever the provider returned,
+      // and `onReject` logs the named missing fields for the next run.
+      const guard = advisoryCache.set(cacheKey, { timestamp: Date.now(), data: result });
+      if (!guard.ok) {
+        console.warn(`[AI Fallback Engine] advisory not cached: missing ${guard.missing.join(', ')}`);
+      }
       return result;
     } catch (err) {
       const msg = String(err?.message || err);
@@ -507,7 +523,11 @@ async function generateAdvisoryWithFallback(params, systemInstruction, prompt) {
   // Final Tier: Offline Deterministic Heuristic Engine
   console.info('[AI Fallback Engine] All cloud AI providers unavailable or rate limited. Invoking Tier 6 Offline Neural Heuristic Engine.');
   const heuristicResult = generateDeterministicHeuristicAdvisory(params);
-  advisoryCache.set(cacheKey, { timestamp: Date.now(), data: heuristicResult });
+  // Pre-write guard applies to the deterministic tier too — it is still a cache write.
+  const guard = advisoryCache.set(cacheKey, { timestamp: Date.now(), data: heuristicResult });
+  if (!guard.ok) {
+    console.warn(`[AI Fallback Engine] heuristic advisory not cached: missing ${guard.missing.join(', ')}`);
+  }
   return heuristicResult;
 }
 
@@ -521,7 +541,7 @@ function getEngineStatus() {
     ),
     stats: {
       ...engineStats,
-      cacheSize: advisoryCache.size,
+      cacheSize: advisoryCache.size(),
       hitRatioPercent: engineStats.totalRequests > 0 ? ((engineStats.cacheHits / engineStats.totalRequests) * 100).toFixed(1) + '%' : '0%'
     }
   };

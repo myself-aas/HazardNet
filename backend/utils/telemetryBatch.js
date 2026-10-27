@@ -22,6 +22,15 @@ const EVENT_NAME_MAX = 64;
 export const EVENTS_PER_BATCH_MAX = 50;
 const PROPERTIES_PER_EVENT_MAX = 20;
 const PROPERTY_VALUE_MAX = 256;
+/**
+ * Phase 6 (Action 12): the Analytics Engine binding serialises `properties` into one blob.
+ * Its hard limit is 16 KB of blobs **per data point**, shared with the event name (≤64) and
+ * the session id (≤64). Bound the serialised object here, in the shared validator, so the
+ * Node runtime refuses exactly the same payload as the edge instead of diverging on a rule
+ * only one sink needs. 8 KiB leaves >7 KiB of headroom for the other two blobs and for JSON
+ * escaping, and is far above any real event (the fixture's properties are <100 bytes).
+ */
+export const PROPERTIES_JSON_MAX = 8_192;
 /** A beacon page at this size is already pathological; enforce it before parsing. */
 export const BODY_MAX_BYTES = 65_536; // 64 KiB
 
@@ -64,6 +73,11 @@ export function validateEvent(event) {
     if (typeof value === 'string' && value.length > PROPERTY_VALUE_MAX) {
       return `property "${key}" exceeds ${PROPERTY_VALUE_MAX} characters`;
     }
+  }
+  // Also catches an unbounded *key*: 20 keys of 10 KB each would otherwise blow the
+  // Analytics Engine 16 KB blob limit despite every individual value being ≤256 chars.
+  if (JSON.stringify(properties).length > PROPERTIES_JSON_MAX) {
+    return `event.properties is too large (max ${PROPERTIES_JSON_MAX} characters of JSON)`;
   }
   return { event: name, at: event.at, properties };
 }

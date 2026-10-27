@@ -70,7 +70,11 @@ jobs:
           # stylesheet decide whether backend tests pass. The frontend build job owns
           # validating generated CSS; backend coverage should validate source only.
           rm -rf dist
-          npx jest --ci --coverage --coverageDirectory=./coverage/backend --testPathIgnorePatterns='/node_modules/' '/e2e/' '/frontend/' '/apps/' '/__mocks__/'
+          # '/fixtures/' is load-bearing since Phase 0: the provenance fixtures are .js
+          # modules, not suites. Without it this job fails with "Your test suite must
+          # contain at least one test" while the local runner (which reads the config
+          # file) stays green — a config/CI divergence that only a push finds.
+          npx jest --ci --coverage --coverageDirectory=./coverage/backend --testPathIgnorePatterns='/node_modules/' '/e2e/' '/frontend/' '/apps/' '/__mocks__/' '/fixtures/'
 
       - name: Upload backend coverage
         if: always()

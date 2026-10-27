@@ -54,7 +54,10 @@ module.exports = {
   // must not pick them up (they import @playwright/test, which is not
   // jest-compatible).
   modulePathIgnorePatterns: ['<rootDir>/manuscript/'],
-  testPathIgnorePatterns: ['/node_modules/', '/e2e/', '/__mocks__/', '/apps/mobile/', '/manuscript/'],
+  // `__tests__/fixtures/` and `backend/utils/__tests__/fixtures/` hold committed upstream
+  // captures, not suites. Without this, Jest treats each `.js` fixture as a test file and
+  // fails the full run with "Your test suite must contain at least one test."
+  testPathIgnorePatterns: ['/node_modules/', '/e2e/', '/__mocks__/', '/apps/mobile/', '/manuscript/', '/fixtures/'],
   // Cap worker parallelism: the API suites import the full Express app (heavy
   // babel transforms of ESM deps), and unbounded workers OOM small CI runners.
   maxWorkers: '50%',

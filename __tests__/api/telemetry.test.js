@@ -35,9 +35,13 @@ const makeReq = (over = {}) => ({
   ...over,
 });
 
+// Phase 3: the accepted batch comes from the committed client-beacon fixture, not a stub
+// written to match the validator. `toMatchObject` below was the exact weak assertion class
+// this phase removes; it is now `toEqual` over fixture-sourced leaf values.
+const BATCH_FIXTURE = require('../fixtures/telemetryBatch.js');
 const goodBatch = () => ({
-  sessionId: 's_abc123',
-  events: [{ event: 'app_opened', properties: { platform: 'web' }, at: 1_700_000_000_000 }],
+  sessionId: BATCH_FIXTURE.sessionId,
+  events: [{ ...BATCH_FIXTURE.events[0], properties: { ...BATCH_FIXTURE.events[0].properties } }],
 });
 
 let logSpy;
@@ -89,6 +93,9 @@ describe('validateTelemetryBatch', () => {
     ['a NaN timestamp', { event: 'app_opened', at: Number.NaN }, 'event.at must be a finite number'],
     ['an object property', { event: 'a', at: 1, properties: { nested: { deep: true } } }, 'must be a string, number, boolean or null'],
     ['an over-long property value', { event: 'a', at: 1, properties: { bio: 'x'.repeat(257) } }, 'exceeds 256 characters'],
+    // Phase 6: a 9 KB *key* passes the per-value cap but would blow Analytics Engine's
+    // 16 KB-per-data-point blob budget. Both runtimes must refuse the same payload.
+    ['an over-long property key', { event: 'a', at: 1, properties: { ['k'.repeat(9000)]: 'v' } }, 'event.properties is too large'],
     ['too many properties', { event: 'a', at: 1, properties: Object.fromEntries(Array.from({ length: 21 }, (_, i) => [`k${i}`, 1])) }, 'too many properties'],
   ])('%s', (_label, event, expected) => {
     const result = validateEvent(event);
@@ -110,7 +117,13 @@ describe('POST /api/v1/telemetry', () => {
     await handler(makeReq({ body: goodBatch() }), res);
     expect(logSpy).toHaveBeenCalledTimes(1);
     const line = JSON.parse(logSpy.mock.calls[0][0]);
-    expect(line).toMatchObject({ tag: 'analytics', event: 'app_opened', properties: { platform: 'web' } });
+    expect(line).toEqual({
+      tag: 'analytics',
+      sessionId: BATCH_FIXTURE.sessionId,
+      event: BATCH_FIXTURE.events[0].event,
+      properties: BATCH_FIXTURE.events[0].properties,
+      at: BATCH_FIXTURE.events[0].at,
+    });
   });
 
   it('refuses anything but POST', async () => {

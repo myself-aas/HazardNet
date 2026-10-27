@@ -44,7 +44,7 @@ caught up with the forecast pipeline since 2026-10-11.
 | **GLIDE / ReliefWeb / FAO GIEWS / WHO / IFRC GO / ADRC** | Reference links (not API calls) | Cross-references resolved into outbound URLs per event | None | low | `backend/utils/glideResolver.js`, `frontend/src/lib/glide.ts` |
 | **Bangladesh official sources** | Attribution / authority boundary | BMD, FFWC, DDM, DAE, MoDMR — cited, plus the 999 emergency instruction that must stay legible | None | **high** (a brand commitment, not a link) | `PRODUCT.md` §Brand Commitments |
 | **Cloudflare Web Analytics** | Analytics | Beacon injected by the edge; allowed in the CSP (`static.cloudflareinsights.com`). Nothing to enable in this repository | none | low | `frontend/public/_headers`, `docs/ENVIRONMENT_SECRETS.md` §1.1 |
-| **First-party telemetry** | Analytics | `POST /api/v1/telemetry` — **the sink handler (`serverless/v1/telemetry.js`) is deleted at HEAD**, so the beacon now posts to a per-route JSON 500 | none (unauthenticated; PII-shaped keys stripped client-side; DNT honoured) | low — off unless `VITE_ANALYTICS_ENABLED=true` | `packages/analytics/src/streaming.ts`, `api/v1/[resource].js`, `test -e serverless/v1/telemetry.js` → ABSENT |
+| **First-party telemetry** | Analytics | `POST /api/v1/telemetry` — served on the edge by `functions/api/v1/telemetry.ts`; the Node handler `serverless/v1/telemetry.js` **exists** and both import `backend/utils/telemetryBatch.js`. Writes one data point per event through the Production-only `ANALYTICS` → `hazardnet_telemetry` binding; without it the bounded log line is the sink and the response is still 204 (Action 12 open on the dashboard step) | none (unauthenticated; PII-shaped keys stripped client-side; DNT honoured) | low — off unless `VITE_ANALYTICS_ENABLED=true`, Production scope only; free-tier 100k writes/day | `packages/analytics/src/streaming.ts`, `functions/api/v1/telemetry.ts`, `serverless/v1/telemetry.js`, `__tests__/analyticsEngineBinding.test.js` |
 | **Prometheus + Grafana** | Observability | `/metrics` (self-host) and `/api/metrics` (**serverless metrics handler deleted at HEAD**) exposition via `prom-client`; a dashboard and alert rules are committed. `scripts/setup_monitoring.sh` **deleted** | none | low — must be run outside the repo | `backend/metrics.js`, `monitoring/{prometheus.yml,alerts.yml,grafana-dashboard.json,README.md}`, `MONITORING_SETUP_GUIDE.md` |
 | **`ipapi.co`** | IP geolocation | Browser-side fallback for a visitor's district | none | low — third-party, rate-limits shared CI egress and omits CORS headers; the E2E suite treats a blocked response as expected | `e2e/full-app-qa.spec.ts`, `frontend/src/services/geolocationService.ts` |
 
@@ -207,10 +207,11 @@ needs `@firebase/rules-unit-testing` plus a Java-backed emulator that CI does no
 - `monitoring/{prometheus.yml,alerts.yml,grafana-dashboard.json,README.md}`, `MONITORING_SETUP_GUIDE.md`
 - Live-state artifacts: `frontend/public/data/freshness.json`, `data/site-health/latest.json`,
   `frontend/public/data/alerts-latest.json`, `frontend/public/data/forecasts-latest.json`
-- Existence checks at HEAD (`test -e`): `serverless/v1/telemetry.js`,
-  `serverless/metrics.js`, `scripts/setup_monitoring.sh`, `scripts/fetch_live_wind.mjs`,
-  `scripts/security_audit.sh`, `scripts/npm-audit-ci.mjs`, `scripts/validate_env.mjs`,
-  `utils/logger.js` — **all ABSENT**
+- Existence checks at HEAD (`test -e`, re-run 2026-10-27 for Phase 6): **PRESENT**
+  `serverless/v1/telemetry.js`, `scripts/fetch_live_wind.mjs`, `scripts/npm-audit-ci.mjs`,
+  `scripts/validate_env.mjs`; **ABSENT** `serverless/metrics.js` (deleted in Phase 4),
+  `scripts/setup_monitoring.sh`, `scripts/security_audit.sh`, `utils/logger.js`. The older
+  "all ABSENT" claim was wrong for four files and is corrected here.
 - Terminal output (this sandbox, 2026-10-25): `node scripts/check-secret-rotation.mjs` (15
   credentials · 0 overdue · 13 unrecorded), `node scripts/verify_claims.mjs` (16/16)
 

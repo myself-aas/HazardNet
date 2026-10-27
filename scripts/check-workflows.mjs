@@ -135,7 +135,11 @@ const stepNames = (job) =>
 // `'frontend/src'` selector) is silently swallowed as another ignore pattern and the
 // step stays green while covering nothing. Pin the list; adding a scope means editing
 // this constant deliberately. (Old pytest: test_backend_jest_step_has_no_bare_selector)
-const SANCTIONED_IGNORES = ['/node_modules/', '/e2e/', '/frontend/', '/apps/', '/__mocks__/'].join('|');
+// '/fixtures/' added 2026-10-27 after the first CI run of the phase sweep: the
+// provenance fixtures are .js modules, and jest.config.cjs already ignores them, but
+// this CLI flag *overrides* the config's testPathIgnorePatterns. Leaving it out made
+// the Backend Tests job fail on six "must contain at least one test" suites.
+const SANCTIONED_IGNORES = ['/node_modules/', '/e2e/', '/frontend/', '/apps/', '/__mocks__/', '/fixtures/'].join('|');
 for (const blob of stepNames('test-backend')) {
   const line = blob.split('\n').find((l) => /\bnpx jest\b/.test(l));
   if (!line) continue;

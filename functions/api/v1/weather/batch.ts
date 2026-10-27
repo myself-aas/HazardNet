@@ -2,8 +2,11 @@
  * `POST /api/v1/weather/batch` — current conditions for many coordinates in one upstream call.
  *
  * Also answers `GET ?coords=lat,lng,id|lat,lng,id|…`, mirroring the Node handler and the
- * Express twin. The client uses the POST form (`frontend/src/lib/weather.ts`) to paint every
- * district marker at once; doing that per point would be 64 upstream calls per page view.
+ * Express twin; `;` is accepted as a point separator alongside `|` (both are decoded from
+ * `%7C` / `%3B` by URLSearchParams). The client uses the POST form
+ * (`frontend/src/lib/weather.ts`) to paint every district marker at once; doing that per
+ * point would be 64 upstream calls per page view. `backend/utils/weatherQuery.js` parses
+ * both forms for all three runtimes — no per-runtime fork of the mini-language.
  *
  * Difference from the Node entry, stated because it is the kind of thing that silently
  * regresses a contract: the Node function declares `bodyParser.sizeLimit: '256kb'` on
@@ -13,6 +16,7 @@
  */
 
 import { fetchCurrentWeatherBatch } from '../../../../backend/utils/openMeteo.js';
+import { parseCoordsQuery, parsePointsBody } from '../../../../backend/utils/weatherQuery.js';
 
 /** The Node entry's declared limit (`config.api.bodyParser.sizeLimit`). */
 const BODY_MAX_BYTES = 256 * 1024;
@@ -55,24 +59,18 @@ export async function onRequest(context: PagesContext): Promise<Response> {
       return json({ error: 'body must be valid JSON' }, 400, { 'cache-control': 'no-store' });
     }
     timezone = typeof body?.timezone === 'string' && body.timezone ? body.timezone : timezone;
-    const list = Array.isArray(body?.points) ? body.points : [];
-    points = list
-      .filter((point): point is Point => Boolean(point)
-        && typeof point.lat === 'number'
-        && typeof point.lng === 'number')
-      .map((point) => ({ id: point.id ?? `${point.lat},${point.lng}`, lat: point.lat, lng: point.lng }));
-    if (points.length === 0) {
-      return json({ error: 'points array must contain {id,lat,lng} entries' }, 400, { 'cache-control': 'no-store' });
+    const parsed = parsePointsBody(body?.points);
+    if ('error' in parsed) {
+      return json({ error: parsed.error }, 400, { 'cache-control': 'no-store' });
     }
+    points = parsed.points;
   } else if (request.method === 'GET') {
     const coords = new URL(request.url).searchParams.get('coords') ?? '';
-    points = coords.split('|').map((segment) => {
-      const [lat, lng, ...rest] = segment.split(',');
-      return { lat: parseFloat(lat), lng: parseFloat(lng), id: rest.join(',') || undefined };
-    }).filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lng));
-    if (points.length === 0) {
-      return json({ error: 'coords query must be lat,lng,id|lat,lng,id|...' }, 400, { 'cache-control': 'no-store' });
+    const parsed = parseCoordsQuery(coords);
+    if ('error' in parsed) {
+      return json({ error: parsed.error }, 400, { 'cache-control': 'no-store' });
     }
+    points = parsed.points;
   } else {
     return json({ error: 'method not allowed' }, 405, { allow: 'GET, POST', 'cache-control': 'no-store' });
   }

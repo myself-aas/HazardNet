@@ -117,8 +117,34 @@ for the queue.
    unset `CF_PAGES_DEPLOY_HOOK`: a trigger that silently does nothing is how the site ends up
    serving yesterday's artifacts while every run is green.
 3. **The site-health probe never deploys.** Its commit also carries `[skip ci]`, and
-   `data/site-health/**` is excluded from the watch paths as a second guard.
-4. Watch the build in **Workers & Pages → hazardnet → Deployments**. A failed build leaves the
+   `data/site-health/**` is excluded from the watch paths as a second guard. Phase 5 adds a
+   third consequence: because no build runs, the *served* copy of the record at
+   `/data/site-health/latest.json` is published by `scripts/copy-dist.mjs` at the next
+   ordinary build, so it can lag the committed record by up to one deployment. The repo file
+   (`data/site-health/latest.json`) and the workflow's `site-health-result` artifact are
+   canonical; the URL is a build-time snapshot. **Do not "fix" this by having the probe write
+   into `frontend/public/data/`** — `frontend/**` is an *included* watch path, which would
+   reintroduce the deploy loop.
+4. **Verify the record landed (Phase 5).** The commit step is `if: always()` and runs *after*
+   the aggregate check, so a broken site still writes a record. Dispatch both expectations and
+   compare the four surfaces — record, run summary, uploaded artifact and the served URL:
+
+   ```bash
+   gh workflow run site-health.yml --ref "$(git branch --show-current)" \
+     -f site_url=https://hazardnet.live -f expect=healthy
+   gh run list --workflow=site-health.yml --limit 3
+   gh run view <run-id> --log | grep -E 'Verify the committed record|site-health record|published data/site-health'
+   curl -s https://www.hazardnet.live/data/site-health/latest.json \
+     | jq '.outcome, (.checks[] | select(.id=="weather_api"))'
+   gh run download <run-id> -n site-health-result -D /tmp/site-health-result
+   diff data/site-health/latest.json /tmp/site-health-result/data/site-health/latest.json
+   # No new Pages deployment may appear for the "[skip ci]" commit:
+   npx wrangler pages deployment list --project-name=<project>   # before and after
+   ```
+
+   A `workflow_dispatch` with `-f expect=broken -f site_url=<broken-deployment>` must land
+   `outcome: fail` with `checks[weather_api].detail` naming `current.temperature_2m`.
+5. Watch the build in **Workers & Pages → hazardnet → Deployments**. A failed build leaves the
    previous deployment serving traffic; nothing goes dark.
 
 ### Pre-flight: compile the Functions the way Pages will
@@ -266,10 +292,48 @@ read a file, and each difference is the reason it can exist at the edge at all:
   the `ANALYTICS` binding; without that binding it falls back to exactly the log line the Node
   runtime emits, so a project that has not added the binding yet still answers 204 instead of
   dropping the beacon. The owner step for the binding is `docs/ops/owner-actions.md` Action 12.
+  **Production-only (Phase 6):** the Function only calls `writeDataPoint` for
+  `www.hazardnet.live` and `hazardnet.live`. A `*.pages.dev` preview that somehow sees a
+  Production-scoped `ANALYTICS` binding takes the log sink and warns instead of writing
+  unreleased-build traffic into the production dataset; a `writeDataPoint` that throws is
+  caught and logged, never returned as a 500. Bind `ANALYTICS` → `hazardnet_telemetry` and set
+  `VITE_ANALYTICS_ENABLED=true` in the **Production** scope only, then **redeploy** —
+  Cloudflare's docs say the binding is inactive until a redeploy and cannot be used locally.
+  Verify with `SELECT blob1, blob2, double1 FROM hazardnet_telemetry WHERE index1 = '<session id>'`
+  through the read-only SQL API; `SHOW TABLES` must list the dataset after the first write.
 
 `site-health.yml` probes the weather routes on every run (`weather_api`): one point and a batch,
 each required to carry a numeric `current.temperature_2m`, because a 200 carrying only ids and
 metadata is exactly what the batch route returned on its first deployment.
+
+**Parity tests assert values (Phase 3, 2026-10-27).** Every edge/parity integration test
+reads committed fixtures captured from the real upstream or the deployed artifacts, with a
+three-line provenance header. `__tests__/testQuality.test.js` and
+`docs/ops/test-quality-manifest.json` fail the build if a fixture loses its provenance, an
+integration test loses a fixture-sourced leaf assertion, or a cached object stops equalling
+the returned object. Refresh with `node scripts/capture_edge_fixtures.mjs` and
+`node scripts/capture_open_meteo_fixtures.mjs`.
+
+**Cache writes are verified (Phase 2, 2026-10-27).** The weather proxy's 15-minute cache
+shared by Node and Pages is a `createVerifiedCache` from `backend/utils/cacheContract.js`:
+`assertComplete` runs before every write and again on every read. A point with `_meta` but no
+numeric reading is refused at the write and returned as a 502; a poisoned entry in an
+already-warm cache is deleted on read and re-fetched. The same module guards the markdown
+and advisory caches. `docs/ops/cache-write-register.json` is the list of every write site;
+nine non-cache writes (counters, stores, gauges, signature expiry) carry dated reasons.
+
+**Route register (Phase 1, 2026-10-27).** `docs/ops/route-register.json` is the machine-readable
+answer to "which `/api/**` paths exist, and who has exercised them since the cutover". Every
+path in `frontend/src` must be either a file under `functions/api/` or a **dated disposition**
+there; `__tests__/routeReachability.test.js` fails on any third state. Each edge route names the
+test that asserts a leaf value from a captured fixture (`__tests__/routeValueAssertions.test.js`).
+The weather query contract moved to `backend/utils/weatherQuery.js` so the Express router, the
+Node function and the Pages Function parse `lat`/`lng` and the `coords` mini-language identically:
+`lon` is an accepted alias for `lng`, and `;` is accepted alongside `|` as a point separator
+(URL-encoded `%3B` / `%7C`). Before that, the verification matrix's `?lat=23.8&lon=90.4` answered
+**400** and `?coords=23.8%2C90.4%3B22.3%2C91.8` answered **count: 1** with an id of `91.8` —
+two latent divergences of the same class as the batch shape bug, found by actually calling the
+routes.
 
 **The policy is stamped, not recomputed.** `/api/v1/alerts/policy` answers with the
 thresholds *the engine ran under*, and the edge cannot derive those: a Worker has no
@@ -304,23 +368,32 @@ Still unhosted, and still expected to 404 — not breakage:
 - **`alerts/evidence-card`, `alerts/review`, `alerts/run`** stay unhosted: the first is
   store-backed, and the other two are authenticated writes that must not live on a metered edge
   runtime.
-- **`metrics`, `kaggle`, `historical`** — not ported, on purpose, and not breakage. Each is
-  blocked by something the edge does not have, and the honest answer is the Node handler rather
-  than a second copy that would drift (the register's 2026-10-27 decision entry has the detail):
-  - **`/api/metrics`** is a `prom-client` exposition of *the Node process* — heap, event loop,
-    CPU — none of which exists in an isolate, so the series would be fabricated by construction.
-    The one gauge that would survive the move, `hazardnet_forecast_age_hours`, is derived from a
-    Firestore read and is already published as `/data/freshness.json`, which the edge serves as a
-    static asset for free.
-  - **`/api/v1/kaggle`** needs Kaggle HTTP Basic credentials, a ZIP inflate (`node:zlib`) and a
-    disk cache across requests (`node:fs`, `node:os`). The client degrades honestly without it:
-    `useKaggleAdvisories` throws and `AdvisoriesPage` renders *"The Kaggle advisory service could
-    not be reached. No value is shown."* — the page states the absence instead of inventing a
-    value, which is the behaviour the whole site is built around.
-  - **`/api/v1/historical`** reads a 1.5 MB JSON with `node:fs` and re-serialises it per request
-    (≈ 9 ms measured, against a 10 ms CPU budget). Nothing in the front end calls it, and the
-    same bytes are *already* served at `/data/historical/hazard-catalog-index.json` with a CDN
-    cache and no invocation cost. A Function here would be a slower copy of a static file.
+- **`metrics` and `historical` were deleted on 2026-10-27 (Phase 4); `kaggle` is scheduled.**
+  The register's decision entry and `docs/ops/pr/phase-4-disposition.md` carry the measurements;
+  the short version is that nothing should be "dispositioned but still deployed and unexercised":
+  - **`/metrics` and `/api/metrics`** are gone. A Worker isolate has no process series, so a
+    port would publish fabricated numbers. The one meaningful gauge,
+    `hazardnet_forecast_age_hours` (plus the alert-snapshot and probe ages), is now a field in
+    `/data/freshness.json -> gauges.series[]`, built by `scripts/build_freshness_artifact.mjs`.
+    The `monitoring/` Prometheus files are kept as an historical record with a retirement header.
+  - **`/api/v1/historical/*` and `/api/historical`** are gone. Zero browser/e2e callers; the
+    client reads `/data/historical/*.json` from the CDN (confirmed live: 3,062 events, 1.5 MB,
+    190 fetch chunks). The retired handler was a pure re-serialiser of that file — measured
+    `JSON.parse` 2.85 ms + `JSON.stringify` 5.51 ms (median 8.41 ms total, p95 11.44 ms) on
+    local Node/V8 against the 10 ms isolate budget. `frontend/public/_redirects` carries the
+    permanent-404 note; no redirect rule was added, because one could shadow real assets.
+  - **`/api/v1/kaggle`** is **still called** by `useKaggleAdvisories.ts`, so it is not deleted.
+    `backend/services/kaggleAdvisoryClient.js` needs HTTP Basic credentials,
+    `inflateRawSync` from `node:zlib`, and a `node:fs` cache that outlives the request — none
+    exists in a Worker. The plan is a pipeline-written, pre-parsed artifact in R2 that a
+    Function reads (`docs/ops/pr/phase-4b-kaggle-r2.md`), dated 2026-10-27, named PR
+    `feat/kaggle-r2-artifact`. Until then the page states the absence honestly.
+- **`backend/` (Express)** still runs in a container when someone starts one — `npm run dev:api`,
+  `docker compose up`, or any host that runs Node 20 — and **`api/**`** remains the
+  function-shaped surface for a Node host. Neither is deployed. The historical and metrics
+  mounts were removed from both.
+- **`monitoring/`** documents the retired Prometheus shape with a 2026-10-27 header; with no
+  scrapeable host, `/data/freshness.json` and `site-health.yml` are what watch the site.
 - **`backend/` (Express)** still runs in a container when someone starts one — `npm run dev:api`,
   `docker compose up`, or any host that runs Node 20 — and **`api/**`** remains the
   function-shaped surface for a Node host. Neither is deployed.

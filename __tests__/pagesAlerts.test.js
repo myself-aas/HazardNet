@@ -47,6 +47,13 @@ const edgeList = require('../functions/api/v1/alerts/index.ts');
 const edgePolicy = require('../functions/api/v1/alerts/policy.ts');
 
 const URL_BASE = 'https://www.hazardnet.live';
+/**
+ * Phase 3: the deployed alert artifact, captured verbatim (first two PUBLISHED rows plus the
+ * stamped policy). Provenance header lives in the fixture file. The synthetic `DOCUMENTS`
+ * below remain for the store-semantics unit cases (DRAFT/REJECTED filtering, ordering); this
+ * fixture is what the integration assertions use to prove the upstream shape is mirrored.
+ */
+const ALERT_ARTIFACT = require('./fixtures/alertsSnapshot.js');
 const AT = '2026-10-24T06:00:00.000Z';
 
 /** A stored alert document, shaped as the engine persists it. */
@@ -376,5 +383,37 @@ describe('GET /api/v1/alerts/policy — served from the stamped artifact', () =>
     expect(serialized).not.toContain('telegram-secret-value');
     expect(body.transports.sms).not.toHaveProperty('api_key');
     expect(body.transports.telegram).toEqual({ channel: 'telegram', configured: false });
+  });
+});
+
+
+describe('captured upstream artifact — leaf values, not just keys', () => {
+  test('the edge list serves the captured alert’s district, severity and state', async () => {
+    const response = await edgeList.onRequestGet(
+      edgeContext('/api/v1/alerts?limit=2', { snapshot: ALERT_ARTIFACT })
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.count).toBe(ALERT_ARTIFACT.alerts.length);
+    expect(body.alerts[0].district_id).toBe(ALERT_ARTIFACT.alerts[0].district_id);
+    expect(body.alerts[0].severity_score).toBe(ALERT_ARTIFACT.alerts[0].severity_score);
+    expect(body.alerts[0].hazard_type).toBe(ALERT_ARTIFACT.alerts[0].hazard_type);
+    expect(body.alerts[0].state).toBe('PUBLISHED');
+    expect(body.policy_version).toBe(ALERT_ARTIFACT.policy_version);
+  });
+
+  test('the edge policy serves the captured thresholds and names the writer', async () => {
+    const response = await edgePolicy.onRequestGet(
+      edgeContext('/api/v1/alerts/policy', { snapshot: ALERT_ARTIFACT })
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.thresholds.watch_probability)
+      .toBe(ALERT_ARTIFACT.policy.thresholds.watch_probability);
+    expect(body.thresholds.warning_probability)
+      .toBe(ALERT_ARTIFACT.policy.thresholds.warning_probability);
+    expect(body.policy_source).toBe(ALERT_ARTIFACT.policy_source);
   });
 });

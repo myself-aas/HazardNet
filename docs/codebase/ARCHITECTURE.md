@@ -324,7 +324,7 @@ There is no message broker. The asynchronous surface is:
 | Web Push | `backend/routes/push.js` + `backend/utils/vapid.js` (`web-push`, VAPID) | subscriber-triggered |
 | Alert delivery channels | `backend/alerts/channels/{sms.js,telegram.js}` | alert lifecycle; configured but with no live subscribers (`SECURITY.md`) |
 | Slack ops notification | `scripts/notify_ops.mjs` (`SLACK_WEBHOOK_URL`) | **Retired 2026-10-26** — the step could not deliver (no secret, and the script never POSTs), so it moved to `.github/workflow-templates/hazardnet-ops-slack-notify.yml` |
-| Analytics beacon | `packages/analytics/src/streaming.ts` → `POST /api/v1/telemetry` | batched, one retry then drop, `sendBeacon` on unload; **off unless `VITE_ANALYTICS_ENABLED=true` — and its sink `serverless/v1/telemetry.js` is deleted at HEAD** |
+| Analytics beacon | `packages/analytics/src/streaming.ts` → `POST /api/v1/telemetry` | batched, one retry then drop, `sendBeacon` on unload; **off unless `VITE_ANALYTICS_ENABLED=true` (Production build scope only)**. The edge sink is `functions/api/v1/telemetry.ts`; the Node handler `serverless/v1/telemetry.js` **exists** and shares `backend/utils/telemetryBatch.js` with it. With the Production-only `ANALYTICS` binding each event is one Analytics Engine data point; without it the route emits the same bounded log line and still answers 204 (Action 12 remains open on the dashboard binding) |
 
 ### Failure modes and resilience posture
 

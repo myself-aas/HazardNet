@@ -63,7 +63,20 @@ has no `wrangler.toml`. Without the binding the route logs instead of writing an
 `204`. The optional `FORECAST_DATASET` label is a plain Pages environment variable in the
 **Production** scope, not a secret, and leaving it unset is supported. `VITE_ANALYTICS_ENABLED`
 is likewise a plain variable, and it belongs in **Production only** — a Preview-scoped flag
-would collect unreleased builds into the production dataset.
+would collect unreleased builds into the production dataset. The Function defends the dataset
+even if that scoping is wrong: `functions/api/v1/telemetry.ts` only calls `writeDataPoint` for
+`www.hazardnet.live` and `hazardnet.live`; any other host (a `*.pages.dev` preview) falls back
+to the log sink and warns.
+
+**Verifying the binding needs one more credential, and it is not a Pages variable.** Create a
+read-only Cloudflare API token with *Account · Account Analytics · Read* and use it against
+`POST https://api.cloudflare.com/client/v4/accounts/{account_id}/analytics_engine/sql` —
+`SHOW TABLES`, then `SELECT blob1, blob2, double1 FROM hazardnet_telemetry WHERE index1 =
+'<session id>'`. Store it in the owner's secret manager, never in this repository, never as a
+Pages variable, and never in a workflow log. Cloudflare creates the table on the first write
+and states an Analytics Engine binding **cannot be used locally**, so the SQL result (not a
+local `wrangler dev` run) is the only end-to-end proof. See Action 12 in
+`docs/ops/owner-actions.md`.
 
 **The `ALERT_*` thresholds are not Pages variables.** `/api/v1/alerts/policy` reports the
 policy *the engine ran under*, which the ingest job stamps into

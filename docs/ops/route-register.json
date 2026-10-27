@@ -1,0 +1,223 @@
+{
+  "schema": "hazardnet-route-register/v1",
+  "updated": "2026-10-27",
+  "what_this_is": "Phase 1's route table and disposition list. `__tests__/routeReachability.test.js` fails if a route called from frontend/src is neither a file under functions/api/ nor listed here with a dated disposition. A dated disposition is a decision, not a TODO: it names the runtime property that keeps the route unhosted and the command that would disprove it.",
+  "cutover": {
+    "date": "2026-10-26",
+    "fact": "Cloudflare Pages served static assets only; every /api/** path answered 404 from _redirects/404.html until the first Pages Functions port. All seven edge routes below were 404'd during cutover, so their bugs were latent until a live call.",
+    "evidence": "docs/ops/owner-actions.md Action 21; docs/ops/deployment.md §6-7; git log -p -- frontend/public/_redirects has no /api line (the file has one commit, 70a052a)."
+  },
+  "edgeRoutes": [
+    {
+      "path": "/api/v1/forecasts/bulk",
+      "methods": [
+        "GET"
+      ],
+      "file": "functions/api/v1/forecasts/bulk.ts",
+      "nodeTwins": [
+        "serverless/v1/forecasts/bulk.js",
+        "backend/routes/forecasts.js"
+      ],
+      "calledByFrontend": true,
+      "cutover404": true,
+      "firstLiveCall": "2026-10-26 (Action 21 first port, probed by site-health.yml); re-probed 2026-10-27T16:47Z: 64 rows, Bagerhat severity_score 0.6721",
+      "valueAssertion": "__tests__/routeValueAssertions.test.js",
+      "status": "exercised"
+    },
+    {
+      "path": "/api/v1/forecasts/metadata",
+      "methods": [
+        "GET"
+      ],
+      "file": "functions/api/v1/forecasts/metadata.ts",
+      "nodeTwins": [
+        "serverless/v1/forecasts/metadata.js",
+        "backend/routes/forecasts.js"
+      ],
+      "calledByFrontend": true,
+      "cutover404": true,
+      "firstLiveCall": "2026-10-26 (site-health.yml probe); re-probed 2026-10-27T16:46Z: prediction_date 2026-10-24, row_count 128",
+      "valueAssertion": "__tests__/routeValueAssertions.test.js",
+      "status": "exercised"
+    },
+    {
+      "path": "/api/v1/alerts",
+      "methods": [
+        "GET"
+      ],
+      "file": "functions/api/v1/alerts/index.ts",
+      "nodeTwins": [
+        "serverless/v1/alerts/index.js",
+        "backend/routes/alerts.js"
+      ],
+      "calledByFrontend": true,
+      "cutover404": true,
+      "firstLiveCall": "2026-10-26 (Action 21 second port); re-probed 2026-10-27T16:46Z with ?limit=1: Chandpur Flash Flood, severity 0.7062, state PUBLISHED",
+      "valueAssertion": "__tests__/routeValueAssertions.test.js",
+      "status": "exercised"
+    },
+    {
+      "path": "/api/v1/alerts/policy",
+      "methods": [
+        "GET"
+      ],
+      "file": "functions/api/v1/alerts/policy.ts",
+      "nodeTwins": [
+        "serverless/v1/alerts/policy.js",
+        "backend/routes/alerts.js"
+      ],
+      "calledByFrontend": true,
+      "cutover404": true,
+      "firstLiveCall": "2026-10-26 (Action 21 second port); re-probed 2026-10-27T16:46Z: watch_probability 0.4, policy_source builder",
+      "valueAssertion": "__tests__/routeValueAssertions.test.js",
+      "status": "exercised"
+    },
+    {
+      "path": "/api/v1/weather",
+      "methods": [
+        "GET"
+      ],
+      "file": "functions/api/v1/weather.ts",
+      "nodeTwins": [
+        "serverless/v1/weather.js",
+        "backend/routes/weather.js"
+      ],
+      "calledByFrontend": true,
+      "cutover404": true,
+      "firstLiveCall": "2026-10-27 (Action 21 third port, preview + production probes); re-probed 2026-10-27T16:31Z: 31.1 °C, current_vars 11. `lon=` alias added 2026-10-27 after the matrix probe returned 400.",
+      "valueAssertion": "__tests__/routeValueAssertions.test.js",
+      "status": "exercised"
+    },
+    {
+      "path": "/api/v1/weather/batch",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "file": "functions/api/v1/weather/batch.ts",
+      "nodeTwins": [
+        "serverless/v1/weather/batch.js",
+        "backend/routes/weather.js"
+      ],
+      "calledByFrontend": true,
+      "cutover404": true,
+      "firstLiveCall": "2026-10-27 (GET preview probe found the hollow-point defect; production re-probe after #105/#107). Re-probed 2026-10-27T16:46Z with `|`: count 2, 31.0 °C / 27.7 °C. The POST form the client actually uses has never been called live from outside a browser — see open verification in Action 21.",
+      "valueAssertion": "__tests__/routeValueAssertions.test.js",
+      "status": "exercised"
+    },
+    {
+      "path": "/api/v1/telemetry",
+      "methods": [
+        "POST"
+      ],
+      "file": "functions/api/v1/telemetry.ts",
+      "nodeTwins": [
+        "serverless/v1/telemetry.js"
+      ],
+      "calledByFrontend": true,
+      "cutover404": true,
+      "firstLiveCall": "2026-10-27 (GET probe returned 405, proving the route exists). A live POST from outside a browser has NOT been recorded in this sandbox; the POST path is exercised locally in __tests__/routeValueAssertions.test.js and __tests__/pagesTelemetry.test.js, and the exact curl is an owner verification in Action 12.",
+      "phase6": "Production-only ANALYTICS guard (www.hazardnet.live / hazardnet.live), catch around writeDataPoint with a log fallback, optional env, and an 8 KiB properties-JSON cap shared with the Node handler. Thin dual-binding tests: __tests__/analyticsEngineBinding.test.js. The live dataset is still owner-side (Action 12 open).",
+      "valueAssertion": "__tests__/routeValueAssertions.test.js",
+      "status": "exercised"
+    }
+  ],
+  "dispositions": [
+    {
+      "date": "2026-10-27",
+      "ownerAction": "Action 21 — Node-only, store/AI-backed writes",
+      "paths": [
+        "/api/advisory",
+        "/api/chat/query",
+        "/api/chat/sample-questions",
+        "/api/grounding/district-facilities/*",
+        "/api/grounding/district-updates/*",
+        "/api/grounding/maps",
+        "/api/grounding/search",
+        "/api/predict"
+      ],
+      "reason": "These call Gemini/Groq/OpenRouter or Firestore through firebase-admin/multer. A Worker isolate has no process, no gRPC client and no filesystem; porting would mean a second implementation of an authenticated AI surface. The client already degrades to committed content/artifacts.",
+      "verify": "curl -sS -o /dev/null -w '%{http_code}\\n' https://www.hazardnet.live/api/predict  # expect 404 while unhosted; grep frontend/src for a fallback that renders without the API"
+    },
+    {
+      "date": "2026-10-27",
+      "ownerAction": "Action 21 — authenticated push/conversion writes",
+      "paths": [
+        "/api/push",
+        "/api/push/send",
+        "/api/push/subscribe",
+        "/api/push/unsubscribe",
+        "/api/push/vapid-key",
+        "/api/conversions/track"
+      ],
+      "reason": "VAPID/web-push and conversion tracking need credentials and a durable store. /api/push is a service-worker URL prefix guard, not a request of its own. No edge route exists or is planned on the free tier.",
+      "verify": "git grep -n '/api/push' frontend/src/ && curl -sS -o /dev/null -w '%{http_code}\\n' https://www.hazardnet.live/api/push/vapid-key"
+    },
+    {
+      "date": "2026-10-27",
+      "ownerAction": "Action 21 — events summary is a build artifact, not an API",
+      "paths": [
+        "/api/v1/events/summary",
+        "/api/v1/events/district/*",
+        "/api/v1/events/division/*",
+        "/api/v1/events/hazard/*"
+      ],
+      "reason": "eventsClient.ts falls back to frontend/public/data/climatic_hazards_summary.json, which the content pipeline builds. No Node route serves these paths either (git grep finds no router registration), so they are dispositioned as artifact reads, not latent endpoints.",
+      "verify": "node scripts/build_climatic_hazards_summary.mjs --check && git grep -n 'events/summary' backend/ serverless/ api/ || true"
+    },
+    {
+      "date": "2026-10-27",
+      "ownerAction": "Action 21 — Kaggle advisory (Phase 4 disposition)",
+      "paths": [
+        "/api/v1/kaggle",
+        "/api/v1/kaggle/advisories"
+      ],
+      "reason": "backend/services/kaggleAdvisoryClient.js needs HTTP Basic credentials, node:zlib inflateRawSync and a node:fs disk cache that outlives the request. A Worker has none. useKaggleAdvisories.ts falls back to the committed advisory artifact and the UI says when the service is unavailable. PHASE 4 UPDATE 2026-10-27: still called by useKaggleAdvisories.ts, so NOT deleted. V8 incompatibility confirmed at backend/services/kaggleAdvisoryClient.js (Basic auth, inflateRawSync, node:fs cache). Named follow-up PR feat/kaggle-r2-artifact with a dated plan in docs/ops/pr/phase-4b-kaggle-r2.md.",
+      "verify": "git grep -n 'node:zlib\\|inflateRawSync\\|node:fs' backend/services/kaggleAdvisoryClient.js && git grep -n 'could not be reached' frontend/src/"
+    },
+    {
+      "date": "2026-10-27",
+      "ownerAction": "Action 21 — Node-only router registrations with no browser caller",
+      "paths": [
+        "/api/v1/forecasts",
+        "/api/v1/forecasts/update",
+        "/api/v1/forecasts/ingest-csv",
+        "/api/v1/forecasts/history",
+        "/api/v1/alerts/transports",
+        "/api/v1/alerts/export.csv",
+        "/api/v1/alerts/preview",
+        "/api/v1/alerts/run",
+        "/api/v1/alerts/id/for",
+        "/api/v1/alerts/:id",
+        "/api/v1/alerts/:id/evidence-card",
+        "/api/v1/alerts/:id/review",
+        "/api/chat/directory",
+        "/api/conversions/dispatch",
+        "/api/conversions/reconciliation",
+        "/api/conversions/debug",
+        "/api/push/status",
+        "/api/v1/historical/*",
+        "/api/metrics",
+        "/metrics",
+        "/health"
+      ],
+      "reason": "Enumerated from every `router.(get|post|put|delete)` in backend/routes/ plus the mounts in backend/server.js and the dynamic dispatchers in api/. These are authenticated writes, store reads, CSV exports, review actions, historical re-serialisers and process metrics. None is called by frontend/src; none is served by a Pages Function. They are Node-only by decision, not by accident: see Action 21's disposition row and Phase 4 for historical/kaggle/metrics. A route that gains a browser caller must first appear in this register or in functions/api/. PHASE 4 UPDATE 2026-10-27: `/api/v1/historical/*`, `/api/metrics`, `/metrics` and the `/api/historical` alias were DELETED (not merely left unhosted); `/api/v1/kaggle*` remains Node-only because the browser calls it and an R2 pre-computed artifact PR is scheduled. See docs/ops/pr/phase-4-disposition.md and phase-4b-kaggle-r2.md.",
+      "verify": "git grep -nE \"router\\.(get|post|put|delete)\\(\" backend/routes/ && git grep -nE \"app\\.(get|post|put|delete)\\(\" backend/server.js",
+      "retired": [
+        "/api/v1/historical/*",
+        "/api/metrics",
+        "/metrics",
+        "/api/historical"
+      ]
+    },
+    {
+      "date": "2026-10-27",
+      "ownerAction": "Action 21 — WebSocket voice advisor",
+      "paths": [
+        "/api/live-voice"
+      ],
+      "reason": "LiveVoiceAdvisor.tsx opens a WebSocket to a ws:// server in backend/server.js. Pages Functions are request/response; a WebSocket upgrade needs Durable Objects (paid) or the Node server (unhosted).",
+      "verify": "git grep -n 'WebSocket\\|/api/live-voice' frontend/src/components/LiveVoiceAdvisor.tsx backend/server.js"
+    }
+  ]
+}
