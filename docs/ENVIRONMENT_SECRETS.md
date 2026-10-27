@@ -48,14 +48,22 @@ to one (or more) of them:
 **What it provides:** static hosting for the built site (`dist/`), the `_headers` and
 `_redirects` files, custom-domain TLS, preview deployments per branch, and Web Analytics.
 
-Four read-only API endpoints **are** part of this deployment since 2026-10-26, as Pages
-Functions: `/api/v1/forecasts/bulk`, `/api/v1/forecasts/metadata`, `/api/v1/alerts` and
-`/api/v1/alerts/policy`, all snapshot-backed (`functions/api/v1/`,
-`docs/ops/deployment.md` §7). Everything else under `/api/**` answers `404`; the front door
-falls back to the committed snapshot in `/data/`, which is the designed delivery path. Those
-Functions need **no secrets** — they read the deployed JSON through the `ASSETS` binding. The
-optional `FORECAST_DATASET` label is a plain Pages environment variable in the **Production**
-scope, not a secret, and leaving it unset is supported.
+Seven API endpoints **are** part of this deployment as Pages Functions
+(`docs/ops/deployment.md` §7): `/api/v1/forecasts/bulk`, `/api/v1/forecasts/metadata`,
+`/api/v1/alerts`, `/api/v1/alerts/policy` (all snapshot-backed, since 2026-10-26), plus
+`/api/v1/weather`, `/api/v1/weather/batch` (proxies; Open-Meteo needs no key) and
+`/api/v1/telemetry` (since 2026-10-27). Everything else under `/api/**` answers `404`; the front
+door falls back to the committed snapshot in `/data/`, which is the designed delivery path.
+
+Those Functions need **no secrets**. The artifact routes read the deployed JSON through the
+`ASSETS` binding; the weather routes proxy a keyless upstream; telemetry writes through an
+**Analytics Engine binding** named `ANALYTICS` (dataset `hazardnet_telemetry`) that is a binding,
+not a credential — nothing to rotate, and it is created in the dashboard because this repository
+has no `wrangler.toml`. Without the binding the route logs instead of writing and still answers
+`204`. The optional `FORECAST_DATASET` label is a plain Pages environment variable in the
+**Production** scope, not a secret, and leaving it unset is supported. `VITE_ANALYTICS_ENABLED`
+is likewise a plain variable, and it belongs in **Production only** — a Preview-scoped flag
+would collect unreleased builds into the production dataset.
 
 **The `ALERT_*` thresholds are not Pages variables.** `/api/v1/alerts/policy` reports the
 policy *the engine ran under*, which the ingest job stamps into

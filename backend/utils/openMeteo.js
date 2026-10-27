@@ -23,7 +23,11 @@
 async function __getFetch() {
   if (globalThis.fetch) return globalThis.fetch;
   try {
-    const mod = await import('node-fetch');
+    // Node < 18 only. The specifier is assembled at runtime so a bundler building this
+    // module for Cloudflare Workers (where `globalThis.fetch` always exists and this branch
+    // is unreachable) does not inline node-fetch's browser shim into the edge bundle.
+    const specifier = ['node', 'fetch'].join('-');
+    const mod = await import(specifier);
     return mod.default;
   } catch {
     throw new Error('No fetch implementation available (Node >=18 or node-fetch required)');
