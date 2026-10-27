@@ -267,6 +267,10 @@ read a file, and each difference is the reason it can exist at the edge at all:
   runtime emits, so a project that has not added the binding yet still answers 204 instead of
   dropping the beacon. The owner step for the binding is `docs/ops/owner-actions.md` Action 12.
 
+`site-health.yml` probes the weather routes on every run (`weather_api`): one point and a batch,
+each required to carry a numeric `current.temperature_2m`, because a 200 carrying only ids and
+metadata is exactly what the batch route returned on its first deployment.
+
 **The policy is stamped, not recomputed.** `/api/v1/alerts/policy` answers with the
 thresholds *the engine ran under*, and the edge cannot derive those: a Worker has no
 `process.env`, and the Cloudflare project's environment is not the pipeline's. So
