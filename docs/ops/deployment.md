@@ -216,22 +216,71 @@ single reason there is one canonical origin rather than two.
 - **Data:** a bad `/data/*` snapshot is fixed by reverting the commit that wrote it, not by
   rolling back the site.
 
-## 7. The API: two endpoints on the edge, the rest unhosted
+## 7. The API: seven routes on the edge, three that stay Node-only
 
-From 2026-10-26 the API has a host for its **read** surface, and only for that:
+From 2026-10-26 the API has a host for its **read** surface; from 2026-10-27 it also proxies the
+weather lookups and accepts the analytics beacon. Everything listed here is a Pages Function:
 
-| Route | Served by | Data |
-|---|---|---|
-| `GET /api/v1/forecasts/bulk` | `functions/api/v1/forecasts/bulk.ts` (Pages Function) | the deployed `/data/forecasts-latest.json` |
-| `GET /api/v1/forecasts/metadata` | `functions/api/v1/forecasts/metadata.ts` (Pages Function) | the same artifact's dates and counts |
-| everything else under `/api/**` | nothing — **404** | — |
+| Route | Served by | Data | `Cache-Control` |
+|---|---|---|---|
+| `GET /api/v1/forecasts/bulk` | `functions/api/v1/forecasts/bulk.ts` | the deployed `/data/forecasts-latest.json` | `no-store, max-age=0` |
+| `GET /api/v1/forecasts/metadata` | `functions/api/v1/forecasts/metadata.ts` | the same artifact's dates and counts | `no-store, max-age=0` |
+| `GET /api/v1/alerts` | `functions/api/v1/alerts/index.ts` | the deployed `/data/alerts-latest.json`, `PUBLISHED` rows only | `public, max-age=60` |
+| `GET /api/v1/alerts/policy` | `functions/api/v1/alerts/policy.ts` | the policy block **stamped into** that artifact | `public, max-age=300` |
+| `GET /api/v1/weather` | `functions/api/v1/weather.ts` | Open-Meteo, proxied — the Function holds no data | `public, max-age=900` |
+| `GET`, `POST /api/v1/weather/batch` | `functions/api/v1/weather/batch.ts` | the same, for 1–N points | `public, max-age=900` |
+| `POST /api/v1/telemetry` | `functions/api/v1/telemetry.ts` | one Analytics Engine data point per event | `no-store` |
+| everything else under `/api/**` | nothing — **404** | — | — |
 
-These two are snapshot-backed, not store-backed (`backend/utils/forecastSnapshotServe.js` has
-the long version). Three reasons, in the order they matter: a Worker cannot load
+The `.ts` paths drop the `functions/` prefix and, where a route ends in `index.ts`, the
+`index` too: `functions/api/v1/alerts/index.ts` answers `/api/v1/alerts`. That split mirrors
+the Node surface, where `api/v1/[resource].js` serves the list and
+`api/v1/alerts/[action].js` serves the actions.
+
+The two artifact routes are snapshot-backed, not store-backed (`backend/utils/forecastSnapshotServe.js` and
+`backend/utils/alertSnapshotServe.js` have the long version). Three reasons, in the order they matter: a Worker cannot load
 `firebase-admin`; Firestore's Spark plan allows 50k reads/day and a per-request store query
 would spend it re-serving bytes already on the CDN; and serving the API from the same artifact
 the client falls back to means the two can never disagree about "the latest forecast". Cost: **0
 reads, ~2 ms CPU** against the 10 ms ceiling, and no `fs`, no `process`, no native module.
+
+The three routes added on 2026-10-27 are shaped differently because they do something other than
+read a file, and each difference is the reason it can exist at the edge at all:
+
+- **`/api/v1/weather*` is a proxy, not a second data source.** The Open-Meteo normaliser
+  (`backend/utils/openMeteo.js`) is imported, not copied, so a validation change lands on both
+  runtimes at once and the parity test compares the two handlers over one fixture. It carries no
+  cache of its own — `max-age=900` is the cache — and it never sees a key, because Open-Meteo's
+  free endpoints need none. The batch route bounds its own body at **256 KiB** before parsing,
+  which is the `bodyParser.sizeLimit` the Node entry declared and a Pages Function has no parser
+  to enforce. **A live probe of the first deployment found the batch route answering with
+  point ids and no weather at all** — Open-Meteo returns a JSON *array* for N coordinates and the
+  shared normaliser indexed into it as if it were the nested-object form — so the fix went into
+  `backend/utils/openMeteo.js`, where the Node handler gets it too. It is the reason the parity
+  tests compare point *payloads* rather than counts and ids: agreement between two runtimes is
+  not correctness, and only a request to the deployed route showed the difference.
+- **`/api/v1/telemetry` is the only endpoint a stranger can write to**, so its input rules live
+  in one dependency-free module (`backend/utils/telemetryBatch.js`) that both runtimes import,
+  and the 64 KiB body cap is checked on the raw text *before* `JSON.parse` — parsing first would
+  buffer whatever arrives. On success it writes one Analytics Engine data point per event through
+  the `ANALYTICS` binding; without that binding it falls back to exactly the log line the Node
+  runtime emits, so a project that has not added the binding yet still answers 204 instead of
+  dropping the beacon. The owner step for the binding is `docs/ops/owner-actions.md` Action 12.
+
+**The policy is stamped, not recomputed.** `/api/v1/alerts/policy` answers with the
+thresholds *the engine ran under*, and the edge cannot derive those: a Worker has no
+`process.env`, and the Cloudflare project's environment is not the pipeline's. So
+`scripts/build_alert_snapshot.mjs` writes a `policy` block (plus the delivery transports) into
+`alerts-latest.json` from the environment of the job that ran the engine — same job, same
+`env:`, therefore the same configuration. An engine run report that carries its own `policy`
+still wins; `policy_source` records which (`engine` or `builder`). If the deployed artifact ever
+lacks the block, `/policy` answers **503** rather than inventing thresholds, and
+`site-health.yml` fails on the snapshot that lost it.
+
+The practical consequence for an owner: changing `ALERT_*` thresholds takes effect on the
+**pipeline**, and reaches the public policy endpoint through the artifact at the next ingest —
+not by editing a Pages environment variable. That is deliberate: the endpoint's value is that
+it describes the policy the alerts in force were produced under.
 
 Two facts that make the difference between a working edge API and a broken one:
 
@@ -244,20 +293,37 @@ Two facts that make the difference between a working edge API and a broken one:
 
 Still unhosted, and still expected to 404 — not breakage:
 
-- **The front door** tries the live alert API, gets a 404, and falls back to the committed
-  snapshot at `/data/alerts-latest.json`, saying so in the status strip. That is the documented
-  delivery path (ADR 0008), not a degraded mode. Porting `alerts` is the next endpoint, not a
-  prerequisite for the site working.
-- **`telemetry`, `metrics`, `weather/batch`, `kaggle`, `historical`, `alerts/**`** — Action 21's
-  queue. Telemetry deliberately lands with Action 12's Analytics Engine binding, so the sink and
-  its writer change in one PR.
+- **The front door** now reaches the live list at `/api/v1/alerts` (from 2026-10-26) and only
+  falls back to `/data/alerts-latest.json` when that call fails. Both paths serve the same
+  artifact, so a fallback is a latency event, not a data event — that is the point of serving
+  the API from the file the client would fall back to.
+- **`alerts/evidence-card`, `alerts/review`, `alerts/run`** stay unhosted: the first is
+  store-backed, and the other two are authenticated writes that must not live on a metered edge
+  runtime.
+- **`metrics`, `kaggle`, `historical`** — not ported, on purpose, and not breakage. Each is
+  blocked by something the edge does not have, and the honest answer is the Node handler rather
+  than a second copy that would drift (the register's 2026-10-27 decision entry has the detail):
+  - **`/api/metrics`** is a `prom-client` exposition of *the Node process* — heap, event loop,
+    CPU — none of which exists in an isolate, so the series would be fabricated by construction.
+    The one gauge that would survive the move, `hazardnet_forecast_age_hours`, is derived from a
+    Firestore read and is already published as `/data/freshness.json`, which the edge serves as a
+    static asset for free.
+  - **`/api/v1/kaggle`** needs Kaggle HTTP Basic credentials, a ZIP inflate (`node:zlib`) and a
+    disk cache across requests (`node:fs`, `node:os`). The client degrades honestly without it:
+    `useKaggleAdvisories` throws and `AdvisoriesPage` renders *"The Kaggle advisory service could
+    not be reached. No value is shown."* — the page states the absence instead of inventing a
+    value, which is the behaviour the whole site is built around.
+  - **`/api/v1/historical`** reads a 1.5 MB JSON with `node:fs` and re-serialises it per request
+    (≈ 9 ms measured, against a 10 ms CPU budget). Nothing in the front end calls it, and the
+    same bytes are *already* served at `/data/historical/hazard-catalog-index.json` with a CDN
+    cache and no invocation cost. A Function here would be a slower copy of a static file.
 - **`backend/` (Express)** still runs in a container when someone starts one — `npm run dev:api`,
   `docker compose up`, or any host that runs Node 20 — and **`api/**`** remains the
   function-shaped surface for a Node host. Neither is deployed.
 - **`monitoring/`** documents the Prometheus shape; with no scrapeable host, `site-health.yml` is
   what watches the site.
 
-Operational notes for the two edge routes: the Pages project needs **Runtime → Fail open /
+Operational notes for the edge routes: the Pages project needs **Runtime → Fail open /
 closed = fail open**, so a day that exhausts the daily Function allowance serves the static site
 instead of an error page; and a bad deploy of `functions/` shows up as a *build* failure in
 Pages, not a runtime one — the static site keeps serving the previous deployment, which is what

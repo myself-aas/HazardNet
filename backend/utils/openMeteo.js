@@ -23,7 +23,11 @@
 async function __getFetch() {
   if (globalThis.fetch) return globalThis.fetch;
   try {
-    const mod = await import('node-fetch');
+    // Node < 18 only. The specifier is assembled at runtime so a bundler building this
+    // module for Cloudflare Workers (where `globalThis.fetch` always exists and this branch
+    // is unreachable) does not inline node-fetch's browser shim into the edge bundle.
+    const specifier = ['node', 'fetch'].join('-');
+    const mod = await import(specifier);
     return mod.default;
   } catch {
     throw new Error('No fetch implementation available (Node >=18 or node-fetch required)');
@@ -221,22 +225,34 @@ function _baseParams({ timezone, forecast_days, windSpeedUnit = 'ms' }) {
 }
 
 /**
- * Extract point `i` from an Open-Meteo response (handles both single-point
- * flat responses and multi-point array responses uniformly).
+ * Extract point `i` from an Open-Meteo response.
  *
- * Multi-point shape (N locations):
- *   latitude: [lat0, lat1, ...]
- *   current.temperature_2m: [v0, v1, ...]
- *   hourly.temperature_2m: [[t0...], [t1...], ...]
- *   daily.temperature_2m_max: [[d0...], [d1...], ...]
+ * Two response shapes exist and both are handled here so every caller can pass the raw
+ * body through unchanged:
  *
- * Single-point shape:
- *   latitude: lat0
- *   current.temperature_2m: v0
- *   hourly.temperature_2m: [t0...]
- *   daily.temperature_2m_max: [d0...]
+ *   1. **A JSON array** — what `/v1/forecast` returns when the request names several
+ *      coordinates (`latitude=23.81,22.36&longitude=90.41,91.78`). Each element is a
+ *      complete per-location object, so the point is simply `raw[i]`.
+ *   2. **A flat object** — one location, either a single value per variable or, for a
+ *      multi-location request made in the nested form, an array per variable with the
+ *      index selecting the location:
+ *      `latitude: [lat0, lat1]`, `current.temperature_2m: [v0, v1]`,
+ *      `hourly.temperature_2m: [[t0…], [t1…]]`.
+ *
+ * **Fixed 2026-10-27:** shape 1 was not handled, so a batch lookup returned one point per
+ * coordinate with every field `undefined` — `_meta` was all the caller got — and the empty
+ * point was then written to the shared cache, where a following `mini` request for the same
+ * coordinate read it back for 15 minutes. It survived because nothing asserted the *values*
+ * of a batch response; `__tests__/pagesWeather.test.js` now does, over a fixture that is an
+ * array, which is what upstream actually sends.
  */
 function _extractPoint(raw, i) {
+  // Shape 1: an array of complete per-location objects.
+  if (Array.isArray(raw)) {
+    const location = raw[i];
+    if (!location || typeof location !== 'object') return {};
+    raw = location;
+  }
   const scalar = (key) => {
     const v = raw[key];
     if (v == null) return undefined;

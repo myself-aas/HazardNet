@@ -245,9 +245,15 @@ describe('security header parity', () => {
       const base = file.split('/').pop();
       if (base === '_middleware.ts') continue;
 
-      // A route file: under functions/api/ and exporting a handler Pages will call.
+      // A route file: under functions/api/ and exporting a handler Pages will call. Both
+      // spellings are real entry points — `onRequestGet`/`onRequestPost` for a route that
+      // answers one method, and bare `onRequest` for one that dispatches itself. The second
+      // is what the weather/batch and telemetry routes use, because they need their own
+      // `allow` header and body cap rather than Pages' default 405. Widened 2026-10-27 after
+      // it rejected two legitimate routes; the assertion's purpose is unchanged, since a
+      // helper module would export neither.
       expect(file.replace(/^functions\//, '')).toMatch(/^api\//);
-      expect(readText(file)).toMatch(/export (async )?function onRequest[A-Z][a-z]*\b/);
+      expect(readText(file)).toMatch(/export (async )?function onRequest([A-Z][a-z]*)?\b/);
     }
   });
 

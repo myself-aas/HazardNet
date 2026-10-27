@@ -12,7 +12,7 @@
  *   - an empty run must not silently replace a good snapshot.
  */
 
-import { ALERT_DISCLAIMER, ALERTS_SNAPSHOT_SCHEMA, buildSnapshot, countByLevel, extractAlertRows } from '../scripts/build_alert_snapshot.mjs';
+import { ALERT_DISCLAIMER, ALERTS_SNAPSHOT_SCHEMA, buildSnapshot, countByLevel, extractAlertRows, stampPolicy } from '../scripts/build_alert_snapshot.mjs';
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -56,6 +56,64 @@ describe('buildSnapshot', () => {
     expect(withPolicy.policy.version).toBe('alert-policy/1.0.0');
     expect(withPolicy.disclaimer).toBe('Policy wording.');
     expect(buildSnapshot({}).disclaimer).toBe(ALERT_DISCLAIMER);
+  });
+
+  /* The policy stamp (2026-10-26). Before it, the committed artifact shipped
+     `policy: null` — harmless while only a Node process read it, and a hole the moment a
+     Cloudflare Pages Function served `/api/v1/alerts/policy` from the file, because a
+     Worker has no `process.env` to recompute the thresholds from. */
+  it('stamps the effective policy when the engine supplied none', () => {
+    const snapshot = buildSnapshot({ alerts: [row()] }, { env: {} });
+    expect(snapshot.policy.version).toBe('alert-policy/1.0.0');
+    expect(snapshot.policy.thresholds.watch_probability).toBe(0.4);
+    expect(snapshot.policy.human_in_the_loop.max_auto_publish_level).toBe('WATCH');
+    expect(snapshot.policy_source).toBe('builder');
+    // The row-level and artifact-level disclaimer are the policy's own text.
+    expect(snapshot.disclaimer).toBe(snapshot.policy.disclaimer);
+    expect(snapshot.alerts[0].disclaimer).toBe(snapshot.policy.disclaimer);
+  });
+
+  it("prefers the engine's own policy record, because it is what the run used", () => {
+    const snapshot = buildSnapshot({
+      alerts: [row()],
+      policy: { version: 'alert-policy/0.9.0', disclaimer: 'Engine policy wording.' },
+    }, { env: {} });
+    expect(snapshot.policy.version).toBe('alert-policy/0.9.0');
+    expect(snapshot.policy_source).toBe('engine');
+    expect(snapshot.disclaimer).toBe('Engine policy wording.');
+  });
+
+  it('stamps the delivery transports without any secret material', () => {
+    const stamped = stampPolicy({
+      BULKSMSBD_API_KEY: 'sms-secret',
+      BULKSMSBD_SENDER_ID: 'HazardNet',
+      SMS_PROVIDER: 'bulksmsbd',
+      TELEGRAM_BOT_TOKEN: 'bot-secret',
+      TELEGRAM_ALERT_CHAT_ID: '12345',
+    });
+
+    expect(stamped.transports.sms.provider).toBe('bulksmsbd');
+    expect(stamped.transports.sms.configured).toBe(true);
+    expect(stamped.transports.sms.sender_id).toBe('HazardNet');
+    expect(stamped.transports.telegram).toEqual({ channel: 'telegram', configured: true });
+
+    const serialized = JSON.stringify(stamped);
+    expect(serialized).not.toContain('sms-secret');
+    expect(serialized).not.toContain('bot-secret');
+    expect(serialized).not.toContain('12345');
+  });
+
+  it('the committed artifact carries a stamped policy, not null', () => {
+    /* A real control rather than a note: the edge serves /api/v1/alerts/policy from this
+       file, and a regenerated-but-unstamped artifact would silently turn every threshold
+       into a 503. If this fails, re-run
+       `node scripts/build_alert_snapshot.mjs --in <run report>` and commit the result. */
+    const committed = JSON.parse(readFileSync(join(process.cwd(), 'frontend/public/data/alerts-latest.json'), 'utf8'));
+    expect(committed.policy).not.toBeNull();
+    expect(committed.policy.version).toBe('alert-policy/1.0.0');
+    expect(committed.policy.human_in_the_loop.max_auto_publish_level).toBe('WATCH');
+    expect(committed.transports.sms).toBeDefined();
+    expect(committed.policy_source).toMatch(/^(engine|builder)$/);
   });
 
   it('accepts a bare array as the engine output', () => {

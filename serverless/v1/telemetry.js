@@ -12,85 +12,14 @@
  */
 
 import { guardRequest } from '../../backend/middleware/serverlessGuard.js';
+import { BODY_MAX_BYTES, validateTelemetryBatch } from '../../backend/utils/telemetryBatch.js';
 
-const SESSION_ID_MAX = 64;
-const EVENT_NAME_MAX = 64;
-const EVENTS_PER_BATCH_MAX = 50;
-const PROPERTIES_PER_EVENT_MAX = 20;
-const PROPERTY_VALUE_MAX = 256;
-const BODY_MAX_BYTES = 65_536; // 64 KiB — a beacon page at this size is already pathological
-
-/**
- * Event names are lowercase snake_case after folding. Membership in ANALYTICS_EVENTS is
- * deliberately NOT checked: the canonical vocabulary lives in packages/core's
- * analytics.ts and grows with the apps, while this endpoint must stay deployable
- * without a shared-package import. Shape is the gate — anything with whitespace,
- * separators or non-stringness is a bug the caller should see, not something we repair.
- */
-const EVENT_NAME_SHAPE = /^[a-z0-9_]+$/;
-
-/** Returns the normalised event object, or a string describing why it was refused. */
-export function validateEvent(event) {
-  if (!event || typeof event !== 'object' || Array.isArray(event)) {
-    return 'event must be a JSON object';
-  }
-  if (typeof event.event !== 'string' || event.event.length === 0 || event.event.length > EVENT_NAME_MAX) {
-    return 'invalid event name';
-  }
-  const name = event.event.toLowerCase();
-  if (!EVENT_NAME_SHAPE.test(name)) {
-    return 'invalid event name';
-  }
-  if (typeof event.at !== 'number' || !Number.isFinite(event.at)) {
-    return 'event.at must be a finite number';
-  }
-  const properties = event.properties ?? {};
-  if (typeof properties !== 'object' || Array.isArray(properties) || properties === null) {
-    return 'event.properties must be a JSON object';
-  }
-  const entries = Object.entries(properties);
-  if (entries.length > PROPERTIES_PER_EVENT_MAX) {
-    return `too many properties (max ${PROPERTIES_PER_EVENT_MAX})`;
-  }
-  for (const [key, value] of entries) {
-    if (!['string', 'number', 'boolean'].includes(typeof value) && value !== null) {
-      return `property "${key}" must be a string, number, boolean or null`;
-    }
-    if (typeof value === 'string' && value.length > PROPERTY_VALUE_MAX) {
-      return `property "${key}" exceeds ${PROPERTY_VALUE_MAX} characters`;
-    }
-  }
-  return { event: name, at: event.at, properties };
-}
-
-/** Returns { ok: true, batch } with normalised events, or { ok: false, error }. */
-export function validateTelemetryBatch(payload) {
-  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-    return { ok: false, error: 'body must be a JSON object' };
-  }
-  const { sessionId, events } = payload;
-  if (typeof sessionId !== 'string' || sessionId.length === 0 || sessionId.length > SESSION_ID_MAX) {
-    return { ok: false, error: `sessionId must be a non-empty string of at most ${SESSION_ID_MAX} characters` };
-  }
-  if (!Array.isArray(events)) {
-    return { ok: false, error: 'events must be an array' };
-  }
-  if (events.length === 0) {
-    return { ok: false, error: 'events must not be empty' };
-  }
-  if (events.length > EVENTS_PER_BATCH_MAX) {
-    return { ok: false, error: `too many events (max ${EVENTS_PER_BATCH_MAX})` };
-  }
-  const batch = [];
-  for (const event of events) {
-    const validated = validateEvent(event);
-    if (typeof validated === 'string') {
-      return { ok: false, error: validated };
-    }
-    batch.push(validated);
-  }
-  return { ok: true, batch: { sessionId, events: batch } };
-}
+/* The rules themselves live in backend/utils/telemetryBatch.js since 2026-10-26, so the
+   Cloudflare Pages Function that serves this endpoint accepts exactly the same payloads
+   instead of a re-typed copy. Re-exported here because __tests__/api/telemetry.test.js
+   imports them from this file, and because that is where a reader looks first. */
+export { validateEvent, validateTelemetryBatch } from '../../backend/utils/telemetryBatch.js';
+export { BODY_MAX_BYTES };
 
 export default async function handler(req, res) {
   // The tightest bucket, first: this endpoint is reachable by any anonymous browser.
