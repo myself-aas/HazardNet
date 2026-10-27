@@ -271,6 +271,14 @@ read a file, and each difference is the reason it can exist at the edge at all:
 each required to carry a numeric `current.temperature_2m`, because a 200 carrying only ids and
 metadata is exactly what the batch route returned on its first deployment.
 
+**Cache writes are verified (Phase 2, 2026-10-27).** The weather proxy's 15-minute cache
+shared by Node and Pages is a `createVerifiedCache` from `backend/utils/cacheContract.js`:
+`assertComplete` runs before every write and again on every read. A point with `_meta` but no
+numeric reading is refused at the write and returned as a 502; a poisoned entry in an
+already-warm cache is deleted on read and re-fetched. The same module guards the markdown
+and advisory caches. `docs/ops/cache-write-register.json` is the list of every write site;
+nine non-cache writes (counters, stores, gauges, signature expiry) carry dated reasons.
+
 **Route register (Phase 1, 2026-10-27).** `docs/ops/route-register.json` is the machine-readable
 answer to "which `/api/**` paths exist, and who has exercised them since the cutover". Every
 path in `frontend/src` must be either a file under `functions/api/` or a **dated disposition**

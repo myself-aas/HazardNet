@@ -16,6 +16,7 @@
 
 import path from 'node:path';
 import fs from 'node:fs';
+import { assertMarkdownContent, createVerifiedCache } from '../utils/cacheContract.js';
 
 const __dirname = process.cwd();
 const MARKDOWN_DIR = path.resolve(__dirname, 'frontend', 'dist', 'markdown');
@@ -93,8 +94,15 @@ function estimateTokens(text) {
  * API routes (which should not be affected by markdown negotiation).
  */
 export function markdownNegotiation() {
-  // Cache for markdown file contents (avoids repeated disk reads)
-  const cache = new Map();
+  // Cache for markdown file contents (avoids repeated disk reads). Phase 2: both directions
+  // are guarded — an empty/partial document is never written, and a poisoned entry is a
+  // miss that re-reads the file. `null` is an explicit negative hit and is valid.
+  // No TTL: the files are build output, so the process restarts when they change.
+  const cache = createVerifiedCache({
+    ttlMs: Infinity,
+    label: 'markdown',
+    validate: (entry) => assertMarkdownContent(entry && entry.data),
+  });
   const CACHE_MAX_SIZE = 200;
 
   return (req, res, next) => {
@@ -125,23 +133,28 @@ export function markdownNegotiation() {
       return next();
     }
 
-    // Try to serve the markdown file
-    let content = cache.get(mdPath);
+    // Try to serve the markdown file. `cache.get` applies the post-read guard: an entry
+    // whose document is empty or not a string is deleted and reported as a miss.
+    const hit = cache.get(mdPath);
+    let content = hit.hit ? hit.entry.data : undefined;
 
-    if (content === undefined) {
+    if (!hit.hit) {
       try {
         if (fs.existsSync(mdPath)) {
-          content = fs.readFileSync(mdPath, 'utf8');
+          const raw = fs.readFileSync(mdPath, 'utf8');
 
           // Simple LRU-style eviction
-          if (cache.size >= CACHE_MAX_SIZE) {
-            const firstKey = cache.keys().next().value;
-            cache.delete(firstKey);
+          if (cache.size() >= CACHE_MAX_SIZE) cache.evictOldest();
+          // Pre-write guard: refuse to cache a hollow document.
+          const guard = cache.set(mdPath, { ts: Date.now(), data: raw });
+          if (!guard.ok) {
+            console.warn(`[markdown-negotiation] refused to cache ${mdPath}: missing ${guard.missing.join(', ')}`);
+            return next();
           }
-          cache.set(mdPath, content);
+          content = raw;
         } else {
           // Mark as not found (cache the negative result too, to avoid repeated stat calls)
-          cache.set(mdPath, null);
+          cache.set(mdPath, { ts: Date.now(), data: null });
           return next();
         }
       } catch (err) {

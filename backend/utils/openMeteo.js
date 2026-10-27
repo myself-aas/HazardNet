@@ -38,6 +38,8 @@
  * Variable reference: https://open-meteo.com/en/docs (forecast_days=16)
  */
 
+import { assertComplete, createVerifiedCache } from './cacheContract.js';
+
 async function __getFetch() {
   if (globalThis.fetch) return globalThis.fetch;
   try {
@@ -208,11 +210,32 @@ const DAILY_VARS = [
   'wind_speed_10m_max',
 ];
 
-// ── Cache ──────────────────────────────────────────────────────────────────
+// ── Cache (verify-then-write, Phase 2) ─────────────────────────────────────
+// The 15-minute Map used to be a plain `new Map()`. A batch lookup once wrote a point
+// containing only `_meta`, and a following mini lookup read it back for 15 minutes. Both
+// directions are now guarded by `assertComplete` in `cacheContract.js`: a write without a
+// numeric reading is refused, and a read of a hollow entry is treated as a miss.
 const CACHE_TTL_MS = 15 * 60 * 1000;
-const cache = new Map();
+const cache = createVerifiedCache({
+  ttlMs: CACHE_TTL_MS,
+  label: 'open-meteo',
+  validate: (entry) => assertComplete(entry && entry.data),
+  age: (entry, now) => now - (entry?.ts ?? 0),
+});
 const cacheKey = (lat, lng) => `${lat.toFixed(2)},${lng.toFixed(2)}`;
 export function clearCache() { cache.clear(); }
+
+/**
+ * Test seams for `__tests__/cacheContract.test.js`. `seedCacheEntry` writes **without** the
+ * pre-write guard so a test can reproduce a cache poisoned by the old deployment; no runtime
+ * code calls it. `peekCacheEntry` returns the raw stored entry.
+ */
+export function seedCacheEntry(key, data, now = Date.now()) {
+  cache.seed(key, { ts: now, data });
+}
+export function peekCacheEntry(key) {
+  return cache.peek(key);
+}
 
 // ── Internal helpers ───────────────────────────────────────────────────────
 async function _fetchUpstream(params) {
@@ -398,9 +421,11 @@ export async function fetchCurrentWeatherBatch(coords, opts = {}) {
   for (let i = 0; i < validated.length; i++) {
     const c = validated[i];
     const k = cacheKey(c.lat, c.lng);
-    const hit = cache.get(k);
-    if (!opts.skipCache && hit && Date.now() - hit.ts < CACHE_TTL_MS && hit.data.current) {
-      results[i] = { id: c.id, ...hit.data };
+    // Post-read guard: `cache.get` re-runs assertComplete on the stored point and deletes
+    // it if it is hollow. A poisoned entry is therefore a miss, not a 200.
+    const hit = opts.skipCache ? { hit: false } : cache.get(k);
+    if (hit.hit && hit.entry.data.current) {
+      results[i] = { id: c.id, ...hit.entry.data };
     } else {
       toFetch.push({ idx: i, coord: c });
     }
@@ -426,7 +451,14 @@ export async function fetchCurrentWeatherBatch(coords, opts = {}) {
         const record = normalised[j];
         if (!record || !record.current) continue;   // missing location: drop, never invent
         const point = _addMeta(_extractPoint(record), 1, timezone);
-        cache.set(cacheKey(coord.lat, coord.lng), { ts: Date.now(), data: point });
+        // Pre-write guard: never cache a point whose data blocks are empty. Fail loudly —
+        // a 502 with a named cause is better than 15 minutes of hollow 200s.
+        const guard = cache.set(cacheKey(coord.lat, coord.lng), { ts: Date.now(), data: point });
+        if (!guard.ok) {
+          const err = new Error(`Open-Meteo batch point incomplete (${coord.id}): missing ${guard.missing.join(', ')}`);
+          err.status = 502;
+          throw err;
+        }
         results[idx] = { id: coord.id, ...point };
       }
     }
@@ -446,9 +478,11 @@ async function _fetchSingle({ lat, lng, forecast_days, timezone, skipCache,
   }
   const key = cacheKey(lat, lng);
   if (!skipCache) {
+    // Post-read guard: the same assertComplete as the write path. An incomplete entry is
+    // deleted and treated as a miss, so we re-fetch instead of serving it.
     const hit = cache.get(key);
-    if (hit && Date.now() - hit.ts < CACHE_TTL_MS) {
-      const h = hit.data;
+    if (hit.hit) {
+      const h = hit.entry.data;
       const fullEnough = (!wantHourly || h.hourly) && (!wantDaily || h.daily);
       if (fullEnough) return h;
     }
@@ -472,7 +506,13 @@ async function _fetchSingle({ lat, lng, forecast_days, timezone, skipCache,
     throw err;
   }
   const data = _addMeta(_extractPoint(normalised[0]), forecast_days, timezone);
-  cache.set(key, { ts: Date.now(), data });
+  // Pre-write guard. A failure here must not write and must reach the caller as an error.
+  const guard = cache.set(key, { ts: Date.now(), data });
+  if (!guard.ok) {
+    const err = new Error(`Open-Meteo point incomplete: missing ${guard.missing.join(', ')}`);
+    err.status = 502;
+    throw err;
+  }
   return data;
 }
 
