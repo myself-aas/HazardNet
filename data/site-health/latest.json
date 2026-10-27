@@ -1,10 +1,10 @@
 {
   "schema": "hazardnet-site-probe/v1",
-  "ran_at": "2026-10-27T19:43:55Z",
-  "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/40571687781",
+  "ran_at": "2026-10-27T23:18:19Z",
+  "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/40601151306",
   "site_url": "https://hazardnet.live",
   "edge_challenged": false,
-  "outcome": "pass",
+  "outcome": "fail",
   "checks": [
     {
       "id": "homepage",
@@ -39,6 +39,11 @@
     {
       "id": "weather_api",
       "outcome": "success",
+      "detail": null
+    },
+    {
+      "id": "runtime_paths",
+      "outcome": "failure",
       "detail": null
     },
     {
