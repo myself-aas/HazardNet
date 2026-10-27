@@ -27,12 +27,17 @@ const FORECAST_SNAPSHOT = readJson('frontend/public/data/forecasts-latest.json')
 const ALERT_SNAPSHOT = readJson('frontend/public/data/alerts-latest.json');
 const UPSTREAM_OBJECT = require('../backend/utils/__tests__/fixtures/openMeteoSingleObject.js');
 const UPSTREAM_ARRAY = require('../backend/utils/__tests__/fixtures/openMeteoMultiArray.js');
+// Provenance-backed, captured from the deployed artifacts / browser beacon. Expected leaves
+// below are read from these fixtures too (Phase 3), never from a hand-written stub.
+const FORECAST_FIXTURE = require('./fixtures/forecastsSnapshot.js');
+const ALERT_FIXTURE = require('./fixtures/alertsSnapshot.js');
+const TELEMETRY_BATCH = require('./fixtures/telemetryBatch.js');
 
 const { clearCache } = require('../backend/utils/openMeteo.js');
 
 const TELEMETRY_FIXTURE = {
-  sessionId: 'phase1-route-sweep',
-  events: [{ event: 'route_value_assertion', at: 1_767_000_000_000, properties: { phase: 1, hollow: false } }],
+  sessionId: TELEMETRY_BATCH.sessionId,
+  events: [{ ...TELEMETRY_BATCH.events[0], properties: { ...TELEMETRY_BATCH.events[0].properties } }],
 };
 
 const jsonResponse = (payload, status = 200) => new Response(JSON.stringify(payload), {
@@ -86,6 +91,8 @@ describe('GET /api/v1/forecasts/bulk — leaf values from the deployed snapshot'
     expect(body.forecasts[0].district_id).toBe(rows[0].district_id);
     expect(body.forecasts[0].severity_score).toBe(rows[0].severity_score);
     expect(body.forecasts[0].advisory_tier).toBe(rows[0].advisory_tier);
+    expect(body.forecasts[0].severity_score)
+      .toBe(FORECAST_FIXTURE.horizons['7_days'][0].severity_score);
     expect(body.data_source).toBe('hazardnet/weekly-forecasts');
   });
 });
@@ -116,6 +123,7 @@ describe('GET /api/v1/alerts — published row values', () => {
     expect(body.alerts[0].severity_score).toBe(published[0].severity_score);
     expect(body.alerts[0].state).toBe('PUBLISHED');
     expect(body.filters.state).toBe('PUBLISHED');
+    expect(body.alerts[0].severity_score).toBe(ALERT_FIXTURE.alerts[0].severity_score);
   });
 });
 
@@ -128,6 +136,7 @@ describe('GET /api/v1/alerts/policy — the stamped thresholds', () => {
     expect(response.status).toBe(200);
     expect(body.thresholds.watch_probability).toBe(ALERT_SNAPSHOT.policy.thresholds.watch_probability);
     expect(body.thresholds.warning_probability).toBe(ALERT_SNAPSHOT.policy.thresholds.warning_probability);
+    expect(body.thresholds.watch_probability).toBe(ALERT_FIXTURE.policy.thresholds.watch_probability);
     expect(body.policy_source).toBe(ALERT_SNAPSHOT.policy_source);
   });
 });
@@ -182,7 +191,7 @@ describe('POST /api/v1/telemetry — both sinks, method gate', () => {
     expect(response.status).toBe(204);
     expect(writeDataPoint).toHaveBeenCalledTimes(1);
     const point = writeDataPoint.mock.calls[0][0];
-    expect(point.blobs[0]).toBe(TELEMETRY_FIXTURE.events[0].event);
+    expect(point.blobs[0]).toBe(TELEMETRY_BATCH.events[0].event);
     expect(point.blobs[1]).toBe(TELEMETRY_FIXTURE.sessionId);
     expect(JSON.parse(point.blobs[2])).toEqual(TELEMETRY_FIXTURE.events[0].properties);
     expect(point.doubles).toEqual([TELEMETRY_FIXTURE.events[0].at]);

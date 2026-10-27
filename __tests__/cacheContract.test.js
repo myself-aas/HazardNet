@@ -100,12 +100,12 @@ describe('openMeteo cache — the poisoned-cache regression', () => {
     const first = await fetchCurrentWeather(COORD.lat, COORD.lng);
     expect(fetchSpy).toHaveBeenCalledTimes(1);                // the read was a miss, so re-fetch
     expect(first.current.temperature_2m).toBe(UPSTREAM_OBJECT.current.temperature_2m);
-    expect(first.current.wind_direction_10m).toBe(173);
+    expect(first.current.wind_direction_10m).toBe(UPSTREAM_OBJECT.current.wind_direction_10m);
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('read guard rejected'));
 
     const stored = peekCacheEntry(KEY).data;
     expect(assertComplete(stored).ok).toBe(true);
-    expect(stored.current.temperature_2m).toBe(31.1);
+    expect(stored.current.temperature_2m).toBe(UPSTREAM_OBJECT.current.temperature_2m);
 
     const second = await fetchCurrentWeather(COORD.lat, COORD.lng);
     expect(fetchSpy).toHaveBeenCalledTimes(1);                // no second upstream call
@@ -116,7 +116,7 @@ describe('openMeteo cache — the poisoned-cache regression', () => {
     seedCacheEntry(KEY, HOLLOW_POINT);
     const points = await fetchCurrentWeatherBatch([COORD]);
     expect(fetchSpy).toHaveBeenCalledTimes(1);
-    expect(points[0].current.temperature_2m).toBe(31.1);
+    expect(points[0].current.temperature_2m).toBe(UPSTREAM_OBJECT.current.temperature_2m);
     expect(assertComplete(peekCacheEntry(KEY).data).ok).toBe(true);
 
     const again = await fetchCurrentWeatherBatch([COORD]);

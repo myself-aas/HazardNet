@@ -1,0 +1,91 @@
+{
+  "schema": "hazardnet-test-quality-manifest/v1",
+  "updated": "2026-10-27",
+  "what_this_is": "Phase 3's audit of the parity/integration test class. `__tests__/testQuality.test.js` reads this file and fails if a listed test loses its provenance fixture, its fixture-sourced leaf assertion, or its cached-equals-returned assertion. It also lints every fixture file for the three-line provenance header.",
+  "fixtureDirs": ["__tests__/fixtures", "backend/utils/__tests__/fixtures"],
+  "integrationTests": [
+    {
+      "file": "backend/utils/__tests__/openMeteo.test.js",
+      "stub": "Open-Meteo single object and multi array, captured from the live API",
+      "fixtures": ["backend/utils/__tests__/fixtures/openMeteoSingleObject.js", "backend/utils/__tests__/fixtures/openMeteoMultiArray.js"],
+      "leafAssertions": ["OBJECT_FIXTURE.current.temperature_2m", "ARRAY_FIXTURE[0].current.temperature_2m", "OBJECT_FIXTURE.current.wind_direction_10m"],
+      "cachedEqualsReturned": [],
+      "entities": ["single point", "each batch point"]
+    },
+    {
+      "file": "__tests__/pagesWeather.test.js",
+      "stub": "real full single-point object with hourly/daily series + real two-point array",
+      "fixtures": ["__tests__/fixtures/weatherFullObject.js", "backend/utils/__tests__/fixtures/openMeteoMultiArray.js"],
+      "leafAssertions": ["UPSTREAM.current.temperature_2m", "UPSTREAM.daily.temperature_2m_max[0]", "UPSTREAM_MULTI[1].current.relative_humidity_2m"],
+      "cachedEqualsReturned": ["expect(miniBody).toEqual(batchPoint)"],
+      "entities": ["single point", "each batch point", "cached mini point"]
+    },
+    {
+      "file": "__tests__/pagesForecasts.test.js",
+      "stub": "deployed forecast snapshot (trimmed capture, real rows)",
+      "fixtures": ["__tests__/fixtures/forecastsSnapshot.js"],
+      "leafAssertions": ["SNAPSHOT.horizons['7_days'][0].severity_score", "SNAPSHOT.horizons['7_days'][0].advisory_tier", "SNAPSHOT.generated_at"],
+      "cachedEqualsReturned": [],
+      "cacheNote": "This route answers no-store, max-age=0; there is no cached object to compare. The cache-equality rule is enforced on the weather cache in pagesWeather and cacheContract instead.",
+      "entities": ["each forecast row", "metadata envelope"]
+    },
+    {
+      "file": "__tests__/pagesAlerts.test.js",
+      "stub": "deployed alert artifact with stamped policy (captured); synthetic store documents remain only for DRAFT/REJECTED unit cases",
+      "fixtures": ["__tests__/fixtures/alertsSnapshot.js"],
+      "leafAssertions": ["ALERT_ARTIFACT.alerts[0].severity_score", "ALERT_ARTIFACT.alerts[0].district_id", "ALERT_ARTIFACT.policy.thresholds.watch_probability"],
+      "cachedEqualsReturned": [],
+      "cacheNote": "Snapshot-backed route with a CDN cache header, not an in-process object cache; the returned object is asserted directly against the captured artifact.",
+      "entities": ["each published alert", "policy thresholds"]
+    },
+    {
+      "file": "__tests__/pagesTelemetry.test.js",
+      "stub": "browser streaming tracker SendBatch payload (a request fixture, not an upstream response)",
+      "fixtures": ["__tests__/fixtures/telemetryBatch.js"],
+      "leafAssertions": ["BATCH_FIXTURE.events[0].event", "BATCH_FIXTURE.sessionId", "BATCH_FIXTURE.events[0].properties"],
+      "cachedEqualsReturned": [],
+      "entities": ["each written data point", "each logged event"]
+    },
+    {
+      "file": "__tests__/api/telemetry.test.js",
+      "stub": "same captured client beacon; the `toMatchObject` presence assertion was replaced with `toEqual` over fixture leaves",
+      "fixtures": ["__tests__/fixtures/telemetryBatch.js"],
+      "leafAssertions": ["BATCH_FIXTURE.events[0].event", "BATCH_FIXTURE.events[0].at"],
+      "bannedAssertions": ["toMatchObject("],
+      "cachedEqualsReturned": [],
+      "entities": ["the logged event"]
+    },
+    {
+      "file": "__tests__/routeValueAssertions.test.js",
+      "stub": "real upstream weather fixtures + deployed forecast/alert artifacts + captured beacon",
+      "fixtures": ["backend/utils/__tests__/fixtures/openMeteoSingleObject.js", "backend/utils/__tests__/fixtures/openMeteoMultiArray.js", "__tests__/fixtures/forecastsSnapshot.js", "__tests__/fixtures/alertsSnapshot.js", "__tests__/fixtures/telemetryBatch.js"],
+      "leafAssertions": ["UPSTREAM_OBJECT.current.temperature_2m", "UPSTREAM_ARRAY[1].current.relative_humidity_2m", "FORECAST_FIXTURE.horizons['7_days'][0].severity_score", "ALERT_FIXTURE.alerts[0].severity_score", "TELEMETRY_BATCH.events[0].event"],
+      "cachedEqualsReturned": [],
+      "entities": ["all seven edge routes"]
+    },
+    {
+      "file": "__tests__/cacheContract.test.js",
+      "stub": "real captured single-point object; the hollow `{id,_meta}` point is a permanent negative fixture defined in the test",
+      "fixtures": ["backend/utils/__tests__/fixtures/openMeteoSingleObject.js"],
+      "leafAssertions": ["UPSTREAM_OBJECT.current.temperature_2m", "UPSTREAM_OBJECT.current.wind_direction_10m"],
+      "cachedEqualsReturned": ["expect(second).toEqual(first)", "assertComplete(peekCacheEntry(KEY).data).ok"],
+      "entities": ["the cached weather point"]
+    },
+    {
+      "file": "__tests__/forecastStore.test.js",
+      "stub": "negative-control JSON snapshot fixture with a provenance sidecar (deliberately not an upstream mirror)",
+      "fixtures": ["__tests__/fixtures/forecasts-snapshot.fixture.json"],
+      "leafAssertions": ["FALLBACK_FIXTURE_BYTES.horizons['7_days'][0].severity_score"],
+      "cachedEqualsReturned": [],
+      "entities": ["the fallback row"]
+    }
+  ],
+  "auditedWithoutStub": {
+    "files": ["e2e/full-app-qa.spec.ts", "e2e/critical-paths.spec.ts", "e2e/navigation-a11y.spec.ts"],
+    "reason": "Playwright black-box specs: they call the deployed origin and assert on real DOM/HTTP responses. There is no stub to mirror and no in-process cache to compare; a fixture here would be a step backwards. Their value assertions are on live response bodies and status codes."
+  },
+  "dispositioned": {
+    "files": ["__tests__/fetchKaggleAdvisory.integration.test.js", "__tests__/kaggleAdvisoryClient.test.js", "__tests__/windPipeline.test.js", "__tests__/chatService.test.js"],
+    "reason": "2026-10-27 dated disposition. The first three are Node-only pipeline suites with local CSV/ZIP fixtures generated inside the test (documented at the top of each file); Kaggle is dispositioned in Phase 4 and the wind pipeline is an Actions job. `chatService.test.js` stubs a key-authenticated LLM provider (api.groq.com) — there is no reproducible, credential-free upstream response to capture — and that route is Node-only per Action 21. All four already assert leaf values from their synthetic inputs, but the bytes are test inputs rather than captured upstream responses; they are explicitly not claimed as upstream-mirroring fixtures. If any gains a live upstream response in CI, it must move into integrationTests with a provenance header. `pagesAlerts`' synthetic store documents are likewise limited to DRAFT/REJECTED unit cases; its integration assertions use the captured artifact."
+  }
+}

@@ -43,6 +43,9 @@ const row = (over = {}) => ({
 // file to a fixture so the suite's expectations cannot rot with the committed production
 // snapshot (what district 19 held on the day the test was written is not the contract).
 const FALLBACK_FIXTURE = '__tests__/fixtures/forecasts-snapshot.fixture.json';
+// Phase 3: provenance lives in the JSON fixture's `.provenance.md` sidecar; assert a leaf
+// from it rather than merely checking that a fallback row exists.
+const FALLBACK_FIXTURE_BYTES = require('./fixtures/forecasts-snapshot.fixture.json');
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -178,5 +181,7 @@ it('reaches snapshot fallback when the cloud read never settles', async () => {
     const result = getForecastStore().getLatestForecastsByHorizon('7_days');
     await jest.advanceTimersByTimeAsync(2500);
     expect((await result).length).toBeGreaterThan(0);
+    expect((await result)[0].severity_score)
+      .toBe(FALLBACK_FIXTURE_BYTES.horizons['7_days'][0].severity_score);
   } finally { jest.useRealTimers(); }
 });

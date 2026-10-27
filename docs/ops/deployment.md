@@ -271,6 +271,14 @@ read a file, and each difference is the reason it can exist at the edge at all:
 each required to carry a numeric `current.temperature_2m`, because a 200 carrying only ids and
 metadata is exactly what the batch route returned on its first deployment.
 
+**Parity tests assert values (Phase 3, 2026-10-27).** Every edge/parity integration test
+reads committed fixtures captured from the real upstream or the deployed artifacts, with a
+three-line provenance header. `__tests__/testQuality.test.js` and
+`docs/ops/test-quality-manifest.json` fail the build if a fixture loses its provenance, an
+integration test loses a fixture-sourced leaf assertion, or a cached object stops equalling
+the returned object. Refresh with `node scripts/capture_edge_fixtures.mjs` and
+`node scripts/capture_open_meteo_fixtures.mjs`.
+
 **Cache writes are verified (Phase 2, 2026-10-27).** The weather proxy's 15-minute cache
 shared by Node and Pages is a `createVerifiedCache` from `backend/utils/cacheContract.js`:
 `assertComplete` runs before every write and again on every read. A point with `_meta` but no

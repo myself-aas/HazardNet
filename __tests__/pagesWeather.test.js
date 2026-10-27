@@ -17,47 +17,20 @@
  */
 
 /**
- * The upstream payload for one location — a flat object, which is what
- * `GET /v1/forecast?latitude=23.81&longitude=90.41` returns.
- */
-const UPSTREAM = {
-  latitude: 23.8103,
-  longitude: 90.4125,
-  timezone: 'Asia/Dhaka',
-  current: { time: '2026-10-27T06:00', temperature_2m: 28.4, wind_speed_10m: 3.2, relative_humidity_2m: 71 },
-  hourly: { time: ['2026-10-27T06:00', '2026-10-27T07:00'], temperature_2m: [28.4, 29.1] },
-  daily: { time: ['2026-10-27'], temperature_2m_max: [31.2], temperature_2m_min: [22.8], precipitation_sum: [1.4] },
-};
-
-/**
- * What the same endpoint returns for **several** coordinates
- * (`latitude=23.81,22.36&longitude=90.41,91.78`): a JSON **array** of complete per-location
- * objects. The old normaliser comment claimed a nested-array-per-variable form; that form
- * does not exist in the Open-Meteo API and the comment is gone (Phase 0 shape audit).
+ * Phase 3: the stubs are **committed fixtures captured from the real upstream**, not
+ * hand-written approximations. Each carries the provenance header
+ * `__tests__/testQuality.test.js` requires, and every expected leaf below is read from the
+ * fixture at assertion time — a fixture refresh cannot turn these back into presence tests.
  *
- * This shape is the point of the fixture. On 2026-10-27 the deployed batch route answered
- * `{count: 2, points: [{id, _meta}, {id, _meta}]}` — no `current` block at all — because
- * `_extractPoint` indexed into an object that was really an array. The suite that was
- * supposed to catch it stubbed every request with the flat object and compared point ids,
- * so it passed. Both are fixed: the stub answers in the shape upstream uses, and the
- * assertions below compare values.
+ * `UPSTREAM` is the single-coordinate object with hourly/daily series (what the full
+ * `fetchWeather` request receives); `UPSTREAM_MULTI` is the two-coordinate **array** of
+ * complete per-location objects (what the batch request receives). On 2026-10-27 the
+ * deployed batch route answered `{count: 2, points: [{id, _meta}, {id, _meta}]}` because
+ * `_extractPoint` indexed into an array as if it were the imaginary nested form. The suite
+ * that should have caught it stubbed every request with a flat object and compared ids.
  */
-const UPSTREAM_MULTI = [
-  {
-    latitude: 23.796133,
-    longitude: 90.38055,
-    timezone: 'Asia/Dhaka',
-    current: { time: '2026-10-27T06:00', temperature_2m: 32, wind_speed_10m: 1 },
-    current_units: { time: 'iso8601', temperature_2m: '°C' },
-  },
-  {
-    latitude: 22.390158,
-    longitude: 91.77019,
-    timezone: 'Asia/Dhaka',
-    current: { time: '2026-10-27T06:00', temperature_2m: 28.5, wind_speed_10m: 2.4 },
-    current_units: { time: 'iso8601', temperature_2m: '°C' },
-  },
-];
+const UPSTREAM = require('./fixtures/weatherFullObject.js');
+const UPSTREAM_MULTI = require('../backend/utils/__tests__/fixtures/openMeteoMultiArray.js');
 
 const URL_BASE = 'https://www.hazardnet.live';
 
@@ -101,7 +74,9 @@ describe('GET /api/v1/weather', () => {
     expect(response.status).toBe(200);
     expect(response.headers.get('cache-control')).toBe('public, max-age=900');
     expect(body).toBeTruthy();
-    // The normaliser's own shape: the deployment never re-shapes upstream's payload.
+    // Leaf value, from the captured upstream fixture — not just "current exists".
+    expect(body.current.temperature_2m).toBe(UPSTREAM.current.temperature_2m);
+    expect(body.daily.temperature_2m_max[0]).toBe(UPSTREAM.daily.temperature_2m_max[0]);
     expect(fetchSpy).toHaveBeenCalled();
     expect(String(fetchSpy.mock.calls[0][0])).toContain('api.open-meteo.com');
   });
@@ -216,27 +191,36 @@ describe('POST /api/v1/weather/batch', () => {
     // indexed into it as if it were the nested-object form its comment described. Phase 0
     // replaced that with `_normalisePoint` → one contract; this assertion stays as the
     // value-level guard against reintroducing the bug.
-    expect(body.points.map((point) => point.current?.temperature_2m)).toEqual([32, 28.5]);
+    expect(body.points.map((point) => point.current?.temperature_2m))
+      .toEqual(UPSTREAM_MULTI.map((point) => point.current.temperature_2m));
+    expect(body.points[1].current.relative_humidity_2m)
+      .toBe(UPSTREAM_MULTI[1].current.relative_humidity_2m);
     expect(body.points[0]._meta.current_vars).toBeGreaterThan(0);
-    expect(body.points[0].latitude).toBe(23.796133);
+    expect(body.points[0].latitude).toBe(UPSTREAM_MULTI[0].latitude);
   });
 
   test('one upstream call for N points, and the cache does not swallow the first', async () => {
     const { onRequest } = require('../functions/api/v1/weather/batch.ts');
     const { onRequestGet } = require('../functions/api/v1/weather.ts');
 
-    await onRequest(ctx('/api/v1/weather/batch?coords=23.8103,90.4125,dhaka|22.3569,91.7832,chattogram'));
+    const batch = await onRequest(ctx('/api/v1/weather/batch?coords=23.8103,90.4125,dhaka|22.3569,91.7832,chattogram'));
+    const batchBody = await batch.json();
     // One request carrying both coordinates, not two requests.
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     expect(String(fetchSpy.mock.calls[0][0])).toContain('latitude=23.8103%2C22.3569');
+    expect(batchBody.points[0].current.temperature_2m)
+      .toBe(UPSTREAM_MULTI[0].current.temperature_2m);
 
     // A `mini` request for the same coordinate is served from the cache the batch just
     // filled — which is only safe because the cached point is a complete one. Before the
-    // fix this returned an empty bundle for 15 minutes.
+    // fix this returned an empty bundle for 15 minutes. Phase 3: assert the cached object
+    // **equals the returned object**, not merely that a temperature exists.
     const mini = await onRequestGet(ctx('/api/v1/weather?lat=23.8103&lng=90.4125&mini=1'));
     const miniBody = await mini.json();
     expect(fetchSpy).toHaveBeenCalledTimes(1);
-    expect(miniBody.current?.temperature_2m).toBe(32);
+    expect(miniBody.current?.temperature_2m).toBe(UPSTREAM_MULTI[0].current.temperature_2m);
+    const { id: _batchId, ...batchPoint } = batchBody.points[0];
+    expect(miniBody).toEqual(batchPoint);   // the cached object IS the returned object
   });
 
   test('an unsupported method is a 405 that names what is allowed', async () => {

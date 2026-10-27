@@ -31,23 +31,15 @@ afterEach(() => {
   errorSpy.mockRestore();
 });
 
-/** The snapshot artifact's shape, with just enough rows to be meaningful. */
-const SNAPSHOT = {
-  schema: 'hazardnet-forecast-snapshot/v2',
-  generated_at: '2026-10-25T10:49:05.018Z',
-  prediction_date: '2026-10-24',
-  source: 'Kaggle 8-hazardnet-advisory (daily ingestion pipeline)',
-  kernel: 'hazardnet/forecast-pipeline',
-  horizons: {
-    '7_days': [
-      { district_id: 40, district_name: 'Bagerhat', horizon: '7_days', hazard_type: 'Flash Flood', prediction_date: '2026-10-24', target_date: '2026-10-31' },
-      { district_id: 19, district_name: 'Dhaka', horizon: '7_days', hazard_type: 'Heat Wave', prediction_date: '2026-10-24', target_date: '2026-10-31' },
-    ],
-    '15_days': [
-      { district_id: 40, district_name: 'Bagerhat', horizon: '15_days', hazard_type: 'Flash Flood', prediction_date: '2026-10-24', target_date: '2026-11-08' },
-    ],
-  },
-};
+/**
+ * Phase 3: a committed fixture captured from the deployed forecast snapshot — real rows
+ * (Bagerhat 0.6721 WARNING, Bandarban 0.2316 NORMAL), real `generated_at`, real schema,
+ * trimmed to the first rows per horizon. Provenance header in the fixture file; expected
+ * leaves below are read from it, so the parity test can no longer pass over a stub that
+ * only has the keys the code wishes upstream had.
+ */
+const SNAPSHOT = require('./fixtures/forecastsSnapshot.js');
+const ROW_TOTAL = Object.values(SNAPSHOT.horizons).reduce((n, rows) => n + rows.length, 0);
 
 const URL_BASE = 'https://www.hazardnet.live';
 
@@ -79,8 +71,11 @@ describe('GET /api/v1/forecasts/bulk (Pages Function)', () => {
 
     expect(response.status).toBe(200);
     expect(body.horizon).toBe('7_days');
-    expect(body.count).toBe(2);
+    expect(body.count).toBe(SNAPSHOT.horizons['7_days'].length);
     expect(body.forecasts).toEqual(SNAPSHOT.horizons['7_days']);
+    // Leaf values from the captured fixture, not just the row's presence.
+    expect(body.forecasts[0].severity_score).toBe(SNAPSHOT.horizons['7_days'][0].severity_score);
+    expect(body.forecasts[0].advisory_tier).toBe(SNAPSHOT.horizons['7_days'][0].advisory_tier);
     expect(body.data_source).toBe('hazardnet/weekly-forecasts');
     expect(body.generated_at).toBeTruthy();
     expect(response.headers.get('cache-control')).toContain('no-store');
@@ -98,7 +93,7 @@ describe('GET /api/v1/forecasts/bulk (Pages Function)', () => {
 
     const body = await response.json();
     expect(response.status).toBe(200);
-    expect(body.count).toBe(1);
+    expect(body.count).toBe(SNAPSHOT.horizons['15_days'].length);
   });
 
   test('rejects an invalid horizon with the Node runtime\'s own message', async () => {
@@ -187,10 +182,9 @@ describe('GET /api/v1/forecasts/metadata (Pages Function)', () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(body.prediction_date).toBe('2026-10-24');
-    expect(body.ingestion_timestamp).toBe('2026-10-25T10:49:05.018Z');
-    // Two rows in the 7-day horizon plus one in the 15-day horizon.
-    expect(body.row_count).toBe(3);
+    expect(body.prediction_date).toBe(SNAPSHOT.prediction_date);
+    expect(body.ingestion_timestamp).toBe(SNAPSHOT.generated_at);
+    expect(body.row_count).toBe(ROW_TOTAL);
     expect(body.notebook_source).toBe('hazardnet/forecast-pipeline');
     expect(body.data_source).toBe('hazardnet/weekly-forecasts');
     expect(body.generated_at).toBeTruthy();
@@ -206,7 +200,7 @@ describe('GET /api/v1/forecasts/metadata (Pages Function)', () => {
     const response = await onRequestGet(
       context('/api/v1/forecasts/metadata', { snapshot: withoutDate })
     );
-    expect((await response.json()).prediction_date).toBe('2026-10-24');
+    expect((await response.json()).prediction_date).toBe(SNAPSHOT.prediction_date);
   });
 
   test('answers nulls, not an error, for an empty snapshot', async () => {
@@ -281,6 +275,9 @@ describe('the edge envelopes are the Node envelopes', () => {
     expect(Object.keys(edgeBody).sort()).toEqual(Object.keys(nodeRes.body).sort());
     expect(edgeBody.count).toBe(nodeRes.body.count);
     expect(edgeBody.forecasts).toEqual(nodeRes.body.forecasts);
+    // One leaf value per entity, on both runtimes, from the captured fixture.
+    expect(edgeBody.forecasts[0].severity_score).toBe(SNAPSHOT.horizons['7_days'][0].severity_score);
+    expect(nodeRes.body.forecasts[0].district_id).toBe(SNAPSHOT.horizons['7_days'][0].district_id);
     expect(edgeResponse.headers.get('cache-control')).toBe(nodeRes.headers['cache-control']);
 
     jest.dontMock('../backend/forecastStore.js');
@@ -291,9 +288,9 @@ describe('the edge envelopes are the Node envelopes', () => {
       getForecastStoreMode: () => 'memory-test-double',
       resetForecastStore: () => {},
       getForecastStore: () => ({
-        getLatestPredictionDate: async () => '2026-10-24',
-        getLatestIngestionTimestamp: async () => '2026-10-25T10:49:05.018Z',
-        getLatestRowCount: async () => 3,
+        getLatestPredictionDate: async () => SNAPSHOT.prediction_date,
+        getLatestIngestionTimestamp: async () => SNAPSHOT.generated_at,
+        getLatestRowCount: async () => ROW_TOTAL,
       }),
     }));
 

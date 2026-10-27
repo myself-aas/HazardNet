@@ -35,9 +35,13 @@ const makeReq = (over = {}) => ({
   ...over,
 });
 
+// Phase 3: the accepted batch comes from the committed client-beacon fixture, not a stub
+// written to match the validator. `toMatchObject` below was the exact weak assertion class
+// this phase removes; it is now `toEqual` over fixture-sourced leaf values.
+const BATCH_FIXTURE = require('../fixtures/telemetryBatch.js');
 const goodBatch = () => ({
-  sessionId: 's_abc123',
-  events: [{ event: 'app_opened', properties: { platform: 'web' }, at: 1_700_000_000_000 }],
+  sessionId: BATCH_FIXTURE.sessionId,
+  events: [{ ...BATCH_FIXTURE.events[0], properties: { ...BATCH_FIXTURE.events[0].properties } }],
 });
 
 let logSpy;
@@ -110,7 +114,13 @@ describe('POST /api/v1/telemetry', () => {
     await handler(makeReq({ body: goodBatch() }), res);
     expect(logSpy).toHaveBeenCalledTimes(1);
     const line = JSON.parse(logSpy.mock.calls[0][0]);
-    expect(line).toMatchObject({ tag: 'analytics', event: 'app_opened', properties: { platform: 'web' } });
+    expect(line).toEqual({
+      tag: 'analytics',
+      sessionId: BATCH_FIXTURE.sessionId,
+      event: BATCH_FIXTURE.events[0].event,
+      properties: BATCH_FIXTURE.events[0].properties,
+      at: BATCH_FIXTURE.events[0].at,
+    });
   });
 
   it('refuses anything but POST', async () => {

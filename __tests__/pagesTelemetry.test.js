@@ -16,15 +16,16 @@
  */
 
 const { validateTelemetryBatch } = require('../backend/utils/telemetryBatch.js');
+// Phase 3: the batch is a committed fixture captured from the browser streaming tracker's
+// SendBatch shape (provenance header in the fixture file). Expected leaves below come from
+// it, so refreshing the fixture cannot silently downgrade these to presence assertions.
+const BATCH_FIXTURE = require('./fixtures/telemetryBatch.js');
 
 const URL_BASE = 'https://www.hazardnet.live';
 
 const batch = (over = {}) => ({
-  sessionId: 'session-abc-123',
-  events: [
-    { event: 'page_view', at: 1_767_000_000_000, properties: { route: '/', lang: 'en' } },
-    { event: 'map_interaction', at: 1_767_000_001_000, properties: { zoom: 7, dragged: true } },
-  ],
+  sessionId: BATCH_FIXTURE.sessionId,
+  events: BATCH_FIXTURE.events.map((event) => ({ ...event, properties: { ...event.properties } })),
   ...over,
 });
 
@@ -63,20 +64,20 @@ describe('POST /api/v1/telemetry — acceptance', () => {
 
     const first = writeDataPoint.mock.calls[0][0];
     // blobs: [event, sessionId, properties JSON] · doubles: [at] · indexes: [sessionId]
-    expect(first.blobs[0]).toBe('page_view');
-    expect(first.blobs[1]).toBe('session-abc-123');
-    expect(JSON.parse(first.blobs[2])).toEqual({ route: '/', lang: 'en' });
-    expect(first.doubles).toEqual([1_767_000_000_000]);
+    expect(first.blobs[0]).toBe(BATCH_FIXTURE.events[0].event);
+    expect(first.blobs[1]).toBe(BATCH_FIXTURE.sessionId);
+    expect(JSON.parse(first.blobs[2])).toEqual(BATCH_FIXTURE.events[0].properties);
+    expect(first.doubles).toEqual([BATCH_FIXTURE.events[0].at]);
     // The index is what a `WHERE index1 = …` query uses, so it must be the session id and
     // must fit Analytics Engine's 96-byte index limit (the validator caps sessions at 64).
-    expect(first.indexes).toEqual(['session-abc-123']);
+    expect(first.indexes).toEqual([BATCH_FIXTURE.sessionId]);
     expect(first.indexes[0].length).toBeLessThanOrEqual(96);
   });
 
   test('never writes more data points than the per-invocation limit allows', async () => {
     const { onRequest } = require('../functions/api/v1/telemetry.ts');
     const events = Array.from({ length: 50 }, (_, i) => ({
-      event: 'page_view', at: 1_767_000_000_000 + i, properties: {},
+      event: BATCH_FIXTURE.events[0].event, at: BATCH_FIXTURE.events[0].at + i, properties: {},
     }));
 
     const response = await onRequest({ request: post(batch({ events })), env: { ANALYTICS: analytics() } });
@@ -99,10 +100,10 @@ describe('POST /api/v1/telemetry — acceptance', () => {
     // The same shape the Node runtime emits, so a log-based reader keeps working.
     expect(line).toEqual({
       tag: 'analytics',
-      sessionId: 'session-abc-123',
-      event: 'page_view',
-      properties: { route: '/', lang: 'en' },
-      at: 1_767_000_000_000,
+      sessionId: BATCH_FIXTURE.sessionId,
+      event: BATCH_FIXTURE.events[0].event,
+      properties: BATCH_FIXTURE.events[0].properties,
+      at: BATCH_FIXTURE.events[0].at,
     });
   });
 

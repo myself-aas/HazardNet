@@ -95,8 +95,8 @@ describe('internal contract — one array of per-location records, whatever the 
     expect(point).toBeInstanceOf(Object);
     expect(point.latitude).toBe(record.latitude);
     expect(point.generationtime_ms).toBe(0.2620220184326172);   // leaf from the fixture
-    expect(point.current.temperature_2m).toBe(31.1);             // leaf from the fixture
-    expect(point.current.wind_direction_10m).toBe(173);          // leaf from the fixture
+    expect(point.current.temperature_2m).toBe(OBJECT_FIXTURE.current.temperature_2m);
+    expect(point.current.wind_direction_10m).toBe(OBJECT_FIXTURE.current.wind_direction_10m);
     expect(point.current_units.wind_speed_10m).toBe('m/s');      // leaf from the fixture
     // An array inside a record is a time series. It must never be indexed into a scalar.
     expect(point.hourly.temperature_2m).toEqual([28.4, 29.1]);
@@ -122,7 +122,7 @@ describe('both public paths use that contract', () => {
     });
 
     const full = await fetchWeather(23.8103, 90.4125, { forecast_days: 1, skipCache: true });
-    expect(full.current.temperature_2m).toBe(31.1);
+    expect(full.current.temperature_2m).toBe(OBJECT_FIXTURE.current.temperature_2m);
     expect(full.timezone).toBe('Asia/Dhaka');
     expect(full._meta.current_vars).toBe(11);        // 10 variables + interval
 
@@ -145,9 +145,9 @@ describe('both public paths use that contract', () => {
     ]);
     expect(spy).toHaveBeenCalledTimes(1);
     expect(points.map((p) => p.id)).toEqual(['dhaka', 'chattogram']);
-    expect(points[0].current.temperature_2m).toBe(31.1);
-    expect(points[0].current.wind_direction_10m).toBe(173);
-    expect(points[1].current.temperature_2m).toBe(27.8);
+    expect(points[0].current.temperature_2m).toBe(ARRAY_FIXTURE[0].current.temperature_2m);
+    expect(points[0].current.wind_direction_10m).toBe(ARRAY_FIXTURE[0].current.wind_direction_10m);
+    expect(points[1].current.temperature_2m).toBe(ARRAY_FIXTURE[1].current.temperature_2m);
     expect(points[1].current.cloud_cover).toBe(6);
     expect(points[1].location_id).toBe(1);
     for (const point of points) {
@@ -164,6 +164,6 @@ describe('both public paths use that contract', () => {
     ]);
     // One location was answered. The second is dropped, not returned as `{id, _meta}`.
     expect(points).toHaveLength(1);
-    expect(points[0].current.temperature_2m).toBe(31.1);
+    expect(points[0].current.temperature_2m).toBe(ARRAY_FIXTURE[0].current.temperature_2m);
   });
 });
