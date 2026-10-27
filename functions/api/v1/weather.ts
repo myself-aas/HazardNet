@@ -1,5 +1,7 @@
 /**
  * `GET /api/v1/weather?lat=..&lng=..[&forecast_days=16&timezone=Asia/Dhaka][&mini=1]`
+ * (`lon` is accepted as an alias for `lng`; `backend/utils/weatherQuery.js` owns that rule
+ * for this route, the Node function and the Express router alike.)
  *
  * Current conditions and a 16-day forecast for one point, proxied from Open-Meteo (the
  * repository's only weather source). The client calls this from `frontend/src/lib/weather.ts`
@@ -22,6 +24,7 @@
  */
 
 import { fetchWeather, fetchCurrentWeather } from '../../../backend/utils/openMeteo.js';
+import { parsePointQuery } from '../../../backend/utils/weatherQuery.js';
 
 interface PagesContext {
   request: Request;
@@ -39,17 +42,13 @@ function json(body: unknown, status: number, cacheControl: string): Response {
 
 export async function onRequestGet(context: PagesContext): Promise<Response> {
   const params = new URL(context.request.url).searchParams;
-
-  const lat = parseFloat(params.get('lat') ?? '');
-  const lng = parseFloat(params.get('lng') ?? '');
-  if (Number.isNaN(lat) || Number.isNaN(lng)) {
-    return json({ error: 'lat and lng query parameters are required (numeric)' }, 400, 'no-store');
+  // Phase 1: the query contract lives in `backend/utils/weatherQuery.js` with the Node
+  // handlers. `lng` is canonical, `lon` is accepted; a shape fix must not fork per runtime.
+  const parsed = parsePointQuery(params);
+  if ('error' in parsed) {
+    return json({ error: parsed.error }, 400, 'no-store');
   }
-
-  const forecastDaysParam = params.get('forecast_days');
-  const forecast_days = forecastDaysParam ? parseInt(forecastDaysParam, 10) : undefined;
-  const timezone = params.get('timezone') || undefined;
-  const mini = params.get('mini') === '1' || params.get('mini') === 'true';
+  const { lat, lng, forecast_days, timezone, mini } = parsed;
 
   try {
     const data = mini

@@ -1,5 +1,6 @@
 /**
  * GET /api/v1/weather?lat=..&lng=..[&forecast_days=16&timezone=Asia/Dhaka][&mini=1]
+ * (`lon` accepted for `lng` — parsed by backend/utils/weatherQuery.js on every runtime)
  *
  * Current + forecast for one point from Open-Meteo (the repo's only weather data
  * source, see backend/utils/openMeteo.js); `mini=1` returns current-conditions only.
@@ -9,6 +10,7 @@
 
 import { guardRequest } from '../../backend/middleware/serverlessGuard.js';
 import { fetchWeather, fetchCurrentWeather } from '../../backend/utils/openMeteo.js';
+import { parsePointQuery } from '../../backend/utils/weatherQuery.js';
 
 export default async function handler(req, res) {
   if (guardRequest(req, res, { bucket: 'read' })) {
@@ -20,18 +22,13 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'method not allowed' });
   }
 
-  const lat = parseFloat(req.query?.lat);
-  const lng = parseFloat(req.query?.lng);
-  if (Number.isNaN(lat) || Number.isNaN(lng)) {
-    return res.status(400).json({ error: 'lat and lng query parameters are required (numeric)' });
+  // Shared with the Pages Function and the Express router (`weatherQuery.js`): one query
+  // contract, including the `lon` alias, on every runtime.
+  const parsed = parsePointQuery(req.query);
+  if (parsed.error) {
+    return res.status(400).json({ error: parsed.error });
   }
-  const forecast_days = req.query?.forecast_days
-    ? parseInt(req.query.forecast_days, 10)
-    : undefined;
-  const timezone = typeof req.query?.timezone === 'string' && req.query.timezone
-    ? req.query.timezone
-    : undefined;
-  const mini = req.query?.mini === '1' || req.query?.mini === 'true';
+  const { lat, lng, forecast_days, timezone, mini } = parsed;
 
   try {
     const data = mini

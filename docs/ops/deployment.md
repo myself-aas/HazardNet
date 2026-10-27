@@ -271,6 +271,19 @@ read a file, and each difference is the reason it can exist at the edge at all:
 each required to carry a numeric `current.temperature_2m`, because a 200 carrying only ids and
 metadata is exactly what the batch route returned on its first deployment.
 
+**Route register (Phase 1, 2026-10-27).** `docs/ops/route-register.json` is the machine-readable
+answer to "which `/api/**` paths exist, and who has exercised them since the cutover". Every
+path in `frontend/src` must be either a file under `functions/api/` or a **dated disposition**
+there; `__tests__/routeReachability.test.js` fails on any third state. Each edge route names the
+test that asserts a leaf value from a captured fixture (`__tests__/routeValueAssertions.test.js`).
+The weather query contract moved to `backend/utils/weatherQuery.js` so the Express router, the
+Node function and the Pages Function parse `lat`/`lng` and the `coords` mini-language identically:
+`lon` is an accepted alias for `lng`, and `;` is accepted alongside `|` as a point separator
+(URL-encoded `%3B` / `%7C`). Before that, the verification matrix's `?lat=23.8&lon=90.4` answered
+**400** and `?coords=23.8%2C90.4%3B22.3%2C91.8` answered **count: 1** with an id of `91.8` —
+two latent divergences of the same class as the batch shape bug, found by actually calling the
+routes.
+
 **The policy is stamped, not recomputed.** `/api/v1/alerts/policy` answers with the
 thresholds *the engine ran under*, and the edge cannot derive those: a Worker has no
 `process.env`, and the Cloudflare project's environment is not the pipeline's. So

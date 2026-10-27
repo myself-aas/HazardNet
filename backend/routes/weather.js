@@ -1,24 +1,24 @@
 import express from 'express';
 import { fetchWeather, fetchCurrentWeather, fetchCurrentWeatherBatch } from '../utils/openMeteo.js';
+import { parsePointQuery, parseCoordsQuery, parsePointsBody } from '../utils/weatherQuery.js';
 import { clientError } from '../utils/clientError.js';
 
 const router = express.Router();
 
 /**
  * GET /api/v1/weather?lat=..&lng=..[&forecast_days=16&timezone=Asia/Dhaka]
+ * (`lon` is accepted as an alias; all query parsing lives in utils/weatherQuery.js so the
+ * Express, serverless and Pages handlers cannot drift.)
  *
  * Full 16-day bundle: current conditions + all hourly variables + all daily
  * variables. 15-min in-memory cache on the backend.
  */
 router.get('/', async (req, res) => {
-  const lat = parseFloat(req.query.lat);
-  const lng = parseFloat(req.query.lng);
-  if (Number.isNaN(lat) || Number.isNaN(lng)) {
-    return res.status(400).json({ error: 'lat and lng query parameters are required (numeric)' });
+  const parsed = parsePointQuery(req.query);
+  if (parsed.error) {
+    return res.status(400).json({ error: parsed.error });
   }
-  const forecast_days = req.query.forecast_days ? parseInt(req.query.forecast_days, 10) : undefined;
-  const timezone = typeof req.query.timezone === 'string' && req.query.timezone ? req.query.timezone : undefined;
-  const mini = req.query.mini === '1' || req.query.mini === 'true';
+  const { lat, lng, forecast_days, timezone, mini } = parsed;
 
   try {
     const data = mini
@@ -40,13 +40,11 @@ router.get('/', async (req, res) => {
  * limits for 64 points).
  */
 router.post('/batch', express.json({ limit: '256kb' }), async (req, res) => {
-  const points = Array.isArray(req.body?.points) ? req.body.points : [];
-  const mapped = points
-    .filter(p => p && typeof p.lat === 'number' && typeof p.lng === 'number')
-    .map(p => ({ id: p.id ?? `${p.lat},${p.lng}`, lat: p.lat, lng: p.lng }));
-  if (mapped.length === 0) {
-    return res.status(400).json({ error: 'points array must contain {id,lat,lng} entries' });
+  const parsed = parsePointsBody(req.body?.points);
+  if (parsed.error) {
+    return res.status(400).json({ error: parsed.error });
   }
+  const mapped = parsed.points;
   try {
     const results = await fetchCurrentWeatherBatch(mapped, { timezone: req.body?.timezone || 'Asia/Dhaka' });
     res.setHeader('Cache-Control', 'public, max-age=900');
@@ -62,17 +60,16 @@ router.post('/batch', express.json({ limit: '256kb' }), async (req, res) => {
 
 /**
  * GET /api/v1/weather/batch?coords=lat1,lng1,id1|lat2,lng2,id2|...
- * (Query-string convenience for clients that prefer GET.)
+ * (`;` is accepted too — see utils/weatherQuery.js; the Pages Function reads the same
+ * parser, which is the Phase 1 "fix the shape divergence at the source" rule.)
  */
 router.get('/batch', async (req, res) => {
   const coords = typeof req.query.coords === 'string' ? req.query.coords : '';
-  const points = coords.split('|').map(seg => {
-    const [lat, lng, ...rest] = seg.split(',');
-    return { lat: parseFloat(lat), lng: parseFloat(lng), id: rest.join(',') || undefined };
-  }).filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lng));
-  if (points.length === 0) {
-    return res.status(400).json({ error: 'coords query must be lat,lng,id|lat,lng,id|...' });
+  const parsed = parseCoordsQuery(coords);
+  if (parsed.error) {
+    return res.status(400).json({ error: parsed.error });
   }
+  const points = parsed.points;
   try {
     const results = await fetchCurrentWeatherBatch(points);
     res.setHeader('Cache-Control', 'public, max-age=900');
