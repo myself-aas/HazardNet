@@ -133,7 +133,6 @@ function record(
     } catch (error) {
       // A broken binding is a monitoring problem, not a visitor-facing error. Name it once
       // per event so `wrangler pages deployment tail` shows the reason, then keep the event.
-      // eslint-disable-next-line no-console -- the only channel for a non-fatal sink failure.
       console.warn('[telemetry] ANALYTICS.writeDataPoint failed; using the log sink:',
         error instanceof Error ? error.message : String(error));
     }
@@ -172,7 +171,6 @@ export async function onRequest(context: PagesContext): Promise<Response> {
   // not write unreleased-build traffic into the production dataset.
   const production = isProductionRequest(request);
   if (!production && env.ANALYTICS) {
-    // eslint-disable-next-line no-console -- one warning per request, not one per event.
     console.warn('[telemetry] ANALYTICS is bound on a non-production host; using the log sink:',
       requestHostname(request));
   }

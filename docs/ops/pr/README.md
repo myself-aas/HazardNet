@@ -46,6 +46,43 @@ Consequences, recorded rather than papered over:
 Owner actions that need the dashboard are in `docs/ops/owner-actions.md` (Actions 12 and 21,
 § Cost constraints, and the Action 21 route disposition register).
 
+## CI divergence found on the first push (fixed)
+
+PR #108's first CI run was green on six checks and **red on Backend Tests**. Local
+`npx jest --ci --silent` (195 suites) was green, which is exactly why it is recorded here:
+the CI job passes its own `--testPathIgnorePatterns` list, and that CLI array **overrides**
+`jest.config.cjs`'s list — including the `/fixtures/` entry Phase 0 added for the provenance
+fixture modules. Six `.js` fixtures were therefore picked up as test suites:
+
+```
+$ npx jest --ci --silent --testPathIgnorePatterns='/node_modules/' '/e2e/' '/frontend/' '/apps/' '/__mocks__/'
+FAIL backend/utils/__tests__/fixtures/openMeteoSingleObject.js
+  ● Test suite failed to run
+    Your test suite must contain at least one test.
+FAIL __tests__/fixtures/telemetryBatch.js
+  ● Test suite failed to run
+    Your test suite must contain at least one test.
+...
+Test Suites: 6 failed, 2 skipped, 119 passed, 125 of 127 total
+Tests:       24 skipped, 1372 passed, 1396 total
+```
+
+Fixed by adding `'/fixtures/'` to the CI invocation and to `SANCTIONED_IGNORES` in
+`scripts/check-workflows.mjs` (the guard that pins the exact list), and by a comment in
+`ci.yml` explaining why the token is load-bearing. Re-running the exact CI command locally:
+
+```
+$ npx jest --ci --silent --coverage --coverageDirectory=/tmp/coverage-backend --testPathIgnorePatterns='/node_modules/' '/e2e/' '/frontend/' '/apps/' '/__mocks__/' '/fixtures/'
+Test Suites: 2 skipped, 119 passed, 119 of 121 total
+Tests:       24 skipped, 1372 passed, 1396 total
+
+$ node scripts/check-workflows.mjs
+[workflows] OK: 8 workflow files loadable, secrets-safe; templates loadable; ci.yml invariants hold
+```
+
+Two unused `eslint-disable no-console` directives (`console.warn` is allowlisted) were removed
+from `functions/api/v1/telemetry.ts` in the same fix; `npx eslint` on the file is clean.
+
 ## Owner-action status after all seven phases
 
 | Action | State at the end of Phase 6 | Why |
