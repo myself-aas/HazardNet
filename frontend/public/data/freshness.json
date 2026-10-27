@@ -1,20 +1,18 @@
 {
   "schema": "hazardnet-freshness/v1",
-  "built_at": "2026-10-26T19:37:56.290Z",
+  "built_at": "2026-10-27T14:43:47.124Z",
   "generated_by": "scripts/build_freshness_artifact.mjs",
   "what_this_is": "A derived statement about the committed data artifacts this deployment ships. It is not a live probe and it does not measure the running services — the site-health probe result it carries is whatever the last scheduled run published.",
   "overall": {
-    "state": "failing",
+    "state": "fresh",
     "counts": {
-      "fresh": 3,
+      "fresh": 4,
       "stale": 0,
-      "failing": 1,
+      "failing": 0,
       "missing": 0,
       "unknown": 0
     },
-    "not_fresh": [
-      "site_probe"
-    ]
+    "not_fresh": []
   },
   "sources": [
     {
@@ -25,8 +23,8 @@
       "reason": null,
       "generated_at": "2026-10-24T22:33:49.000Z",
       "prediction_date": "2026-10-24",
-      "age_hours": 67.6,
-      "run_age_hours": 45.1,
+      "age_hours": 86.7,
+      "run_age_hours": 64.2,
       "slo_hours": 192,
       "detail": {
         "source": "Kaggle_Daily_Advisory (8-hazardnet-advisory)",
@@ -42,8 +40,8 @@
       "reason": null,
       "generated_at": "2026-10-25T10:49:05.018Z",
       "prediction_date": "2026-10-24",
-      "age_hours": 67.6,
-      "run_age_hours": 32.8,
+      "age_hours": 86.7,
+      "run_age_hours": 51.9,
       "slo_hours": 192,
       "detail": {
         "schema": "hazardnet-forecast-snapshot/v2",
@@ -57,7 +55,7 @@
       "state": "fresh",
       "reason": null,
       "generated_at": "2026-10-25T19:21:16.916Z",
-      "age_hours": 24.3,
+      "age_hours": 43.4,
       "slo_hours": 48,
       "detail": {
         "schema": "hazardnet-alerts/v1",
@@ -72,14 +70,14 @@
       "id": "site_probe",
       "label": "Site-health probe (every 30 min)",
       "artifact": "data/site-health/latest.json",
-      "generated_at": "2026-10-26T19:37:56Z",
+      "generated_at": "2026-10-27T14:43:47Z",
       "age_hours": 0,
       "slo_hours": 2,
       "detail": {
-        "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/40388413095",
+        "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/40523871728",
         "site_url": "https://hazardnet.live",
-        "passed": 6,
-        "failed": 2,
+        "passed": 8,
+        "failed": 0,
         "checks": [
           {
             "id": "homepage",
@@ -98,7 +96,7 @@
           },
           {
             "id": "sitemap",
-            "outcome": "failure",
+            "outcome": "success",
             "detail": null
           },
           {
@@ -118,15 +116,15 @@
           },
           {
             "id": "canonical_host",
-            "outcome": "failure",
+            "outcome": "success",
             "detail": null
           }
         ]
       },
-      "state": "failing",
-      "outcome": "fail",
-      "reason": "the last probe run reported 2 failed check(s): sitemap, canonical_host",
-      "ran_at": "2026-10-26T19:37:56Z"
+      "state": "fresh",
+      "outcome": "pass",
+      "reason": null,
+      "ran_at": "2026-10-27T14:43:47Z"
     }
   ],
   "coverage": {
@@ -158,7 +156,6 @@
   },
   "honesty": [
     "the run did not report which districts are missing, so this page cannot name them — absent is reported as absent, not as \"none\".",
-    "the most recent site-health probe failed: the deployed surface is not currently satisfying its own checks (see the probe run for which ones).",
     "forecast ages are measured from the date-granular prediction_date (UTC midnight), so they carry up to ±24 h of granularity."
   ],
   "inputs": {
@@ -176,7 +173,7 @@
     },
     "site_probe": {
       "path": "data/site-health/latest.json",
-      "ran_at": "2026-10-26T19:37:56Z"
+      "ran_at": "2026-10-27T14:43:47Z"
     }
   }
 }
