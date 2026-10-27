@@ -4,10 +4,12 @@
 # (`/*` = every path; rules are indented two spaces below their matcher.)
 #
 # WHY THIS FILE EXISTS
-#   This is the ONLY declaration that is read by the deployment. `firebase.json`
-#   carries the same policy for anyone who deploys to Firebase Hosting, and helmet
-#   in backend/server.js carries it for the self-hosted container — both are kept
-#   correct, neither is read by Cloudflare Pages (docs/ops/deployment.md).
+#   This is the ONLY declaration read for static assets. Function responses are not
+#   covered by `_headers` (documented Cloudflare behaviour): `/api/*` gets its headers
+#   from functions/_middleware.ts, which applies the same list from
+#   backend/security/httpHeaders.js. helmet in backend/server.js carries the policy for
+#   the self-hosted container; it is kept correct but is not read by Cloudflare Pages
+#   (docs/ops/deployment.md §3).
 #
 #   Before 2026-10-26 the live host served X-Content-Type-Options and
 #   Referrer-Policy but NOT Strict-Transport-Security, Content-Security-Policy or
@@ -18,7 +20,11 @@
 #   why it lives in frontend/public/.
 #
 #   __tests__/securityHeadersParity.test.js parses this file and pins every value
-#   here to backend/security/csp.js and firebase.json, so the copies cannot drift.
+#   here to backend/security/httpHeaders.js (which is what the Functions middleware
+#   applies) and to backend/security/csp.js, so the copies cannot drift.
+#
+# NOTE: `/api/*` is answered by a Pages Function, not by an asset, so none of these
+# rules apply to it — see the middleware note above.
 #
 # NOTE: `Strict-Transport-Security` is ignored by Cloudflare on some plan tiers
 # (it is controlled by SSL/TLS -> Edge Certificates -> HSTS). The line is kept so

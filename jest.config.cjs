@@ -71,6 +71,7 @@ module.exports = {
   collectCoverageFrom: [
     'backend/**/*.js',
     'api/**/*.js',
+    'functions/**/*.ts',
     'frontend/src/utils/**/*.ts',
     'packages/core/src/**/*.ts',
     'packages/api/src/**/*.ts',

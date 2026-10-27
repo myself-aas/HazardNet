@@ -48,10 +48,13 @@ to one (or more) of them:
 **What it provides:** static hosting for the built site (`dist/`), the `_headers` and
 `_redirects` files, custom-domain TLS, preview deployments per branch, and Web Analytics.
 
-The API is **not** part of this deployment: Pages serves static assets only, so
-`/api/**` answers `404`. That is the designed state (see `docs/ops/deployment.md`); the
-front door falls back to the committed snapshot in `/data/`. If an API is wanted later it
-needs its own host (`backend/` on a container, or `api/**` on a Node-function host).
+Two read-only API endpoints **are** part of this deployment since 2026-10-26, as Pages
+Functions: `/api/v1/forecasts/bulk` and `/api/v1/forecasts/metadata`, both snapshot-backed
+(`functions/api/v1/`, `docs/ops/deployment.md` §7). Everything else under `/api/**` answers
+`404`; the front door falls back to the committed snapshot in `/data/`, which is the designed
+delivery path. Those Functions need **no secrets** — they read the deployed JSON through the
+`ASSETS` binding. The optional `FORECAST_DATASET` label is a plain Pages environment variable
+in the **Production** scope, not a secret, and leaving it unset is supported.
 
 **Cost / card:** Free plan is **$0, no credit card**. Limits to know: 500 builds/month,
 20,000 files per deployment, 25 MiB per file.
@@ -346,7 +349,7 @@ that carries `BACKEND_API_KEY` has published it to a build log for no benefit.
 | `FIREBASE_VERIFY_TIMEOUT_MS` | optional | Auth token verification timeout tuning | decision |
 | `CONVERSION_PERSIST_TIMEOUT_MS` | optional | Persistence step timeout tuning | decision |
 | `FORECAST_STORE` | optional | Override the forecast-store path/descriptor (defaults are correct for this repo) | keep default |
-| `FORECAST_DATASET` | optional | Dataset label in API metadata (default `hazardnet/weekly-forecasts`) | keep default |
+| `FORECAST_DATASET` | optional | Dataset label in API metadata (default `hazardnet/weekly-forecasts`). On Pages this is a **Production-scope environment variable**, read as `env.FORECAST_DATASET` — not a secret, and not `process.env` (there is no `process` in a Worker) | keep default |
 | `SNAPSHOT_SOURCE` / `SNAPSHOT_RUN_REPORT` / `SNAPSHOT_KERNEL` / `SCENE_MANIFEST` | optional | Provenance overrides for local snapshot rebuilds | keep default |
 | `ALERT_AUTO_PUBLISH` | optional | `false` (default) keeps alert publication manual | decision |
 | `ALERT_AUTO_PUBLISH_MINUTES` | optional | Auto-publish delay minutes when enabled | decision |

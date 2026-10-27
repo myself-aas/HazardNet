@@ -45,7 +45,7 @@ report.
 | Build output directory | `dist` | the repository-root copy made by `scripts/copy-dist.mjs` (`frontend/dist` alone would also work, but every probe, the E2E serve step and `firebase.json`'s old block used the root copy — one location, one truth) |
 | Root directory | *(empty — repository root)* | the build needs `package.json`, `scripts/` and `frontend/` in one tree |
 | Environment variable | `NODE_VERSION=20` | `engines.node >= 20`; the Vite config and scripts assume 20 LTS |
-| Build watch paths | **include** `frontend/**`, `backend/data/**`, `package.json`, `package-lock.json`, `scripts/**`; **exclude** `data/site-health/**`, `docs/**`, `apps/**`, `e2e/**`, `__tests__/**`, `backend/**` (except `backend/data/**`) | the probe publishes `data/site-health/latest.json` whenever a check changes state, and docs/tests cannot change the bundle; without the exclusions a monitoring loop becomes a deploy loop (Action 9) |
+| Build watch paths | **include** `frontend/**`, `functions/**`, `backend/**`, `package.json`, `package-lock.json`, `scripts/**`; **exclude** `data/site-health/**`, `docs/**`, `apps/**`, `e2e/**`, `__tests__/**` | the probe publishes `data/site-health/latest.json` whenever a check changes state, and docs/tests cannot change the bundle; without the exclusions a monitoring loop becomes a deploy loop (Action 9). **`backend/**` must stay included** since 2026-10-26: the Pages Functions import `backend/security/httpHeaders.js` and `backend/utils/forecast*.js`, so excluding it would rebuild the site while leaving the edge bundle on the old headers — drift between `_headers` and the middleware, which is the failure the parity test is meant to make impossible |
 | Deploy hook | `main` → stored as the `CF_PAGES_DEPLOY_HOOK` secret | see §4 — the ingest commit is `[skip ci]`, so the push alone does **not** rebuild the site |
 | Production branch | `main` | — |
 
@@ -59,14 +59,16 @@ directories would work; one is what the tests assert, so the dashboard follows t
 
 ## 3. What the repository ships to the edge
 
-Cloudflare reads three things out of the published tree. All three are copied verbatim from
-`frontend/public/` and all three are asserted by tests, because a file Cloudflare cannot parse
-fails **silently** — the deployment keeps serving, just without the policy:
+Cloudflare reads four things out of the published tree. All four are copied verbatim from
+`frontend/public/` (`functions/` is different — it is code, not an asset, and it is scoped by `_routes.json`) and all four are asserted by tests,
+because a file Cloudflare cannot parse fails **silently** — the deployment keeps serving, just
+without the policy:
 
 | File | Declares | Asserted by |
 |---|---|---|
 | `_headers` | the full security policy (CSP, HSTS, `nosniff`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, COOP) plus the cache rules for `/assets/*`, `/serviceWorker.js` and `/data/*` | `__tests__/securityHeadersParity.test.js` — parsed, exact values, one line per header, ≤ 2,000 chars per line, ≤ 100 lines |
 | `_redirects` | `/documentation → /docs 301` and **nothing else** | same suite, plus `__tests__/securityTxt.test.js` |
+| `_routes.json` | which requests are Function invocations: `/api/*`, and nothing else | same suite — include is exactly `/api/*`, `exclude` never contains `/*`, ≤ 100 rules of ≤ 100 chars |
 | `404.html` | the noindex shell the prerenderer emits | `__tests__/seoFoundations.test.js` |
 
 **Deliberately absent: `/* /index.html 200`.** The prerenderer writes a real HTML file per
@@ -82,13 +84,27 @@ defence-in-depth and are the opposite: `/data/*.json` is the site's primary read
 that exists. Absent an asset, the request already lands on `404.html`. The invariant is
 asserted in the test suite instead of encoded as a rule.
 
-**No `functions/` directory, on purpose.** A Pages Function — including a `_middleware` —
-makes every static asset request an invocation, and `_headers` already carries the policy for
-static responses. Adding middleware to a fully static site buys nothing and costs invocations,
-cacheability and the simple mental model. If a Function is ever added here, it must import
-`backend/security/csp.js` like every other surface and the parity test must be extended to it
-in the same change; `docs/ops/owner-actions.md` Action 21 tracks the API-migration workstream
-that would bring one.
+**`functions/`, and the one file that keeps it from swallowing the site.** Two read-only
+endpoints live on the edge from 2026-10-26 (`functions/api/v1/forecasts/{bulk,metadata}.ts`,
+Action 21). The moment a `functions/` directory exists, Pages invokes a Function for **every**
+request unless `_routes.json` says otherwise — which would put a 10 ms CPU ceiling and a
+100k/day meter in front of every image, font and data file, and take the "unlimited static
+requests" tier away. So `_routes.json` includes `/api/*` and nothing else, `exclude` is empty
+(`exclude` takes priority over `include`, so `exclude: ["/*"]` would disable the Functions
+entirely — the opposite of what it looks like), and the parity suite asserts both facts.
+
+Two consequences worth knowing before you touch this:
+
+- **`_headers` does not apply to Function responses.** The seven headers on `/api/*` come from
+  `functions/_middleware.ts`, which imports `backend/security/httpHeaders.js` — the same export
+  the parity test compares against `_headers`. Never add a header to one without the other; the
+  suite fails if you do.
+- **Set Runtime → Fail open / closed to "fail open"** in the Pages project settings, so a day
+  that exhausts the Function allowance still serves the static site (and the client's snapshot
+  fallback) instead of an error page.
+
+Everything else under `/api/**` still answers 404 — see §7 for what that means and Action 21
+for the queue.
 
 ## 4. Deploying
 
@@ -104,6 +120,22 @@ that would bring one.
    `data/site-health/**` is excluded from the watch paths as a second guard.
 4. Watch the build in **Workers & Pages → hazardnet → Deployments**. A failed build leaves the
    previous deployment serving traffic; nothing goes dark.
+
+### Pre-flight: compile the Functions the way Pages will
+
+A `functions/` tree that does not bundle fails the **deploy**, not the site — which is the safe
+direction, but it means the failure shows up minutes later in the dashboard rather than locally.
+Before pushing anything that touches `functions/` or the `backend/` modules it imports:
+
+```bash
+npx wrangler pages functions build --outdir /tmp/fnbuild   # "Compiled Worker successfully"
+```
+
+Verified on 2026-10-26 with this tree: a single 24.6 KB bundle containing both routes, the
+middleware and the canonical header strings. No `wrangler.toml` and no login are needed for a
+build — it is esbuild plus the Pages router, and it is the only local check that exercises the
+cross-directory imports (`functions/**` → `backend/security/httpHeaders.js`,
+`backend/utils/forecast*.js`) the way the deployment does.
 
 ### Manual / fallback deploy
 
@@ -184,26 +216,52 @@ single reason there is one canonical origin rather than two.
 - **Data:** a bad `/data/*` snapshot is fixed by reverting the commit that wrote it, not by
   rolling back the site.
 
-## 7. The API has no host
+## 7. The API: two endpoints on the edge, the rest unhosted
 
-Neither API runtime is deployed:
+From 2026-10-26 the API has a host for its **read** surface, and only for that:
 
-- `backend/` (Express) runs in a container when someone starts one — `npm run dev:api`,
-  `docker compose up`, or any host that runs Node 20.
-- `api/**` (Node functions dispatching into `serverless/**`) is kept as the function-shaped
-  surface for a future host; it shares every handler with Express.
+| Route | Served by | Data |
+|---|---|---|
+| `GET /api/v1/forecasts/bulk` | `functions/api/v1/forecasts/bulk.ts` (Pages Function) | the deployed `/data/forecasts-latest.json` |
+| `GET /api/v1/forecasts/metadata` | `functions/api/v1/forecasts/metadata.ts` (Pages Function) | the same artifact's dates and counts |
+| everything else under `/api/**` | nothing — **404** | — |
 
-Consequences you should expect, and not diagnose as breakage:
+These two are snapshot-backed, not store-backed (`backend/utils/forecastSnapshotServe.js` has
+the long version). Three reasons, in the order they matter: a Worker cannot load
+`firebase-admin`; Firestore's Spark plan allows 50k reads/day and a per-request store query
+would spend it re-serving bytes already on the CDN; and serving the API from the same artifact
+the client falls back to means the two can never disagree about "the latest forecast". Cost: **0
+reads, ~2 ms CPU** against the 10 ms ceiling, and no `fs`, no `process`, no native module.
 
-- `www.hazardnet.live/api/**` and `hazardnet.live/api/**` answer **404**.
-- The front door tries the live API, gets a 404, and falls back to the committed snapshot at
-  `/data/alerts-latest.json`, saying so in the status strip. That is the documented delivery
-  path (ADR 0008), not a degraded mode.
-- `monitoring/` documents the Prometheus shape; with no API host there is nothing to scrape,
-  and `site-health.yml` is what watches the site.
-- Porting `api/**` to Pages Functions is a separate workstream with its own risks (invocation
-  cost on every request, a different runtime, and the header contract in §3) —
-  `docs/ops/owner-actions.md` Action 21. It is deliberately **not** part of this cutover.
+Two facts that make the difference between a working edge API and a broken one:
+
+- **Same origin.** The API answers on `www.hazardnet.live`, so there is no CORS preflight, no
+  `Vary: Origin` and no second host to keep alive. That is the whole argument for Pages
+  Functions over a Worker on a subdomain (Action 21).
+- **`_headers` does not reach Function responses.** `functions/_middleware.ts` applies the
+  canonical seven headers from `backend/security/httpHeaders.js`; `securityHeadersParity`
+  asserts that list equals `frontend/public/_headers` and runs the middleware to prove it.
+
+Still unhosted, and still expected to 404 — not breakage:
+
+- **The front door** tries the live alert API, gets a 404, and falls back to the committed
+  snapshot at `/data/alerts-latest.json`, saying so in the status strip. That is the documented
+  delivery path (ADR 0008), not a degraded mode. Porting `alerts` is the next endpoint, not a
+  prerequisite for the site working.
+- **`telemetry`, `metrics`, `weather/batch`, `kaggle`, `historical`, `alerts/**`** — Action 21's
+  queue. Telemetry deliberately lands with Action 12's Analytics Engine binding, so the sink and
+  its writer change in one PR.
+- **`backend/` (Express)** still runs in a container when someone starts one — `npm run dev:api`,
+  `docker compose up`, or any host that runs Node 20 — and **`api/**`** remains the
+  function-shaped surface for a Node host. Neither is deployed.
+- **`monitoring/`** documents the Prometheus shape; with no scrapeable host, `site-health.yml` is
+  what watches the site.
+
+Operational notes for the two edge routes: the Pages project needs **Runtime → Fail open /
+closed = fail open**, so a day that exhausts the daily Function allowance serves the static site
+instead of an error page; and a bad deploy of `functions/` shows up as a *build* failure in
+Pages, not a runtime one — the static site keeps serving the previous deployment, which is what
+made this migration safe to do in one step.
 
 ## 8. What was removed, and what to do if you find a leftover
 

@@ -480,7 +480,7 @@ jobs:
             exit 1
           fi
 
-          echo "::warning::$API_URL returned HTTP $HTTP_CODE — this deployment serves no /api/v1/forecasts/* route: Cloudflare Pages serves static assets only, and the Node API lives in backend/ on its own host. Probing the committed snapshot instead, which is the active delivery path. Set the API_METADATA_URL repository variable if the API runs on another host."
+          echo "::warning::$API_URL returned HTTP $HTTP_CODE — /api/v1/forecasts/metadata is expected to answer from `functions/api/v1/forecasts/metadata.ts` (Pages Function, snapshot-backed) since 2026-10-26. A non-2xx here means the Function failed or the snapshot asset is missing (`docs/ops/deployment.md` §7) — probing the committed snapshot meanwhile, which is the same data the Function serves. Set the API_METADATA_URL repository variable only if the API moved to another host."
           SNAP_CODE=$(curl -sSL --max-redirs 5 -A "$PROBE_USER_AGENT" -H 'Accept: application/json,text/plain;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.9' -o /tmp/metadata.json -w "%{http_code}" --max-time 30 "$SNAPSHOT_URL")
           echo "snapshot HTTP $SNAP_CODE ($SNAPSHOT_URL)"
           if [ "$SNAP_CODE" != "200" ] || ! jq -e . /tmp/metadata.json >/dev/null 2>&1; then

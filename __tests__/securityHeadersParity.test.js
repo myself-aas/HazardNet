@@ -23,9 +23,10 @@
  */
 
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { CSP } from '../backend/security/csp.js';
+import { SECURITY_HEADERS, securityHeaderMap } from '../backend/security/httpHeaders.js';
 
 const root = process.cwd();
 const readJson = (rel) => JSON.parse(readFileSync(join(root, rel), 'utf8'));
@@ -151,6 +152,103 @@ describe('security header parity', () => {
      is one place headers can be declared, and this suite is what keeps it honest. */
   it('declares no second static-host policy', () => {
     expect(readJson('firebase.json')).not.toHaveProperty('hosting');
+  });
+
+  /* `_headers` does not apply to Pages Function responses — documented Cloudflare behaviour.
+     The first endpoint to live on the edge is `/api/v1/forecasts/bulk`, and its headers come
+     from `functions/_middleware.ts` importing the same export this file reads. Asserted by
+     comparing the served file to that export, and by running the middleware: a comment saying
+     "these are kept in sync" is not a control, an equality is. */
+  it('serves the same headers from the canonical list as from _headers', () => {
+    expect(securityHeaderMap()).toEqual(cloudflareHeaders);
+  });
+
+  it('the Functions middleware puts the canonical headers on a response it did not build', async () => {
+    const { onRequest } = await import('../functions/_middleware.ts');
+    const upstream = new Response(JSON.stringify({ ok: true }), {
+      status: 200,
+      headers: { 'content-type': 'application/json', 'x-frame-options': 'SAMEORIGIN' },
+    });
+
+    const response = await onRequest({ request: new Request('https://www.hazardnet.live/api/v1/x'), next: async () => upstream });
+
+    // Every canonical header, by value. `set` semantics mean the middleware's value wins over
+    // whatever the route set — a weaker header from a route must not survive.
+    for (const [name, value] of SECURITY_HEADERS) {
+      expect(`${name}: ${response.headers.get(name)}`).toBe(`${name}: ${value}`);
+    }
+    // The route's own headers are preserved, not replaced wholesale.
+    expect(response.headers.get('content-type')).toBe('application/json');
+    expect(await response.json()).toEqual({ ok: true });
+  });
+
+  it('the middleware passes bodyless statuses through without a body', async () => {
+    const { onRequest } = await import('../functions/_middleware.ts');
+    // `/api/v1/telemetry` answers 204 (Action 12). `new Response(body, {status: 204})` throws,
+    // so the middleware has to drop the body rather than pass it along.
+    const response = await onRequest({
+      request: new Request('https://www.hazardnet.live/api/v1/telemetry', { method: 'POST' }),
+      next: async () => new Response(null, { status: 204 }),
+    });
+    expect(response.status).toBe(204);
+    expect(response.body).toBeNull();
+    expect(response.headers.get('x-content-type-options')).toBe('nosniff');
+  });
+
+  /* `_routes.json` is the file that decides which requests become Function invocations.
+     Without it, adding a `functions/` directory makes Pages run a Function for *every*
+     request — turning the unlimited static tier into 100k invocations/day and putting a
+     10 ms CPU ceiling in front of every image. `exclude` takes priority over `include`, so a
+     `exclude: ["/*"]` would disable the Functions entirely; that inversion is the mistake to
+     avoid, and it is asserted rather than left to a comment. */
+  describe('Function routes are scoped to the API', () => {
+    const routes = readJson('frontend/public/_routes.json');
+
+    it('invokes Functions for /api/* and nothing else', () => {
+      expect(routes.version).toBe(1);
+      expect(routes.include).toEqual(['/api/*']);
+      for (const rule of routes.include) {
+        expect(rule).not.toMatch(/^\/(data|assets|Models)\//);
+      }
+    });
+
+    it('never excludes the whole site (which would disable the Functions)', () => {
+      for (const rule of routes.exclude) {
+        expect(rule).not.toBe('/*');
+        expect(rule).not.toBe('/api/*');
+      }
+    });
+
+    it('stays inside the published limits (≥1 include, ≤100 rules, ≤100 chars each)', () => {
+      const all = [...routes.include, ...routes.exclude];
+      expect(routes.include.length).toBeGreaterThanOrEqual(1);
+      expect(all.length).toBeLessThanOrEqual(100);
+      for (const rule of all) expect(rule.length).toBeLessThanOrEqual(100);
+    });
+  });
+
+  /* Every file under `functions/` becomes a route unless it is a `_middleware` file, so a
+     helper module parked there would be reachable as its own URL. Shared code belongs in
+     `backend/` (where the Node runtimes and this middleware both import it from), and this
+     asserts the rule rather than trusting the next author to know it. */
+  it('keeps shared code out of functions/, so no helper becomes a public route', () => {
+    const walk = (dir) =>
+      readdirSync(join(root, dir), { withFileTypes: true }).flatMap((entry) => {
+        const rel = join(dir, entry.name);
+        return entry.isDirectory() ? walk(rel) : [rel];
+      });
+
+    const routeFiles = walk('functions').filter((file) => file.endsWith('.ts'));
+    expect(routeFiles.length).toBeGreaterThan(0);
+
+    for (const file of routeFiles) {
+      const base = file.split('/').pop();
+      if (base === '_middleware.ts') continue;
+
+      // A route file: under functions/api/ and exporting a handler Pages will call.
+      expect(file.replace(/^functions\//, '')).toMatch(/^api\//);
+      expect(readText(file)).toMatch(/export (async )?function onRequest[A-Z][a-z]*\b/);
+    }
   });
 
   it('keeps HSTS preload-eligible (includeSubDomains + preload + long max-age)', () => {
