@@ -333,23 +333,32 @@ Still unhosted, and still expected to 404 — not breakage:
 - **`alerts/evidence-card`, `alerts/review`, `alerts/run`** stay unhosted: the first is
   store-backed, and the other two are authenticated writes that must not live on a metered edge
   runtime.
-- **`metrics`, `kaggle`, `historical`** — not ported, on purpose, and not breakage. Each is
-  blocked by something the edge does not have, and the honest answer is the Node handler rather
-  than a second copy that would drift (the register's 2026-10-27 decision entry has the detail):
-  - **`/api/metrics`** is a `prom-client` exposition of *the Node process* — heap, event loop,
-    CPU — none of which exists in an isolate, so the series would be fabricated by construction.
-    The one gauge that would survive the move, `hazardnet_forecast_age_hours`, is derived from a
-    Firestore read and is already published as `/data/freshness.json`, which the edge serves as a
-    static asset for free.
-  - **`/api/v1/kaggle`** needs Kaggle HTTP Basic credentials, a ZIP inflate (`node:zlib`) and a
-    disk cache across requests (`node:fs`, `node:os`). The client degrades honestly without it:
-    `useKaggleAdvisories` throws and `AdvisoriesPage` renders *"The Kaggle advisory service could
-    not be reached. No value is shown."* — the page states the absence instead of inventing a
-    value, which is the behaviour the whole site is built around.
-  - **`/api/v1/historical`** reads a 1.5 MB JSON with `node:fs` and re-serialises it per request
-    (≈ 9 ms measured, against a 10 ms CPU budget). Nothing in the front end calls it, and the
-    same bytes are *already* served at `/data/historical/hazard-catalog-index.json` with a CDN
-    cache and no invocation cost. A Function here would be a slower copy of a static file.
+- **`metrics` and `historical` were deleted on 2026-10-27 (Phase 4); `kaggle` is scheduled.**
+  The register's decision entry and `docs/ops/pr/phase-4-disposition.md` carry the measurements;
+  the short version is that nothing should be "dispositioned but still deployed and unexercised":
+  - **`/metrics` and `/api/metrics`** are gone. A Worker isolate has no process series, so a
+    port would publish fabricated numbers. The one meaningful gauge,
+    `hazardnet_forecast_age_hours` (plus the alert-snapshot and probe ages), is now a field in
+    `/data/freshness.json -> gauges.series[]`, built by `scripts/build_freshness_artifact.mjs`.
+    The `monitoring/` Prometheus files are kept as an historical record with a retirement header.
+  - **`/api/v1/historical/*` and `/api/historical`** are gone. Zero browser/e2e callers; the
+    client reads `/data/historical/*.json` from the CDN (confirmed live: 3,062 events, 1.5 MB,
+    190 fetch chunks). The retired handler was a pure re-serialiser of that file — measured
+    `JSON.parse` 2.85 ms + `JSON.stringify` 5.51 ms (median 8.41 ms total, p95 11.44 ms) on
+    local Node/V8 against the 10 ms isolate budget. `frontend/public/_redirects` carries the
+    permanent-404 note; no redirect rule was added, because one could shadow real assets.
+  - **`/api/v1/kaggle`** is **still called** by `useKaggleAdvisories.ts`, so it is not deleted.
+    `backend/services/kaggleAdvisoryClient.js` needs HTTP Basic credentials,
+    `inflateRawSync` from `node:zlib`, and a `node:fs` cache that outlives the request — none
+    exists in a Worker. The plan is a pipeline-written, pre-parsed artifact in R2 that a
+    Function reads (`docs/ops/pr/phase-4b-kaggle-r2.md`), dated 2026-10-27, named PR
+    `feat/kaggle-r2-artifact`. Until then the page states the absence honestly.
+- **`backend/` (Express)** still runs in a container when someone starts one — `npm run dev:api`,
+  `docker compose up`, or any host that runs Node 20 — and **`api/**`** remains the
+  function-shaped surface for a Node host. Neither is deployed. The historical and metrics
+  mounts were removed from both.
+- **`monitoring/`** documents the retired Prometheus shape with a 2026-10-27 header; with no
+  scrapeable host, `/data/freshness.json` and `site-health.yml` are what watch the site.
 - **`backend/` (Express)** still runs in a container when someone starts one — `npm run dev:api`,
   `docker compose up`, or any host that runs Node 20 — and **`api/**`** remains the
   function-shaped surface for a Node host. Neither is deployed.

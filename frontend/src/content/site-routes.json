@@ -1786,45 +1786,45 @@
      ]
     },
     {
-     "h2": "Historical archive API",
+     "h2": "Historical archive (static data, retired API)",
      "table": {
-      "caption": "Read-only historical endpoints under /api/v1/historical",
+      "caption": "The historical REST API was retired on 2026-10-27. These static JSON files are the supported read path, served by the CDN.",
       "columns": [
        "Endpoint",
        "Purpose"
       ],
       "rows": [
        [
-        "GET /api/v1/historical/summary",
-        "Counts and shape of the catalogued archive."
+        "GET /data/historical/national-summary.json",
+        "Headline counts and shape of the catalogued archive (3,062 cleaned events)."
        ],
        [
-        "GET /api/v1/historical/hazards",
-        "The hazard-type roll-up across the archive."
+        "GET /data/historical/hazard-distribution.json",
+        "The hazard-type roll-up across the archive, served as a static asset."
        ],
        [
-        "GET /api/v1/historical/events/:id",
-        "A single catalogued event by identifier."
+        "GET /data/historical/events-master.json",
+        "Master events and their GLIDE identifiers; the page filters them client-side."
        ],
        [
-        "GET /api/v1/historical/national",
-        "The national baseline metrics."
+        "GET /data/historical/hazard-catalog-index.json",
+        "The full 3,062-row catalog (1.5 MB) the archive page loads."
        ],
        [
-        "GET /api/v1/historical/correlations",
-        "The Pearson correlation matrix over the master variables."
+        "GET /data/historical/correlations.json",
+        "The correlation matrix over the master variables."
        ],
        [
-        "GET /api/v1/historical/gee-validation",
-        "The Google Earth Engine cross-check result."
+        "GET /data/historical/gee-validation.json",
+        "The Google Earth Engine cross-check result, unchanged."
        ],
        [
-        "GET /api/v1/historical/vulnerability",
-        "The district vulnerability index."
+        "GET /data/historical/districts-vulnerability.json",
+        "The district vulnerability index, unchanged."
        ],
        [
-        "GET /api/v1/historical/trends",
-        "Yearly temporal trends."
+        "GET /data/historical/temporal-trends.json",
+        "Yearly temporal trends, unchanged."
        ]
       ]
      }

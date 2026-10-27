@@ -3,7 +3,7 @@
  *
  * Validates:
  * - TASK-015: Static JSON Bundling Pipeline & Analytical Datasets Integrity (TRD §2.4.1, §5.1)
- * - TASK-016: GLIDE Link Resolver Utility & Historical REST API Endpoints (TRD §2.5, §5.2, §6.4)
+ * - TASK-016: GLIDE Link Resolver Utility (REST endpoints retired 2026-10-27, Phase 4)
  * - TASK-017: Vulnerability Color Ramp & Geospatial Utilities (TRD §5.1, §7.10)
  * - TASK-018: District Vulnerability Ranking & Historical Catalog Data Engine (TRD §2.4.1, §7.8)
  * - TASK-019: Temporal Trends & Milestone Annotations (TRD §5.1)
@@ -189,65 +189,33 @@ describe('TASK-016: Multilateral GLIDE Link Resolver & REST API', () => {
     assert.throws(() => generateGlideLinks(''), /GLIDE identifier must be a non-empty string/);
   });
 
-  test('backend/server.js registers /api/v1/historical router', () => {
+  test('TASK-016 (disposition 2026-10-27): the historical REST API is retired, the static archive is the delivery path', () => {
+    // Phase 4 measured: no browser or e2e caller uses /api/v1/historical; the client reads
+    // /data/historical/*.json from the CDN; the route was a pure re-serialiser of a 1.5 MB
+    // file whose parse+stringify costs ~8.4 ms against a 10 ms isolate budget.
+    const retired = [
+      'serverless/v1/historical.js',
+      'serverless/historical.js',
+      'backend/routes/historical.js',
+      'serverless/metrics.js',
+    ];
+    for (const file of retired) {
+      assert.ok(!fs.existsSync(path.resolve(process.cwd(), file)), `${file} must stay retired`);
+    }
     const serverCode = fs.readFileSync(path.resolve(process.cwd(), 'backend', 'server.js'), 'utf8');
-    assert.ok(serverCode.includes("from './routes/historical.js'"), 'server.js must import historical routes');
-    assert.ok(serverCode.includes('/api/v1/historical'), 'server.js must mount at /api/v1/historical');
-  });
+    assert.ok(!serverCode.includes("routes/historical.js"), 'server.js must not import the retired router');
+    assert.ok(!serverCode.includes("app.get('/metrics'"), 'server.js must not expose /metrics');
+    const dispatcher = fs.readFileSync(path.resolve(process.cwd(), 'api', 'v1', '[resource].js'), 'utf8');
+    assert.ok(!dispatcher.includes('historical:'), 'the dispatcher must not route historical');
 
-  test('The entry point for /api/v1/historical exists and serves it with security headers', async () => {
-    // The handler lives in serverless/ — a directory no function host scans —
-    // and is deployed by the URL-family entry point (docs/codebase/ARCHITECTURE.md#the-node-function-surface-api).
-    const handlerPath = path.resolve(process.cwd(), 'serverless', 'v1', 'historical.js');
-    assert.ok(fs.existsSync(handlerPath), 'serverless/v1/historical.js must exist');
-    const entryPath = path.resolve(process.cwd(), 'api', 'v1', '[resource].js');
-    assert.ok(fs.existsSync(entryPath), 'api/v1/[resource].js must exist');
-
-    // Drive the entry point, not the handler: this is the file that is deployed, and the
-    // assertion below fails if it stops routing `historical` to this handler.
-    const module = await import('../api/v1/[resource].js');
-    const handler = typeof module.default === 'function' ? module.default : module.default?.default;
-    assert.equal(typeof handler, 'function', 'Serverless handler must be default export');
-    assert.ok(
-      [...(handler.routes || [])].includes('historical'),
-      'api/v1/[resource].js must route historical',
-    );
-
-    // Simulate mock request to /summary
-    let statusCode = 0;
-    const headers = {};
-    let responseBody = null;
-
-    const req = {
-      method: 'GET',
-      url: '/api/v1/historical?action=summary',
-      headers: { host: 'localhost' },
-    };
-
-    const res = {
-      setHeader(k, v) {
-        headers[k] = v;
-        return this;
-      },
-      status(code) {
-        statusCode = code;
-        return this;
-      },
-      json(data) {
-        responseBody = data;
-        return this;
-      },
-      end() {
-        return this;
-      },
-    };
-
-    await handler(req, res);
-    assert.equal(statusCode, 200, 'Handler must return 200');
-    assert.equal(responseBody.success, true);
-    assert.equal(responseBody.total_events, 3062);
-    assert.equal(responseBody.total_districts, 64);
-    assert.equal(responseBody.total_master_events, 70);
+    // Leaf values from the real, CDN-served artifact — the data path that remains.
+    const artifactDir = path.resolve(process.cwd(), 'frontend', 'public', 'data', 'historical');
+    const catalog = JSON.parse(fs.readFileSync(path.join(artifactDir, 'hazard-catalog-index.json'), 'utf8'));
+    assert.equal(catalog.length, 3062);
+    assert.equal(catalog[0].district, 'Barguna');
+    assert.equal(catalog[0].hazard_type, 'Severe Local Storm');
+    const redirects = fs.readFileSync(path.resolve(process.cwd(), 'frontend', 'public', '_redirects'), 'utf8');
+    assert.ok(/permanent 404/i.test(redirects), '_redirects must carry the permanent-404 note');
   });
 });
 

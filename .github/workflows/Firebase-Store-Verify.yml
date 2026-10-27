@@ -69,8 +69,8 @@ jobs:
           curl -s -w "\nHTTP %{http_code}\n" "http://localhost:3010/api/v1/forecasts/history" | head -c 300
           echo
 
-          echo "── GET /metrics — forecast freshness gauge ──"
-          curl -s http://localhost:3010/metrics | grep -A1 hazardnet_forecast_age_hours || echo "(gauge absent — empty store, expected pre-first-run)"
+          echo "── /data/freshness.json — deployment gauges (Phase 4: /metrics retired) ──"
+          node -e "const a=require('./frontend/public/data/freshness.json'); const g=a.gauges.series.find(x=>x.name==='hazardnet_forecast_age_hours'); if(!g) throw new Error('forecast-age gauge missing'); console.log('hazardnet_forecast_age_hours =', g.value, 'hours (SLO', g.slo_hours, 'h)')"
 
           echo "── Store mode the backend selected ──"
           grep -E "\[config\]" server.log | head -10 || true
@@ -85,4 +85,4 @@ jobs:
           fi
 
           kill $(cat server.pid) 2>/dev/null || true
-          echo "✅ Firebase store smoke passed (health/bulk/history/metrics)"
+          echo "✅ Firebase store smoke passed (health/bulk/history/freshness gauges)"

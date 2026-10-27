@@ -30,3 +30,22 @@
 # __tests__/securityHeadersParity.test.js instead of encoded as a rule.
 
 /documentation  /docs  301
+
+# Permanent 404 (Phase 4, 2026-10-27) — deliberately NOT a redirect rule.
+#
+# /api/v1/historical/*, /api/historical and /api/metrics are retired. There is no Function
+# for them and no Node host behind this origin, so an unmatched /api/** path already lands
+# on the noindex 404 shell. Adding a `/api/* /404.html 404` rule here would shadow real
+# assets (see "Deliberately absent #2" above), so this note is the whole guard.
+#
+#   · historical — the client reads /data/historical/*.json from the CDN (3062 events,
+#     1.5 MB). The old handler re-serialised that file: measured parse+stringify
+#     median 8.41 ms / p95 11.44 ms against the 10 ms Pages Functions CPU budget.
+#   · metrics — a Worker isolate has no Node process series; the one meaningful gauge,
+#     hazardnet_forecast_age_hours, is published in /data/freshness.json.
+#   · kaggle — still Node-only with a dated R2-artifact plan (Action 21); it is NOT
+#     deleted here because frontend/src/hooks/useKaggleAdvisories.ts calls it.
+#
+# Rollback for the historical deletion is route-restore + removing this comment; visitor
+# behaviour is unchanged either way. See docs/ops/owner-actions.md Action 21 and
+# docs/ops/pr/phase-4-disposition.md.

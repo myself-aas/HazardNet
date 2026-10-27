@@ -14,11 +14,8 @@ import conversionRoutes from './routes/conversions.js';
 import weatherRoutes from './routes/weather.js';
 import kaggleRoutes from './routes/kaggle.js';
 import alertRoutes from './routes/alerts.js';
-import historicalRoutes from './routes/historical.js';
 import groundingRoutes from './routes/grounding.js';
 import { liveVoiceRouter, setupLiveVoiceWebSocket } from './routes/liveVoice.js';
-import metrics from './metrics.js';
-import { refreshForecastAgeGauge } from './utils/forecastFreshness.js';
 import { predictLimiter, apiLimiter, alertLimiter } from './middleware/rateLimit.js';
 import { requestId } from './middleware/requestId.js';
 import { attachFirebaseAuthUser, dynamicAiLimiter } from './middleware/firebaseAuth.js';
@@ -240,7 +237,7 @@ app.get('/.well-known/oauth-protected-resource', (req, res) => {
     ],
     scopes_supported: [
       'openid', 'email', 'profile',
-      'read:forecasts', 'read:alerts', 'read:weather', 'read:historical',
+      'read:forecasts', 'read:alerts', 'read:weather',
       'read:predictions', 'write:forecasts', 'write:push', 'chat', 'grounding',
     ],
     bearer_methods_supported: ['header'],
@@ -264,7 +261,7 @@ app.get('/.well-known/oauth-authorization-server', (req, res) => {
     jwks_uri: 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com',
     scopes_supported: [
       'openid', 'email', 'profile',
-      'read:forecasts', 'read:alerts', 'read:weather', 'read:historical',
+      'read:forecasts', 'read:alerts', 'read:weather',
       'read:predictions', 'write:forecasts', 'write:push', 'chat', 'grounding',
     ],
     response_types_supported: ['id_token', 'token'],
@@ -310,7 +307,7 @@ app.get('/.well-known/openid-configuration', (req, res) => {
     registration_endpoint: `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_API_KEY}`,
     scopes_supported: [
       'openid', 'email', 'profile',
-      'read:forecasts', 'read:alerts', 'read:weather', 'read:historical',
+      'read:forecasts', 'read:alerts', 'read:weather',
       'read:predictions', 'write:forecasts', 'write:push', 'chat', 'grounding',
     ],
     response_types_supported: ['id_token', 'token'],
@@ -417,15 +414,6 @@ app.get('/.well-known/agent-card.json', (req, res) => {
         description: 'Monitor published hazard alerts with evidence, drivers, policy version, and review status.',
         tags: ['alerts', 'monitoring', 'hazard', 'emergency'],
         examples: ['What alerts are currently published?', 'Show me all active flood alerts'],
-        inputModes: ['text/plain'],
-        outputModes: ['application/json'],
-      },
-      {
-        id: 'historical-catalog',
-        name: 'Historical Hazard Catalog',
-        description: 'Query the historical climatic hazard catalog for Bangladesh across all eight hazard classes.',
-        tags: ['historical', 'catalog', 'archive', 'past-events'],
-        examples: ['Show me the historical flood events for Kurigram district'],
         inputModes: ['text/plain'],
         outputModes: ['application/json'],
       },
@@ -545,7 +533,7 @@ app.get('/.well-known/api-catalog', (req, res) => {
         ],
       },
       {
-        anchor: `${SITE_ORIGIN}/api/v1/historical`,
+        anchor: `${SITE_ORIGIN}/api/v1/forecasts`,
         'service-desc': [
           {
             href: `${SITE_ORIGIN}/api/openapi.yaml`,
@@ -732,21 +720,11 @@ app.use('/api/v1/weather', weatherRoutes);
 // published alerts are public (PRODUCT_SPEC §1.3), the review queue is not.
 app.use('/api/v1/alerts', attachFirebaseAuthUser, alertLimiter, alertRoutes);
 app.use('/v1/alerts', attachFirebaseAuthUser, alertLimiter, alertRoutes);
-app.use('/api/v1/historical', apiLimiter, historicalRoutes);
-app.use('/v1/historical', apiLimiter, historicalRoutes);
+// Retired 2026-10-27 (Phase 4): /api/v1/historical and /api/metrics. The historical
+// archive is served as static JSON by the CDN at /data/historical/*.json, and the one
+// meaningful gauge is published in /data/freshness.json. See docs/ops/owner-actions.md
+// Action 21 and frontend/public/_redirects for the permanent-404 note.
 app.use('/api/live-voice', liveVoiceRouter);
-
-// Prometheus metrics endpoint. The forecast-age gauge is refreshed here
-// (scrape-driven, 60s-cached store probe — see utils/forecastFreshness.js).
-app.get('/metrics', async (req, res) => {
-  try {
-    await refreshForecastAgeGauge();
-    res.set('Content-Type', metrics.register.contentType);
-    res.end(await metrics.register.metrics());
-  } catch (err) {
-    res.status(500).send(err.toString());
-  }
-});
 
 // Serve static frontend build files
 const distPath = path.resolve(process.cwd(), 'frontend', 'dist');

@@ -1,3 +1,12 @@
+# RETIRED 2026-10-27 (Phase 4, docs/ops/owner-actions.md Action 21).
+# No /metrics route is deployed: a Cloudflare Worker isolate has no Node process to
+# scrape, and the public origin is static Pages. The only series that meant anything
+# across runtimes, `hazardnet_forecast_age_hours`, is now published as data in
+# https://www.hazardnet.live/data/freshness.json -> gauges.series[] (built by
+# scripts/build_freshness_artifact.mjs), alongside the site-health probe checks.
+# These Prometheus files are kept as an historical record of the retired Node-only
+# design. Do not re-add a metrics route; add a gauge to the freshness artifact instead.
+#
 # HazardNet alert rules (backlog #5 — forecast freshness SLO).
 #
 # Threshold rationale: the canonical pipeline runs DAILY at 00:00 UTC

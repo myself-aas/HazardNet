@@ -8,9 +8,8 @@
  *
  * Served here (unchanged URLs, unchanged handlers):
  *   POST /api/forecasts    CSV upload → advisories (Gemini) → forecast store
- *   GET  /api/historical   legacy alias of /api/v1/historical
+ *   (retired 2026-10-27: /api/historical and /api/metrics — see docs/ops/owner-actions.md Action 21)
  *   POST /api/ingest       forecast-chunk ingestion
- *   GET  /api/metrics      Prometheus exposition
  *   POST /api/predict      stored prediction lookup
  *
  * Each loader is a literal specifier so the platform's bundler can trace it; they run per
@@ -28,9 +27,7 @@ export default createDispatcher({
   entry: 'api/[endpoint].js',
   routes: {
     forecasts: () => import('../serverless/forecasts.js'),
-    historical: () => import('../serverless/historical.js'),
     ingest: () => import('../serverless/ingest.js'),
-    metrics: () => import('../serverless/metrics.js'),
     predict: () => import('../serverless/predict.js'),
   },
 });

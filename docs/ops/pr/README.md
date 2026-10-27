@@ -17,7 +17,7 @@ and the whole stack is offered as a single PR from the session branch at the end
 | 1 | `fix/latent-route-sweep` | [phase-1-route-sweep.md](phase-1-route-sweep.md) |
 | 2 | `fix/cache-verify-then-write` | [phase-2-cache-contract.md](phase-2-cache-contract.md) |
 | 3 | `test/parity-value-assertions` | [phase-3-test-quality.md](phase-3-test-quality.md) |
-| 4 | `chore/disposition-latent-routes` | [phase-4-disposition.md](phase-4-disposition.md) |
+| 4 | `chore/disposition-latent-routes` | [phase-4-disposition.md](phase-4-disposition.md) · follow-up [phase-4b-kaggle-r2.md](phase-4b-kaggle-r2.md) |
 | 5 | `ops/site-health-verify` | [phase-5-site-health.md](phase-5-site-health.md) |
 | 6 | `chore/action-12-close` | [phase-6-analytics-engine.md](phase-6-analytics-engine.md) |
 

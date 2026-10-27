@@ -1,18 +1,20 @@
 {
   "schema": "hazardnet-freshness/v1",
-  "built_at": "2026-10-27T14:43:47.124Z",
+  "built_at": "2026-10-27T17:56:28.214Z",
   "generated_by": "scripts/build_freshness_artifact.mjs",
   "what_this_is": "A derived statement about the committed data artifacts this deployment ships. It is not a live probe and it does not measure the running services — the site-health probe result it carries is whatever the last scheduled run published.",
   "overall": {
-    "state": "fresh",
+    "state": "stale",
     "counts": {
-      "fresh": 4,
-      "stale": 0,
+      "fresh": 3,
+      "stale": 1,
       "failing": 0,
       "missing": 0,
       "unknown": 0
     },
-    "not_fresh": []
+    "not_fresh": [
+      "site_probe"
+    ]
   },
   "sources": [
     {
@@ -23,8 +25,8 @@
       "reason": null,
       "generated_at": "2026-10-24T22:33:49.000Z",
       "prediction_date": "2026-10-24",
-      "age_hours": 86.7,
-      "run_age_hours": 64.2,
+      "age_hours": 89.9,
+      "run_age_hours": 67.4,
       "slo_hours": 192,
       "detail": {
         "source": "Kaggle_Daily_Advisory (8-hazardnet-advisory)",
@@ -40,8 +42,8 @@
       "reason": null,
       "generated_at": "2026-10-25T10:49:05.018Z",
       "prediction_date": "2026-10-24",
-      "age_hours": 86.7,
-      "run_age_hours": 51.9,
+      "age_hours": 89.9,
+      "run_age_hours": 55.1,
       "slo_hours": 192,
       "detail": {
         "schema": "hazardnet-forecast-snapshot/v2",
@@ -55,7 +57,7 @@
       "state": "fresh",
       "reason": null,
       "generated_at": "2026-10-25T19:21:16.916Z",
-      "age_hours": 43.4,
+      "age_hours": 46.6,
       "slo_hours": 48,
       "detail": {
         "schema": "hazardnet-alerts/v1",
@@ -71,7 +73,7 @@
       "label": "Site-health probe (every 30 min)",
       "artifact": "data/site-health/latest.json",
       "generated_at": "2026-10-27T14:43:47Z",
-      "age_hours": 0,
+      "age_hours": 3.2,
       "slo_hours": 2,
       "detail": {
         "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/40523871728",
@@ -121,12 +123,42 @@
           }
         ]
       },
-      "state": "fresh",
+      "state": "stale",
       "outcome": "pass",
-      "reason": null,
+      "reason": "the last probe result is 3.2 h old (SLO 2 h)",
       "ran_at": "2026-10-27T14:43:47Z"
     }
   ],
+  "gauges": {
+    "what_this_is": "The deployment-wide gauges, published as data instead of a Prometheus scrape. There is no metrics route: a Worker isolate has no process series, and the site-health probe plus this artifact are the observable surfaces.",
+    "emitted_by": "scripts/build_freshness_artifact.mjs",
+    "series": [
+      {
+        "name": "hazardnet_forecast_age_hours",
+        "value": 89.9,
+        "unit": "hours",
+        "source": "forecast_snapshot.age_hours",
+        "slo_hours": 192,
+        "help": "Age of the newest prediction_date in the deployed forecast snapshot. null = unknown."
+      },
+      {
+        "name": "hazardnet_alert_snapshot_age_hours",
+        "value": 46.6,
+        "unit": "hours",
+        "source": "alert_engine.age_hours",
+        "slo_hours": 48,
+        "help": "Age of the deployed alert snapshot. null = unknown."
+      },
+      {
+        "name": "hazardnet_site_probe_age_hours",
+        "value": 3.2,
+        "unit": "hours",
+        "source": "site_probe.age_hours",
+        "slo_hours": 2,
+        "help": "Age of the last published site-health probe record. null = no record."
+      }
+    ]
+  },
   "coverage": {
     "status": "complete",
     "requested_units": null,
