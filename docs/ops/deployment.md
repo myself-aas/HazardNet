@@ -117,8 +117,34 @@ for the queue.
    unset `CF_PAGES_DEPLOY_HOOK`: a trigger that silently does nothing is how the site ends up
    serving yesterday's artifacts while every run is green.
 3. **The site-health probe never deploys.** Its commit also carries `[skip ci]`, and
-   `data/site-health/**` is excluded from the watch paths as a second guard.
-4. Watch the build in **Workers & Pages → hazardnet → Deployments**. A failed build leaves the
+   `data/site-health/**` is excluded from the watch paths as a second guard. Phase 5 adds a
+   third consequence: because no build runs, the *served* copy of the record at
+   `/data/site-health/latest.json` is published by `scripts/copy-dist.mjs` at the next
+   ordinary build, so it can lag the committed record by up to one deployment. The repo file
+   (`data/site-health/latest.json`) and the workflow's `site-health-result` artifact are
+   canonical; the URL is a build-time snapshot. **Do not "fix" this by having the probe write
+   into `frontend/public/data/`** — `frontend/**` is an *included* watch path, which would
+   reintroduce the deploy loop.
+4. **Verify the record landed (Phase 5).** The commit step is `if: always()` and runs *after*
+   the aggregate check, so a broken site still writes a record. Dispatch both expectations and
+   compare the four surfaces — record, run summary, uploaded artifact and the served URL:
+
+   ```bash
+   gh workflow run site-health.yml --ref "$(git branch --show-current)" \
+     -f site_url=https://hazardnet.live -f expect=healthy
+   gh run list --workflow=site-health.yml --limit 3
+   gh run view <run-id> --log | grep -E 'Verify the committed record|site-health record|published data/site-health'
+   curl -s https://www.hazardnet.live/data/site-health/latest.json \
+     | jq '.outcome, (.checks[] | select(.id=="weather_api"))'
+   gh run download <run-id> -n site-health-result -D /tmp/site-health-result
+   diff data/site-health/latest.json /tmp/site-health-result/data/site-health/latest.json
+   # No new Pages deployment may appear for the "[skip ci]" commit:
+   npx wrangler pages deployment list --project-name=<project>   # before and after
+   ```
+
+   A `workflow_dispatch` with `-f expect=broken -f site_url=<broken-deployment>` must land
+   `outcome: fail` with `checks[weather_api].detail` naming `current.temperature_2m`.
+5. Watch the build in **Workers & Pages → hazardnet → Deployments**. A failed build leaves the
    previous deployment serving traffic; nothing goes dark.
 
 ### Pre-flight: compile the Functions the way Pages will

@@ -13,6 +13,23 @@ on:
   schedule:
     - cron: '*/30 * * * *'
   workflow_dispatch:
+    # Phase 5 verification matrix. A healthy dispatch must land a passing record;
+    # pointing `site_url` at a broken deployment and selecting `expect=broken`
+    # must land a *failing* record that names the missing field. Both cases are
+    # exercised locally against a mock by __tests__/siteHealthRecord.test.js.
+    inputs:
+      site_url:
+        description: 'Origin to probe (default: production). Set to a broken deployment to exercise the failing path.'
+        required: false
+        default: ''
+      expect:
+        description: 'What the committed record must say.'
+        required: true
+        default: healthy
+        type: choice
+        options:
+          - healthy
+          - broken
 
 concurrency:
   group: site-health-${{ github.ref }}
@@ -24,6 +41,10 @@ concurrency:
 
 env:
   SITE_URL: https://hazardnet.live
+  # `healthy` (default) requires the committed record to say pass with a green
+  # weather_api; `broken` requires a failing record whose weather_api detail names
+  # the missing reading. scripts/verify_site_health_record.mjs enforces it.
+  EXPECT: healthy
   # The hostname the sitemap, the canonical tags and security.txt all name. It must answer
   # with the same deployment as SITE_URL — see the "Probe the canonical www host" step.
   CANONICAL_URL: https://www.hazardnet.live
@@ -76,6 +97,28 @@ jobs:
       # has contents:write from the workflow-level permissions block.
       - name: Checkout repository
         uses: actions/checkout@v7
+        with:
+          # A scheduled workflow checks out the default branch at a detached sha.
+          # The publish step needs its own branch name to push back, so keep the
+          # ref (GITHUB_REF_NAME) rather than relying on `git branch --show-current`.
+          fetch-depth: 1
+
+      - name: Apply workflow_dispatch overrides
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          DISPATCH_SITE_URL: ${{ inputs.site_url }}
+          DISPATCH_EXPECT: ${{ inputs.expect }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Values come from the environment, never interpolated into the shell.
+          if [ -n "${DISPATCH_SITE_URL:-}" ]; then
+            echo "SITE_URL=${DISPATCH_SITE_URL}" >> "$GITHUB_ENV"
+          fi
+          if [ -n "${DISPATCH_EXPECT:-}" ]; then
+            echo "EXPECT=${DISPATCH_EXPECT}" >> "$GITHUB_ENV"
+          fi
+          echo "dispatch: site_url=${DISPATCH_SITE_URL:-<default>}, expect=${DISPATCH_EXPECT:-healthy}"
 
       - name: Set up Node.js
         # For scripts/build_freshness_artifact.mjs only. That script imports
@@ -572,42 +615,65 @@ jobs:
           SINGLE_URL="$SITE_URL/api/v1/weather?lat=23.8103&lng=90.4125&mini=1"
           BATCH_URL="$SITE_URL/api/v1/weather/batch?coords=23.8103,90.4125,dhaka%7C22.3569,91.7832,chattogram"
 
+          # Phase 5: a red check must name the field it could not see. The old step
+          # wrote `detail: null` for every failure, so the committed record said
+          # "fail" without saying what failed. `detail` is consumed by the publish
+          # step below and asserted by scripts/verify_site_health_record.mjs.
+          fail_weather() {
+            echo "detail=$1" >> "$GITHUB_OUTPUT"
+            echo "::error::$1"
+            head -c 300 /tmp/weather-single.json 2>/dev/null || true
+            head -c 300 /tmp/weather-batch.json 2>/dev/null || true
+            exit 1
+          }
+
           SINGLE_CODE=$(curl -sSL --max-redirs 5 -A "$PROBE_USER_AGENT" -H 'Accept: application/json,text/plain;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.9' -o /tmp/weather-single.json -w "%{http_code}" --max-time 30 "$SINGLE_URL")
           echo "weather HTTP $SINGLE_CODE ($SINGLE_URL)"
 
           if [ "$SINGLE_CODE" != "200" ]; then
-            echo "::error::$SINGLE_URL returned HTTP $SINGLE_CODE. A 5xx here is Open-Meteo failing (the route proxies it and answers 502); a 404 means the deployment lost functions/api/v1/weather.ts. Neither leaves the district panels with weather."
-            head -c 300 /tmp/weather-single.json || true
-            exit 1
+            fail_weather "$SINGLE_URL returned HTTP $SINGLE_CODE (missing: current.temperature_2m). A 5xx here is Open-Meteo failing (the route proxies it and answers 502); a 404 means the deployment lost functions/api/v1/weather.ts."
           fi
           if ! jq -e '.current.temperature_2m | type == "number"' /tmp/weather-single.json >/dev/null 2>&1; then
-            echo "::error::$SINGLE_URL answered 200 without a numeric current.temperature_2m — that is the shape of the 2026-10-27 defect, where the normaliser returned metadata and no readings."
-            head -c 300 /tmp/weather-single.json || true
-            exit 1
+            fail_weather "$SINGLE_URL answered 200 without a numeric current.temperature_2m (missing: current.temperature_2m) — that is the shape of the 2026-10-27 defect, where the normaliser returned metadata and no readings."
           fi
           VARS=$(jq -r '._meta.current_vars // 0' /tmp/weather-single.json)
           echo "single point: temperature_2m $(jq -r '.current.temperature_2m' /tmp/weather-single.json) °C, current_vars $VARS"
           if [ "$VARS" -lt 1 ]; then
-            echo "::error::$SINGLE_URL reported _meta.current_vars=$VARS — the metadata says the bundle carries no readings."
-            exit 1
+            fail_weather "$SINGLE_URL reported _meta.current_vars=$VARS (missing: _meta.current_vars >= 1) — the metadata says the bundle carries no readings."
           fi
 
           BATCH_CODE=$(curl -sSL --max-redirs 5 -A "$PROBE_USER_AGENT" -H 'Accept: application/json,text/plain;q=0.9,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.9' -o /tmp/weather-batch.json -w "%{http_code}" --max-time 30 "$BATCH_URL")
           echo "batch HTTP $BATCH_CODE ($BATCH_URL)"
 
           if [ "$BATCH_CODE" != "200" ]; then
-            echo "::error::$BATCH_URL returned HTTP $BATCH_CODE — the district marker layer reads this route for every point it paints."
-            head -c 300 /tmp/weather-batch.json || true
-            exit 1
+            fail_weather "$BATCH_URL returned HTTP $BATCH_CODE (missing: points[].current.temperature_2m) — the district marker layer reads this route for every point it paints."
           fi
           POINTS=$(jq -r '.count // 0' /tmp/weather-batch.json)
           READINGS=$(jq -r '[.points[]? | select(.current.temperature_2m | type == "number")] | length' /tmp/weather-batch.json)
           if [ "$POINTS" != "2" ] || [ "$READINGS" != "2" ]; then
-            echo "::error::$BATCH_URL returned count=$POINTS with $READINGS/2 points carrying a numeric current.temperature_2m. A batch that answers 200 with ids and no readings is the failure mode this check exists for."
-            head -c 400 /tmp/weather-batch.json || true
-            exit 1
+            fail_weather "$BATCH_URL returned count=$POINTS with $READINGS/2 points carrying a numeric current.temperature_2m (missing: points[].current.temperature_2m). A batch that answers 200 with ids and no readings is the failure mode this check exists for."
           fi
           echo "✅ Weather proxy answers for one point and for a batch, with readings on every point"
+
+      # Phase 5: single-step monitors are single-point-of-blindness monitors. Every
+      # endpoint with a second runtime path gets a sibling scenario here — ANALYTICS
+      # bound vs unbound (fail-open 204 + validation 400), cache hit vs miss, and
+      # POST-only vs GET / GET vs POST batch. The scenarios live in a script so the
+      # same assertions run against a local mock in Jest, not only in CI.
+      - name: Probe the runtime sibling paths
+        id: runtime_paths
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -uo pipefail
+          node scripts/probe_runtime_paths.mjs --base-url "$SITE_URL" | tee /tmp/runtime-paths.json
+          STATUS=${PIPESTATUS[0]}
+          if [ "$STATUS" != "0" ]; then
+            FAILING=$(jq -r '[.results[] | select(.pass == false) | .name + ": " + .detail] | join("; ")' /tmp/runtime-paths.json | tr '\n' ' ' | head -c 900)
+            echo "detail=runtime sibling paths failed — $FAILING" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+          echo "detail=$(jq -r '.scenarios' /tmp/runtime-paths.json) sibling runtime paths passed" >> "$GITHUB_OUTPUT"
 
       # Phase 7: the status page is part of the product surface now, and so is the
       # artifact it renders. Both are probed here — a page that says "within SLO"
@@ -780,6 +846,9 @@ jobs:
           OUT_FORECAST_DATA: ${{ steps.forecast_data.outcome }}
           OUT_ALERTS_API: ${{ steps.alerts_api.outcome }}
           OUT_WEATHER_API: ${{ steps.weather_api.outcome }}
+          OUT_WEATHER_API_DETAIL: ${{ steps.weather_api.outputs.detail }}
+          OUT_RUNTIME_PATHS: ${{ steps.runtime_paths.outcome }}
+          OUT_RUNTIME_DETAIL: ${{ steps.runtime_paths.outputs.detail }}
           OUT_STATUS_PAGE: ${{ steps.status_page.outcome }}
           OUT_CONTENT_PAGES: ${{ steps.content_pages.outcome }}
           OUT_CANONICAL_HOST: ${{ steps.canonical_host.outcome }}
@@ -800,6 +869,9 @@ jobs:
             --arg forecast_data "$OUT_FORECAST_DATA" \
             --arg alerts_api "$OUT_ALERTS_API" \
             --arg weather_api "$OUT_WEATHER_API" \
+            --arg weather_api_detail "$OUT_WEATHER_API_DETAIL" \
+            --arg runtime_paths "$OUT_RUNTIME_PATHS" \
+            --arg runtime_detail "$OUT_RUNTIME_DETAIL" \
             --arg status_page "$OUT_STATUS_PAGE" \
             --arg content_pages "$OUT_CONTENT_PAGES" \
             --arg canonical_host "$OUT_CANONICAL_HOST" \
@@ -809,7 +881,7 @@ jobs:
               run_url: $run_url,
               site_url: $site_url,
               edge_challenged: ($edge_challenged == "1"),
-              outcome: (if ([$homepage, $deep_links, $security_headers, $sitemap, $forecast_data, $alerts_api, $weather_api, $status_page, $content_pages, $canonical_host] | all(. == "success")) then "pass" else "fail" end),
+              outcome: (if ([$homepage, $deep_links, $security_headers, $sitemap, $forecast_data, $alerts_api, $weather_api, $runtime_paths, $status_page, $content_pages, $canonical_host] | all(. == "success")) then "pass" else "fail" end),
               checks: [
                 { id: "homepage", outcome: $homepage, detail: null },
                 { id: "deep_links", outcome: $deep_links, detail: null },
@@ -818,7 +890,10 @@ jobs:
                 { id: "sitemap", outcome: $sitemap, detail: null },
                 { id: "forecast_data", outcome: $forecast_data, detail: null },
                 { id: "alerts_api", outcome: $alerts_api, detail: null },
-                { id: "weather_api", outcome: $weather_api, detail: null },
+                { id: "weather_api", outcome: $weather_api,
+                  detail: (if $weather_api_detail == "" then null else $weather_api_detail end) },
+                { id: "runtime_paths", outcome: $runtime_paths,
+                  detail: (if $runtime_detail == "" then null else $runtime_detail end) },
                 { id: "status_page", outcome: $status_page, detail: null },
                 { id: "content_pages", outcome: $content_pages, detail: null },
                 { id: "canonical_host", outcome: $canonical_host, detail: null }
@@ -830,18 +905,55 @@ jobs:
             echo ""
             echo "- probe outcome: $(jq -r '.outcome' data/site-health/latest.json)"
             echo "- edge challenged: $(jq -r '.edge_challenged' data/site-health/latest.json)"
-            jq -r '.checks[] | "  - \(.id): \(.outcome)"' data/site-health/latest.json
+            jq -r '.checks[] | "  - \(.id): \(.outcome)\(if .detail then " — " + .detail else "" end)"' data/site-health/latest.json
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Enforce aggregate site-health probe outcome
+        id: aggregate
+        if: always()
+        # Phase 5: this check runs BEFORE the publish step, and the publish step has
+        # `if: always()`. A failing check must still write the record — a monitor that
+        # stops writing when the site is broken is exactly backwards. The job is made
+        # red by the final gate below, which reads this step's outcome.
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          EDGE_CHALLENGED=$(jq -r '.edge_challenged // false' data/site-health/latest.json)
+          OUTCOME=$(jq -r '.outcome // "fail"' data/site-health/latest.json)
+          if [ "$EDGE_CHALLENGED" = "true" ]; then
+            echo "::warning::Cloudflare challenged the runner, so site-health checks are inconclusive (outcome=$OUTCOME). See data/site-health/latest.json and Action 18."
+            exit 0
+          fi
+          if [ "$OUTCOME" != "pass" ]; then
+            # Name every failing check and its recorded detail. The old message said only
+            # "outcome=fail", so a red run (and the committed artifact, whose checks all
+            # carried `detail: null`) sent triage to the step log for the actual reason.
+            FAILED_SUMMARY=$(jq -r '.checks[] | select(.outcome != "success")
+              | "  - \(.id): \(.outcome)\(if .detail then " — " + .detail else "" end)"' \
+              data/site-health/latest.json || true)
+            echo "::error::One or more site-health probes failed (outcome=$OUTCOME). See data/site-health/latest.json."
+            printf '%s\n' "$FAILED_SUMMARY"
+            {
+              echo ""
+              echo "- **failing checks** (outcome=$OUTCOME):"
+              printf '%s\n' "$FAILED_SUMMARY"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo "All $(jq -r '.checks | length' data/site-health/latest.json) site-health probes passed."
 
       - name: Publish the probe result to the branch
         if: always()
         shell: bash
         run: |
           set -uo pipefail
-          if [ "${GITHUB_REF_NAME}" != "main" ]; then
-            echo "::notice::not the default branch (${GITHUB_REF_NAME}) — the probe result stays a run artifact."
-            exit 0
-          fi
+          # Phase 5: the record is published to the ref that was probed. A scheduled
+          # run is `main`; a `workflow_dispatch` verification on another branch lands
+          # on that branch instead of silently skipping (the old guard meant a
+          # dispatch could never prove the record lands). Never main from a dispatch.
+          TARGET_REF="${GITHUB_REF_NAME}"
+          echo "publishing the probe result to ${TARGET_REF} (event: ${GITHUB_EVENT_NAME})"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/site-health/latest.json frontend/public/data/freshness.json
@@ -877,6 +989,13 @@ jobs:
 
           git show HEAD:data/site-health/latest.json > /tmp/old-probe.json 2>/dev/null || : > /tmp/old-probe.json
           git show HEAD:frontend/public/data/freshness.json > /tmp/old-fresh.json 2>/dev/null || : > /tmp/old-fresh.json
+          # A `workflow_dispatch` verification must land a fresh record even when the
+          # state projection is unchanged: the whole point of the dispatch is to prove
+          # the write path. Scheduled runs keep the state-change guard.
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            echo "workflow_dispatch — forcing a publish so the write path is verified"
+            : > /tmp/old-probe.json
+          fi
 
           NEW_PROBE=$(probe_signal data/site-health/latest.json)
           NEW_FRESH=$(freshness_signal frontend/public/data/freshness.json)
@@ -890,7 +1009,7 @@ jobs:
           fi
 
           OUTCOME=$(jq -r '.outcome' data/site-health/latest.json)
-          git pull --rebase --autostash origin main || true
+          git pull --rebase --autostash origin "$TARGET_REF" || true
           # `[skip ci]` is load-bearing. The site is built by Cloudflare Pages on every push
           # to `main`, and Pages honours the same skip tokens, so a probe commit without it
           # would redeploy the whole site every time a check changed state — turning a
@@ -899,14 +1018,43 @@ jobs:
           # this is the first, and it is the one that works even if someone clears the
           # watch-path list in the dashboard.
           git commit -m "chore(ops): site-health probe ${OUTCOME} $(date -u +%Y-%m-%dT%H:%MZ) [skip ci]"
-          # HEAD:main rather than a bare `git push`: a scheduled run checks the ref
-          # out at a sha, and pushing a detached HEAD without an explicit refspec
-          # fails with "You are not currently on a branch" even when the token has
-          # write access — which the warning below would then misreport as a
-          # read-only-permissions problem.
-          if ! git push origin HEAD:main; then
-            echo "::warning::could not publish the probe result to the branch — this repository's workflow permissions are read-only (docs/ops/owner-actions.md, Action 9). The result is still in the run summary and the uploaded artifact."
+          # HEAD:${TARGET_REF} rather than a bare `git push`: a scheduled run checks
+          # the ref out at a sha, and pushing a detached HEAD without an explicit
+          # refspec fails with "You are not currently on a branch" even when the
+          # token has write access — which the warning below would then misreport
+          # as a read-only-permissions problem. TARGET_REF is the ref that was
+          # probed, so a verification dispatch never writes to main.
+          if ! git push origin "HEAD:${TARGET_REF}"; then
+            if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+              echo "::error::could not publish the probe result to ${TARGET_REF} — a dispatched verification that cannot write has not verified anything."
+              exit 1
+            fi
+            echo "::warning::could not publish the probe result to ${TARGET_REF} — this repository's workflow permissions are read-only (docs/ops/owner-actions.md, Action 9). The result is still in the run summary and the uploaded artifact."
+          else
+            echo "::notice::published data/site-health/latest.json to ${TARGET_REF} with [skip ci]"
           fi
+
+      # Phase 5: "the record landed" is a value assertion. This runs AFTER the
+      # aggregate check and AFTER the commit, with `if: always()`, so a broken site
+      # still gets a verified record. It compares the committed record, the derived
+      # freshness artifact (the same two files the artifact below uploads) and the
+      # run summary, and enforces the dispatch's expectation.
+      - name: Verify the committed record
+        if: always()
+        shell: bash
+        run: |
+          set -uo pipefail
+          case "${EXPECT:-healthy}" in
+            healthy) EXPECTED=pass ;;
+            broken)  EXPECTED=fail ;;
+            *) echo "::error::unknown EXPECT=${EXPECT}"; exit 1 ;;
+          esac
+          echo "verifying the site-health record (expect=$EXPECTED)"
+          node scripts/verify_site_health_record.mjs \
+            --record data/site-health/latest.json \
+            --freshness frontend/public/data/freshness.json \
+            --summary "$GITHUB_STEP_SUMMARY" \
+            --expect "$EXPECTED"
 
       - name: Upload the probe result
         if: always()
@@ -916,6 +1064,7 @@ jobs:
           path: |
             data/site-health/latest.json
             frontend/public/data/freshness.json
+            /tmp/runtime-paths.json
           retention-days: 30
 
       - name: Summarize
@@ -934,31 +1083,9 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Enforce aggregate site-health probe outcome
-        if: always()
+      - name: Fail the run when a check is red
+        if: always() && steps.aggregate.outcome == 'failure'
         shell: bash
         run: |
-          set -euo pipefail
-          EDGE_CHALLENGED=$(jq -r '.edge_challenged // false' data/site-health/latest.json)
-          OUTCOME=$(jq -r '.outcome // "fail"' data/site-health/latest.json)
-          if [ "$EDGE_CHALLENGED" = "true" ]; then
-            echo "::warning::Cloudflare challenged the runner, so site-health checks are inconclusive (outcome=$OUTCOME). See data/site-health/latest.json and Action 18."
-            exit 0
-          fi
-          if [ "$OUTCOME" != "pass" ]; then
-            # Name every failing check and its recorded detail. The old message said only
-            # "outcome=fail", so a red run (and the committed artifact, whose checks all
-            # carried `detail: null`) sent triage to the step log for the actual reason.
-            FAILED_SUMMARY=$(jq -r '.checks[] | select(.outcome != "success")
-              | "  - \(.id): \(.outcome)\(if .detail then " — " + .detail else "" end)"' \
-              data/site-health/latest.json || true)
-            echo "::error::One or more site-health probes failed (outcome=$OUTCOME). See data/site-health/latest.json."
-            printf '%s\n' "$FAILED_SUMMARY"
-            {
-              echo ""
-              echo "- **failing checks** (outcome=$OUTCOME):"
-              printf '%s\n' "$FAILED_SUMMARY"
-            } >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
-          echo "All $(jq -r '.checks | length' data/site-health/latest.json) site-health probes passed."
+          echo "::error::One or more site-health probes failed. See the aggregate check above, data/site-health/latest.json and the uploaded artifact."
+          exit 1
