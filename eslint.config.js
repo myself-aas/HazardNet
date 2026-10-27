@@ -51,6 +51,14 @@ export default tseslint.config(
     languageOptions: { globals: { ...globals.browser, process: 'readonly' } },
   },
   {
+    // Pages Functions (Cloudflare Workers runtime). Web-standard globals only — no `process`,
+    // no `fs`, no node built-ins: `functions/**` is bundled for the edge, where none of them
+    // exist. Adding `globals.node` here would let a Node import lint clean and then fail at
+    // deploy time (docs/ops/deployment.md §7).
+    files: ['functions/**/*.ts'],
+    languageOptions: { globals: { ...globals.worker } },
+  },
+  {
     // Service workers: web worker runtime (self, caches, clients) plus workbox.
     files: ['frontend/public/**/*.js', 'frontend/src/serviceWorker.ts'],
     languageOptions: { globals: { ...globals.serviceworker, workbox: 'readonly', precacheAndRoute: 'readonly', importScripts: 'readonly' } },
