@@ -25,8 +25,9 @@
  * the landscape URL stays the inline fallback.
  *
  * Wired from `HeroImageCarousel`: each slide paints `var(--hero-slide-<slug>, url(<landscape>))`.
- * Custom properties inherit, which is why the override targets :root. Keep the preload in
- * `frontend/src/content/site-routes.json` in step with the primary entry below.
+ * Custom properties inherit, which is why the override targets :root. Keep the preloads in
+ * `frontend/src/content/site-routes.json` in step with both density branches below, so the
+ * preload scanner fetches the same first frame this viewport will paint and no other.
  */
 @media (max-width: 639px) {
   :root {

@@ -120,6 +120,20 @@ describe('the live status strip', () => {
     expect(screen.getByText(/partial/)).toBeInTheDocument();
   });
 
+  it('keeps its metadata and actions in phone-width columns', () => {
+    const { container } = strip();
+
+    const metadata = container.querySelector('dl') as HTMLElement;
+    expect(metadata.className).toContain('grid-cols-2');
+    expect(metadata.className).toContain('sm:flex');
+    expect(metadata.lastElementChild?.className).toContain('col-span-2');
+
+    const actions = screen.getByRole('link', { name: /All published alerts/i }).closest('ul') as HTMLElement;
+    expect(actions.className).toContain('grid-cols-2');
+    expect(actions.className).toContain('gap-y-2');
+    expect(actions.className).toContain('sm:flex');
+  });
+
   it('states the zero case as a statement about the publisher, not the weather', () => {
     strip();
     expect(screen.getByText(/No alert is published at the moment of this read/)).toBeInTheDocument();
@@ -149,6 +163,37 @@ describe('the live status strip', () => {
     expect(screen.getByRole('status').querySelector('[data-testid="strip-counts"]')).toBeNull();
   });
 
+  it('keeps loader diagnostics out of the reader copy and offers a 44px recovery target', () => {
+    const onRetry = jest.fn();
+    const failed = strip({
+      counts: null,
+      assessed: null,
+      withheld: null,
+      readFailed: true,
+      error: 'live API: HTTP 503',
+      onRetry,
+    });
+
+    const region = screen.getByRole('status') as HTMLElement;
+    // The safety instrument is present at first paint: no entrance may start it at opacity 0.
+    expect(region.style.opacity).not.toBe('0');
+    expect(screen.getByText(/could not be read on this load/i)).toBeInTheDocument();
+    expect(screen.queryByText(/HTTP 503/)).not.toBeInTheDocument();
+
+    const retry = screen.getByRole('button', { name: /try again/i });
+    expect(retry.className).toContain('min-h-[44px]');
+    retry.click();
+    expect(onRetry).toHaveBeenCalledTimes(1);
+    failed.unmount();
+
+    // A diagnostic can survive a successful snapshot fallback. Readable counts must not be
+    // contradicted by an alarm panel for the request that was recovered from.
+    strip({ error: 'live API: HTTP 404' });
+    expect(screen.getByRole('status').querySelector('[data-testid="strip-counts"]')).not.toBeNull();
+    expect(screen.queryByText(/HTTP 404/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/carried no level-by-level ledger/i)).not.toBeInTheDocument();
+  });
+
   it('is announced, so a reader who leaves the page open hears it change', () => {
     strip();
     const region = screen.getByRole('status');
@@ -170,6 +215,7 @@ describe('the live status strip', () => {
     });
     const link = screen.getByRole('link', { name: 'Sunamganj' });
     expect(link).toHaveAttribute('href', '/alerts/2026-09-21__7_days__sunamganj__flash-flood__p2026-09-18');
+    expect(link.className).toContain('min-h-[44px]');
     // with a permalink present, the "nothing published" prose must be gone
     expect(screen.queryByText(/No alert is published at the moment of this read/)).not.toBeInTheDocument();
   });

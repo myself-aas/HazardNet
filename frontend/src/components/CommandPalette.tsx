@@ -412,7 +412,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="fixed inset-0 z-[var(--ap-z-overlay)] bg-carbon-black/40 flex items-start justify-center pt-12 sm:pt-20 px-4"
+              className="fixed inset-0 z-[var(--ap-z-overlay)] bg-carbon-black/40 flex items-start justify-center pb-[max(1rem,env(safe-area-inset-bottom,0px))] pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] pt-[max(3rem,env(safe-area-inset-top,0px))] sm:pt-[max(5rem,env(safe-area-inset-top,0px))]"
               onClick={(e) => {
                 if (e.target === e.currentTarget) setIsOpen(false);
               }}
@@ -428,7 +428,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.94, y: -12 }}
                 transition={AP_SPRING}
-                className="max-w-2xl w-full bg-ap-elevated border border-carbon-20 rounded-3xl shadow-2xl overflow-hidden text-carbon-90 flex flex-col max-h-[85vh]"
+                className="max-w-2xl w-full bg-ap-elevated border border-carbon-20 rounded-3xl shadow-2xl overflow-hidden text-carbon-90 flex flex-col max-h-[min(85dvh,100%)]"
               >
                 {/* Header / Search Input */}
                 <div className="relative flex items-center px-4 py-3 border-b border-carbon-20 bg-carbon-05">
@@ -446,12 +446,16 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                     data-testid="district-search-input"
                     aria-label="Search districts, hazards and documents"
                     placeholder="Search districts, hazards or docs"
-                    className="w-full pl-3 pr-10 py-1.5 bg-transparent text-carbon-90 placeholder-carbon-40 text-sm font-medium focus:outline-none"
+                    inputMode="search"
+                    enterKeyHint="search"
+                    autoComplete="off"
+                    className="w-full pl-3 pr-10 py-1.5 bg-transparent text-carbon-90 placeholder-carbon-40 text-base font-medium focus:outline-none"
                     autoFocus
                   />
 
                   {query ? (
                     <button
+                      type="button"
                       onClick={() => {
                         setQuery('');
                         setSelectedIndex(0);
@@ -459,6 +463,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                       }}
                       className="p-1 rounded-md text-carbon-60 hover:text-carbon-80 hover:bg-carbon-20 transition-colors text-xs font-mono font-bold"
                       title="Clear search"
+                      aria-label="Clear search"
                     >
                       <MaterialIcon name="close" className="text-sm" />
                     </button>

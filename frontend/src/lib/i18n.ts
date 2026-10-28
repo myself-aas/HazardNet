@@ -311,19 +311,19 @@ const EN = {
   'frontdoor.hero.reviewed': 'reviewed {date}',
   'frontdoor.hero.reviewedUnknown': 'review date unknown',
   'frontdoor.hero.ctaMap': 'Open the live map',
-  'frontdoor.hero.ctaMethodology': 'How a forecast is produced',
+  'frontdoor.hero.ctaMethodology': 'Read the methodology',
   'frontdoor.hero.ctaScorecard': 'Read the validation scorecard',
   'frontdoor.hero.viewLastRun': 'View the last run, from the committed artifacts',
   'frontdoor.hero.authority':
     'HazardNet is decision support, not an official warning service. Weather warnings, cyclone signals and flood bulletins come from the Bangladesh Meteorological Department and the Flood Forecasting and Warning Centre; in an emergency call 999.',
   'frontdoor.hero.authorityMap': 'The live map carries the current outlooks.',
+  'frontdoor.hero.imageNote': 'Hero imagery is illustrative.',
   'frontdoor.hero.pauseMotion': 'Pause motion',
   'frontdoor.hero.resumeMotion': 'Resume motion',
   'frontdoor.hero.readMore': 'Read the full overview',
   'frontdoor.hero.readLess': 'Show less',
-  'frontdoor.toc': 'On this page',
+  'frontdoor.toc': 'Guide to the sections below',
   'frontdoor.tocSection': 'Section',
-  'frontdoor.bengaliDraft': 'Bengali draft. Awaiting native-speaker review',
   'common.showLess': 'Show less',
   'frontdoor.runVisual.showMore': 'Show {remaining} more notes',
 
@@ -334,8 +334,8 @@ const EN = {
     'The alerts artifact could not be read on this load, so no count is shown here. An unread file is never reported as zero.',
   'frontdoor.strip.noLedger':
     'The read succeeded but the answer carried no level-by-level ledger, so no count is shown here. That is not the same as a count of zero.',
-  'frontdoor.strip.districts': 'Districts covered',
-  'frontdoor.strip.assessed': 'Assessed rows',
+  'frontdoor.strip.districts': 'Districts in the last run',
+  'frontdoor.strip.assessed': 'District forecasts assessed',
   'frontdoor.strip.updated': 'Updated',
   'frontdoor.strip.navLabel': 'Alert and map pages',
   'frontdoor.strip.allAlerts': 'All published alerts',
@@ -363,26 +363,26 @@ const EN = {
     '{count} alerts are published from this run; each one carries its evidence, its policy version and its reviewer.',
   'frontdoor.runVisual.publishedNone':
     'No alert is published from this run. {withheld} assessed rows were withheld by the review gate rather than dropped silently.',
-  'frontdoor.runVisual.artifacts': 'Artifacts this deployment ships',
+  'frontdoor.runVisual.artifacts': 'Data files (artifacts) this site publishes',
   'frontdoor.runVisual.honesty': 'What the run reports against itself',
   'frontdoor.runVisual.moreHonesty': 'This card shows the first three of {total} notes; the rest are on the',
   'frontdoor.runVisual.provenance':
     'Every value on this card is read from /data/freshness.json and /data/alerts-latest.json',
 
-  'frontdoor.covers.h2': 'What this deployment covers',
+  'frontdoor.covers.h2': 'What HazardNet covers',
   'frontdoor.covers.hazards': 'Hazard classes, from cold wave to tropical cyclone',
   'frontdoor.covers.districts': 'Districts addressed on the live map',
-  'frontdoor.covers.horizons': 'Forecast horizons, in days, from one deterministic weather window',
-  'frontdoor.covers.episodes': 'Historical episodes scored in the validation report',
+  'frontdoor.covers.horizons': 'Forecast horizons: the next 7 days and the next 15 days',
+  'frontdoor.covers.episodes': 'Historical episodes checked in the validation scorecard',
   'frontdoor.covers.coverageValue': '{covered} of {expected} districts',
   'frontdoor.covers.noteLead':
-    'Coverage is stated from the artifacts, not from the design: the last forecast snapshot covered',
+    'Counted from the published forecast file, whose last snapshot covered',
   'frontdoor.covers.noteUnits': '({units} forecast units produced)',
   'frontdoor.covers.noteTail': 'shows where each artifact came from and how old it is.',
   'frontdoor.covers.statusLink': 'status page',
 
   'frontdoor.run.h2': 'The last published alerts',
-  'frontdoor.run.aside': 'read from the committed artifacts on every load',
+  'frontdoor.run.aside': 'Read from the published data files on every load',
   'frontdoor.run.publishedEyebrow': 'Published alerts',
   'frontdoor.run.reading': 'Reading the alerts artifact …',
   'frontdoor.run.noneLead': 'That is a statement about the publisher, not about the weather. The run behind this read',
@@ -401,36 +401,34 @@ const EN = {
   'frontdoor.run.noneFor': 'for the current outlooks and the',
   'frontdoor.run.noneStatusLink': 'status page',
   'frontdoor.run.noneTail': 'for why a run may be held.',
-  'frontdoor.run.errorPrefix': 'The alert source reported: {error}',
+  'frontdoor.run.errorPrefix':
+    'The alerts file could not be read completely on this load, so a missing count here is unknown rather than zero. Reload the page, or check the status page.',
   'frontdoor.run.horizon': '{horizon} horizon',
   'frontdoor.run.valid': 'valid {date}',
   'frontdoor.run.published': 'published {at}',
   'frontdoor.run.publishedUnknown': 'publication time not reported',
   'frontdoor.run.alertNav': 'Alert pages',
   'frontdoor.run.failed':
-    'At least one artifact could not be read on this load. The panels above say so where it applies; a blank is never rendered as a zero.',
+    'At least one published data file could not be read on this load. The panels above say so where it applies; a blank is never rendered as a zero.',
 
   /* The reader's word for this section, not the vendor's: nothing on the page is for sale, and
-     `Hazards` is what the top bar already calls the same thing. The eyebrow below keeps the
-     count, which is why the caption no longer repeats "hazard classes" a fourth time. */
+     `Hazards` is what the top bar already calls the same thing. The caption keeps the count. */
   'frontdoor.products.h2': 'Hazards',
   'frontdoor.products.aside': 'Eight classes · 7 and 15 day horizons',
-  'frontdoor.products.hazardsEyebrow': 'Eight hazard classes',
-  'frontdoor.products.hazardsNote':
-    'Every run labels each district with one of eight classes. Each card links to the full methodology for that class.',
   'frontdoor.products.horizonsEyebrow': 'Forecast horizons',
   'frontdoor.products.horizon7': '7-day outlook',
   'frontdoor.products.horizon7desc':
-    'The short window: what the meteorological drivers resemble over the coming week, district by district.',
+    'For the week ahead: each district\'s outlook over the next 7 days.',
   'frontdoor.products.horizon15': '15-day outlook',
   'frontdoor.products.horizon15desc':
-    'The extended window: the same record computed over fifteen days, published side by side with the week.',
+    'For planning further ahead: the same district outlook over the next 15 days, published beside the week and read as the less certain of the two.',
   'frontdoor.products.methodologyLink': 'How each class is scored',
   'frontdoor.products.forecastDocs': 'How to read a forecast',
   'frontdoor.blogs.h2': 'Newest from the blog',
   'frontdoor.blogs.aside': 'Field notes and analysis',
   'frontdoor.blogs.loading': 'Loading the newest posts…',
-  'frontdoor.blogs.error': 'The blog could not be read: {error}',
+  'frontdoor.blogs.error':
+    'The newest posts could not be loaded. The outlook and alert sections above are unaffected; use Try again to reload this list.',
   'frontdoor.blogs.retry': 'Try again',
   'frontdoor.blogs.empty': 'No posts are published yet. Field notes will appear here as soon as they are.',
   'frontdoor.blogs.minRead': '{min} min read',
@@ -757,26 +755,27 @@ const BN: Record<string, string> = {
   'district.noAlert': 'এই জেলার জন্য কোনো প্রকাশিত সতর্কবার্তা নেই।',
   'district.baselineOnly': 'বর্তমান রানে এই জেলার কোনো সারি নেই, তাই উপরের কার্ডে স্থির ভিত্তিমান দেখানো হচ্ছে।',
 
-  /* ── The front door (`/`) — see the note on the English side: drafted, awaiting the
-     native-speaker review recorded as owner Action 6c. ── */
+  /* ── The front door (`/`) — see the note on the English side: read and approved by the
+     project owner on 2026-09-19 (owner Action 6c, closed for this surface); strings added
+     or rewritten after that date start as pending-native-speaker. ── */
   'frontdoor.language.other': 'Read in English',
   'frontdoor.relatedPages': 'সংশ্লিষ্ট পাতা',
   'frontdoor.hero.reviewed': 'পর্যালোচনা {date}',
   'frontdoor.hero.reviewedUnknown': 'পর্যালোচনার তারিখ অজানা',
   'frontdoor.hero.ctaMap': 'লাইভ মানচিত্র খুলুন',
-  'frontdoor.hero.ctaMethodology': 'কীভাবে পূর্বাভাস তৈরি হয়',
+  'frontdoor.hero.ctaMethodology': 'পদ্ধতিগত বিবরণ পড়ুন',
   'frontdoor.hero.ctaScorecard': 'যাচাই স্কোরকার্ড পড়ুন',
   'frontdoor.hero.viewLastRun': 'সংরক্ষিত আর্টিফ্যাক্ট অনুযায়ী শেষ রানটি দেখুন',
   'frontdoor.hero.authority':
     'HazardNet সিদ্ধান্ত সহায়তা মাত্র, কোনো সরকারি সতর্কবার্তা সেবা নয়। আবহাওয়ার সতর্কবার্তা, ঘূর্ণিঝড় সংকেত ও বন্যা বুলেটিন প্রকাশ করে বাংলাদেশ আবহাওয়া অধিদপ্তর এবং প্লাবন পূর্বাভাস ও সতর্কীকরণ কেন্দ্র (FFWC); জরুরি অবস্থায় ৯৯৯ নম্বরে কল করুন।',
   'frontdoor.hero.authorityMap': 'বর্তমান পূর্বাভাস লাইভ মানচিত্রে দেখা যাবে।',
+  'frontdoor.hero.imageNote': 'পেছনের চিত্রটি দৃষ্টান্তমূলক।',
   'frontdoor.hero.pauseMotion': 'গতি থামান',
   'frontdoor.hero.resumeMotion': 'গতি চালু করুন',
   'frontdoor.hero.readMore': 'সম্পূর্ণ সারসংক্ষেপ পড়ুন',
   'frontdoor.hero.readLess': 'সংক্ষেপে দেখান',
-  'frontdoor.toc': 'এই পাতায়',
+  'frontdoor.toc': 'নিচের বিভাগগুলোর নির্দেশিকা',
   'frontdoor.tocSection': 'বিভাগ',
-  'frontdoor.bengaliDraft': 'বাংলা খসড়া. স্থানীয় ভাষাভাষীর পর্যালোচনা বাকি',
   'common.showLess': 'কম দেখান',
   'frontdoor.runVisual.showMore': 'আরও {remaining}টি নোট দেখান',
 
@@ -787,8 +786,8 @@ const BN: Record<string, string> = {
     'এইবার আর্টিফ্যাক্টটি পড়া যায়নি, তাই এখানে কোনো সংখ্যা দেখানো হচ্ছে না. ফাইল পড়া না গেলে তা শূন্য হিসেবে দেখানো হয় না।',
   'frontdoor.strip.noLedger':
     'পাঠ সফল হয়েছে, তবে উত্তরে স্তরভিত্তিক হিসাব ছিল না; তাই এখানে কোনো সংখ্যা দেখানো হচ্ছে না। এটি শূন্য সংখ্যার সমান নয়।',
-  'frontdoor.strip.districts': 'আওতাভুক্ত জেলা',
-  'frontdoor.strip.assessed': 'মূল্যায়িত সারি',
+  'frontdoor.strip.districts': 'শেষ রানে আওতাভুক্ত জেলা',
+  'frontdoor.strip.assessed': 'মূল্যায়ন করা জেলা-পূর্বাভাস',
   'frontdoor.strip.updated': 'হালনাগাদ',
   'frontdoor.strip.navLabel': 'সতর্কবার্তা ও মানচিত্রের পাতা',
   'frontdoor.strip.allAlerts': 'প্রকাশিত সব সতর্কবার্তা',
@@ -816,20 +815,20 @@ const BN: Record<string, string> = {
     'এই রান থেকে {count}টি সতর্কবার্তা প্রকাশিত; প্রতিটির সঙ্গে তার প্রমাণ, নীতির সংস্করণ ও পর্যালোচনাকারীর পরিচয় আছে।',
   'frontdoor.runVisual.publishedNone':
     'এই রান থেকে কোনো সতর্কবার্তা প্রকাশিত হয়নি। মূল্যায়িত {withheld}টি সারি নীরবে বাদ না দিয়ে পর্যালোচনা-গেটে আটকে রাখা হয়েছে।',
-  'frontdoor.runVisual.artifacts': 'এই ডিপ্লয়মেন্ট যেসব আর্টিফ্যাক্ট সরবরাহ করে',
+  'frontdoor.runVisual.artifacts': 'এই সাইট যেসব তথ্য-ফাইল (আর্টিফ্যাক্ট) প্রকাশ করে',
   'frontdoor.runVisual.honesty': 'রান নিজেই যেসব সীমাবদ্ধতা জানিয়েছে',
   'frontdoor.runVisual.moreHonesty': 'এই কার্ডে {total}টি নোটের প্রথম তিনটি দেখানো হলো; বাকিগুলো আছে',
   'frontdoor.runVisual.provenance':
     'এই কার্ডের প্রতিটি সংখ্যা /data/freshness.json ও /data/alerts-latest.json থেকে নেওয়া',
 
-  'frontdoor.covers.h2': 'এই ডিপ্লয়মেন্ট যা আওতা করে',
+  'frontdoor.covers.h2': 'HazardNet যা আওতা করে',
   'frontdoor.covers.hazards': 'দুর্যোগের শ্রেণি, শৈতপ্রবাহ থেকে ঘূর্ণিঝড় পর্যন্ত',
   'frontdoor.covers.districts': 'লাইভ মানচিত্রে আওতাভুক্ত জেলা',
-  'frontdoor.covers.horizons': 'একটি নির্ধারিত আবহাওয়া উইন্ডো থেকে পূর্বাভাসের সময়কাল (দিনে)',
-  'frontdoor.covers.episodes': 'হিন্ডকাস্ট প্রতিবেদনে মূল্যায়িত ঐতিহাসিক ঘটনা',
+  'frontdoor.covers.horizons': 'পূর্বাভাসের সময়কাল: আগামী ৭ দিন ও আগামী ১৫ দিন',
+  'frontdoor.covers.episodes': 'যাচাই স্কোরকার্ডে যাচাই করা ঐতিহাসিক ঘটনা',
   'frontdoor.covers.coverageValue': '{expected}টির মধ্যে {covered}টি জেলা',
   'frontdoor.covers.noteLead':
-    'আচ্ছাদন নকশা থেকে নয়, আর্টিফ্যাক্ট থেকে বলা হয়েছে: শেষ পূর্বাভাস স্ন্যাপশট আওতা করেছে',
+    'প্রকাশিত পূর্বাভাস-ফাইল থেকে গণনা করা, যার শেষ স্ন্যাপশট আওতা করেছে',
   'frontdoor.covers.noteUnits': '({units}টি পূর্বাভাস ইউনিট তৈরি)',
   'frontdoor.covers.noteTail': 'দেখায় প্রতিটি আর্টিফ্যাক্ট কোথা থেকে এসেছে এবং কত পুরনো।',
   'frontdoor.covers.statusLink': 'স্ট্যাটাস পাতা',
@@ -854,32 +853,31 @@ const BN: Record<string, string> = {
   'frontdoor.run.noneFor': 'এবং একটি রান কেন আটকে থাকতে পারে তা জানতে',
   'frontdoor.run.noneStatusLink': 'স্ট্যাটাস পাতা',
   'frontdoor.run.noneTail': 'দেখুন।',
-  'frontdoor.run.errorPrefix': 'সতর্কবার্তার উৎস জানিয়েছে: {error}',
+  'frontdoor.run.errorPrefix':
+    'এইবার সতর্কবার্তার ফাইল সম্পূর্ণ পড়া যায়নি, তাই এখানে অনুপস্থিত কোনো সংখ্যাকে শূন্য না ধরে অজানা ধরতে হবে। পাতাটি আবার লোড করুন, বা স্ট্যাটাস পাতা দেখুন।',
   'frontdoor.run.horizon': '{horizon} সময়কাল',
   'frontdoor.run.valid': 'প্রযোজ্য {date}',
   'frontdoor.run.published': 'প্রকাশিত {at}',
   'frontdoor.run.publishedUnknown': 'প্রকাশের সময় জানানো হয়নি',
   'frontdoor.run.alertNav': 'সতর্কবার্তার পাতা',
   'frontdoor.run.failed':
-    'এইবার অন্তত একটি আর্টিফ্যাক্ট পড়া যায়নি। যেখানে প্রযোজ্য, ওপরের প্যানেলগুলো তা জানিয়েছে; খালি ঘর কখনো শূন্য হিসেবে দেখানো হয় না।',
+    'এইবার অন্তত একটি প্রকাশিত তথ্য-ফাইল পড়া যায়নি। যেখানে প্রযোজ্য, ওপরের প্যানেলগুলো তা জানিয়েছে; খালি ঘর কখনো শূন্য হিসেবে দেখানো হয় না।',
 
   'frontdoor.products.h2': 'ঝুঁকিসমূহ',
   'frontdoor.products.aside': '৮টি শ্রেণি · ৭ ও ১৫ দিনের পূর্বাভাস',
-  'frontdoor.products.hazardsEyebrow': 'আটটি ঝুঁকি শ্রেণি',
-  'frontdoor.products.hazardsNote':
-    'প্রতিটি রানে প্রতিটি জেলাকে আটটি শ্রেণির একটি দিয়ে চিহ্নিত করা হয়। প্রতিটি কার্ড সেই শ্রেণির পূর্ণ পদ্ধতিগত বিবরণের সঙ্গে যুক্ত।',
   'frontdoor.products.horizonsEyebrow': 'পূর্বাভাসের সময়সীমা',
   'frontdoor.products.horizon7': '৭ দিনের পূর্বাভাস',
-  'frontdoor.products.horizon7desc': 'স্বল্প সময়সীমা: আগামী এক সপ্তাহে আবহাওয়া চালকগুলো জেলাভিত্তিক কোন রূপ নেয়।',
+  'frontdoor.products.horizon7desc': 'আগামী সপ্তাহের জন্য: পরবর্তী ৭ দিনে প্রতিটি জেলার পূর্বাভাস।',
   'frontdoor.products.horizon15': '১৫ দিনের পূর্বাভাস',
   'frontdoor.products.horizon15desc':
-    'বর্ধিত সময়সীমা: পনেরো দিনের জন্য গণনা করা একই রেকর্ড, সপ্তাহের পূর্বাভাসের পাশেই প্রকাশিত।',
+    'আরও সামনের পরিকল্পনার জন্য: পরবর্তী ১৫ দিনে একই জেলা-পূর্বাভাস, সপ্তাহের পূর্বাভাসের পাশেই প্রকাশিত এবং দুটির মধ্যে কম নিশ্চিত হিসেবে পড়ার মতো।',
   'frontdoor.products.methodologyLink': 'প্রতিটি শ্রেণি কীভাবে মূল্যায়ন করা হয়',
   'frontdoor.products.forecastDocs': 'পূর্বাভাস কীভাবে পড়বেন',
   'frontdoor.blogs.h2': 'ব্লগের সর্বশেষ লেখা',
   'frontdoor.blogs.aside': 'মাঠের নোট ও বিশ্লেষণ',
   'frontdoor.blogs.loading': 'সর্বশেষ লেখা লোড হচ্ছে…',
-  'frontdoor.blogs.error': 'ব্লগ পড়া যায়নি: {error}',
+  'frontdoor.blogs.error':
+    'সর্বশেষ লেখাগুলো লোড করা যায়নি। উপরের পূর্বাভাস ও সতর্কবার্তা অংশগুলো এতে প্রভাবিত হয়নি; এই তালিকা আবার লোড করতে আবার চেষ্টা করুন।',
   'frontdoor.blogs.retry': 'আবার চেষ্টা করুন',
   'frontdoor.blogs.empty': 'এখনও কোনো লেখা প্রকাশিত হয়নি। প্রকাশ হওয়া মাত্র এখানে দেখা যাবে।',
   'frontdoor.blogs.minRead': '{min} মিনিটে পড়া যায়',

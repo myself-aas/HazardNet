@@ -111,7 +111,15 @@ const CURRENT_VARS_ALL = [
   'soil_temperature_54cm',
 ];
 
-// Full hourly set (surface + 133 pressure-level fields = 191 total).
+// Full hourly set (surface + 133 pressure-level fields = 189 total).
+// `total_cloud_cover` and `zero_degree_level` are deliberately absent: neither is an
+// Open-Meteo hourly variable, so one occurrence made EVERY full-shape request fail
+// upstream with `400 … invalid String value total_cloud_cover`, which this proxy maps
+// to 502 (verified live against api.open-meteo.com on 2026-10-28 — the site-health
+// probe's `weather_full_shape` scenario, run 40621036497). `cloud_cover` in this list
+// is the hourly total cloud cover and `freezing_level_height` is the zero-degree level, so
+// nothing that could be read is lost. Do not re-add a name here without asking the
+// upstream first; `backend/utils/__tests__/openMeteo.test.js` pins these two out.
 const HOURLY_VARS = [
   'apparent_temperature',
   'cape',
@@ -154,7 +162,6 @@ const HOURLY_VARS = [
   'temperature_2m',
   'terrestrial_radiation',
   'terrestrial_radiation_instant',
-  'total_cloud_cover',
   'uv_index',
   'uv_index_clear_sky',
   'vapour_pressure_deficit',
@@ -170,7 +177,6 @@ const HOURLY_VARS = [
   'wind_speed_80m',
   'wind_speed_120m',
   'wind_speed_180m',
-  'zero_degree_level',
   ...expandPressure('temperature'),
   ...expandPressure('relative_humidity'),
   ...expandPressure('dew_point'),

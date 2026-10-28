@@ -94,6 +94,18 @@ describe('the header bar', () => {
     expect(screen.getByRole('link', { name: 'Home' })).not.toHaveAttribute('aria-current');
   });
 
+  it('reserves the measured safe-area header height instead of spending the inset inside it', () => {
+    renderNavbar();
+    const header = screen.getByRole('banner');
+    expect(header.className).toContain('h-[var(--navbar-height)]');
+    expect(header.firstElementChild?.className).toContain(
+      'pl-[max(1rem,env(safe-area-inset-left,0px))]',
+    );
+    expect(header.firstElementChild?.className).toContain(
+      'pr-[max(1rem,env(safe-area-inset-right,0px))]',
+    );
+  });
+
   it('keeps the menu button a 44px target that announces what it controls', () => {
     renderNavbar();
     const button = screen.getByRole('button', { name: /open navigation menu/i });
@@ -116,6 +128,7 @@ describe('the drawer', () => {
     expect(drawer).toHaveAttribute('role', 'dialog');
     expect(drawer).toHaveAttribute('aria-modal', 'true');
     expect(drawer).toHaveAttribute('id', 'menu-drawer');
+    expect(drawer.className).toContain('pr-[env(safe-area-inset-right,0px)]');
     expect(screen.getAllByRole('button', { name: /close navigation menu/i }).length).toBeGreaterThan(0);
   });
 

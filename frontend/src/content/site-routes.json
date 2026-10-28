@@ -44,9 +44,14 @@
      "media": "(min-width: 640px)"
     },
     {
+     "href": "/hero-carousel/hero-flood-delta-portrait.jpg",
+     "as": "image",
+     "media": "(max-width: 639px) and (max-resolution: 1.99dppx)"
+    },
+    {
      "href": "/hero-carousel/hero-flood-delta-portrait-2x.jpg",
      "as": "image",
-     "media": "(max-width: 639px)"
+     "media": "(max-width: 639px) and (min-resolution: 2dppx)"
     }
    ],
    "sitemap": {
@@ -56,17 +61,48 @@
    "appShell": false,
    "h1": "A forecast you can check, not just read",
    "standfirst": "HazardNet is an independent, open research platform that turns satellite observations and weather forecasts into 7- and 15-day outlooks for eight climate hazards across Bangladesh’s 64 districts. Every figure it shows comes from a named artifact with a build date, the validation scorecard is published whether it flatters the model or not, and the boundary between this platform and the agencies that issue official warnings is stated on every page.",
-   "updated": "2026-09-19",
+   "updated": "2026-10-28",
    "sections": [
     {
-     "h2": "What this platform is for",
+     "h2": "Start here: what to do with an outlook",
      "paragraphs": [
-      "The operational question in Bangladesh agriculture is rarely whether a hazard is coming; it is which districts, at which crop stage, with how many days of lead time, and how much weight the number deserves. HazardNet is built to answer that second set of questions. For each district and horizon it publishes a hazard class, a severity index, a confidence bin and an independent physics estimate: and the run they came from."
+      "Use an outlook as lead time, in this order: find your district, read the hazard, the horizon, the forecast date, the severity and the confidence together, then check the official bulletin for that hazard before you act. The sections below explain each of those pieces; the links here are the working surfaces."
+     ],
+     "bullets": [
+      "For a farm decision (planting, spraying, irrigating or harvesting), a district outlook tells you when to pay attention, not what to do in a particular field. Confirm the step locally, with extension advice where you can.",
+      "For an extension or union parishad decision, start from the published alerts and the sector advisories: each alert carries its evidence and policy version, and each advisory names the issuing authority at each step.",
+      "For a research or review question, start from the validation scorecard and the model card rather than from a colour on the map: they state what was checked, and what the counts cannot support.",
+      "In an emergency, do not act on this page. Call 999, and follow your local administration and the official BMD or FFWC bulletin over anything published here."
+     ],
+     "links": [
+      {
+       "label": "Open the live map",
+       "href": "/live"
+      },
+      {
+       "label": "Published alerts",
+       "href": "/alerts"
+      },
+      {
+       "label": "Sector advisories",
+       "href": "/advisories"
+      },
+      {
+       "label": "Use cases",
+       "href": "/use-cases"
+      }
+     ]
+    },
+    {
+     "h2": "What HazardNet is for, and who it serves",
+     "paragraphs": [
+      "The operational question in Bangladesh agriculture is rarely whether a hazard is coming; it is which districts, at which crop stage, with how many days of lead time, and how much weight the number deserves. HazardNet is built to answer that second set of questions. For each district and horizon it publishes a hazard class, a severity index, a confidence bin and an independent physics estimate: and the run they came from.",
+      "It is written for three readers at once: farmers and rural residents checking the outlook for their own district before planting, spraying, irrigating or harvesting; agricultural extension workers and union parishad officials deciding whom to warn and what to prepare; and researchers and reviewers judging whether a published number deserves the weight it asks for."
      ],
      "bullets": [
       "64 districts on the live map; the published advisory archive covers 507 ADM3 units (495 upazilas plus 12 city corporations).",
       "Eight hazard classes: cold wave, drought, fire, flash flood, flood, heat wave, severe local storm and tropical cyclone.",
-      "Free and non-commercial, with no account needed for the map. The app installs as a PWA, caches its tiles and keeps working when the connection does not."
+      "The aim is a better district-level decision, on a farm, in a parishad office or in a review, made knowing exactly how much to trust the number. It is not a replacement for an official warning."
      ],
      "links": [
       {
@@ -114,18 +150,91 @@
      ]
     },
     {
-     "h2": "What a forecast is",
+     "h2": "What a forecast is, and how it differs from an alert",
      "paragraphs": [
-      "Every forecast on HazardNet is a published record: one district, one hazard class, a severity value, a confidence score and 7- and 15-day horizons, stamped with the date of the run that produced it. No forecast, alert or figure on this site is produced by a language model: every number is read from a committed artifact, and no number is interpolated to fill a gap in a run."
+      "Every forecast on HazardNet is a published record: one district, one hazard class, a severity value, a confidence score and 7- and 15-day horizons, stamped with the date of the run that produced it. No forecast, alert or figure on this site is produced by a language model: every number is read from a committed artifact, and no number is interpolated to fill a gap in a run.",
+      "An alert is narrower than a forecast. It is a forecast row the publication gate has released as a card, with its level, evidence, policy version and reviewer state attached. A district can therefore have a forecast on the map while no alert is published for it; and, as the strip under the headline states, no published alert is not the same as no hazard."
      ],
      "bullets": [
       "Results only: how a record is generated is research-private and is not published.",
       "Every figure on this site traces to a published forecast record with a forecast date.",
-      "Two severity tracks are reported per record, a skill track and a physics track, each shown with its own honest label."
+      "Two severity tracks are reported per record, a skill track and a physics track, each shown with its own honest label.",
+      "The 7-day horizon covers the week ahead. The 15-day horizon covers planning further ahead, and should be read as the less certain of the two."
+     ],
+     "links": [
+      {
+       "label": "Reading a forecast record",
+       "href": "/docs/forecasts"
+      },
+      {
+       "label": "Published alerts",
+       "href": "/alerts"
+      },
+      {
+       "label": "Methodology",
+       "href": "/methodology"
+      }
      ]
     },
     {
-     "h2": "How to check any number on this site",
+     "h2": "Severity, alert levels and confidence are three different things",
+     "paragraphs": [
+      "A forecast record carries three values that are easy to merge into one impression of danger. Severity is the value recorded for one district, hazard class and horizon. The alert level is the published tier a released alert carries. Confidence is neither of those: it is an uncalibrated model score (a softmax output), not a probability that the event will happen, and it should always be read beside the severity value and the forecast date."
+     ],
+     "bullets": [
+      "No alert: nothing unusual for the season in the published alert record. On forecast records the lowest advisory tier is named NORMAL; the two labels belong to two related lists, and neither is a promise that a district is safe.",
+      "Watch (monitor): conditions are favourable for a hazard.",
+      "Warning (prepare): a damaging event is plausible.",
+      "Severe (act): an event is imminent or likely. What action is safe is set by the official bulletin and your local administration, not by this platform.",
+      "A level is carried as a word as well as a colour, so it stays readable in glare, and for readers who cannot rely on colour alone."
+     ],
+     "callout": {
+      "tone": "warning",
+      "text": "These are HazardNet's decision-support tiers. They are not BMD cyclone signals, FFWC flood bulletins or evacuation instructions, and an official bulletin outranks them wherever the two differ."
+     },
+     "links": [
+      {
+       "label": "Reading a forecast record",
+       "href": "/docs/forecasts"
+      },
+      {
+       "label": "Model card",
+       "href": "/model"
+      },
+      {
+       "label": "Published alerts",
+       "href": "/alerts"
+      }
+     ]
+    },
+    {
+     "h2": "How it works, and when it updates",
+     "paragraphs": [
+      "Each run publishes dated data files. This site calls them artifacts. The live map, the alert cards, the status page and this front door all read the same files, so any figure can be followed back to the file and forecast date behind it instead of being taken on trust from a page design.",
+      "Forecasts are updated in daily runs, so freshness is something you can check rather than assume: the strip under the headline gives the alerts file's age at the moment of this read, every forecast record carries its forecast date, and the status page states each artifact's age against the limit (its SLO) it is held to."
+     ],
+     "bullets": [
+      "What is published here is the result, and the evidence needed to check it. How a record is generated (model code, dataset collection and training) is research-private and is not described on this site.",
+      "No forecast, alert or figure on this site is produced by a language model, and no number is interpolated to fill a gap in a run.",
+      "A district a run did not cover says so on its own page. It does not borrow a neighbour's number, and it is not shown as zero."
+     ],
+     "links": [
+      {
+       "label": "System status",
+       "href": "/status"
+      },
+      {
+       "label": "View the last run",
+       "href": "/last-run"
+      },
+      {
+       "label": "Data sources",
+       "href": "/data-sources"
+      }
+     ]
+    },
+    {
+     "h2": "Validation, and how to check any number on this site",
      "paragraphs": [
       "A claim that cannot be checked is marketing. The platform therefore publishes the evidence next to the claim, including the places where the evidence is thin."
      ],
@@ -151,6 +260,33 @@
       {
        "label": "Repository",
        "href": "https://github.com/myself-aas/HazardNet"
+      }
+     ]
+    },
+    {
+     "h2": "Access, languages, and when something is missing",
+     "paragraphs": [
+      "HazardNet is free and non-commercial on the web, and the map and the published record need no account. The app installs as a PWA, a web app you can add to a phone's home screen. It caches its tiles and keeps working when the connection does not. The pages are built for low-end Android phones, slow or metered connections and reading in sunlight, and the download centre carries the forecast snapshot and the offline builds for use away from a connection. Printed district briefs are a first-class output, not an afterthought.",
+      "Bangla and English sit side by side. The switch at the top of this page renders the front door's editorial copy and its controls in Bengali; the alert cards, the map and the district tables were translated first. The long-form knowledge products (the model card, the methodology and the data-source ledger) remain English-only, and where a sentence has no Bengali version the English one is shown rather than a gap."
+     ],
+     "bullets": [
+      "An em dash (—), a value left blank, or the words “not reported” mean the run or the file did not supply that value. They never mean zero.",
+      "An unread file is not a count of zero, and no published alert is not the same as no hazard. The live strip states those cases separately, so a loading failure cannot be mistaken for safety.",
+      "If a panel cannot load, use its Try again button where one is offered, then check the status page to see whether the source file itself is stale or failing. The rest of the page stays readable while one panel is missing.",
+      "To report a broken page, a stale run or a prediction that looks wrong, use the contact page and include the district and the date: that is enough to act on."
+     ],
+     "links": [
+      {
+       "label": "Download data and apps",
+       "href": "/download"
+      },
+      {
+       "label": "System status",
+       "href": "/status"
+      },
+      {
+       "label": "Contact",
+       "href": "/contact"
       }
      ]
     },
@@ -277,16 +413,32 @@
      "answer": "No. It is independent decision support for agriculture. Official warnings come from the Bangladesh Meteorological Department for weather hazards, the Flood Forecasting and Warning Centre for river floods, and the Department of Disaster Management with your local administration for response. For an emergency, call 999. HazardNet is meant to give you more lead time to prepare, not to replace those authorities."
     },
     {
+     "question": "My district is at Watch, Warning or Severe. What should I do?",
+     "answer": "Read the level for what it says. Watch means monitor, conditions are favourable for a hazard; Warning means prepare, a damaging event is plausible; Severe means act, an event is imminent or likely. Then check the authority that can actually direct action: the BMD or FFWC bulletin for that hazard and your local administration. HazardNet's tiers are decision support with lead time attached; they are not cyclone signals or evacuation instructions. For farm work, time the job with the lead time and confirm it locally. In an emergency, call 999."
+    },
+    {
+     "question": "Is the confidence value a probability?",
+     "answer": "No. The confidence value is an uncalibrated model score (a softmax output), not a calibrated chance that the event will occur, and the site labels it as what it is. Read it beside the severity value and the forecast date, and use the validation scorecard, which states what its counts can and cannot support, to judge how much weight a record deserves."
+    },
+    {
+     "question": "How often is HazardNet updated, and how can I tell if it is stale?",
+     "answer": "Forecasts are updated in daily runs, and each run publishes dated files. The strip under the headline states the alerts file's age at the moment you read it, every forecast record carries its forecast date, and the status page states each artifact's age against the limit (its SLO) it is held to, including when a source is stale or failing. If a date is older than you expected, believe the date, not the design."
+    },
+    {
+     "question": "Why is there no alert (or no value) for my district?",
+     "answer": "Three different situations look alike and are kept apart. A run may have assessed your district and withheld the row from publication; a run may not have covered the district at all, in which case its page says so instead of borrowing a neighbour's number; or a file may simply have failed to load on your connection. None of the three is shown as zero, and none of them means there is no hazard. The live map shows the current outlooks, and the status page says which of the three you are looking at."
+    },
+    {
+     "question": "Is this page available in Bengali?",
+     "answer": "Yes, the switch at the top of this page renders the front door's editorial copy and its controls in Bengali. Where a sentence has no Bengali version, the English one is shown rather than a gap: the English copy is the structural authority, so a translation can reword a page but cannot shorten or reorder one. The alert cards, the map and the district tables were translated first; the long-form knowledge products, the model card, the methodology and the data-source ledger, remain English-only."
+    },
+    {
      "question": "How should I cite HazardNet?",
      "answer": "The author, supervisors and institution are given in the attribution block on this page, and the repository ships a CITATION.cff with the same facts in machine-readable form. The code is MIT-licensed; the third-party data behind it keeps its own terms, which the data sources page lists one dataset at a time."
     },
     {
      "question": "Why is the training archive not published here?",
      "answer": "The model card reports a 2,931-event archive (2000–2025) assembled from third-party records whose own licences govern redistribution. Rather than ship a stale copy that pages would quote as current, the repository ships the loader and the district and season pages state that no archive is loaded. The claim stays a claim until a deployment loads the export."
-    },
-    {
-     "question": "Is this page available in Bengali?",
-     "answer": "Yes, the switch at the top of this page renders the front door's editorial copy and its controls in Bengali. Where a sentence has no Bengali version, the English one is shown rather than a gap: the English copy is the structural authority, so a translation can reword a page but cannot shorten or reorder one. The alert cards, the map and the district tables were translated first; the long-form knowledge products, the model card, the methodology and the data-source ledger, remain English-only."
     }
    ],
    "i18n": {
@@ -298,35 +450,8 @@
      "h1": "এমন এক পূর্বাভাস, যা আপনি কেবল পড়বেন না: যাচাইও করতে পারবেন",
      "standfirst": "HazardNet একটি স্বাধীন ও উন্মুক্ত গবেষণা প্ল্যাটফর্ম, যা উপগ্রহ পর্যবেক্ষণ ও আবহাওয়া পূর্বাভাস থেকে বাংলাদেশের ৬৪টি জেলার জন্য আটটি জলবায়ু-দুর্যোগের ৭ ও ১৫ দিনের পূর্বাভাস তৈরি করে। এতে দেখানো প্রতিটি সংখ্যা একটি নির্দিষ্ট আর্টিফ্যাক্ট থেকে আসে যার নির্মাণ-তারিখ আছে; যাচাই স্কোরকার্ড প্রকাশ করা হয় তা মডেলের পক্ষে যাক বা না যাক; এবং সরকারি সতর্কবার্তা প্রকাশকারী সংস্থাগুলোর সঙ্গে এই প্ল্যাটফর্মের সীমারেখা প্রতিটি পাতায় লেখা থাকে।",
      "sections": [
-      {
-       "h2": "এই প্ল্যাটফর্ম কীসের জন্য",
-       "paragraphs": [
-        "বাংলাদেশের কৃষিতে বাস্তব প্রশ্ন খুব কমই এই নয় যে দুর্যোগ আসবে কি না; বরং প্রশ্ন হলো কোন জেলাগুলোতে, ফসলের কোন পর্যায়ে, কত দিনের অগ্রিম বার্তা নিয়ে, এবং সংখ্যাটিকে কতটা গুরুত্ব দেওয়া উচিত। HazardNet তৈরি হয়েছে এই দ্বিতীয় প্রশ্নগুলোর উত্তর দেওয়ার জন্য। প্রতিটি জেলা ও প্রতিটি সময়কালের জন্য এটি প্রকাশ করে একটি দুর্যোগ-শ্রেণি, একটি গুরুতরতা সূচক, একটি আস্থার শ্রেণি ও একটি স্বতন্ত্র ভৌত-নিয়ম অনুমান: সঙ্গে এগুলো কোন রান থেকে এসেছে তার তথ্য।"
-       ],
-       "bullets": [
-        "লাইভ মানচিত্রে ৬৪টি জেলা; প্রকাশিত পরামর্শ আর্কাইভ আওতা করে ৫০৭টি ADM3 ইউনিট (৪৯৫টি উপজেলা ও ১২টি সিটি কর্পোরেশন)।",
-        "আটটি দুর্যোগ-শ্রেণি: শৈতপ্রবাহ, খরা, অগ্নিকাণ্ড, আকস্মিক বন্যা, বন্যা, তাপপ্রবাহ, তীব্র স্থানীয় ঝড় ও ক্রান্তীয় ঘূর্ণিঝড়।",
-        "বিনামূল্যে ও অবাণিজ্যিক; মানচিত্র দেখতে কোনো অ্যাকাউন্ট লাগে না। অ্যাপটি PWA হিসেবে ইনস্টল করা যায়, ম্যাপ-টাইল সংরক্ষণ করে এবং সংযোগ না থাকলেও কাজ চালিয়ে যায়।"
-       ],
-       "links": [
-        {
-         "label": "লাইভ মানচিত্র খুলুন",
-         "href": "/live"
-        },
-        {
-         "label": "সতর্কবার্তা",
-         "href": "/alerts"
-        },
-        {
-         "label": "খাতভিত্তিক পরামর্শ",
-         "href": "/advisories"
-        },
-        {
-         "label": "ব্যবহারের ক্ষেত্র",
-         "href": "/use-cases"
-        }
-       ]
-      },
+      {},
+      {},
       {
        "h2": "বর্তমান পূর্বাভাস, এবং তা কোথায় দেখবেন",
        "paragraphs": [
@@ -353,47 +478,11 @@
         }
        ]
       },
-      {
-       "h2": "পূর্বাভাস আসলে কী",
-       "paragraphs": [
-        "হ্যাজার্ডনেটের প্রতিটি পূর্বাভাস একটি প্রকাশিত রেকর্ড: একটি জেলা, একটি দুর্যোগ-শ্রেণি, একটি গুরুতরতার মান, একটি আস্থার স্কোর এবং ৭ ও ১৫-দিনের সময়সীমা: সঙ্গে রানের তারিখ। এই সাইটের কোনো পূর্বাভাস, সতর্কবার্তা বা চিত্র ভাষা-মডেল দিয়ে তৈরি হয় না: প্রতিটি সংখ্যা একটি নির্দিষ্ট আর্টিফ্যাক্ট থেকে পড়া হয়, এবং কোনো সংখ্যাই রানের ফাঁক ভরাট করতে অনুমানে বসানো হয় না।"
-       ],
-       "bullets": [
-        "শুধু ফলাফল: রেকর্ড কীভাবে তৈরি হয় তা গবেষণার গোপনীয় বিষয়: তা প্রকাশ করা হয় না।",
-        "সাইটের প্রতিটি সংখ্যা পূর্বাভাস-তারিখসহ একটি প্রকাশিত রেকর্ডে ফেরত যায়।",
-        "প্রতিটি রেকর্ডে দুটি গুরুতরতা-ট্র্যাক থাকে, একটি স্কিল ট্র্যাক ও একটি ফিজিক্স ট্র্যাক, প্রতিটি সৎ লেবেলসহ।"
-       ]
-      },
-      {
-       "h2": "এই সাইটের যেকোনো সংখ্যা কীভাবে যাচাই করবেন",
-       "paragraphs": [
-        "যে দাবি যাচাই করা যায় না, সেটি বিপণন। তাই এই প্ল্যাটফর্ম দাবির পাশেই তার প্রমাণ প্রকাশ করে: প্রমাণ যেসব জায়গায় পাতলা, সেসব জায়গাসহ।"
-       ],
-       "bullets": [
-        "স্ট্যাটাস পাতা সংরক্ষিত আর্টিফ্যাক্টগুলো পড়ে এবং প্রতিটির বয়স তার SLO-র বিপরীতে জানায়: কোনো উৎস পুরনো, ব্যর্থ বা উৎস-পরিচয়বিহীন হলেও, যে অবস্থাটি দেখানোর জন্যই এই পাতাটির অস্তিত্ব।",
-        "যাচাই স্কোরকার্ড পাঁচটি ঐতিহাসিক পর্বের শনাক্তকরণ-সংখ্যা দেখায় এবং স্পষ্ট বলে সেই সংখ্যা কী প্রমাণ করতে পারে না।",
-        "মডেল কার্ডে জানা ব্যর্থতার ধরন ও ব্যবহারের অযোগ্য ক্ষেত্রগুলো তালিকাভুক্ত, এবং ২,৯৩১ ঘটনার প্রশিক্ষণ-দাবিটি যাচাইকৃত হিসেবে নয়, প্রতিবেদিত হিসেবেই রাখা হয়েছে: এই রিপোজিটরি সেই আর্কাইভ পুনর্বিতরণ করে না, এবং যেসব পাতায় তা দরকার সেগুলো সংখ্যাটি উদ্ধৃত না করে তার অনুপস্থিতিই জানিয়ে দেয়।",
-        "কোড, আর্টিফ্যাক্ট ও বিল্ড-স্ক্রিপ্ট একই পাবলিক রিপোজিটরিতে আছে, এবং এই সাইট সেখান থেকেই পুনর্নির্মাণ হয়: যে পাইপলাইন একটি সংখ্যা প্রকাশ করে, সেই পাইপলাইনই তার যাচাইও প্রকাশ করে।"
-       ],
-       "links": [
-        {
-         "label": "সিস্টেম স্ট্যাটাস",
-         "href": "/status"
-        },
-        {
-         "label": "হিন্ডকাস্ট যাচাই",
-         "href": "/model-performance"
-        },
-        {
-         "label": "তথ্যসূত্র",
-         "href": "/data-sources"
-        },
-        {
-         "label": "রিপোজিটরি",
-         "href": "https://github.com/myself-aas/HazardNet"
-        }
-       ]
-      },
+      {},
+      {},
+      {},
+      {},
+      {},
       {
        "h2": "জ্ঞান-পণ্য",
        "paragraphs": [
@@ -516,6 +605,14 @@
        "question": "HazardNet কি কোনো সরকারি সতর্কবার্তা সেবা?",
        "answer": "না। এটি কৃষির জন্য স্বাধীন সিদ্ধান্ত সহায়তা। সরকারি সতর্কবার্তা আসে আবহাওয়া-জনিত দুর্যোগের ক্ষেত্রে বাংলাদেশ আবহাওয়া অধিদপ্তর থেকে, নদীর বন্যার ক্ষেত্রে প্লাবন পূর্বাভাস ও সতর্কীকরণ কেন্দ্র (FFWC) থেকে, এবং সাড়াদানের ক্ষেত্রে দুর্যোগ ব্যবস্থাপনা অধিদপ্তর ও আপনার স্থানীয় প্রশাসন থেকে। জরুরি অবস্থায় ৯৯৯ নম্বরে কল করুন। HazardNet-এর উদ্দেশ্য প্রস্তুতির জন্য আপনাকে বেশি অগ্রিম সময় দেওয়া, ওই কর্তৃপক্ষগুলোর বিকল্প হওয়া নয়।"
       },
+      {},
+      {},
+      {},
+      {},
+      {
+       "question": "এই পাতা কি বাংলায় পাওয়া যায়?",
+       "answer": "হ্যাঁ, এই পাতার ওপরের সুইচ ব্যবহার করলে সম্মুখপৃষ্ঠার সম্পাদকীয় লেখা ও নিয়ন্ত্রণগুলো বাংলায় দেখা যাবে। কোনো বাক্যের বাংলা সংস্করণ না থাকলে ফাঁকা না রেখে ইংরেজিটিই দেখানো হয়: ইংরেজি লেখাটিই কাঠামোগত ভিত্তি, তাই অনুবাদ একটি পাতাকে নতুন করে লিখতে পারে কিন্তু সংক্ষিপ্ত বা এলোমেলো করতে পারে না। সতর্কবার্তা কার্ড, মানচিত্র ও জেলার তালিকা আগেই অনূদিত হয���েছে; বিস্তারিত জ্ঞান-পণ্য, মডেল কার্ড, পদ্ধতি ও তথ্যসূত্র খতিয়ান, এখনো ইংরেজিতেই আছে।"
+      },
       {
        "question": "HazardNet কীভাবে উদ্ধৃত করব?",
        "answer": "লেখক, তত্ত্বাবধায়ক ও প্রতিষ্ঠানের নাম এই পাতার স্বীকৃতি-অংশে দেওয়া আছে, এবং একই তথ্য মেশিন-পাঠযোগ্য রূপে CITATION.cff ফাইলে রিপোজিটরিতে আছে। কোড MIT লাইসেন্সযুক্ত; এর পেছনের তৃতীয় পক্ষের তথ্যের নিজস্ব শর্ত বহাল থাকে, যা তথ্যসূত্র পাতায় একেকটি ডেটাসেট হিসেবে তালিকাভুক্ত।"
@@ -523,10 +620,6 @@
       {
        "question": "প্রশিক্ষণ আর্কাইভ কেন এখানে প্রকাশ করা হয়নি?",
        "answer": "মডেল কার্ডে ২,৯৩১ ঘটনার একটি আর্কাইভের (২০০০–২০২৫) কথা বলা হয়েছে, যা তৃতীয় পক্ষের রেকর্ড থেকে সংকলিত এবং যার নিজস্ব লাইসেন্স পুনর্বিতরণ নিয়ন্ত্রণ করে। একটি পুরনো কপি রেখে দেওয়ার চেয়ে, যা পাতাগুলো হালনাগাদ হিসেবে উদ্ধৃত করত, এই রিপোজিটরি লোডারটি সরবরাহ করে, এবং জেলা ও মৌসুমের পাতাগুলো জানিয়ে দেয় যে কোনো আর্কাইভ লোড করা নেই। যতদিন না কোনো ডিপ্লয়মেন্ট এক্সপোর্টটি লোড করে, ততদিন দাবিটি দাবিই থাকে।"
-      },
-      {
-       "question": "এই পাতা কি বাংলায় পাওয়া যায়?",
-       "answer": "হ্যাঁ, এই পাতার ওপরের সুইচ ব্যবহার করলে সম্মুখপৃষ্ঠার সম্পাদকীয় লেখা ও নিয়ন্ত্রণগুলো বাংলায় দেখা যাবে। কোনো বাক্যের বাংলা সংস্করণ না থাকলে ফাঁকা না রেখে ইংরেজিটিই দেখানো হয়: ইংরেজি লেখাটিই কাঠামোগত ভিত্তি, তাই অনুবাদ একটি পাতাকে নতুন করে লিখতে পারে কিন্তু সংক্ষিপ্ত বা এলোমেলো করতে পারে না। সতর্কবার্তা কার্ড, মানচিত্র ও জেলার তালিকা আগেই অনূদিত হয���েছে; বিস্তারিত জ্ঞান-পণ্য, মডেল কার্ড, পদ্ধতি ও তথ্যসূত্র খতিয়ান, এখনো ইংরেজিতেই আছে।"
       }
      ]
     }

@@ -96,7 +96,7 @@ export const Footer: React.FC = () => {
 
   return (
     <footer
-      className="relative z-10 border-t border-carbon-20 bg-carbon-05 px-4 py-14 text-carbon-80 md:px-8"
+      className="relative z-10 border-t border-carbon-20 bg-carbon-05 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] pt-14 text-carbon-80 md:pl-[max(2rem,env(safe-area-inset-left,0px))] md:pr-[max(2rem,env(safe-area-inset-right,0px))]"
       aria-label="Site footer"
     >
       <div className="mx-auto max-w-7xl space-y-10">
@@ -139,7 +139,7 @@ export const Footer: React.FC = () => {
           {COLUMNS.map((column) => (
             <div key={column.title}>
               <h2 className="text-ap-caption font-bold text-carbon-90">{column.title}</h2>
-              <ul className="mt-1.5">
+              <ul className="mt-1.5 space-y-2">
                 {column.links.map((link) => (
                   <li key={`${column.title}-${link.label}`}>
                     {link.to ? (
@@ -169,7 +169,7 @@ export const Footer: React.FC = () => {
         </p>
 
         {/* Baseline */}
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 border-t border-carbon-20 pt-6 text-center">
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t border-carbon-20 pt-6 text-center">
           <span className="text-ap-caption font-semibold text-carbon-80">© {new Date().getFullYear()} HazardNet</span>
           <Link to="/terms" className={linkClass}>
             Terms
@@ -186,8 +186,11 @@ export const Footer: React.FC = () => {
       {showScrollTop && (
         <button
           type="button"
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-6 left-4 z-[var(--ap-z-sticky)] flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-carbon-20 bg-white text-carbon-80 shadow-md transition-colors hover:bg-carbon-05 sm:left-6"
+          onClick={() => {
+            const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+            window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+          }}
+          className="fixed bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] left-[max(1rem,env(safe-area-inset-left,0px))] z-[var(--ap-z-sticky)] flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-carbon-20 bg-white text-carbon-80 shadow-md transition-colors hover:bg-carbon-05 sm:left-[max(1.5rem,env(safe-area-inset-left,0px))]"
           title="Back to top"
           aria-label="Scroll to top"
         >

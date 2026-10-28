@@ -151,7 +151,6 @@ summary:focus-visible {
 
 /* ── Component-scoped decisions that are genuinely app-specific ───────────── */
 :root {
-  --hero-glow-blur-primary: 90px;
   --hero-glass-blur: 8px;
   /* The hero's small print sits over a photograph, so its contrast is a function of the
      scrim and the text alpha rather than of a token pair, and no static token check could
@@ -172,8 +171,11 @@ summary:focus-visible {
   }
 }
 
+/* Anchor and keyboard-focus scrolling must clear the sticky header above and the fixed
+   chat/back-to-top controls below, including the phone's bottom safe area. */
 html {
   scroll-padding-top: calc(var(--navbar-height) + 8px);
+  scroll-padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
   overflow-x: clip;
 }
 
@@ -205,6 +207,7 @@ html {
 
   button,
   a,
+  summary,
   input,
   select,
   textarea {

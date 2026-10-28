@@ -140,7 +140,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSelectDistrict, onToggleHeatma
   return (
     <>
       <header
-        className={`ap-enter sticky top-0 z-[var(--ap-z-nav)] flex h-14 select-none items-center pt-[env(safe-area-inset-top)] duration-300 sm:h-16 ${
+        className={`ap-enter sticky top-0 z-[var(--ap-z-nav)] flex h-[var(--navbar-height)] select-none items-center pt-[env(safe-area-inset-top)] duration-300 ${
           overHero
             ? 'border-b border-white/10 bg-black/25 text-white backdrop-blur-md'
             : 'border-b border-carbon-20 bg-white/95 text-carbon-80 shadow-xs backdrop-blur-md'
@@ -150,7 +150,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSelectDistrict, onToggleHeatma
            rather than on an opaque bar — see the .hn-menu-icon rules. */
         data-over-hero={overHero ? 'true' : 'false'}
       >
-        <div className="mx-auto flex h-full w-full max-w-[1280px] items-center gap-2 px-4 xl:px-8">
+        <div className="mx-auto flex h-full w-full max-w-[1280px] items-center gap-2 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] xl:pl-[max(2rem,env(safe-area-inset-left,0px))] xl:pr-[max(2rem,env(safe-area-inset-right,0px))]">
           <Link
             to="/"
             className="flex min-h-[44px] shrink-0 items-center no-underline"

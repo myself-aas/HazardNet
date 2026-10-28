@@ -125,55 +125,78 @@ export const StatusVerdict: React.FC<StatusVerdictProps> = ({
         display === 'unknown' ? 'bg-carbon-05' : 'bg-white'
       } ${className}`}
     >
-      <div className="flex flex-wrap items-center gap-3">
-        <MaterialIcon name={ICONS[display]} className="text-xl text-carbon-70" aria-hidden="true" />
-        <p className="ap-body-strong flex-1 min-w-[16rem]" data-testid="verdict-body">
-          {display === 'unknown' ? (
-            <span className="text-carbon-90">
-              <strong className="font-bold">{t('verdict.unknown.lead')}</strong> {body}
-            </span>
-          ) : (
-            <>
-              {/* `reading` has a single-line key (`verdict.reading`), not a lead/body pair —
-                  requesting `.lead` on it used to print the raw key into the strip. */}
-              <strong className="font-bold">
-                {display === 'reading' ? t('verdict.reading') : t(`verdict.${display}.lead`)}
-              </strong>{' '}
-              {display === 'reading' ? null : body}
-            </>
-          )}
-        </p>
-
-        {display === 'active' && worstLevel && (
-          <AlertLevelBadge
-            level={worstLevel}
-            label={t(`alerts.level.${worstLevel}`)}
-            description={t(`alerts.level.${worstLevel}.desc`)}
-            srPrefix={t('alerts.levelLabel')}
+      <div className="flex flex-wrap items-start gap-x-3 gap-y-2">
+        {/* The sentence owns the full measure on a phone. It used to share this row with the
+            level badge and the link, and `flex-1` left it only the width they did not take:
+            at 320–390px the five-second answer wrapped inside a stub column beside them
+            instead of reading as a sentence. Below `sm` this group takes the whole row and
+            the badge/link drop to the meta line; from `sm` up the row has room for all three. */}
+        <div className="flex min-w-0 grow basis-full items-start gap-3 sm:basis-0">
+          <MaterialIcon
+            name={ICONS[display]}
+            className="mt-0.5 shrink-0 text-xl text-carbon-70"
+            aria-hidden="true"
           />
-        )}
+          {/* Balanced, so the wrapped lines share the measure instead of stranding a final
+              word (“…or above.”) alone on the last line of a three-line phone sentence. */}
+          <p className="ap-body-strong min-w-0 flex-1 break-words text-balance" data-testid="verdict-body">
+            {display === 'unknown' ? (
+              <span className="text-carbon-90">
+                <strong className="font-bold">{t('verdict.unknown.lead')}</strong> {body}
+              </span>
+            ) : (
+              <>
+                {/* `reading` has a single-line key (`verdict.reading`), not a lead/body pair —
+                    requesting `.lead` on it used to print the raw key into the strip. */}
+                <strong className="font-bold">
+                  {display === 'reading' ? t('verdict.reading') : t(`verdict.${display}.lead`)}
+                </strong>{' '}
+                {display === 'reading' ? null : body}
+              </>
+            )}
+          </p>
+        </div>
 
-        {display === 'active' && (
-          <Link
-            to="/alerts"
-            className="ap-link inline-flex min-h-[44px] items-center font-bold underline underline-offset-4"
+        {/* The meta line: worst level and the way onward. On a phone it sits under the
+            sentence, indented to the text measure (icon + gap = 32px) so the block keeps
+            one left edge; from `sm` up it joins the sentence's row, unindented. */}
+        {(display === 'active' || display === 'unknown') && (
+          <div
+            className="flex flex-wrap items-center gap-x-3 gap-y-2 pl-8 sm:pl-0"
+            data-testid="verdict-meta"
           >
-            {t('verdict.active.link')}
-          </Link>
-        )}
+            {display === 'active' && worstLevel && (
+              <AlertLevelBadge
+                level={worstLevel}
+                label={t(`alerts.level.${worstLevel}`)}
+                description={t(`alerts.level.${worstLevel}.desc`)}
+                srPrefix={t('alerts.levelLabel')}
+              />
+            )}
 
-        {display === 'unknown' && (
-          <Link
-            to="/status"
-            className="ap-link inline-flex min-h-[44px] items-center font-bold underline underline-offset-4"
-          >
-            {t('verdict.unknown.link')}
-          </Link>
+            {display === 'active' && (
+              <Link
+                to="/alerts"
+                className="ap-link inline-flex min-h-[44px] min-w-0 items-center break-words text-base font-bold leading-snug underline underline-offset-4"
+              >
+                {t('verdict.active.link')}
+              </Link>
+            )}
+
+            {display === 'unknown' && (
+              <Link
+                to="/status"
+                className="ap-link inline-flex min-h-[44px] min-w-0 items-center break-words text-base font-bold leading-snug underline underline-offset-4"
+              >
+                {t('verdict.unknown.link')}
+              </Link>
+            )}
+          </div>
         )}
       </div>
 
       {supportLine && (
-        <p className="ap-caption mt-1.5 pl-[2.1rem] text-carbon-60" data-testid="verdict-detail">
+        <p className="ap-caption mt-1.5 min-w-0 break-words pl-8 text-carbon-60" data-testid="verdict-detail">
           {supportLine}
         </p>
       )}
