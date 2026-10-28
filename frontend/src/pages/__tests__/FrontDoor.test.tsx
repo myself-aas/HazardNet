@@ -208,6 +208,9 @@ describe('the front door', () => {
     await screen.findByTestId('front-door-status-strip');
     const hero = document.querySelector('header.ap-on-dark') as HTMLElement;
     expect(hero).not.toBeNull();
+    // The pinned pause control sits inside the hero's lower 60px, so the phone layout reserves
+    // 80px below the copy card instead of letting the control cover the authority line.
+    expect(hero.className).toContain('pb-20');
 
     // The run card left the hero for /last-run on 2026-10-05: it is not rendered here,
     // and the hero reaches it only as a hyperlink.
@@ -379,8 +382,28 @@ describe('the front door', () => {
         const width = Number(match[2]);
         if (width > PHONE_CONTENT_BOX) fixed.set(`${match[1]}-[${match[2]}px]`, el.tagName);
       }
+      for (const match of cls.matchAll(/(?:^|\s)(min-w|w|basis)-\[(\d+(?:\.\d+)?)rem\]/g)) {
+        const width = Number(match[2]) * 16;
+        if (width > PHONE_CONTENT_BOX) fixed.set(`${match[1]}-[${match[2]}rem]`, el.tagName);
+      }
     }
     expect([...fixed.entries()]).toEqual([]);
+
+    // A width can fit the page's 288px content box and still overflow inside a padded panel.
+    // The verdict used to hold a 16rem floor inside exactly such a panel, so its shrink/wrap
+    // contract is asserted directly rather than inferred from the page-level scan.
+    const verdictBody = screen.getByTestId('verdict-body');
+    expect(verdictBody.className).toContain('min-w-0');
+    expect(verdictBody.className).not.toContain('min-w-[16rem]');
+
+    // The four coverage figures scan as a two-by-two block on a phone, not four stacked stops,
+    // and every section heading is allowed to shrink and balance its wrapped lines.
+    const trustSection = document.getElementById('trust-heading')?.closest('section');
+    expect(trustSection?.querySelector('div.grid')?.className).toContain('grid-cols-2');
+    for (const heading of Array.from(container.querySelectorAll('h2'))) {
+      expect(heading.className).toContain('min-w-0');
+      expect(heading.className).toContain('text-balance');
+    }
 
     // The citation is the page's one long token (a 39-character repository URL). `break-words`
     // lets it wrap instead of forcing the block wider than the phone.

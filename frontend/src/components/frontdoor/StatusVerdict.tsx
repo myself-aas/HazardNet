@@ -125,9 +125,13 @@ export const StatusVerdict: React.FC<StatusVerdictProps> = ({
         display === 'unknown' ? 'bg-carbon-05' : 'bg-white'
       } ${className}`}
     >
-      <div className="flex flex-wrap items-center gap-3">
-        <MaterialIcon name={ICONS[display]} className="text-xl text-carbon-70" aria-hidden="true" />
-        <p className="ap-body-strong flex-1 min-w-[16rem]" data-testid="verdict-body">
+      <div className="flex flex-wrap items-start gap-x-3 gap-y-2">
+        <MaterialIcon
+          name={ICONS[display]}
+          className="mt-0.5 shrink-0 text-xl text-carbon-70"
+          aria-hidden="true"
+        />
+        <p className="ap-body-strong min-w-0 flex-1 break-words" data-testid="verdict-body">
           {display === 'unknown' ? (
             <span className="text-carbon-90">
               <strong className="font-bold">{t('verdict.unknown.lead')}</strong> {body}
@@ -156,7 +160,7 @@ export const StatusVerdict: React.FC<StatusVerdictProps> = ({
         {display === 'active' && (
           <Link
             to="/alerts"
-            className="ap-link inline-flex min-h-[44px] items-center font-bold underline underline-offset-4"
+            className="ap-link inline-flex min-h-[44px] items-center font-bold leading-snug underline underline-offset-4"
           >
             {t('verdict.active.link')}
           </Link>
@@ -165,7 +169,7 @@ export const StatusVerdict: React.FC<StatusVerdictProps> = ({
         {display === 'unknown' && (
           <Link
             to="/status"
-            className="ap-link inline-flex min-h-[44px] items-center font-bold underline underline-offset-4"
+            className="ap-link inline-flex min-h-[44px] items-center font-bold leading-snug underline underline-offset-4"
           >
             {t('verdict.unknown.link')}
           </Link>
@@ -173,7 +177,7 @@ export const StatusVerdict: React.FC<StatusVerdictProps> = ({
       </div>
 
       {supportLine && (
-        <p className="ap-caption mt-1.5 pl-[2.1rem] text-carbon-60" data-testid="verdict-detail">
+        <p className="ap-caption mt-1.5 min-w-0 break-words pl-8 text-carbon-60" data-testid="verdict-detail">
           {supportLine}
         </p>
       )}

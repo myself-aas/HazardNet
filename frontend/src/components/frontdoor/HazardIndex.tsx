@@ -38,27 +38,30 @@ export const HazardIndex: React.FC<HazardIndexProps> = ({ hazards }) => {
   return (
     <ul className="grid grid-cols-1 border-t border-carbon-20 md:grid-cols-2 md:gap-x-8">
       {hazards.map((hazard) => (
-        <li key={hazard.slug} className="border-b border-carbon-20">
+        <li key={hazard.slug} className="min-w-0 border-b border-carbon-20">
           <Link
             to={`/hazards/${hazard.slug}`}
-            className="group flex min-h-[44px] items-start gap-3 px-2 py-4 transition-colors hover:bg-carbon-05 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
+            className="group flex min-h-[44px] items-start gap-2.5 px-1 py-3.5 transition-colors hover:bg-carbon-05 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 sm:gap-3 sm:px-2 sm:py-4"
           >
             <span
               aria-hidden="true"
-              className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-carbon-05 text-carbon-70"
+              className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-carbon-05 text-carbon-70 sm:h-10 sm:w-10"
             >
-              <MaterialIcon name={hazardIcon(hazard.class)} className="text-xl" />
+              <MaterialIcon name={hazardIcon(hazard.class)} className="text-lg sm:text-xl" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-base font-bold leading-snug text-carbon-90 group-hover:text-ap-link">
+              <span className="block break-words text-ap-headline-sm font-bold text-carbon-90 group-hover:text-ap-link">
                 {hazardLabel(hazard.class)}
               </span>
               {hazard.summary && (
-                <span lang={englishDataLang} className="mt-1 block text-sm leading-[1.55] text-carbon-70">
+                <span
+                  lang={englishDataLang}
+                  className="mt-1 block break-words text-sm leading-[1.55] text-carbon-70"
+                >
                   {hazard.summary}
                 </span>
               )}
-              <span className="mt-1 block text-xs leading-[1.5] text-carbon-60">
+              <span className="mt-1 block break-words text-sm leading-[1.55] text-carbon-60 sm:text-xs sm:leading-[1.5]">
                 <span className="font-semibold">
                   {language === 'bn' ? 'সক্রিয় মৌসুম' : 'Active window'}:{' '}
                 </span>

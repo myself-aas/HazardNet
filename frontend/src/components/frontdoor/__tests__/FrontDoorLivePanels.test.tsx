@@ -120,6 +120,19 @@ describe('the live status strip', () => {
     expect(screen.getByText(/partial/)).toBeInTheDocument();
   });
 
+  it('keeps its metadata and actions in phone-width columns', () => {
+    const { container } = strip();
+
+    const metadata = container.querySelector('dl') as HTMLElement;
+    expect(metadata.className).toContain('grid-cols-2');
+    expect(metadata.className).toContain('sm:flex');
+    expect(metadata.lastElementChild?.className).toContain('col-span-2');
+
+    const actions = screen.getByRole('link', { name: /All published alerts/i }).closest('ul') as HTMLElement;
+    expect(actions.className).toContain('grid-cols-2');
+    expect(actions.className).toContain('sm:flex');
+  });
+
   it('states the zero case as a statement about the publisher, not the weather', () => {
     strip();
     expect(screen.getByText(/No alert is published at the moment of this read/)).toBeInTheDocument();
@@ -201,6 +214,7 @@ describe('the live status strip', () => {
     });
     const link = screen.getByRole('link', { name: 'Sunamganj' });
     expect(link).toHaveAttribute('href', '/alerts/2026-09-21__7_days__sunamganj__flash-flood__p2026-09-18');
+    expect(link.className).toContain('min-h-[44px]');
     // with a permalink present, the "nothing published" prose must be gone
     expect(screen.queryByText(/No alert is published at the moment of this read/)).not.toBeInTheDocument();
   });

@@ -39,6 +39,18 @@ describe('StatusVerdict · three answers, no fourth', () => {
     expect(screen.getByTestId('verdict-detail')).toHaveTextContent(/74 held for review/);
   });
 
+  it('lets the verdict shrink inside a 320px strip instead of holding a fixed measure', () => {
+    renderVerdict();
+    const body = screen.getByTestId('verdict-body');
+    expect(body.className).toContain('min-w-0');
+    expect(body.className).toContain('break-words');
+    expect(body.className).not.toContain('min-w-[16rem]');
+
+    const detail = screen.getByTestId('verdict-detail');
+    expect(detail.className).toContain('ap-caption');
+    expect(detail.className).toContain('pl-8');
+  });
+
   it('never claims every district is safe in the quiet state', () => {
     renderVerdict();
     const verdict = screen.getByTestId('status-verdict');

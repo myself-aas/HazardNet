@@ -157,22 +157,28 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
         generatedAt={generatedAt}
       />
 
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-3 p-4 lg:p-6">
+      <div className="flex flex-col items-stretch gap-3 p-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5 lg:p-6">
         {/* ── level counts ─────────────────────────────────────────────────── */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <p className="font-mono text-xs font-bold uppercase tracking-[0.025em] text-carbon-60">
             {t('frontdoor.strip.publishedNow')}
           </p>
-          {loading && <p className="text-xs text-carbon-60">{t('frontdoor.strip.reading')}</p>}
+          {loading && (
+            <p className="text-sm leading-[1.55] text-carbon-60 sm:text-xs sm:leading-[1.5]">
+              {t('frontdoor.strip.reading')}
+            </p>
+          )}
 
           {!loading && readFailed && (
-            <div className="flex flex-wrap items-center gap-3">
-              <p className="text-xs leading-relaxed text-carbon-70">{t('frontdoor.strip.unreadable')}</p>
+            <div className="flex w-full min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
+              <p className="min-w-0 flex-1 break-words text-sm leading-[1.55] text-carbon-70 sm:text-xs sm:leading-relaxed">
+                {t('frontdoor.strip.unreadable')}
+              </p>
               {onRetry && (
                 <button
                   type="button"
                   onClick={onRetry}
-                  className="inline-flex min-h-[44px] items-center gap-1 rounded-full border border-carbon-20 bg-white px-3 py-1 text-xs font-semibold text-carbon-80 hover:bg-carbon-05"
+                  className="inline-flex min-h-[44px] items-center gap-1 rounded-full border border-carbon-20 bg-white px-3 py-1 text-sm font-semibold text-carbon-80 hover:bg-carbon-05 sm:text-xs"
                 >
                   {t('common.retry')}
                 </button>
@@ -183,13 +189,15 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
           {/* Read successfully, but the answer carried no level ledger: say that, rather than
               borrowing the alarm of an unreadable file. */}
           {!loading && !readFailed && counts === null && (
-            <div className="flex flex-wrap items-center gap-3">
-              <p className="text-xs leading-relaxed text-carbon-70">{t('frontdoor.strip.noLedger')}</p>
+            <div className="flex w-full min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
+              <p className="min-w-0 flex-1 break-words text-sm leading-[1.55] text-carbon-70 sm:text-xs sm:leading-relaxed">
+                {t('frontdoor.strip.noLedger')}
+              </p>
               {onRetry && (
                 <button
                   type="button"
                   onClick={onRetry}
-                  className="inline-flex min-h-[44px] items-center gap-1 rounded-full border border-carbon-20 bg-white px-3 py-1 text-xs font-semibold text-carbon-80 hover:bg-carbon-05"
+                  className="inline-flex min-h-[44px] items-center gap-1 rounded-full border border-carbon-20 bg-white px-3 py-1 text-sm font-semibold text-carbon-80 hover:bg-carbon-05 sm:text-xs"
                 >
                   {t('common.retry')}
                 </button>
@@ -219,25 +227,27 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
         </div>
 
         {/* ── coverage + the run's own timestamp ───────────────────────────── */}
-        <dl className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-carbon-70">
-          <div className="flex items-center gap-1.5">
+        <dl className="grid w-full grid-cols-2 gap-x-4 gap-y-2 text-xs text-carbon-70 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-1">
+          <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
             <dt className="font-mono text-xs uppercase tracking-wide text-carbon-60">
               {t('frontdoor.strip.districts')}
             </dt>
-            <dd className="font-mono font-bold text-carbon-90">
+            <dd className="min-w-0 break-words font-mono font-bold leading-relaxed text-carbon-90">
               {coverageText ?? '—'}
               {coverage?.status ? ` (${coverage.status})` : ''}
             </dd>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
             <dt className="font-mono text-xs uppercase tracking-wide text-carbon-60">
               {t('frontdoor.strip.assessed')}
             </dt>
-            <dd className="font-mono font-bold text-carbon-90">{assessed != null ? formatNumber(assessed) : '—'}</dd>
+            <dd className="min-w-0 break-words font-mono font-bold leading-relaxed text-carbon-90">
+              {assessed != null ? formatNumber(assessed) : '—'}
+            </dd>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="col-span-2 flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5 sm:col-auto">
             <dt className="font-mono text-xs uppercase tracking-wide text-carbon-60">{t('frontdoor.strip.updated')}</dt>
-            <dd className="font-mono text-carbon-80">
+            <dd className="min-w-0 break-words font-mono leading-relaxed text-carbon-80">
               {ageHours != null ? describeAge(ageHours) : '—'}
               {generatedAt ? ` · ${generatedAt.slice(0, 16).replace('T', ' ')} UTC` : ''}
             </dd>
@@ -246,19 +256,22 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
 
         {/* A labelled list, not a navigation landmark - the front door keeps exactly one
             `<nav>` (its table of contents). See the same decision in `pages/FrontDoor.tsx`. */}
-        <ul aria-label={t('frontdoor.strip.navLabel')} className="ml-auto flex flex-wrap gap-x-4 gap-y-1">
-          <li>
+        <ul
+          aria-label={t('frontdoor.strip.navLabel')}
+          className="grid w-full grid-cols-2 gap-x-4 gap-y-1 sm:ml-auto sm:flex sm:w-auto sm:flex-wrap"
+        >
+          <li className="min-w-0">
             <Link
               to="/alerts"
-              className="inline-flex min-h-[44px] items-center text-base font-bold text-ap-link underline underline-offset-4"
+              className="inline-flex min-h-[44px] min-w-0 items-center break-words text-base font-bold leading-snug text-ap-link underline underline-offset-4"
             >
               {t('frontdoor.strip.allAlerts')}
             </Link>
           </li>
-          <li>
+          <li className="min-w-0">
             <Link
               to="/live"
-              className="inline-flex min-h-[44px] items-center text-base font-bold text-ap-link underline underline-offset-4"
+              className="inline-flex min-h-[44px] min-w-0 items-center break-words text-base font-bold leading-snug text-ap-link underline underline-offset-4"
             >
               {t('frontdoor.strip.liveMap')}
             </Link>
@@ -268,10 +281,13 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
 
       {/* ── the top published alert, or the honest zero ─────────────────────── */}
       {!loading && published > 0 && (
-        <div className="border-t border-carbon-20 bg-white px-4 py-3 md:px-5">
-          <ul className="space-y-2">
+        <div className="border-t border-carbon-20 bg-white px-4 py-2 sm:py-3 md:px-5">
+          <ul className="space-y-1 sm:space-y-2">
             {alerts.slice(0, 2).map((alert) => (
-              <li key={alert.id} className="flex flex-wrap items-center gap-2 text-sm">
+              <li
+                key={alert.id}
+                className="flex min-h-[44px] min-w-0 flex-wrap items-center gap-x-2 gap-y-1 py-1 text-sm"
+              >
                 <AlertLevelBadge
                   level={alert.level}
                   label={t(`alerts.level.${alert.level}`)}
@@ -281,13 +297,17 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
                 />
                 <Link
                   to={`/alerts/${encodeURIComponent(alert.id)}`}
-                  className="font-bold text-ap-link underline underline-offset-2"
+                  className="inline-flex min-h-[44px] min-w-0 items-center break-words font-bold leading-snug text-ap-link underline underline-offset-2"
                 >
                   {alert.district_name ?? t('frontdoor.strip.districtUnnamed')}
                 </Link>
-                {alert.hazard_type && <span className="text-xs text-carbon-70">{hazardLabel(alert.hazard_type)}</span>}
+                {alert.hazard_type && (
+                  <span className="break-words text-sm leading-snug text-carbon-70 sm:text-xs">
+                    {hazardLabel(alert.hazard_type)}
+                  </span>
+                )}
                 {alert.target_date && (
-                  <span className="font-mono text-xs text-carbon-60">
+                  <span className="break-words font-mono text-xs leading-relaxed text-carbon-60">
                     {t('common.targetDate')}: {alert.target_date}
                   </span>
                 )}
@@ -298,7 +318,7 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
       )}
 
       {!loading && counts !== null && published === 0 && (
-        <p className="border-t border-carbon-20 bg-white px-4 py-3 text-base leading-[1.62] text-carbon-70 lg:px-6">
+        <p className="min-w-0 break-words border-t border-carbon-20 bg-white px-4 py-3 text-base leading-[1.62] text-carbon-70 lg:px-6">
           <strong className="font-bold text-carbon-90">{t('frontdoor.strip.nonePublished')}</strong>{' '}
           {withheld != null || assessed != null ? (
             <span lang={isBengali ? 'bn' : undefined}>

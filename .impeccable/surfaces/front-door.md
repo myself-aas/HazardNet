@@ -130,3 +130,33 @@ restoring any held-out Bengali section/FAQ.
   action section, coverage/provenance, the published-alert record, all 11 editorial
   sections, blog, 8 FAQs, attribution, safety framing, or the progressive hero carousel.
   Those are the decision path and evidence record, not decoration.
+
+## Decision log — 2026-10-28 mobile typeset and spacing
+
+This pass changes responsive presentation only. It does not rewrite copy, reorder sections,
+change status semantics, restore held-out Bengali, or revive the bento.
+
+- **Phone text must be allowed to shrink and wrap.** The verdict no longer carries a fixed
+  `16rem` minimum inside the padded status strip. Front-door section headings share one
+  shrinkable, balanced, breakable treatment and use the type token's tracking rather than a
+  tighter Latin-only step that is wrong for Bengali conjuncts.
+- **Nested padding is a phone-width budget.** The run and attribution panels use 16px on
+  phones before returning to their wider desktop padding, the contents guide and callouts
+  use 14px, and hazard/horizon rows reclaim width from their phone gutters and icons. The
+  hero reserves 80px at the bottom on phones so the pinned 44px pause control cannot sit
+  over the authority line.
+- **Scanning groups form two columns before they stack.** Coverage figures read as a
+  two-by-two block on phones. In the status strip, district and assessed metadata share a
+  two-column row, the updated timestamp takes the full next row, and the alert/map actions
+  form two columns before returning to the desktop inline layout at `sm`.
+- **Safety and recovery prose does not become fine print on a phone.** The hero authority
+  line, strip loading/error sentences, section asides, hazard seasons and horizon
+  descriptions use 14px below `sm` before returning to the compact 12px treatment where
+  the wider layout can carry it. District links in both published-alert lists and the run
+  panel's closing links are 44px targets.
+- **The tests pin layout contracts, not a rendered phone.** jsdom cannot prove real line
+  breaks or overflow, so the added assertions cover the former failure modes mechanically:
+  no fixed verdict measure, rem widths included in the 320px scan, balanced shrinkable
+  headings, two-column phone groups, reserved hero-control space, and 44px alert links.
+  Real browser widths, Bengali line breaking and low-end Android rendering still need a
+  device pass when a browser is available.

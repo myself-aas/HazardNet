@@ -39,7 +39,15 @@ describe('the front-door hazard index', () => {
     renderIndex();
 
     expect(screen.getAllByRole('listitem')).toHaveLength(hazards.length);
-    expect(screen.getByRole('link', { name: /Flood/ })).toHaveAttribute('href', '/hazards/flood');
+    const flood = screen.getByRole('link', { name: /Flood/ });
+    expect(flood).toHaveAttribute('href', '/hazards/flood');
+    expect(flood.className).toContain('gap-2.5');
+    expect(flood.className).toContain('px-1');
+    expect(flood.className).toContain('py-3.5');
+    expect(flood.className).toContain('sm:px-2');
+    expect(within(flood).getByText(/Active window/).closest('span')?.parentElement?.className).toContain(
+      'sm:text-xs',
+    );
     expect(screen.getByRole('link', { name: /Tropical Cyclone/ })).toHaveAttribute(
       'href',
       '/hazards/tropical-cyclone',
