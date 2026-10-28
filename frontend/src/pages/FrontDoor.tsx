@@ -221,12 +221,12 @@ const SectionBody: React.FC<{ section: Section }> = ({ section }) => {
   return (
     <>
       {(section.paragraphs ?? []).map((paragraph, index) => (
-        <p key={index} className="min-w-0 break-words text-base leading-[1.62] text-carbon-70">
+        <p key={index} className="min-w-0 max-w-[72ch] break-words text-base leading-[1.62] text-carbon-70">
           {paragraph}
         </p>
       ))}
       {(section.bullets ?? []).length > 0 && (
-        <ul className="space-y-2">
+        <ul className="max-w-[72ch] space-y-2">
           {(section.bullets ?? []).map((bullet, index) => (
             <li key={index} className="flex min-w-0 gap-2 text-base leading-[1.62] text-carbon-70">
               <span aria-hidden="true" className="mt-2 h-1 w-1 shrink-0 bg-primary" />
@@ -246,7 +246,7 @@ const SectionBody: React.FC<{ section: Section }> = ({ section }) => {
       {section.callout?.text && (
         <p
           role={section.callout.tone === 'warning' ? 'note' : undefined}
-          className="rounded-xl border border-severity-high bg-white p-4 text-base leading-[1.62] text-carbon-80"
+          className="max-w-[72ch] rounded-xl border border-severity-high bg-white p-4 text-base leading-[1.62] text-carbon-80"
         >
           {section.callout.text}
         </p>
@@ -409,7 +409,7 @@ export const FrontDoor: React.FC = () => {
     <section
       key={section.h2 ?? index}
       aria-labelledby={section.h2 ? `section-${index}` : undefined}
-      className="space-y-4 border-t border-carbon-20 pt-6"
+      className="space-y-4 border-t border-carbon-20 pt-8"
     >
       {section.h2 &&
         (index === actionSectionIndex ? (
@@ -592,7 +592,8 @@ export const FrontDoor: React.FC = () => {
                 {t('frontdoor.hero.authority')}{' '}
                 <Link to="/live" className="font-bold text-white underline underline-offset-2 hover:text-white/90">
                   {t('frontdoor.hero.authorityMap')}
-                </Link>
+                </Link>{' '}
+                {t('frontdoor.hero.imageNote')}
               </p>
             </div>
           </div>
@@ -622,7 +623,7 @@ export const FrontDoor: React.FC = () => {
 
         {/* ── Trust strip: every figure carries the artifact it was read from ── */}
         <section aria-labelledby="trust-heading" className="space-y-3">
-          <h2 id="trust-heading" className="text-ap-tagline font-bold tracking-tight text-carbon-90">
+          <h2 id="trust-heading" className="text-ap-tagline font-bold tracking-tight text-carbon-90 lg:text-2xl">
             {t('frontdoor.covers.h2')}
           </h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -652,7 +653,7 @@ export const FrontDoor: React.FC = () => {
         {/* ── The published alerts in full: the strip is the glance, this is the record ── */}
         <section aria-labelledby="run-heading" className="space-y-3">
           <div className="flex flex-wrap items-end justify-between gap-2">
-            <h2 id="run-heading" className="text-lg font-bold text-carbon-90">
+            <h2 id="run-heading" className="text-ap-tagline font-bold tracking-tight text-carbon-90 lg:text-2xl">
               {t('frontdoor.run.h2')}
             </h2>
             <p className="text-xs leading-[1.5] text-carbon-60">{t('frontdoor.run.aside')}</p>
@@ -718,7 +719,7 @@ export const FrontDoor: React.FC = () => {
                 {/* The raw loader error is not printed: a fetch or store message names an
                     implementation, not the reader's problem or recovery. The copy names what
                     is unknown and where to look instead (clarify, 2026-10-28). */}
-                {error && <p className="text-ap-link">{t('frontdoor.run.errorPrefix')}</p>}
+                {error && <p className="text-carbon-70">{t('frontdoor.run.errorPrefix')}</p>}
                 <p>
                   {t('frontdoor.run.noneSilence')}{' '}
                   <strong className="font-bold text-carbon-90">{t('frontdoor.run.distinction')}</strong>.{' '}
@@ -736,7 +737,7 @@ export const FrontDoor: React.FC = () => {
             )}
 
             {/* A list, not a `<nav>`: this page already carries its one navigation landmark (the
-"On this page" table of contents). Extra named navigation regions do not help a
+"Guide to the sections below" table of contents). Extra named navigation regions do not help a
               reader - VoiceOver's rotor fills with near-identical "Navigation" entries and
               TalkBack does not expose the role at all, so the aria-label is inert there - and
               the links are just as reachable as a labelled list. */}
@@ -802,7 +803,7 @@ export const FrontDoor: React.FC = () => {
             <h2 id="hazards-heading" className="text-lg font-bold tracking-tight text-carbon-90 sm:text-xl lg:text-2xl">
               {t('frontdoor.products.h2')}
             </h2>
-            <span className="min-w-0 font-mono text-xs uppercase tracking-wide text-carbon-60">
+            <span className="min-w-0 text-xs leading-[1.5] text-carbon-60">
               {t('frontdoor.products.aside')}
             </span>
           </div>
@@ -857,7 +858,9 @@ export const FrontDoor: React.FC = () => {
           </div>
         </section>
 
-        {/* ── On this page — anchor nav for the editorial sections (audit #7: recognition/efficiency) ── */}
+        {/* ── Guide to the sections below — anchor nav for the explanatory sections only. It is
+            named for that scope rather than as a whole-page contents, because the live panels
+            above and the blog/FAQ/attribution blocks below are not indexed here. ── */}
         {sections.length > 1 && (
           <nav aria-label={t('frontdoor.toc')} className="rounded-2xl border border-carbon-20 bg-carbon-05 p-4">
             <p className="font-mono text-xs font-bold uppercase tracking-wide text-carbon-60">{t('frontdoor.toc')}</p>
@@ -888,7 +891,7 @@ export const FrontDoor: React.FC = () => {
             <h2 id="blogs-heading" className="text-ap-tagline font-bold tracking-tight text-carbon-90 lg:text-2xl">
               {t('frontdoor.blogs.h2')}
             </h2>
-            <p className="font-mono text-xs uppercase tracking-wider text-carbon-60">{t('frontdoor.blogs.aside')}</p>
+            <p className="text-xs leading-[1.5] text-carbon-60">{t('frontdoor.blogs.aside')}</p>
           </div>
 
           {blogsLoading && <p className="text-sm text-carbon-60">{t('frontdoor.blogs.loading')}</p>}
@@ -981,7 +984,7 @@ export const FrontDoor: React.FC = () => {
           aria-labelledby="attribution-heading"
           className="rounded-2xl border border-carbon-20 bg-white p-6 lg:p-8"
         >
-          <h2 id="attribution-heading" className="text-ap-tagline font-bold tracking-tight text-carbon-90">
+          <h2 id="attribution-heading" className="text-ap-tagline font-bold tracking-tight text-carbon-90 lg:text-2xl">
             {t('frontdoor.attribution.h2')}
           </h2>
           <p className="mt-3 max-w-3xl text-base leading-[1.62] text-carbon-70">

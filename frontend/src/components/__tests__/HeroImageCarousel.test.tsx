@@ -34,17 +34,29 @@ describe('<HeroImageCarousel />', () => {
     cleanup();
   });
 
-  it('paints every slide as a CSS background, never as an image element', () => {
-    const { container } = render(<HeroImageCarousel reducedMotion />);
-    expect(slides(container).length).toBe(HERO_CAROUSEL_IMAGES.length);
+  it('mounts slides progressively as CSS backgrounds, never as image elements', () => {
+    const { container } = render(<HeroImageCarousel reducedMotion={false} />);
+    // First paint pays for the active frame and the next frame only.
+    expect(slides(container).length).toBe(Math.min(2, HERO_CAROUSEL_IMAGES.length));
     // The whole point of using backgrounds: no <img> enters the front door.
     expect(container.querySelector('img')).toBeNull();
     for (const { src } of HERO_CAROUSEL_IMAGES) {
       expect(src.startsWith('/')).toBe(true); // never a remote URL
+    }
+    for (const { src } of HERO_CAROUSEL_IMAGES.slice(0, 2)) {
       const slide = container.querySelector(`[data-src="${src}"]`) as HTMLElement;
       expect(slide).not.toBeNull();
       expect(slide.style.backgroundImage).toContain(src);
     }
+
+    act(() => {
+      jest.advanceTimersByTime(2000);
+    });
+    expect(slides(container).length).toBe(Math.min(3, HERO_CAROUSEL_IMAGES.length));
+    act(() => {
+      jest.advanceTimersByTime(2000);
+    });
+    expect(slides(container).length).toBe(HERO_CAROUSEL_IMAGES.length);
   });
 
   it('is decorative: hidden from assistive tech', () => {
@@ -54,11 +66,14 @@ describe('<HeroImageCarousel />', () => {
 
   it('under reduced motion shows one static slide and never advances', () => {
     const { container } = render(<HeroImageCarousel reducedMotion />);
+    // Only the frame that can be seen is mounted, so only that frame is requested.
+    expect(slides(container)).toHaveLength(1);
     expect(activeSlides(container)).toEqual([HERO_CAROUSEL_IMAGES[0].src]);
 
     act(() => {
       jest.advanceTimersByTime(40_000);
     });
+    expect(slides(container)).toHaveLength(1);
     expect(activeSlides(container)).toEqual([HERO_CAROUSEL_IMAGES[0].src]);
   });
 
@@ -111,6 +126,14 @@ describe('<HeroImageCarousel />', () => {
     const { container } = render(<HeroImageCarousel reducedMotion={false} intervalMs={8000} />);
 
     expect(container.querySelector(`[data-src="${bad}"]`)).toBeNull();
+    // Initially only the surviving second frame is mounted; later frames arrive progressively.
+    expect(slides(container).length).toBe(1);
+    act(() => {
+      jest.advanceTimersByTime(2000);
+    });
+    act(() => {
+      jest.advanceTimersByTime(2000);
+    });
     expect(slides(container).length).toBe(HERO_CAROUSEL_IMAGES.length - 1);
     // Something is still on screen.
     expect(activeSlides(container).length).toBe(1);

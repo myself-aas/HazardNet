@@ -19,14 +19,15 @@
  *   · colour is never the only carrier: each level renders its word next to the badge
  *     (`AlertLevelBadge`, the single place a level becomes colour and words);
  *   · the region is announced (`role="status"` + `aria-live="polite"`), so a reader who
- *     leaves the page open hears the strip change when the artifact does.
+ *     leaves the page open hears the strip change when the artifact does;
+ *   · the strip is present at first paint rather than fading in from transparent, and it
+ *     never prints a loader diagnostic: a reader gets the localised state and a recovery
+ *     control, never a stack-shaped string.
  */
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useReducedMotion } from 'framer-motion';
 import { Interactive } from '../interactive/Interactive';
-import { useWebFrame, interpolate, Easing } from '../../lib/motion-interpolate';
 
 import { AlertLevelBadge } from '../alerts/AlertLevelBadge';
 import { StatusVerdict } from './StatusVerdict';
@@ -73,6 +74,12 @@ export interface LiveStatusStripProps {
   alerts: StripAlert[];
   generatedAt: string | null;
   loading: boolean;
+  /**
+   * The loader's diagnostic. It is accepted for call-site compatibility and debugging, but
+   * never rendered: it can be non-null after a successful snapshot fallback, so printing it
+   * would alarm a reader over data the strip has in fact read. The readable states below
+   * (`readFailed`, `counts === null`) decide what the reader is told.
+   */
   error: string | null;
   coverage: FreshnessCoverage | null;
   /**
@@ -105,15 +112,12 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
   alerts,
   generatedAt,
   loading,
-  error,
   coverage,
   readFailed,
   onRetry,
 }) => {
   const { t, formatNumber, isBengali } = useI18n();
   const hazardLabel = useHazardLabel();
-  const reduceMotion = useReducedMotion();
-  const frame = useWebFrame(30, 10);
 
   /* The verdict's count answers "how many district advisories are published at WATCH or
      above" — which the artifact's `counts` object states for the whole run. The `alerts`
@@ -134,36 +138,6 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
   return (
     <Interactive.Section
       name="Live status strip — published now"
-      style={{
-        /* No colour in this style object. The surfaces used to be pinned here as inline
-           `#fafafc` / `#e0e0e0`, which is invisible in light mode and a hole in dark mode:
-           an inline declaration beats every class, so the theme layer (styles/dark.css)
-           could never re-point the strip's ground, and the dark ramp's near-white inks
-           landed on a light panel at under 2:1. The classes below are the only surface
-           now, and they resolve through the carbon ramp in both themes. */
-        borderWidth: 1,
-        borderStyle: 'solid',
-        opacity: reduceMotion
-          ? 1
-          : interpolate(frame, [0, 10], [0, 1], {
-              easing: Easing.bezier(0.16, 1, 0.3, 1),
-              extrapolateLeft: 'clamp',
-              extrapolateRight: 'clamp',
-            }),
-        translate: reduceMotion
-          ? '0px 0px'
-          : interpolate(frame, [0, 10], ['0px 8px', '0px 0px'], {
-              /* `Easing.spring({ damping: 200 })` until 2026-10-06 — a critically damped
-                 spring, i.e. a smooth decelerate with no overshoot, which is exactly what
-                 the house curve is (`--ap-ease`, and the opacity arm directly above). The
-                 spring was the last web-app caller of `Easing` from the `remotion` package
-                 root, and that import pulled the whole studio runtime into the entry chunk;
-                 a 10-frame entrance is not worth ~100 kB of renderer. */
-              easing: Easing.bezier(0.16, 1, 0.3, 1),
-              extrapolateLeft: 'clamp',
-              extrapolateRight: 'clamp',
-            }),
-      }}
       role="status"
       aria-live="polite"
       aria-label={t('frontdoor.strip.label')}
@@ -198,7 +172,7 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
                 <button
                   type="button"
                   onClick={onRetry}
-                  className="inline-flex min-h-[32px] items-center gap-1 rounded-full border border-carbon-20 bg-white px-3 py-1 text-xs font-semibold text-carbon-80 hover:bg-carbon-05"
+                  className="inline-flex min-h-[44px] items-center gap-1 rounded-full border border-carbon-20 bg-white px-3 py-1 text-xs font-semibold text-carbon-80 hover:bg-carbon-05"
                 >
                   {t('common.retry')}
                 </button>
@@ -209,7 +183,18 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
           {/* Read successfully, but the answer carried no level ledger: say that, rather than
               borrowing the alarm of an unreadable file. */}
           {!loading && !readFailed && counts === null && (
-            <p className="text-xs leading-relaxed text-carbon-70">{t('frontdoor.strip.noLedger')}</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="text-xs leading-relaxed text-carbon-70">{t('frontdoor.strip.noLedger')}</p>
+              {onRetry && (
+                <button
+                  type="button"
+                  onClick={onRetry}
+                  className="inline-flex min-h-[44px] items-center gap-1 rounded-full border border-carbon-20 bg-white px-3 py-1 text-xs font-semibold text-carbon-80 hover:bg-carbon-05"
+                >
+                  {t('common.retry')}
+                </button>
+              )}
+            </div>
           )}
 
           {!loading && counts !== null && (
@@ -331,45 +316,6 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
         </p>
       )}
 
-      {!loading && error && (
-        <Interactive.Div
-          name="Status error — retry"
-          style={{
-            /* Surfaces follow the theme (see the strip's own comment): the panel classes
-               below carry the ground and the hairline, not inline literals. */
-            borderTopWidth: 1,
-            borderTopStyle: 'solid',
-            paddingLeft: 16,
-            paddingRight: 16,
-            paddingTop: 12,
-            paddingBottom: 12,
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            gap: 12,
-            opacity: reduceMotion
-              ? 1
-              : interpolate(frame, [0, 8], [0, 1], {
-                  easing: Easing.bezier(0.16, 1, 0.3, 1),
-                  extrapolateLeft: 'clamp',
-                  extrapolateRight: 'clamp',
-                }),
-          }}
-          role="alert"
-          className="border-t border-carbon-20 bg-white px-4 py-3 md:px-5 flex flex-wrap items-center gap-3"
-        >
-          <p className="text-sm leading-[1.62] text-ap-link flex-1 min-w-[12rem]">{error}</p>
-          {onRetry && (
-            <button
-              type="button"
-              onClick={onRetry}
-              className="inline-flex min-h-[44px] items-center gap-1.5 bg-primary px-4 py-2 text-sm font-semibold text-ap-action-fg hover:bg-primary-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
-            >
-              {t('common.retry')}
-            </button>
-          )}
-        </Interactive.Div>
-      )}
     </Interactive.Section>
   );
 };

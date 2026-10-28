@@ -331,11 +331,7 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
       {/* ── Header control row with Apple Store style navigation ── */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <p className="ap-caption-strong text-ap-link">{t('frontdoor.products.hazardsEyebrow')}</p>
-          <span className="text-ap-label-tertiary hidden sm:inline" aria-hidden="true">·</span>
-          <span className="text-xs text-carbon-60 hidden sm:inline">
-            {language === 'bn' ? 'অত্যাধুনিক মাল্টি-হ্যাজার্ড ইন্টেলিজেন্স' : 'Next-generation geospatial intelligence'}
-          </span>
+          <p className="ap-caption-strong text-carbon-60">{t('frontdoor.products.hazardsEyebrow')}</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -344,24 +340,24 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
             <button
               type="button"
               onClick={() => setViewMode('shelf')}
-              className={`px-3 py-1 rounded-full font-medium transition-all ${
+              className={`inline-flex min-h-[44px] items-center px-3 py-1 rounded-full font-medium transition-all ${
                 viewMode === 'shelf'
                   ? 'bg-white text-carbon-90 shadow-xs'
                   : 'text-carbon-60 hover:text-carbon-90'
               }`}
-              aria-label="Horizontal shelf view"
+              aria-pressed={viewMode === 'shelf'}
             >
               {language === 'bn' ? 'শেল্ফ' : 'Shelf'}
             </button>
             <button
               type="button"
               onClick={() => setViewMode('grid')}
-              className={`px-3 py-1 rounded-full font-medium transition-all ${
+              className={`inline-flex min-h-[44px] items-center px-3 py-1 rounded-full font-medium transition-all ${
                 viewMode === 'grid'
                   ? 'bg-white text-carbon-90 shadow-xs'
                   : 'text-carbon-60 hover:text-carbon-90'
               }`}
-              aria-label="Bento grid view"
+              aria-pressed={viewMode === 'grid'}
             >
               {language === 'bn' ? 'গ্রিড' : 'Grid'}
             </button>
@@ -375,7 +371,7 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
                 onClick={() => handleScroll('left')}
                 disabled={!canScrollLeft}
                 className="min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center bg-carbon-10 border border-carbon-20 text-carbon-70 hover:bg-carbon-20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                aria-label="Scroll hazards left"
+                aria-label={language === 'bn' ? 'ঝুঁকিসমূহ বামে স্ক্রল করুন' : 'Scroll hazards left'}
               >
                 <MaterialIcon name="chevron_left" className="text-base" />
               </button>
@@ -384,7 +380,7 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
                 onClick={() => handleScroll('right')}
                 disabled={!canScrollRight}
                 className="min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center bg-carbon-10 border border-carbon-20 text-carbon-70 hover:bg-carbon-20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                aria-label="Scroll hazards right"
+                aria-label={language === 'bn' ? 'ঝুঁকিসমূহ ডানে স্ক্রল করুন' : 'Scroll hazards right'}
               >
                 <MaterialIcon name="chevron_right" className="text-base" />
               </button>
@@ -394,11 +390,7 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
       </div>
 
       {/* ── Apple-style Quick Actions Navigation Row ── */}
-      <div
-        role="navigation"
-        aria-label="HazardNet Quick Actions"
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-3.5"
-      >
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-3.5">
         <Link
           to="/alerts"
           className="group flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-ap-canvas border border-black/[0.08] dark:border-white/[0.1] shadow-2xs hover:shadow-md hover:border-black/20 dark:hover:border-white/25 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 min-h-[56px]"

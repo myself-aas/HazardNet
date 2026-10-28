@@ -122,6 +122,18 @@ describe('the front door', () => {
     expect(headings.indexOf('Start here: what to do with an outlook')).toBeLessThan(
       headings.indexOf('What HazardNet covers'),
     );
+
+    // Editorial prose is held to a reading measure; the data table is the deliberate exception.
+    const actionSection = screen
+      .getByRole('heading', { name: 'Start here: what to do with an outlook' })
+      .closest('section')!;
+    expect(
+      Array.from(actionSection.querySelectorAll('p')).some((node) =>
+        node.className.includes('max-w-[72ch]'),
+      ),
+    ).toBe(true);
+    // The contents box indexes the explanatory sections, so it is named for that scope.
+    expect(screen.getByRole('navigation', { name: 'Guide to the sections below' })).toBeInTheDocument();
   });
 
   it('reads the committed artifacts for its live panels', async () => {
@@ -206,6 +218,8 @@ describe('the front door', () => {
     // rather than a utility class: `--hero-scrim` is what `__tests__/heroContrast.test.js`
     // composites over a white photograph to prove the small print clears 4.5:1.
     const card = hero.querySelector('h1')!.closest('div') as HTMLElement;
+    // The synthetic backdrop is labelled where the reader sees it, not only in an AI note elsewhere.
+    expect(hero).toHaveTextContent('Hero imagery is illustrative.');
     expect(card.style.background).toContain('var(--hero-scrim)');
     expect(card.className).not.toMatch(/from-black\//);
     expect(card.className).not.toContain('bg-carbon-black/65');
@@ -325,6 +339,13 @@ describe('the front door', () => {
     expect(container.textContent).toContain('15-day outlook');
     // Critique P0: daily publication must not be sold as a live/real-time emergency feed.
     expect(container.textContent).not.toMatch(/Live emergency|real-time early warning/i);
+    // The deferred bento still has to expose its selected view and meet the touch floor.
+    const shelf = within(section).getByRole('button', { name: 'Shelf' });
+    const grid = within(section).getByRole('button', { name: 'Grid' });
+    expect(shelf).toHaveAttribute('aria-pressed', 'true');
+    expect(grid).toHaveAttribute('aria-pressed', 'false');
+    expect(shelf.className).toContain('min-h-[44px]');
+    expect(grid.className).toContain('min-h-[44px]');
     expect(container.querySelectorAll('a[href^="/hazards/"]').length).toBeGreaterThanOrEqual(8);
     unmount();
   });

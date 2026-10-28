@@ -72,3 +72,32 @@ Snapshot: `.impeccable/critique/2026-10-28T04-38-09Z__frontend-src-pages-frontdo
   current bento only if evidence shows it gets readers to the action pathway fastest;
   otherwise a later `distill` replaces it.
 - **New Bengali editorial sections are held out** until the owner review described above.
+
+## Decision log — 2026-10-28 polish
+
+The polish pass worked from the 28/40 critique snapshot above and left the two owner
+scope decisions intact: the bento is not replaced here, and no held-out Bengali editorial
+section or FAQ was restored.
+
+- **The status strip arrives visible and speaks in states, not diagnostics.** Its frame
+  fade from transparent is gone; the loader's raw `error` string is never rendered. A
+  recovered snapshot read can still carry that diagnostic, so readable counts are not
+  contradicted by an alarm panel. The unreadable and no-ledger states keep their own
+  localised sentences, each with a 44px Try-again target, and unknown still never renders
+  as zero.
+- **The hero labels its synthetic scenery and stops buying it all up front.** The authority
+  small print says “Hero imagery is illustrative.” Normal motion mounts the active and
+  next carousel frames first, then later frames progressively; reduced motion mounts only
+  the still frame it shows; low-bandwidth still keeps slide one only.
+- **Editorial finish follows the reading measure.** Route paragraphs, bullets and callouts
+  are held to 72ch, with the data table as the deliberate wider exception. The contents
+  box is named “Guide to the sections below” because it indexes the explanatory sections,
+  not every block on the page. Link colour and mono/uppercase styling are reserved for
+  links, labels and numbers rather than prose or errors.
+- **The deferred bento received affordance polish only.** Shelf/Grid are 44px toggles with
+  `aria-pressed`, shelf scroll controls have Bengali accessible names, the quick actions no
+  longer create a second navigation landmark, and the vendor-style “next-generation”
+  tagline is gone. The discovery-versus-scanning replacement decision remains open.
+- **New Bengali in this pass is short chrome only** (the hero image note, the contents
+  label and two shelf scroll labels) and joins the owner spot-check list. It does not move
+  `reviewedAt` and does not alter the editorial holdout.

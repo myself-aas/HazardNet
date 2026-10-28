@@ -21,8 +21,10 @@
  *   - `paused` (the hero's pause control) freezes advancement but keeps the frame.
  *   - The zoom is a gentle scale on the active slide only, so it composites on the GPU.
  *
- * A missing file is caught by preloading each slide through an `Image` and dropping any
- * that errors, so a broken asset removes its slide instead of painting a blank.
+ * A missing file is caught by probing each mounted slide through an `Image` and dropping
+ * any that errors, so a broken asset removes its slide instead of painting a blank. Later
+ * slides mount progressively after first paint; the first viewport does not pay for every
+ * frame up front.
  */
 
 import React, { useEffect, useMemo, useState } from 'react';
@@ -36,10 +38,10 @@ interface HeroImageCarouselProps {
   /** How long each slide holds before the cross-fade. */
   intervalMs?: number;
   /**
-   * Low-bandwidth mode: keep slide one and do not fetch the rest. The four frames are 667 KB
-   * together and all four are requested at mount, so on a metered 2G connection this is the
-   * difference between decorating the hero and paying for three images nobody sees.
-   * One usable slide is also below the two-slide floor the timer needs, so no timer is armed.
+   * Low-bandwidth mode: keep slide one and do not fetch the rest. Normal mode mounts later
+   * frames progressively, but a metered connection should not pay for decoration nobody may
+   * stay long enough to see. One usable slide is also below the two-slide floor the timer
+   * needs, so no timer is armed.
    */
   lowBandwidth?: boolean;
   style?: React.CSSProperties;
@@ -83,22 +85,43 @@ export const HeroImageCarousel: React.FC<HeroImageCarouselProps> = ({
   const images = lowBandwidth ? HERO_CAROUSEL_IMAGES.slice(0, 1) : HERO_CAROUSEL_IMAGES;
   const [index, setIndex] = useState(0);
   const [failed, setFailed] = useState<ReadonlySet<string>>(new Set());
+  /* First paint needs the active frame and, when motion is allowed, the next one. Mounting
+     every layer immediately made the browser request the whole carousel before the reader
+     had seen the headline; reduced motion needs only the still frame it actually shows. */
+  const [mountedCount, setMountedCount] = useState(() =>
+    reducedMotion || lowBandwidth ? 1 : Math.min(2, images.length),
+  );
 
-  const usable = useMemo(() => images.filter(({ src }) => !failed.has(src)), [images, failed]);
+  const mountedImages = useMemo(() => images.slice(0, mountedCount), [images, mountedCount]);
+  const usable = useMemo(
+    () => mountedImages.filter(({ src }) => !failed.has(src)),
+    [mountedImages, failed],
+  );
+
+  useEffect(() => {
+    if (reducedMotion || paused || lowBandwidth) return undefined;
+    if (mountedCount >= images.length) return undefined;
+    const id = window.setTimeout(
+      () => setMountedCount((count) => Math.min(images.length, count + 1)),
+      2000,
+    );
+    return () => window.clearTimeout(id);
+  }, [images.length, lowBandwidth, mountedCount, paused, reducedMotion]);
 
   /*
-   * Preload every slide through an Image so a missing or broken file is known here and
-   * its slide removed, rather than surfacing as a blank layer behind the copy.
+   * Probe each mounted slide through an Image so a missing or broken file is known here and
+   * its slide removed, rather than surfacing as a blank layer behind the copy. Unmounted
+   * later slides are not probed yet: that request is the cost progressive mounting avoids.
    */
   useEffect(() => {
-    for (const { src } of images) {
+    for (const { src } of mountedImages) {
       const probe = new Image();
       probe.onerror = () => setFailed((prev) => (prev.has(src) ? prev : new Set(prev).add(src)));
       // Probe the file this viewport paints, so a phone does not fetch the landscape frame it
       // will never show (see `paintedUrl`).
       probe.src = paintedUrl(src);
     }
-  }, [images]);
+  }, [mountedImages]);
 
   /*
    * Advance on a timer. Guarded so a hero with fewer than two usable slides, or one under
@@ -127,7 +150,7 @@ export const HeroImageCarousel: React.FC<HeroImageCarouselProps> = ({
         width: '100%',
         height: '100%',
         overflow: 'hidden',
-        // The slides are four absolutely-positioned layers with their own scaling transforms.
+        // The slides are absolutely-positioned layers with their own scaling transforms.
         // `contain: paint` keeps their rasterisation inside this box, so the carousel cannot
         // invalidate layout or paint for the copy column beside it (cheap, and it matters most
         // on the 2 GB devices this page is built for).
@@ -135,7 +158,7 @@ export const HeroImageCarousel: React.FC<HeroImageCarouselProps> = ({
         ...style,
       }}
     >
-      {images.map(({ src }, i) => {
+      {mountedImages.map(({ src }, i) => {
         if (failed.has(src)) return null;
         const active = i === index;
         return (
