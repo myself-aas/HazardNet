@@ -1,10 +1,10 @@
 {
   "schema": "hazardnet-site-probe/v1",
-  "ran_at": "2026-10-27T23:18:19Z",
-  "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/40601151306",
+  "ran_at": "2026-10-28T20:39:54Z",
+  "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/40765155826",
   "site_url": "https://hazardnet.live",
   "edge_challenged": false,
-  "outcome": "fail",
+  "outcome": "pass",
   "checks": [
     {
       "id": "homepage",
@@ -43,8 +43,8 @@
     },
     {
       "id": "runtime_paths",
-      "outcome": "failure",
-      "detail": null
+      "outcome": "success",
+      "detail": "8 sibling runtime paths passed"
     },
     {
       "id": "status_page",
