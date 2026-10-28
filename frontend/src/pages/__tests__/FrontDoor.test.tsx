@@ -330,23 +330,23 @@ describe('the front door', () => {
     expect(section).toHaveAttribute('aria-labelledby', 'hazards-heading');
     expect(heading).toHaveAttribute('id', 'hazards-heading');
     expect(within(section).getByText(/Eight classes · 7 and 15 day horizons/).tagName).toBe('SPAN');
-    // The eyebrow keeps the count, so the rename cost the reader no information.
-    expect(section.textContent).toContain('Eight hazard classes');
-    // The eight classes come from the same methodology file the /hazards page reads.
+    // The eight classes come from the same methodology file the /hazards page reads, including
+    // that file's own summaries rather than a second set of card taglines.
     expect(container.textContent).toContain('Tropical Cyclone');
     expect(container.textContent).toContain('Cold Wave');
+    expect(section.textContent).toContain('Riverine and monsoon flooding');
     expect(container.textContent).toContain('7-day outlook');
     expect(container.textContent).toContain('15-day outlook');
     // Critique P0: daily publication must not be sold as a live/real-time emergency feed.
     expect(container.textContent).not.toMatch(/Live emergency|real-time early warning/i);
-    // The deferred bento still has to expose its selected view and meet the touch floor.
-    const shelf = within(section).getByRole('button', { name: 'Shelf' });
-    const grid = within(section).getByRole('button', { name: 'Grid' });
-    expect(shelf).toHaveAttribute('aria-pressed', 'true');
-    expect(grid).toHaveAttribute('aria-pressed', 'false');
-    expect(shelf.className).toContain('min-h-[44px]');
-    expect(grid.className).toContain('min-h-[44px]');
-    expect(container.querySelectorAll('a[href^="/hazards/"]').length).toBeGreaterThanOrEqual(8);
+    // Distilled index: every class is a row in page flow. There is no Shelf/Grid mode, no
+    // horizontal shelf to operate, and no quick-action row repeating hero/strip destinations.
+    expect(within(section).queryAllByRole('button')).toHaveLength(0);
+    expect(section.querySelector('[class*="overflow-x-auto"]')).toBeNull();
+    expect(
+      within(section).queryByRole('link', { name: /Report Hazard|Regional Dashboard|Live GIS Console/ }),
+    ).not.toBeInTheDocument();
+    expect(section.querySelectorAll('a[href^="/hazards/"]')).toHaveLength(8);
     unmount();
   });
 

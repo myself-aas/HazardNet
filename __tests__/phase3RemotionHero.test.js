@@ -88,10 +88,11 @@ describe('Phase 3 Remotion Hazard Video & Atmospheric Hero', () => {
       expect(text).toContain('Every number traces to a file');
     });
 
-    test('is the same four layers as the web hero, and says the front door\'s own words', () => {
+    test('keeps the export glow behind its title, and says the front door\'s own words', () => {
       const { container } = render(<HeroComposition />);
-      // The composition mirrors components/HeroCinematicBackground.tsx: mesh, photograph/title,
-      // grade, vignette — with the HUD cluster, the second glow and the grain deleted from both.
+      // The composition is a title export rather than the web backdrop: it has no photograph
+      // layer, so its one glow remains visible behind the title. The HUD cluster, second glow
+      // and grain stay deleted.
       const names = Array.from(container.querySelectorAll('[data-interactive-name]')).map((el) =>
         el.getAttribute('data-interactive-name')
       );
@@ -114,7 +115,7 @@ describe('Phase 3 Remotion Hazard Video & Atmospheric Hero', () => {
   });
 
   describe('<HeroCinematicBackground />', () => {
-    test('is four layers of backdrop and no telemetry HUD', () => {
+    test('is three layers of backdrop and no telemetry HUD or covered glow', () => {
       const { container } = render(<HeroCinematicBackground paused={true} />);
 
       // The decorative HUD cluster - four corner reticles, a horizon rule and a `hero-hud`
@@ -133,16 +134,32 @@ describe('Phase 3 Remotion Hazard Video & Atmospheric Hero', () => {
       expect(screen.queryByText(/APEX/i)).toBeNull();
       expect(screen.queryByText(/RES-ADAPTIVE/i)).toBeNull();
 
-      // The layers that remain are the ones that do something: the mesh, the photograph, the
-      // grade and the vignette. Named through `Interactive`, so the names are the contract.
+      // The layers that remain are the ones that do something: the photograph, the grade and
+      // the vignette. The mesh glow was distilled out because the opaque photograph covered
+      // it while its frame loop kept running. Named through `Interactive`, so the names are
+      // the contract.
       const names = Array.from(container.querySelectorAll('[data-interactive-name]')).map((el) =>
         el.getAttribute('data-interactive-name')
       );
       expect(names).toEqual(
-        expect.arrayContaining(['Hero cinematic background — 4-layer', 'BgMesh container', 'Hero photograph', 'Vignette — dual-zone elliptical'])
+        expect.arrayContaining([
+          'Hero cinematic background — 3-layer',
+          'Hero photograph',
+          'Soft-light grade',
+          'Exposure curve',
+          'Vignette — dual-zone elliptical',
+        ])
       );
-      // And none of the deleted three come back by accident.
-      for (const gone of ['Telemetry HUD container', 'Reticle top-left', 'Horizon reference line', 'Film grain — SVG fractal noise', 'Secondary cyan reflection']) {
+      // And none of the deleted decoration comes back by accident.
+      for (const gone of [
+        'BgMesh container',
+        'Primary orbital glow',
+        'Telemetry HUD container',
+        'Reticle top-left',
+        'Horizon reference line',
+        'Film grain — SVG fractal noise',
+        'Secondary cyan reflection',
+      ]) {
         expect(names).not.toContain(gone);
       }
     });

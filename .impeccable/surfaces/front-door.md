@@ -13,7 +13,7 @@ Decide whether HazardNet is the thing they need, and act: open the live map, ope
 
 ## Direction
 
-Editorial track. The page is a publication front page, not a dashboard: a headline claim, the live status strip, the eight hazard classes as type-led cards, the published record, the safety framing. One idea per section, 80px rhythm, no card grid as page structure.
+Editorial track. The page is a publication front page, not a dashboard: a headline claim, the live status strip, the eight hazard classes as a type-led index, the published record, the safety framing. One idea per section, 80px rhythm, no card grid as page structure.
 
 ## Decisions to preserve
 
@@ -101,3 +101,32 @@ section or FAQ was restored.
 - **New Bengali in this pass is short chrome only** (the hero image note, the contents
   label and two shelf scroll labels) and joins the owner spot-check list. It does not move
   `reviewedAt` and does not alter the editorial holdout.
+
+## Decision log — 2026-10-28 distill
+
+This pass resolves the deferred bento question by the surface's own purpose: the visitor
+is deciding and acting, so the hazard registry is for scanning, not browsing a product
+shelf. It removes complexity without rewriting the clarified editorial argument or
+restoring any held-out Bengali section/FAQ.
+
+- **The bento is replaced by `HazardIndex`.** Removed: Shelf/Grid modes and their state,
+  the horizontal shelf and scroll buttons, four quick-action cards repeating hero/strip
+  destinations, eight bespoke SVG motifs, English lead-time/telemetry strings, the
+  duplicate header/note and their dead i18n keys. Kept: all eight class links, localized
+  class names, active-window data, and the methodology file's own summaries. The bespoke
+  Bengali card taglines were not carried over: they duplicated the methodology record with
+  divergent thresholds, and one contained corrupted replacement characters. In Bengali,
+  the names and active-window label localize; the methodology summary/season render as
+  explicitly `lang="en"` fallback until that source record is localized and reviewed.
+- **The hero no longer animates an invisible layer.** The orbital-glow mesh and its
+  420-frame loop sat behind the opaque poster/carousel, so the normal render paid for
+  motion nobody could see. The backdrop is now photograph → grade → vignette, and the
+  carousel is the hero's only motion. The illustrative label, pause control, reduced-motion
+  and low-bandwidth paths remain.
+- **Two supporting groups were un-carded, not deleted.** Coverage figures are now a ruled
+  stats row, and the two forecast horizons are linked rows followed by text links. The
+  figures, horizon descriptions and destinations are unchanged.
+- **What distill did not remove:** the status verdict and its honest states, the promoted
+  action section, coverage/provenance, the published-alert record, all 11 editorial
+  sections, blog, 8 FAQs, attribution, safety framing, or the progressive hero carousel.
+  Those are the decision path and evidence record, not decoration.

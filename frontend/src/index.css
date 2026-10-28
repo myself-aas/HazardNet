@@ -151,7 +151,6 @@ summary:focus-visible {
 
 /* ── Component-scoped decisions that are genuinely app-specific ───────────── */
 :root {
-  --hero-glow-blur-primary: 90px;
   --hero-glass-blur: 8px;
   /* The hero's small print sits over a photograph, so its contrast is a function of the
      scrim and the text alpha rather than of a token pair, and no static token check could

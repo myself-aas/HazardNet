@@ -68,19 +68,11 @@ import { ExternalLink } from 'lucide-react';
 import { Interactive } from '../components/interactive/Interactive';
 
 import MaterialIcon from '../components/MaterialIcon';
-import {
-  ButtonLink,
-  Card,
-  PillTabs,
-  ProvenanceNote,
-  SectionHeading,
-  SeverityBadge,
-} from '../components/apple/primitives';
-import { useReveal } from '../components/apple/motion';
+import { ButtonLink } from '../components/apple/primitives';
 import { AlertLevelBadge } from '../components/alerts/AlertLevelBadge';
 import { LanguageToggle } from '../components/alerts/LanguageToggle';
 import LiveStatusStrip from '../components/frontdoor/LiveStatusStrip';
-import { AppleHazardsBento } from '../components/frontdoor/AppleHazardsBento';
+import HazardIndex, { type HazardIndexItem } from '../components/frontdoor/HazardIndex';
 import CardStackTable from '../components/ui/CardStackTable';
 import HeroCinematicBackground from '../components/HeroCinematicBackground';
 import { localiseRoute, usePageSeo } from '../hooks/usePageSeo';
@@ -194,13 +186,7 @@ const Figure: React.FC<{ value: string; label: string; tone?: 'default' | 'muted
   label,
   tone = 'default',
 }) => (
-  <div
-    className={`flex flex-col gap-2 rounded-2xl border border-carbon-20 p-5 transition-shadow duration-[var(--ap-duration-base)] ${
-      tone === 'muted'
-        ? 'bg-[color:var(--ap-bg-grouped)]'
-        : 'bg-[color:var(--ap-bg-raised)] shadow-[var(--ap-elev-flat)]'
-    }`}
-  >
+  <div className="flex flex-col gap-1 border-t border-carbon-20 pt-3">
     {/* leading-[1.1], not leading-none: values like "7 & 15 days" wrap on narrow
         screens, and zero leading would collide the wrapped lines. */}
     <p
@@ -341,7 +327,7 @@ export const FrontDoor: React.FC = () => {
   }, [searchParams, location.search]);
 
   const coverage = freshness?.coverage ?? null;
-  const hazards = (hazardMethodology as { hazards?: unknown[] }).hazards ?? [];
+  const hazards = (hazardMethodology as { hazards?: HazardIndexItem[] }).hazards ?? [];
   const topAlerts = useMemo(() => alerts.slice(0, 4), [alerts]);
 
   /**
@@ -452,7 +438,8 @@ export const FrontDoor: React.FC = () => {
     <Interactive.Div name="FrontDoor page — editorial front door" className="w-full ap-enter">
       {/* ── Hero: one photograph, one claim, one action ──
           The backdrop was a five-layer motion build with a decorative telemetry HUD and a film
-          grain; it is four layers now (see HeroCinematicBackground). Keeping the composition
+          grain; it is a photograph, a grade and a vignette now (see HeroCinematicBackground).
+          Keeping the composition
           honest rather than busy is the whole job of this block: a claim (h1), the sentence that
           qualifies it, one primary action, and a hyperlink to the page that carries the artifact
           card checking the claim (/last-run — the card itself moved there from this hero). */}
@@ -463,7 +450,7 @@ export const FrontDoor: React.FC = () => {
           `env(safe-area-inset-top)`, so a fixed number collided with it on notched phones. The
           variable now carries the inset, which makes this clearance correct on both. */}
       <header className="ap-on-dark relative w-full overflow-hidden bg-carbon-90 text-carbon-05 min-h-[600px] lg:min-h-[100dvh] flex items-center -mt-14 sm:-mt-16 pt-[calc(var(--navbar-height)+20px)] sm:pt-[calc(var(--navbar-height)+44px)] pb-8 sm:pb-16 shadow-2xl">
-        {/* Mesh → photograph → grade → vignette. */}
+        {/* Photograph → grade → vignette. */}
         <HeroCinematicBackground paused={heroPaused} />
         {/* Pause control — keyboard-reachable, respects reduced-motion (audit #1) */}
         <button
@@ -793,14 +780,12 @@ export const FrontDoor: React.FC = () => {
           The eyebrow beneath it keeps the count, so nothing lost the "eight" but the phrase that
           repeated "hazard" three times in two lines.
 
-          Both headings in this row are set mobile-first: `text-lg` at the base, one step up at
-          `sm`, the tagline token at `lg`. The `aside` is a `<span>` now, not a second `<p>`: it is
-          a caption on the heading, and a paragraph that exists to be read after another paragraph
-          is not what the DOM should say. It also drops `tracking-wider`, which at 12px uppercase
-          mono was the widest text in the section. */}
+          The `aside` is a `<span>`, not a second `<p>`: it is a caption on the heading, and a
+          paragraph that exists to be read after another paragraph is not what the DOM should
+          say. */}
         <section aria-labelledby="hazards-heading" className="space-y-4">
           <div className="flex flex-wrap items-end justify-between gap-x-3 gap-y-1">
-            <h2 id="hazards-heading" className="text-lg font-bold tracking-tight text-carbon-90 sm:text-xl lg:text-2xl">
+            <h2 id="hazards-heading" className="text-ap-tagline font-bold tracking-tight text-carbon-90 lg:text-2xl">
               {t('frontdoor.products.h2')}
             </h2>
             <span className="min-w-0 text-xs leading-[1.5] text-carbon-60">
@@ -808,50 +793,56 @@ export const FrontDoor: React.FC = () => {
             </span>
           </div>
 
-          <div>
-            <AppleHazardsBento hazards={hazards as any} />
-          </div>
+          <HazardIndex hazards={hazards} />
 
           <div>
             <h3 className="text-sm font-semibold text-carbon-90">{t('frontdoor.products.horizonsEyebrow')}</h3>
-            <div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-2">
-              <Link
-                to="/docs/forecasts"
-                className="group flex items-start gap-3 rounded-2xl border border-carbon-20 bg-white p-4 transition-colors hover:border-ap-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
-              >
-                <MaterialIcon name="date_range" className="mt-0.5 text-xl text-ap-link" />
-                <span className="space-y-1">
-                  <span className="block text-sm font-bold text-carbon-90">{t('frontdoor.products.horizon7')}</span>
-                  <span className="block text-xs leading-relaxed text-carbon-60">
-                    {t('frontdoor.products.horizon7desc')}
+            <ul className="mt-2 grid grid-cols-1 border-t border-carbon-20 md:grid-cols-2 md:gap-x-8">
+              <li className="border-b border-carbon-20">
+                <Link
+                  to="/docs/forecasts"
+                  className="group flex min-h-[44px] items-start gap-3 px-2 py-3 transition-colors hover:bg-carbon-05 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
+                >
+                  <MaterialIcon name="date_range" className="mt-0.5 text-xl text-carbon-60" />
+                  <span className="space-y-1">
+                    <span className="block text-sm font-bold text-carbon-90 group-hover:text-ap-link">
+                      {t('frontdoor.products.horizon7')}
+                    </span>
+                    <span className="block text-xs leading-relaxed text-carbon-60">
+                      {t('frontdoor.products.horizon7desc')}
+                    </span>
                   </span>
-                </span>
-              </Link>
-              <Link
-                to="/docs/forecasts"
-                className="group flex items-start gap-3 rounded-2xl border border-carbon-20 bg-white p-4 transition-colors hover:border-ap-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
-              >
-                <MaterialIcon name="calendar_month" className="mt-0.5 text-xl text-ap-link" />
-                <span className="space-y-1">
-                  <span className="block text-sm font-bold text-carbon-90">{t('frontdoor.products.horizon15')}</span>
-                  <span className="block text-xs leading-relaxed text-carbon-60">
-                    {t('frontdoor.products.horizon15desc')}
+                </Link>
+              </li>
+              <li className="border-b border-carbon-20">
+                <Link
+                  to="/docs/forecasts"
+                  className="group flex min-h-[44px] items-start gap-3 px-2 py-3 transition-colors hover:bg-carbon-05 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
+                >
+                  <MaterialIcon name="calendar_month" className="mt-0.5 text-xl text-carbon-60" />
+                  <span className="space-y-1">
+                    <span className="block text-sm font-bold text-carbon-90 group-hover:text-ap-link">
+                      {t('frontdoor.products.horizon15')}
+                    </span>
+                    <span className="block text-xs leading-relaxed text-carbon-60">
+                      {t('frontdoor.products.horizon15desc')}
+                    </span>
                   </span>
-                </span>
-              </Link>
-            </div>
+                </Link>
+              </li>
+            </ul>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-x-6">
             <Link
               to="/hazards"
-              className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-carbon-20 bg-white px-4 py-2 text-sm font-semibold text-carbon-80 hover:bg-carbon-05"
+              className="inline-flex min-h-[44px] items-center text-sm font-bold text-ap-link underline underline-offset-4 hover:decoration-ap-primary"
             >
               {t('frontdoor.products.methodologyLink')}
             </Link>
             <Link
               to="/docs/forecasts"
-              className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-carbon-20 bg-white px-4 py-2 text-sm font-semibold text-carbon-80 hover:bg-carbon-05"
+              className="inline-flex min-h-[44px] items-center text-sm font-bold text-ap-link underline underline-offset-4 hover:decoration-ap-primary"
             >
               {t('frontdoor.products.forecastDocs')}
             </Link>

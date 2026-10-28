@@ -8,17 +8,20 @@
  * - Effects array inline, hardcoded
  * - Composition metadata inline in Root.tsx
  *
- * Layers: BgMesh → Title → Grade → Vignette (4 layers, matching the web hero)
+ * Layers: BgMesh → Title → Grade → Vignette. This is a title export, not a literal copy of
+ * the web backdrop: the web hero's covered glow was distilled out on 2026-10-28 because the
+ * opaque photograph hid it, while this composition has no photograph and its one glow stays
+ * visible behind the title.
  *
- * **Simplified 2026-10-05, to match `components/HeroCinematicBackground.tsx`.** This composition
- * is the 16:9 export of the web hero (Root.tsx calls it "web hero preview"), so when the web hero
- * dropped its decorative HUD and its second glow, this file kept painting a hero that no longer
- * exists — including two readouts the repository cannot support
- * ("GEO-SYNC · 23°42'N 90°22'E · APEX 35,786 KM" and "OPTICAL SENSOR STREAM · 30 FPS ·
- * RES-ADAPTIVE"; docs/audits/2026-10-03-landing-live-hero-audit.md H-P0-1). An exported MP4
- * leaves the building, so the same rule applies here as on the page: no number that traces to
- * nothing. The two HUD lines and the corner reticles are gone, the secondary cyan glow is gone
- * (one brand hue, one glow), and the vignette the web hero has is now here too.
+ * **Simplified 2026-10-05.** This composition is the 16:9 export of the web hero (Root.tsx
+ * calls it "web hero preview"), so when the web hero dropped its decorative HUD and its second
+ * glow, this file kept painting a hero that no longer exists — including two readouts the
+ * repository cannot support ("GEO-SYNC · 23°42'N 90°22'E · APEX 35,786 KM" and
+ * "OPTICAL SENSOR STREAM · 30 FPS · RES-ADAPTIVE";
+ * docs/audits/2026-10-03-landing-live-hero-audit.md H-P0-1). An exported MP4 leaves the
+ * building, so the same rule applies here as on the page: no number that traces to nothing.
+ * The two HUD lines and the corner reticles are gone, the secondary cyan glow is gone (one
+ * brand hue, one glow), and the vignette the web hero has is now here too.
  */
 
 import React from 'react';
