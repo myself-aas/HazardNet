@@ -229,25 +229,25 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
         {/* ── coverage + the run's own timestamp ───────────────────────────── */}
         <dl className="grid w-full grid-cols-2 gap-x-4 gap-y-2 text-xs text-carbon-70 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-1">
           <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-            <dt className="font-mono text-xs uppercase tracking-wide text-carbon-60">
+            <dt className="min-w-0 font-mono text-xs uppercase tracking-wide text-carbon-60 [overflow-wrap:anywhere]">
               {t('frontdoor.strip.districts')}
             </dt>
-            <dd className="min-w-0 break-words font-mono font-bold leading-relaxed text-carbon-90">
+            <dd className="min-w-0 font-mono font-bold leading-relaxed text-carbon-90 [overflow-wrap:anywhere]">
               {coverageText ?? '—'}
               {coverage?.status ? ` (${coverage.status})` : ''}
             </dd>
           </div>
           <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-            <dt className="font-mono text-xs uppercase tracking-wide text-carbon-60">
+            <dt className="min-w-0 font-mono text-xs uppercase tracking-wide text-carbon-60 [overflow-wrap:anywhere]">
               {t('frontdoor.strip.assessed')}
             </dt>
-            <dd className="min-w-0 break-words font-mono font-bold leading-relaxed text-carbon-90">
+            <dd className="min-w-0 font-mono font-bold leading-relaxed text-carbon-90 [overflow-wrap:anywhere]">
               {assessed != null ? formatNumber(assessed) : '—'}
             </dd>
           </div>
           <div className="col-span-2 flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5 sm:col-auto">
-            <dt className="font-mono text-xs uppercase tracking-wide text-carbon-60">{t('frontdoor.strip.updated')}</dt>
-            <dd className="min-w-0 break-words font-mono leading-relaxed text-carbon-80">
+            <dt className="min-w-0 font-mono text-xs uppercase tracking-wide text-carbon-60 [overflow-wrap:anywhere]">{t('frontdoor.strip.updated')}</dt>
+            <dd className="min-w-0 font-mono leading-relaxed text-carbon-80 [overflow-wrap:anywhere]">
               {ageHours != null ? describeAge(ageHours) : '—'}
               {generatedAt ? ` · ${generatedAt.slice(0, 16).replace('T', ' ')} UTC` : ''}
             </dd>
@@ -258,7 +258,7 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
             `<nav>` (its table of contents). See the same decision in `pages/FrontDoor.tsx`. */}
         <ul
           aria-label={t('frontdoor.strip.navLabel')}
-          className="grid w-full grid-cols-2 gap-x-4 gap-y-1 sm:ml-auto sm:flex sm:w-auto sm:flex-wrap"
+          className="grid w-full grid-cols-2 gap-x-4 gap-y-2 sm:ml-auto sm:flex sm:w-auto sm:flex-wrap"
         >
           <li className="min-w-0">
             <Link
@@ -282,7 +282,7 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
       {/* ── the top published alert, or the honest zero ─────────────────────── */}
       {!loading && published > 0 && (
         <div className="border-t border-carbon-20 bg-white px-4 py-2 sm:py-3 md:px-5">
-          <ul className="space-y-1 sm:space-y-2">
+          <ul className="space-y-2">
             {alerts.slice(0, 2).map((alert) => (
               <li
                 key={alert.id}

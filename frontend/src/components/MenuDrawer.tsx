@@ -135,7 +135,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
           animate={{ x: 0 }}
           exit={reduceMotion ? undefined : { x: '100%' }}
           transition={AP_SPRING}
-          className="fixed inset-y-0 right-0 z-[var(--ap-z-overlay)] flex w-full max-w-[380px] select-none flex-col overflow-hidden border-l border-carbon-20 bg-white font-sans text-carbon-80"
+          className="fixed inset-y-0 right-0 z-[var(--ap-z-overlay)] flex w-full max-w-[380px] select-none flex-col overflow-hidden border-l border-carbon-20 bg-white pr-[env(safe-area-inset-right,0px)] font-sans text-carbon-80"
         >
           {/* brand · close — the only two things in the header row */}
           <div className="flex shrink-0 items-center justify-between px-4 pb-3 pt-[max(1rem,env(safe-area-inset-top))]">
@@ -153,7 +153,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
             </button>
           </div>
 
-          <div className="flex-1 space-y-5 overflow-y-auto px-4 pb-4">
+          <div className="flex-1 space-y-5 overflow-y-auto overscroll-contain px-4 pb-4">
             {/* Search — one wide row */}
             <button
               type="button"
@@ -237,11 +237,11 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                 >
                   {section.category}
                 </h2>
-                <ul className="grid grid-cols-2 gap-1.5">
+                <ul className="grid grid-cols-2 gap-2">
                   {section.items.map((item) => {
                     const isActive = isPathCurrent(location.pathname, item.path);
                     return (
-                      <li key={item.id}>
+                      <li key={item.id} className="min-w-0">
                         <Link
                           to={item.path}
                           onClick={() => {
@@ -249,7 +249,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                             onClose();
                           }}
                           aria-current={isActive ? 'page' : undefined}
-                          className={`flex min-h-[48px] items-center gap-2.5 rounded-xl px-3 text-ap-caption no-underline transition-colors duration-150 touch-manipulation ${
+                          className={`flex min-h-[48px] min-w-0 items-center gap-2.5 rounded-xl px-3 text-ap-caption no-underline transition-colors duration-150 touch-manipulation ${
                             isActive
                               ? 'bg-blue-50 font-bold text-blue-700'
                               : 'font-semibold text-carbon-80 hover:bg-carbon-05'

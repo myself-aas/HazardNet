@@ -193,6 +193,33 @@ describe('the front door', () => {
     expect(text).toMatch(/at or below its configured ceiling/);
   });
 
+  it('preloads only the hero crop and density this viewport will paint', () => {
+    const preload = (
+      front as { preload?: Array<{ href: string; as: string; media: string }> } | undefined
+    )?.preload;
+
+    // `styles/hero-media.css` paints the 1x portrait below 2dppx and the tall 2x render at
+    // or above it. The preload list must make the same split: a single phone-wide 2x entry
+    // made a DPR-1 phone download the large frame and then the small frame it actually used.
+    expect(preload).toEqual([
+      {
+        href: '/hero-carousel/hero-flood-delta.jpg',
+        as: 'image',
+        media: '(min-width: 640px)',
+      },
+      {
+        href: '/hero-carousel/hero-flood-delta-portrait.jpg',
+        as: 'image',
+        media: '(max-width: 639px) and (max-resolution: 1.99dppx)',
+      },
+      {
+        href: '/hero-carousel/hero-flood-delta-portrait-2x.jpg',
+        as: 'image',
+        media: '(max-width: 639px) and (min-resolution: 2dppx)',
+      },
+    ]);
+  });
+
   it('carries no map and no image: the console stays at /live', () => {
     renderPage();
     expect(document.querySelector('.leaflet-container')).toBeNull();
@@ -208,9 +235,18 @@ describe('the front door', () => {
     await screen.findByTestId('front-door-status-strip');
     const hero = document.querySelector('header.ap-on-dark') as HTMLElement;
     expect(hero).not.toBeNull();
-    // The pinned pause control sits inside the hero's lower 60px, so the phone layout reserves
-    // 80px below the copy card instead of letting the control cover the authority line.
-    expect(hero.className).toContain('pb-20');
+    // The hero is pulled under, and then clears, the same measured header height. Its
+    // bottom reserve follows the pinned pause control's safe-area offset, so the control
+    // cannot cover the authority line on a notched phone or in landscape.
+    expect(hero.className).toContain('mt-[calc(var(--navbar-height)*-1)]');
+    expect(hero.className).toContain('pb-[calc(max(1rem,env(safe-area-inset-bottom,0px))+4rem)]');
+    const pauseControl = Array.from(hero.querySelectorAll('button')).find((button) =>
+      button.className.includes('motion-reduce:hidden'),
+    );
+    expect(pauseControl?.className).toContain('right-[max(1rem,env(safe-area-inset-right,0px))]');
+    expect(hero.querySelector('.max-w-\\[1200px\\]')?.className).toContain(
+      'pl-[max(1rem,env(safe-area-inset-left,0px))]',
+    );
 
     // The run card left the hero for /last-run on 2026-10-05: it is not rendered here,
     // and the hero reaches it only as a hyperlink.
@@ -405,15 +441,23 @@ describe('the front door', () => {
       expect(heading.className).toContain('text-balance');
     }
 
-    // The citation is the page's one long token (a 39-character repository URL). `break-words`
-    // lets it wrap instead of forcing the block wider than the phone.
+    // The citation is the page's one long token (a 39-character repository URL).
+    // `overflow-wrap: anywhere` also lowers its min-content size, so the token cannot
+    // force the block wider than the phone before the browser gets a chance to wrap it.
     // Matched on the bare URL, because the body paragraph above it also names the department.
     const citation = [...container.querySelectorAll('p')].find((p) =>
       p.textContent?.includes('github.com/myself-aas/HazardNet'),
     )!;
     expect(citation).toBeDefined();
-    expect(citation.className).toContain('break-words');
+    expect(citation.className).toContain('[overflow-wrap:anywhere]');
     expect(citation.className).toContain('font-mono');
+
+    // The phone branch of the ledger table uses a fixed 38% label column. Both sides of
+    // that pair therefore have to be shrinkable and breakable at the same strength.
+    for (const term of Array.from(container.querySelectorAll('dt, dd'))) {
+      expect(term.className).toContain('min-w-0');
+      expect(term.className).toContain('[overflow-wrap:anywhere]');
+    }
 
     // Every in-section action is a 44px row, phone and desktop alike.
     const sectionButtons = [...container.querySelectorAll('a')].filter((a) =>
@@ -428,6 +472,10 @@ describe('the front door', () => {
   it('shows the newest blog posts with a link into the blog', async () => {
     const { unmount } = renderPage();
     const post = await screen.findByText('Monsoon outlook test post');
+    // Blog titles and excerpts are store-authored rather than route-pinned, so the card
+    // must remain shrinkable even when one arrives as a single long token or URL.
+    expect(post.className).toContain('[overflow-wrap:anywhere]');
+    expect(post.closest('li')?.className).toContain('min-w-0');
     expect(post.closest('a')).toHaveAttribute('href', '/blogs/monsoon-outlook-test');
     expect(screen.getByRole('heading', { name: 'Newest from the blog' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Read all posts/ })).toHaveAttribute('href', '/blogs');

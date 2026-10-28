@@ -328,7 +328,7 @@ const AppContent: React.FC = () => {
           the content. Visible only while focused. */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[var(--ap-z-a11y)] focus:bg-carbon-90 focus:px-4 focus:py-3 focus:text-base focus:font-semibold focus:text-white"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-[max(0.75rem,env(safe-area-inset-left,0px))] focus:top-[max(0.75rem,env(safe-area-inset-top,0px))] focus:z-[var(--ap-z-a11y)] focus:bg-carbon-90 focus:px-4 focus:py-3 focus:text-base focus:font-semibold focus:text-white"
       >
         Skip to main content
       </a>

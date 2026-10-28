@@ -177,6 +177,21 @@ const SECTION_HEADING_CLASS =
   'min-w-0 break-words text-balance text-ap-tagline font-bold text-carbon-90 lg:text-2xl';
 
 /**
+ * The page gutter under `viewport-fit=cover`. In landscape the display cutout can occupy
+ * more than the normal 16/24/32px gutter, so each side takes the larger of the design
+ * gutter and that side's safe-area inset. On a device without a cutout this resolves to
+ * exactly the gutter the page already used.
+ */
+const SAFE_PAGE_GUTTER_CLASS = [
+  'pl-[max(1rem,env(safe-area-inset-left,0px))]',
+  'pr-[max(1rem,env(safe-area-inset-right,0px))]',
+  'sm:pl-[max(1.5rem,env(safe-area-inset-left,0px))]',
+  'sm:pr-[max(1.5rem,env(safe-area-inset-right,0px))]',
+  'xl:pl-[max(2rem,env(safe-area-inset-left,0px))]',
+  'xl:pr-[max(2rem,env(safe-area-inset-right,0px))]',
+].join(' ');
+
+/**
  * One figure in the trust strip.
  *
  * The strip used to print, under each number, the file it was read from. That line is
@@ -452,12 +467,11 @@ export const FrontDoor: React.FC = () => {
       {/* `ap-on-dark` scopes the outline button's inversion to this hero, so the
           same primitive renders white-on-dark here and ink-on-light everywhere
           else without a second variant existing. */}
-      {/* `pt-[calc(var(--navbar-height)+44px)]` instead of a hard 100px: the bar is 3.5rem plus
-          `env(safe-area-inset-top)`, so a fixed number collided with it on notched phones. The
-          variable now carries the inset, which makes this clearance correct on both. The mobile
-          bottom padding is 80px for the same kind of reason: the 44px pause control is pinned
-          16px above the hero's lower edge, and the old 32px pad let it sit over the copy card. */}
-      <header className="ap-on-dark relative w-full overflow-hidden bg-carbon-90 text-carbon-05 min-h-[600px] lg:min-h-[100dvh] flex items-center -mt-14 sm:-mt-16 pt-[calc(var(--navbar-height)+20px)] sm:pt-[calc(var(--navbar-height)+44px)] pb-20 sm:pb-16 shadow-2xl">
+      {/* The negative top margin and the top padding both read `--navbar-height`, so the hero
+          starts under the full bar (including its top safe-area inset) instead of assuming
+          a fixed 56/64px header. Bottom padding is the pause control's own safe offset plus
+          64px, which keeps the 44px control below the copy on notched and plain phones. */}
+      <header className="ap-on-dark relative w-full overflow-hidden bg-carbon-90 text-carbon-05 min-h-[600px] lg:min-h-[100dvh] flex items-center mt-[calc(var(--navbar-height)*-1)] pt-[calc(var(--navbar-height)+20px)] sm:pt-[calc(var(--navbar-height)+44px)] pb-[calc(max(1rem,env(safe-area-inset-bottom,0px))+4rem)] shadow-2xl">
         {/* Photograph → grade → vignette. */}
         <HeroCinematicBackground paused={heroPaused} />
         {/* Pause control — keyboard-reachable, respects reduced-motion (audit #1) */}
@@ -466,13 +480,13 @@ export const FrontDoor: React.FC = () => {
           onClick={() => setHeroPaused((v) => !v)}
           aria-pressed={heroPaused}
           aria-label={heroPaused ? t('frontdoor.hero.resumeMotion') : t('frontdoor.hero.pauseMotion')}
-          className="absolute bottom-4 right-4 z-10 inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-carbon-black/60 px-3 py-2 text-xs font-semibold text-white border border-white/20 backdrop-blur-sm hover:bg-carbon-black/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+          className="absolute bottom-[max(1rem,env(safe-area-inset-bottom,0px))] right-[max(1rem,env(safe-area-inset-right,0px))] z-10 inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-carbon-black/60 px-3 py-2 text-xs font-semibold text-white border border-white/20 backdrop-blur-sm hover:bg-carbon-black/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 motion-reduce:hidden"
         >
           <MaterialIcon name={heroPaused ? 'play_arrow' : 'pause'} className="text-sm" />
           <span>{heroPaused ? t('frontdoor.hero.resumeMotion') : t('frontdoor.hero.pauseMotion')}</span>
         </button>
 
-        <div className="relative z-10 w-full max-w-[1200px] mx-auto px-4 sm:px-6 xl:px-8">
+        <div className={`relative z-10 w-full max-w-[1200px] mx-auto ${SAFE_PAGE_GUTTER_CLASS}`}>
           {/* The masthead strip ("Overview · HazardNet · reviewed <date>") used to sit here. It
               was a middot row of the kind the design skill bans: a version-style eyebrow, half of
               it repeating the wordmark directly above a wordmark, and the only reader-facing fact
@@ -553,7 +567,7 @@ export const FrontDoor: React.FC = () => {
                   <MaterialIcon name="public" className="text-base" />
                   {t('frontdoor.hero.ctaMap')}
                 </ButtonLink>
-                <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1">
+                <div className="mt-2 flex flex-wrap gap-x-6 gap-y-2">
                   <Link
                     to="/methodology"
                     className="inline-flex min-h-[44px] min-w-[44px] items-center text-sm font-bold leading-snug text-white underline decoration-white/40 underline-offset-4 hover:decoration-white"
@@ -596,7 +610,7 @@ export const FrontDoor: React.FC = () => {
       </header>
 
       {/* ── Main Content Container: Live status strip, Outlook, and Methodology ── */}
-      <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6 xl:px-8 space-y-8 lg:space-y-12 mt-6 sm:mt-8 lg:mt-12">
+      <div className={`mx-auto w-full max-w-[1200px] ${SAFE_PAGE_GUTTER_CLASS} space-y-8 lg:space-y-12 mt-6 sm:mt-8 lg:mt-12`}>
         {/* ── The live strip: what is published at the moment of this read ──────────────── */}
         <LiveStatusStrip
           counts={counts}
@@ -817,7 +831,7 @@ export const FrontDoor: React.FC = () => {
               <li className="border-b border-carbon-20">
                 <Link
                   to="/docs/forecasts"
-                  className="group flex min-h-[44px] items-start gap-2.5 px-1 py-3 transition-colors hover:bg-carbon-05 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 sm:gap-3 sm:px-2"
+                  className="ap-press-row group flex min-h-[44px] items-start gap-2.5 px-1 py-3 transition-colors hover:bg-carbon-05 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 sm:gap-3 sm:px-2"
                 >
                   <MaterialIcon name="date_range" className="mt-0.5 shrink-0 text-xl text-carbon-60" />
                   <span className="min-w-0 space-y-1">
@@ -833,7 +847,7 @@ export const FrontDoor: React.FC = () => {
               <li className="border-b border-carbon-20">
                 <Link
                   to="/docs/forecasts"
-                  className="group flex min-h-[44px] items-start gap-2.5 px-1 py-3 transition-colors hover:bg-carbon-05 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 sm:gap-3 sm:px-2"
+                  className="ap-press-row group flex min-h-[44px] items-start gap-2.5 px-1 py-3 transition-colors hover:bg-carbon-05 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 sm:gap-3 sm:px-2"
                 >
                   <MaterialIcon name="calendar_month" className="mt-0.5 shrink-0 text-xl text-carbon-60" />
                   <span className="min-w-0 space-y-1">
@@ -849,7 +863,7 @@ export const FrontDoor: React.FC = () => {
             </ul>
           </div>
 
-          <div className="flex flex-wrap gap-x-6 gap-y-1">
+          <div className="flex flex-wrap gap-x-6 gap-y-2">
             <Link
               to="/hazards"
               className="inline-flex min-h-[44px] items-center text-sm font-bold text-ap-link underline underline-offset-4 hover:decoration-ap-primary"
@@ -874,7 +888,7 @@ export const FrontDoor: React.FC = () => {
             className="rounded-2xl border border-carbon-20 bg-carbon-05 p-3.5 sm:p-4"
           >
             <p className="font-mono text-xs font-bold uppercase tracking-wide text-carbon-60">{t('frontdoor.toc')}</p>
-            <ul className="mt-2 grid grid-cols-1 gap-x-3 gap-y-1 sm:grid-cols-2">
+            <ul className="mt-2 grid grid-cols-1 gap-x-3 gap-y-2 sm:grid-cols-2">
               {sections.map((section, index) => (
                 <li key={`toc-${index}`} className="min-w-0">
                   <a
@@ -929,13 +943,13 @@ export const FrontDoor: React.FC = () => {
           {!blogsLoading && !blogsError && blogPosts !== null && blogPosts.length > 0 && (
             <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {blogPosts.slice(0, 4).map((article, index) => (
-                <li key={article.id}>
+                <li key={article.id} className="min-w-0">
                   <Link
                     to={`/blogs/${encodeURIComponent(article.slug)}`}
-                    className="flex h-full flex-col gap-2 rounded-2xl border border-carbon-20 bg-white p-4 transition-colors hover:border-ap-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
+                    className="flex h-full min-w-0 flex-col gap-2 rounded-2xl border border-carbon-20 bg-white p-4 transition-colors hover:border-ap-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
                   >
                     <span className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full border border-carbon-20 bg-carbon-05 px-2 py-0.5 text-xs font-semibold text-carbon-70">
+                      <span className="min-w-0 rounded-full border border-carbon-20 bg-carbon-05 px-2 py-0.5 text-xs font-semibold text-carbon-70 [overflow-wrap:anywhere]">
                         {article.category || t('frontdoor.blogs.aside')}
                       </span>
                       {index === 0 && (
@@ -944,11 +958,11 @@ export const FrontDoor: React.FC = () => {
                         </span>
                       )}
                     </span>
-                    <span className="break-words text-base font-bold leading-snug text-carbon-90">{article.title}</span>
-                    <span className="line-clamp-2 break-words text-sm leading-[1.62] text-carbon-60">
+                    <span className="min-w-0 text-base font-bold leading-snug text-carbon-90 [overflow-wrap:anywhere]">{article.title}</span>
+                    <span className="line-clamp-2 min-w-0 text-sm leading-[1.62] text-carbon-60 [overflow-wrap:anywhere]">
                       {article.excerpt}
                     </span>
-                    <span className="mt-auto break-words pt-1 font-mono text-xs leading-relaxed text-carbon-60">
+                    <span className="mt-auto min-w-0 pt-1 font-mono text-xs leading-relaxed text-carbon-60 [overflow-wrap:anywhere]">
                       {formatDate(article.publishedAt ?? article.createdAt)}
                       {` · ${t('frontdoor.blogs.minRead', { min: readingTimeMinutes(article.contentHtml) })}`}
                       {article.authorName ? ` · ${article.authorName}` : ''}
@@ -1034,7 +1048,7 @@ export const FrontDoor: React.FC = () => {
           <p
             lang="en"
             translate="no"
-            className="mt-1 min-w-0 max-w-[72ch] break-words rounded-lg bg-carbon-05 px-3 py-2.5 font-mono text-xs leading-[1.62] text-carbon-70 sm:p-3"
+            className="mt-1 min-w-0 max-w-[72ch] rounded-lg bg-carbon-05 px-3 py-2.5 font-mono text-xs leading-[1.62] text-carbon-70 [overflow-wrap:anywhere] sm:p-3"
           >
             {attribution.work.citationText}
           </p>

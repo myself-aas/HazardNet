@@ -170,7 +170,7 @@ export default function ChatBot() {
     <>
       <AnimatePresence>
         {!isOpen && (
-          <div className="fixed bottom-20 right-4 z-[var(--ap-z-overlay)] flex items-center sm:bottom-6 sm:right-6">
+          <div className="fixed bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] right-[max(1rem,env(safe-area-inset-right,0px))] z-[var(--ap-z-overlay)] flex items-center sm:right-[max(1.5rem,env(safe-area-inset-right,0px))]">
             <motion.button
               key="ai-advisor-fab"
               id="launch-ai-advisor-fab"
@@ -203,7 +203,7 @@ export default function ChatBot() {
             animate={{ opacity: 1, y: 0 }}
             exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
             transition={{ duration: reduceMotion ? 0 : 0.18, ease: 'easeOut' }}
-            className="fixed inset-x-0 bottom-0 top-0 z-[var(--ap-z-overlay)] flex h-dvh w-full max-w-full flex-col overflow-hidden border border-carbon-20 bg-ap-elevated pb-[env(safe-area-inset-bottom)] shadow-xl sm:inset-auto sm:bottom-6 sm:right-6 sm:h-[640px] sm:max-h-[calc(100dvh-3rem)] sm:w-[min(480px,calc(100vw-3rem))] sm:rounded-2xl sm:pb-0"
+            className="fixed inset-x-0 bottom-0 top-0 z-[var(--ap-z-overlay)] flex h-dvh w-full max-w-full flex-col overflow-hidden border border-carbon-20 bg-ap-elevated pb-[env(safe-area-inset-bottom,0px)] pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)] pt-[env(safe-area-inset-top,0px)] shadow-xl sm:inset-auto sm:bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] sm:right-[max(1.5rem,env(safe-area-inset-right,0px))] sm:h-[640px] sm:max-h-[calc(100dvh-3rem)] sm:w-[min(480px,calc(100vw-3rem))] sm:rounded-2xl sm:px-0 sm:py-0"
             role="dialog"
             aria-modal="true"
             aria-label="HazardNet AI Advisor chat"
@@ -359,7 +359,7 @@ export default function ChatBot() {
                         ) : null}
 
                         <div className={`rounded-2xl border px-3.5 py-3 text-sm leading-relaxed ${message.role === 'user' ? 'rounded-tr-md border-blue-700 bg-blue-700 text-ap-action-fg' : 'rounded-tl-md border-carbon-20 bg-white text-carbon-90 '}`}>
-                          <div className={`prose prose-sm max-w-none ${message.role === 'user' ? 'prose-invert' : 'dark:prose-invert'}`}>
+                          <div className={`prose prose-sm max-w-none [overflow-wrap:anywhere] ${message.role === 'user' ? 'prose-invert' : 'dark:prose-invert'}`}>
                             <ReactMarkdown>{message.content}</ReactMarkdown>
                           </div>
                         </div>
@@ -450,7 +450,7 @@ export default function ChatBot() {
                         aria-label="Answer sources"
                         value={groundingMode}
                         onChange={(event) => chooseGroundingMode(event.target.value as 'auto' | 'maps' | 'search')}
-                        className="min-h-[44px] max-w-[160px] rounded-lg border border-carbon-20 bg-white px-2.5 text-sm text-carbon-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary"
+                        className="min-h-[44px] max-w-[160px] rounded-lg border border-carbon-20 bg-white px-2.5 text-base text-carbon-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary"
                       >
                         <option value="auto">Automatic</option>
                         <option value="maps">Nearby places</option>
@@ -488,7 +488,8 @@ export default function ChatBot() {
                         onKeyDown={handleKeyDown}
                         placeholder="Ask about hazards, farming, or local services…"
                         aria-describedby="chat-input-help"
-                        className="max-h-32 min-h-[48px] w-full resize-y rounded-xl border border-carbon-20 bg-carbon-05 py-3 pl-3.5 pr-14 text-sm leading-relaxed text-carbon-90 dark:text-white placeholder:text-carbon-60 dark:placeholder:text-carbon-50 focus:border-ap-primary focus:outline-none focus:ring-2 focus:ring-ap-primary/20"
+                        enterKeyHint="send"
+                        className="max-h-32 min-h-[48px] w-full resize-y rounded-xl border border-carbon-20 bg-carbon-05 py-3 pl-3.5 pr-14 text-base leading-relaxed text-carbon-90 dark:text-white placeholder:text-carbon-60 dark:placeholder:text-carbon-50 focus:border-ap-primary focus:outline-none focus:ring-2 focus:ring-ap-primary/20"
                         rows={1}
                       />
                       <button

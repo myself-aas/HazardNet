@@ -41,7 +41,7 @@ export const HazardIndex: React.FC<HazardIndexProps> = ({ hazards }) => {
         <li key={hazard.slug} className="min-w-0 border-b border-carbon-20">
           <Link
             to={`/hazards/${hazard.slug}`}
-            className="group flex min-h-[44px] items-start gap-2.5 px-1 py-3.5 transition-colors hover:bg-carbon-05 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 sm:gap-3 sm:px-2 sm:py-4"
+            className="ap-press-row group flex min-h-[44px] items-start gap-2.5 px-1 py-3.5 transition-colors hover:bg-carbon-05 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2 sm:gap-3 sm:px-2 sm:py-4"
           >
             <span
               aria-hidden="true"
@@ -50,18 +50,18 @@ export const HazardIndex: React.FC<HazardIndexProps> = ({ hazards }) => {
               <MaterialIcon name={hazardIcon(hazard.class)} className="text-lg sm:text-xl" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block break-words text-ap-headline-sm font-bold text-carbon-90 group-hover:text-ap-link">
+              <span className="block text-ap-headline-sm font-bold text-carbon-90 [overflow-wrap:anywhere] group-hover:text-ap-link">
                 {hazardLabel(hazard.class)}
               </span>
               {hazard.summary && (
                 <span
                   lang={englishDataLang}
-                  className="mt-1 block break-words text-sm leading-[1.55] text-carbon-70"
+                  className="mt-1 block text-sm leading-[1.55] text-carbon-70 [overflow-wrap:anywhere]"
                 >
                   {hazard.summary}
                 </span>
               )}
-              <span className="mt-1 block break-words text-sm leading-[1.55] text-carbon-60 sm:text-xs sm:leading-[1.5]">
+              <span className="mt-1 block text-sm leading-[1.55] text-carbon-60 [overflow-wrap:anywhere] sm:text-xs sm:leading-[1.5]">
                 <span className="font-semibold">
                   {language === 'bn' ? 'সক্রিয় মৌসুম' : 'Active window'}:{' '}
                 </span>

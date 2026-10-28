@@ -171,8 +171,11 @@ summary:focus-visible {
   }
 }
 
+/* Anchor and keyboard-focus scrolling must clear the sticky header above and the fixed
+   chat/back-to-top controls below, including the phone's bottom safe area. */
 html {
   scroll-padding-top: calc(var(--navbar-height) + 8px);
+  scroll-padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
   overflow-x: clip;
 }
 
@@ -204,6 +207,7 @@ html {
 
   button,
   a,
+  summary,
   input,
   select,
   textarea {

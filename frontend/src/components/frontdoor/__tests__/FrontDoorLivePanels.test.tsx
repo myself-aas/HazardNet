@@ -130,6 +130,7 @@ describe('the live status strip', () => {
 
     const actions = screen.getByRole('link', { name: /All published alerts/i }).closest('ul') as HTMLElement;
     expect(actions.className).toContain('grid-cols-2');
+    expect(actions.className).toContain('gap-y-2');
     expect(actions.className).toContain('sm:flex');
   });
 

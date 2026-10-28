@@ -44,9 +44,14 @@
      "media": "(min-width: 640px)"
     },
     {
+     "href": "/hero-carousel/hero-flood-delta-portrait.jpg",
+     "as": "image",
+     "media": "(max-width: 639px) and (max-resolution: 1.99dppx)"
+    },
+    {
      "href": "/hero-carousel/hero-flood-delta-portrait-2x.jpg",
      "as": "image",
-     "media": "(max-width: 639px)"
+     "media": "(max-width: 639px) and (min-resolution: 2dppx)"
     }
    ],
    "sitemap": {

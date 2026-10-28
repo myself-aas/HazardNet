@@ -91,15 +91,15 @@ export const CardStackRows: React.FC<CardStackRowsProps> = ({
     >
       {rows.map((row) => (
         <li key={row.key} className="p-3">
-          <p className={`text-sm font-bold ${ink.heading}`}>{row.heading}</p>
+          <p className={`min-w-0 text-sm font-bold [overflow-wrap:anywhere] ${ink.heading}`}>{row.heading}</p>
           {row.fields.length > 0 && (
             <dl className="mt-2 space-y-1.5">
               {row.fields.map((field, index) => (
                 <div key={`${index}-${field.label}`} className="flex gap-3 text-xs leading-[1.5]">
-                  <dt className={`w-[38%] shrink-0 font-mono font-bold uppercase tracking-wide ${ink.label}`}>
+                  <dt className={`w-[38%] min-w-0 shrink-0 font-mono font-bold uppercase tracking-wide [overflow-wrap:anywhere] ${ink.label}`}>
                     {field.label}
                   </dt>
-                  <dd className={`min-w-0 flex-1 break-words ${ink.value}`}>{field.value}</dd>
+                  <dd className={`min-w-0 flex-1 [overflow-wrap:anywhere] ${ink.value}`}>{field.value}</dd>
                 </div>
               ))}
             </dl>

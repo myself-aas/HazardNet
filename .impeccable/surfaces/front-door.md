@@ -158,5 +158,37 @@ change status semantics, restore held-out Bengali, or revive the bento.
   breaks or overflow, so the added assertions cover the former failure modes mechanically:
   no fixed verdict measure, rem widths included in the 320px scan, balanced shrinkable
   headings, two-column phone groups, reserved hero-control space, and 44px alert links.
+
+## Decision log — 2026-10-28 UI/UX Pro Max mobile responsiveness
+
+This pass applies the supplied skill in its own priority order (accessibility, touch,
+performance, then responsive layout) without letting its generic style defaults replace
+the HazardNet design system, product truth, or safety semantics.
+
+- **Safe-area geometry is measured once and reused.** The header now takes the full
+  `--navbar-height` value instead of spending the top inset inside a fixed 56/64px box,
+  and the hero's negative offset reads the same variable. Page, header, footer and drawer
+  gutters use the larger of the normal gutter and the relevant side inset. The hero pause
+  control, chat sheet/launcher, command palette, skip link and back-to-top control have
+  safe offsets; anchored and keyboard-focused content also clears the fixed lower controls.
+- **Touch separation and feedback follow the skill where targets are independent.**
+  Wrapped standalone link groups, drawer destinations and stacked footer links now keep
+  8px between targets. Hazard and horizon rows use the design system's pressed-row state,
+  FAQ summaries get manipulation touch behavior, and the shell search/chat text controls
+  are 16px so iOS does not zoom the layout on focus. Contiguous ruled list rows remain
+  list rows; their full-row height and borders are the target delineation.
+- **The first hero frame is density-matched before React paints.** The route preload now
+  mirrors both portrait branches in `hero-media.css`: below 2dppx it fetches the small
+  portrait crop, at or above 2dppx the tall render. A DPR-1 phone no longer downloads
+  the 2x frame only to discard it for the frame its CSS actually paints.
+- **Unpredictable text can shrink at min-content size.** Store-authored blog metadata,
+  the citation URL, hazard methodology text and the phone table's label/value pairs use
+  `overflow-wrap: anywhere` with shrinkable grid/flex items. Curated prose keeps its
+  existing wrapping and measure.
+- **Generic defaults that were not adopted:** no new palette, font, card system, target
+  inflation beyond the repository's 44px floor, or skeleton that guesses the safety
+  strip's final height. The status states have different honest content and heights, so
+  reserving a decorative approximation would trade a clear reading state for layout
+  theatre. Copy, section order, held-out Bengali and published-status wording are unchanged.
   Real browser widths, Bengali line breaking and low-end Android rendering still need a
   device pass when a browser is available.
