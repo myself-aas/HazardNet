@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { StatusVerdict } from '../StatusVerdict';
 import { setLanguage } from '../../../lib/i18n';
@@ -37,6 +37,8 @@ describe('StatusVerdict · three answers, no fourth', () => {
     // "Nothing published" and "nothing looked at" must not read the same.
     expect(screen.getByTestId('verdict-detail')).toHaveTextContent(/74 district forecasts assessed/);
     expect(screen.getByTestId('verdict-detail')).toHaveTextContent(/74 held for review/);
+    // No badge or link in the quiet state, so no meta line is rendered for them to sit on.
+    expect(screen.queryByTestId('verdict-meta')).not.toBeInTheDocument();
   });
 
   it('lets the verdict shrink inside a 320px strip instead of holding a fixed measure', () => {
@@ -48,6 +50,34 @@ describe('StatusVerdict · three answers, no fourth', () => {
 
     const detail = screen.getByTestId('verdict-detail');
     expect(detail.className).toContain('ap-caption');
+    expect(detail.className).toContain('pl-8');
+  });
+
+  it('gives the sentence the full phone measure and moves the badge/link to their own line', () => {
+    renderVerdict({ published: 106, worstLevel: 'WATCH' });
+    const body = screen.getByTestId('verdict-body');
+    // The sentence group takes the whole row below `sm` (`basis-full`) instead of being
+    // flexed into the width the badge and link leave behind, and rejoins them from `sm`.
+    expect(body.parentElement?.className).toContain('basis-full');
+    expect(body.parentElement?.className).toContain('sm:basis-0');
+    // Balanced rag: a three-line phone sentence must not strand its last word alone.
+    expect(body.className).toContain('text-balance');
+
+    // The level badge and the way onward live on the meta line under the sentence,
+    // indented to the text measure (icon + gap) on a phone and flush from `sm` up.
+    const meta = screen.getByTestId('verdict-meta');
+    expect(meta.className).toContain('pl-8');
+    expect(meta.className).toContain('sm:pl-0');
+    expect(within(meta).getByText('Watch')).toBeInTheDocument();
+    expect(within(meta).getByRole('link', { name: /see the advisories/i })).toHaveAttribute(
+      'href',
+      '/alerts',
+    );
+    expect(meta.contains(body)).toBe(false);
+
+    // The reading's date stays a caption under the block, on the same 32px text edge.
+    const detail = screen.getByTestId('verdict-detail');
+    expect(detail).toHaveTextContent(/As of/);
     expect(detail.className).toContain('pl-8');
   });
 

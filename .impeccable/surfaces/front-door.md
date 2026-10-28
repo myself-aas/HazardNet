@@ -192,3 +192,26 @@ the HazardNet design system, product truth, or safety semantics.
   theatre. Copy, section order, held-out Bengali and published-status wording are unchanged.
   Real browser widths, Bengali line breaking and low-end Android rendering still need a
   device pass when a browser is available.
+
+## Decision log — 2026-10-28 verdict typeset (mobile measure)
+
+Owner-reported on a phone: the verdict block (“Advisories are active. 106 district
+advisories are published at WATCH or above.” / level badge / “See the advisories” /
+“As of …”) did not read responsively. The cause was measure, not copy: the sentence,
+badge and link shared one wrapping flex row, and the sentence's `flex-1` granted it only
+the width the other two left behind, so at 320–390px the five-second answer wrapped
+inside a stub column beside them.
+
+- **The sentence owns the row on a phone.** Icon + sentence are now one group at
+  `basis-full` below `sm` (`sm:basis-0` rejoins the row where there is room). The
+  sentence wraps at the strip's full text measure, with a balanced rag so its last word
+  is not stranded alone on the final line.
+- **Badge and link form a deliberate meta line.** Below `sm` they sit under the sentence,
+  indented `pl-8` to the same 32px text edge (icon + gap) as the “As of” caption, so
+  the block keeps one left edge; the link keeps its 44px target and takes the strip
+  actions' explicit 16px bold step instead of an inherited size.
+- **Unchanged:** the three verdict states and their wording in both languages, the
+  badge as colour-plus-word, the support line's honesty rules, and every state height
+  being whatever its honest content needs. Pinned by `StatusVerdict` tests (full-measure
+  group, meta line, no meta line in the quiet state); jsdom still cannot prove real
+  line breaks, so a device spot-check of this block remains owed.
