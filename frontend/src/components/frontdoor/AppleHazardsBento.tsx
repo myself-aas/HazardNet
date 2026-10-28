@@ -409,10 +409,10 @@ export const AppleHazardsBento: React.FC<AppleHazardsBentoProps> = ({ hazards })
             </div>
             <div className="min-w-0">
               <span className="block text-sm font-semibold tracking-tight text-ap-label group-hover:text-ap-link transition-colors truncate">
-                {language === 'bn' ? 'সক্রিয় সতর্কতা দেখুন' : 'View Active Alerts'}
+                {t('frontdoor.strip.allAlerts')}
               </span>
               <span className="block text-xs text-ap-label-secondary truncate">
-                {language === 'bn' ? 'রিয়েল-টাইম আর্লি ওয়ার্নিং' : 'Live emergency advisories'}
+                {t('frontdoor.run.h2')}
               </span>
             </div>
           </div>

@@ -117,6 +117,11 @@ describe('the front door', () => {
       if (section.h2) expect(headings).toContain(section.h2);
     }
     expect(headings).toContain('The current outlook, and where to see it');
+    // Critique decision (2026-10-28): the action pathway is rendered before the
+    // coverage figures; provenance and the full registry stay below it.
+    expect(headings.indexOf('Start here: what to do with an outlook')).toBeLessThan(
+      headings.indexOf('What HazardNet covers'),
+    );
   });
 
   it('reads the committed artifacts for its live panels', async () => {
@@ -253,6 +258,13 @@ describe('the front door', () => {
     for (const section of (bn!.sections as Array<{ h2?: string }>) ?? []) {
       if (section.h2) expect(headings).toContain(section.h2);
     }
+    // New Bengali editorial sections are held out until the owner re-reads them: the
+    // held-out action section falls back to English, while previously approved Bengali
+    // sections still render in Bengali.
+    expect(headings).toContain('Start here: what to do with an outlook');
+    expect(headings).not.toContain('এখান থেকে শুরু করুন: একটি পূর্বাভাস দিয়ে কী করবেন');
+    expect(headings).toContain('বর্তমান পূর্বাভাস, এবং তা কোথায় দেখবেন');
+    expect(screen.queryByText(/রিয়েল-টাইম আর্লি ওয়ার্নিং/)).toBeNull();
     // The strip follows the page into Bengali, digits included — awaited, because it reads
     // the alert artifact over fetch and renders its "reading" state until that resolves.
     const strip = screen.getByTestId('front-door-status-strip');
@@ -311,6 +323,8 @@ describe('the front door', () => {
     expect(container.textContent).toContain('Cold Wave');
     expect(container.textContent).toContain('7-day outlook');
     expect(container.textContent).toContain('15-day outlook');
+    // Critique P0: daily publication must not be sold as a live/real-time emergency feed.
+    expect(container.textContent).not.toMatch(/Live emergency|real-time early warning/i);
     expect(container.querySelectorAll('a[href^="/hazards/"]').length).toBeGreaterThanOrEqual(8);
     unmount();
   });

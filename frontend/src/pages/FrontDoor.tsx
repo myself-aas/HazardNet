@@ -47,14 +47,19 @@
  *     telling me this, and how would I know if it stopped working", `/live` answers "where".
  *     A second map surface is a second thing to keep honest, for no reader who was lost.
  *   · The page is bilingual: the editorial copy carries a Bengali block in `site-routes.json`
- *     and the chrome is translated through `lib/i18n.ts`. The Bengali was read and approved
- *     by the project owner on 2026-09-19, and the route records that in its own data
- *     (`i18n.bn.review`); copy changed after that date starts as pending-native-speaker
- *     until it is re-read, per the note in `lib/i18n.ts`. There is therefore no draft badge
- *     to render — the one this hero used to show contradicted the recorded review and was
- *     removed in the 2026-10-28 clarify rewrite, which also reorganised the editorial
- *     sections around the reader's order of questions (purpose → action → forecast vs
- *     alert → severity/levels/confidence → updates → validation → access/languages/gaps).
+ *     and the chrome is translated through `lib/i18n.ts`. The Bengali that ships was read and
+ *     approved by the project owner on 2026-09-19, and the route records that in its own data
+ *     (`i18n.bn.review`); copy changed after that date starts as pending-native-speaker until
+ *     it is re-read, per the note in `lib/i18n.ts`. Following the 2026-10-28 critique, the
+ *     newly written Bengali editorial sections/FAQs are therefore held out as empty objects
+ *     in `i18n.bn`, so `localiseRoute` falls back to English for those sections and only the
+ *     previously approved Bengali sections render in Bengali. The held-out Bengali remains in
+ *     commit `005802b` for restoration after the owner re-reads it; `reviewedAt` does not move
+ *     before then. There is no draft badge for the approved Bengali that does ship — the one
+ *     this hero used to show contradicted the recorded review. The 2026-10-28 clarify rewrite
+ *     also reorganised the editorial sections around the reader's order of questions (action
+ *     → purpose/current outlook → forecast vs alert → severity/levels/confidence → updates
+ *     → validation → access/languages/gaps).
  */
 
 import { useEffect, useMemo, useState } from 'react';
@@ -389,6 +394,49 @@ export const FrontDoor: React.FC = () => {
         })
       : '—';
 
+  // Owner decision after the 2026-10-28 critique: action before coverage/provenance for the
+  // primary audience. The route now puts “Start here” first, and this page renders that one
+  // editorial section immediately after the live verdict instead of leaving it below the
+  // coverage figures, alert record and hazard registry. The section keeps its route index/id,
+  // so the table of contents still points at the same heading; the full coverage figures and
+  // hazard registry stay below it.
+  const actionSectionIndex = (content.sections ?? []).findIndex((section) =>
+    section.h2?.startsWith('Start here:'),
+  );
+  const actionSection = actionSectionIndex >= 0 ? sections[actionSectionIndex] : undefined;
+
+  const renderEditorialSection = (section: Section, index: number) => (
+    <section
+      key={section.h2 ?? index}
+      aria-labelledby={section.h2 ? `section-${index}` : undefined}
+      className="space-y-4 border-t border-carbon-20 pt-6"
+    >
+      {section.h2 &&
+        (index === actionSectionIndex ? (
+          <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
+            <h2
+              id={`section-${index}`}
+              className="text-ap-tagline font-bold tracking-tight text-carbon-90 lg:text-2xl"
+            >
+              {section.h2}
+            </h2>
+            <p className="text-sm leading-[1.5] text-carbon-60">
+              {t('frontdoor.strip.districts')}:{' '}
+              <strong className="font-bold text-carbon-80">{loading ? '…' : coverageLine}</strong>
+            </p>
+          </div>
+        ) : (
+          <h2
+            id={`section-${index}`}
+            className="text-ap-tagline font-bold tracking-tight text-carbon-90 lg:text-2xl"
+          >
+            {section.h2}
+          </h2>
+        ))}
+      <SectionBody section={section} />
+    </section>
+  );
+
   /* The page's arrival is a CSS entrance from the design system (`.ap-enter`, apple.css §11), not
      a frame loop. It was `useWebFrame(30, 8)` + `interpolate(...opacity)` until 2026-10-06: eight
      rAF ticks of React state, each re-rendering the entire front door — hero, backdrop, carousel
@@ -568,6 +616,9 @@ export const FrontDoor: React.FC = () => {
           readFailed={!alertsLoading && alertsSource === 'none'}
           onRetry={refreshAlerts}
         />
+
+        {/* ── Start here, promoted above coverage/provenance (2026-10-28 critique decision) ── */}
+        {actionSection && renderEditorialSection(actionSection, actionSectionIndex)}
 
         {/* ── Trust strip: every figure carries the artifact it was read from ── */}
         <section aria-labelledby="trust-heading" className="space-y-3">
@@ -806,7 +857,7 @@ export const FrontDoor: React.FC = () => {
           </div>
         </section>
 
-        {/* ── On this page — anchor nav for the 7 editorial sections (audit #7: recognition/efficiency) ── */}
+        {/* ── On this page — anchor nav for the editorial sections (audit #7: recognition/efficiency) ── */}
         {sections.length > 1 && (
           <nav aria-label={t('frontdoor.toc')} className="rounded-2xl border border-carbon-20 bg-carbon-05 p-4">
             <p className="font-mono text-xs font-bold uppercase tracking-wide text-carbon-60">{t('frontdoor.toc')}</p>
@@ -825,24 +876,11 @@ export const FrontDoor: React.FC = () => {
           </nav>
         )}
 
-        {/* ── The editorial half, from site-routes.json ─────────────────────── */}
-        {sections.map((section, index) => (
-          <section
-            key={section.h2 ?? index}
-            aria-labelledby={section.h2 ? `section-${index}` : undefined}
-            className="space-y-4 border-t border-carbon-20 pt-6"
-          >
-            {section.h2 && (
-              <h2
-                id={`section-${index}`}
-                className="text-ap-tagline font-bold tracking-tight text-carbon-90 lg:text-2xl"
-              >
-                {section.h2}
-              </h2>
-            )}
-            <SectionBody section={section} />
-          </section>
-        ))}
+        {/* ── The editorial half, from site-routes.json. “Start here” is rendered above, after
+            the verdict; it is skipped here so the heading/id is not duplicated. ── */}
+        {sections.map((section, index) =>
+          index === actionSectionIndex ? null : renderEditorialSection(section, index),
+        )}
 
         {/* ── Newest from the blog: freshness the published record cannot show ── */}
         <section aria-labelledby="blogs-heading" className="space-y-3 border-t border-carbon-20 pt-6">

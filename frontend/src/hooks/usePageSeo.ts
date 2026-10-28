@@ -195,7 +195,17 @@ export function localiseRoute(route: RouteContent, language: string): RouteConte
     h1: bn.h1 ?? route.h1,
     standfirst: bn.standfirst ?? route.standfirst,
     sections: englishSections.map((section, index) => mergeSection(section, bn.sections?.[index])),
-    faqs: (route.faqs ?? []).map((faq, index) => bn.faqs?.[index] ?? faq),
+    // FAQs merge field-by-field for the same reason sections do. An empty object is a
+    // deliberate translation holdout (for example, a new front-door FAQ whose Bengali is
+    // still awaiting native-speaker review): it must render the English question and
+    // answer, never an empty disclosure.
+    faqs: (route.faqs ?? []).map((faq, index) => {
+      const translated = bn.faqs?.[index];
+      return {
+        question: translated?.question ?? faq.question,
+        answer: translated?.answer ?? faq.answer,
+      };
+    }),
   };
   // The translated table brings its own cells, so the references are resolved again after the
   // merge. Resolution is idempotent — a date no longer matches the reference pattern.
