@@ -25,6 +25,7 @@ const {
   fetchCurrentWeather,
   fetchCurrentWeatherBatch,
   clearCache,
+  HOURLY_VARS,
 } = require('../openMeteo.js');
 
 const SCALAR_META = [
@@ -165,5 +166,46 @@ describe('both public paths use that contract', () => {
     // One location was answered. The second is dropped, not returned as `{id, _meta}`.
     expect(points).toHaveLength(1);
     expect(points[0].current.temperature_2m).toBe(ARRAY_FIXTURE[0].current.temperature_2m);
+  });
+});
+
+describe('hourly catalogue — only names the upstream accepts', () => {
+  // Regression for the 2026-10-28 full-shape outage (site-health run 40621036497,
+  // `weather_full_shape` got 502): HOURLY_VARS asked for `total_cloud_cover` and
+  // `zero_degree_level`, which are not Open-Meteo hourly variables. One unknown name
+  // 400s the WHOLE upstream request, so every non-mini lookup failed while mini and
+  // batch (which never send the hourly list) stayed green. Verified live against
+  // api.open-meteo.com on 2026-10-28: `{"error":true,"reason":"…invalid String value
+  // total_cloud_cover"}`, likewise zero_degree_level; every other name in the
+  // current/hourly/daily catalogues (incl. all 7 pressure prefixes) was accepted.
+  // A unit test cannot ask the live API, so it pins the measured-invalid names out:
+  // re-adding one is then a deliberate act that has to update this test with a fresh
+  // upstream verification.
+  const UPSTREAM_REJECTED = ['total_cloud_cover', 'zero_degree_level'];
+
+  test('the catalogue excludes names Open-Meteo rejects, and keeps their real equivalents', () => {
+    for (const rejected of UPSTREAM_REJECTED) {
+      expect(HOURLY_VARS).not.toContain(rejected);
+    }
+    // The same quantities under the names upstream actually serves.
+    expect(HOURLY_VARS).toContain('cloud_cover');
+    expect(HOURLY_VARS).toContain('freezing_level_height');
+    // 56 surface + 133 pressure-level fields. A count change is fine; it just has
+    // to be deliberate, because this list is sent verbatim in every full request.
+    expect(HOURLY_VARS).toHaveLength(189);
+    expect(new Set(HOURLY_VARS).size).toBe(HOURLY_VARS.length);
+  });
+
+  test('fetchWeather sends the cleaned catalogue verbatim as the hourly parameter', async () => {
+    let hourlyParam = null;
+    upstreamStub(async (url) => {
+      hourlyParam = new URL(String(url)).searchParams.get('hourly');
+      return jsonResponse(OBJECT_FIXTURE);
+    });
+    await fetchWeather(23.8103, 90.4125, { forecast_days: 1, skipCache: true });
+    expect(hourlyParam).toBe(HOURLY_VARS.join(','));
+    for (const rejected of UPSTREAM_REJECTED) {
+      expect(hourlyParam.split(',')).not.toContain(rejected);
+    }
   });
 });

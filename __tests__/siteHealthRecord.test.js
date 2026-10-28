@@ -111,6 +111,29 @@ describe('site-health workflow contract', () => {
     expect(workflow).toContain('--expect "$EXPECTED"');
   });
 
+  // Regression for run 40621036497 (2026-10-28): two config/CI divergences the local
+  // fixtures cannot see, because locally one summary file is shared and the probe is
+  // run by node directly, not by GitHub's `bash -e`.
+  test('the verifier reads the persistent summary file, not the per-step $GITHUB_STEP_SUMMARY', () => {
+    // $GITHUB_STEP_SUMMARY is a per-step file: a later step reading its own copy sees
+    // an empty file, so "Verify the committed record" failed on every real run.
+    expect(workflow).toContain('cat /tmp/site-health-summary.md >> "$GITHUB_STEP_SUMMARY"');
+    expect(workflow).toContain('--summary /tmp/site-health-summary.md');
+    expect(workflow).not.toContain('--summary "$GITHUB_STEP_SUMMARY"');
+  });
+
+  test('the runtime-paths step cannot die under bash -e before writing its detail output', () => {
+    const start = workflow.indexOf('- name: Probe the runtime sibling paths');
+    const step = workflow.slice(start, workflow.indexOf('- name: Probe the status page', start));
+    // The pipeline must be tested in an `if` (exempt from `-e`); reading the status
+    // from a following line after a bare failing pipeline is unreachable, which is
+    // how red probes used to land with `detail: null`.
+    expect(step).toMatch(/if node scripts\/probe_runtime_paths\.mjs/);
+    expect(step).toContain('STATUS=$?');
+    expect(step).not.toMatch(/STATUS=\$\{PIPESTATUS/);
+    expect(step).toContain('echo "detail=runtime sibling paths failed');
+  });
+
   test('workflow_dispatch offers healthy and broken expectations', () => {
     expect(workflow).toMatch(/workflow_dispatch:\s*\n\s*#[\s\S]*?inputs:\s*\n[\s\S]*?site_url:/);
     expect(workflow).toMatch(/options:\s*\n\s*- healthy\s*\n\s*- broken/);

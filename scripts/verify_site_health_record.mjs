@@ -11,8 +11,14 @@
  *   node scripts/verify_site_health_record.mjs \
  *     --record data/site-health/latest.json \
  *     --freshness frontend/public/data/freshness.json \
- *     --summary "$GITHUB_STEP_SUMMARY" \
+ *     --summary /tmp/site-health-summary.md \
  *     --require-pass
+ *
+ * `--summary` is the workspace file the publish step appended to $GITHUB_STEP_SUMMARY.
+ * Never pass "$GITHUB_STEP_SUMMARY" from a later step: that path is per-step, so the
+ * verifying step would read its own empty file and every summary check would fail
+ * (run 40621036497, 2026-10-28). The problem label below stays `GITHUB_STEP_SUMMARY`
+ * because that is still the surface being checked.
  *
  * `--require-pass` is used by the workflow on a healthy `workflow_dispatch` run. The
  * verifier is also run locally against the fixtures in `__tests__/fixtures/site-health/` by

@@ -666,10 +666,22 @@ jobs:
         shell: bash
         run: |
           set -uo pipefail
-          node scripts/probe_runtime_paths.mjs --base-url "$SITE_URL" | tee /tmp/runtime-paths.json
-          STATUS=${PIPESTATUS[0]}
+          # GitHub's `shell: bash` runs with `-e`, so under pipefail a bare failing
+          # pipeline here killed the step BEFORE the `detail` output below was written:
+          # every red runtime-paths probe landed in the committed record with
+          # `detail: null` and the verifier then rightly rejected it ("a failing
+          # runtime-path check must name the scenario" — run 40621036497, 2026-10-28).
+          # Testing the pipeline in an `if` exempts it from `-e`; `$?` is still the
+          # pipeline's pipefail status, i.e. the probe's own exit code. Do not simplify
+          # this back to a bare pipeline followed by reading its status afterwards.
+          if node scripts/probe_runtime_paths.mjs --base-url "$SITE_URL" | tee /tmp/runtime-paths.json; then
+            STATUS=0
+          else
+            STATUS=$?
+          fi
           if [ "$STATUS" != "0" ]; then
-            FAILING=$(jq -r '[.results[] | select(.pass == false) | .name + ": " + .detail] | join("; ")' /tmp/runtime-paths.json | tr '\n' ' ' | head -c 900)
+            FAILING=$(jq -r '[.results[] | select(.pass == false) | .name + ": " + .detail] | join("; ")' /tmp/runtime-paths.json | tr '\n' ' ' | head -c 900) \
+              || FAILING='(runtime-paths report unreadable — see the uploaded artifact)'
             echo "detail=runtime sibling paths failed — $FAILING" >> "$GITHUB_OUTPUT"
             exit 1
           fi
@@ -901,12 +913,21 @@ jobs:
             }' > data/site-health/latest.json
           # Rebuild the derived artifact so the published page quotes this run.
           node scripts/build_freshness_artifact.mjs || echo "::warning::could not rebuild the freshness artifact"
+          # Write the summary block ONCE, to a workspace file, and append that file to
+          # the step summary. $GITHUB_STEP_SUMMARY is a PER-STEP file: a later step
+          # reading its own $GITHUB_STEP_SUMMARY sees an empty file, so the
+          # "Verify the committed record" step could never see these lines and failed
+          # on every run with 'GITHUB_STEP_SUMMARY: does not quote "- probe outcome: …"'
+          # (run 40621036497, 2026-10-28; the local fixture uses one file, so Jest stayed
+          # green). The verifier below reads /tmp/site-health-summary.md — the exact
+          # bytes appended to the step summary here, so the parity check stays real.
           {
             echo ""
             echo "- probe outcome: $(jq -r '.outcome' data/site-health/latest.json)"
             echo "- edge challenged: $(jq -r '.edge_challenged' data/site-health/latest.json)"
             jq -r '.checks[] | "  - \(.id): \(.outcome)\(if .detail then " — " + .detail else "" end)"' data/site-health/latest.json
-          } >> "$GITHUB_STEP_SUMMARY"
+          } > /tmp/site-health-summary.md
+          cat /tmp/site-health-summary.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Enforce aggregate site-health probe outcome
         id: aggregate
@@ -1039,6 +1060,10 @@ jobs:
       # still gets a verified record. It compares the committed record, the derived
       # freshness artifact (the same two files the artifact below uploads) and the
       # run summary, and enforces the dispatch's expectation.
+      # `--summary` is /tmp/site-health-summary.md, NOT "$GITHUB_STEP_SUMMARY": the
+      # summary file is per-step, so this step's own copy is empty and the check
+      # failed on every run until 2026-10-28. The /tmp file is what the publish step
+      # appended to its step summary, byte for byte.
       - name: Verify the committed record
         if: always()
         shell: bash
@@ -1053,7 +1078,7 @@ jobs:
           node scripts/verify_site_health_record.mjs \
             --record data/site-health/latest.json \
             --freshness frontend/public/data/freshness.json \
-            --summary "$GITHUB_STEP_SUMMARY" \
+            --summary /tmp/site-health-summary.md \
             --expect "$EXPECTED"
 
       - name: Upload the probe result

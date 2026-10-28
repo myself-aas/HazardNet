@@ -113,8 +113,10 @@ export interface HourlyWeather {
   snowfall_height?: number[];
   soil_temperature_0cm?: number[];
   soil_moisture_0_to_1cm?: number[];
-  zero_degree_level?: number[];
-  total_cloud_cover?: number[];
+  // No `zero_degree_level` / `total_cloud_cover`: Open-Meteo has no hourly variables by
+  // those names (requesting either 400s the whole full-shape lookup — see
+  // backend/utils/openMeteo.js HOURLY_VARS). The same quantities are `cloud_cover` and
+  // `freezing_level_height` above.
   sunshine_duration?: number[];
   // Pressure-level variables (19 levels × 7 vars): temperature_<L>hPa, etc.
   [key: string]: number[] | string[] | undefined;
