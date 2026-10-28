@@ -47,8 +47,14 @@
  *     telling me this, and how would I know if it stopped working", `/live` answers "where".
  *     A second map surface is a second thing to keep honest, for no reader who was lost.
  *   · The page is bilingual: the editorial copy carries a Bengali block in `site-routes.json`
- *     and the chrome is translated through `lib/i18n.ts`. That Bengali is drafted, not yet
- *     read by a native speaker — owner Action 6c, and the route says so in its own data.
+ *     and the chrome is translated through `lib/i18n.ts`. The Bengali was read and approved
+ *     by the project owner on 2026-09-19, and the route records that in its own data
+ *     (`i18n.bn.review`); copy changed after that date starts as pending-native-speaker
+ *     until it is re-read, per the note in `lib/i18n.ts`. There is therefore no draft badge
+ *     to render — the one this hero used to show contradicted the recorded review and was
+ *     removed in the 2026-10-28 clarify rewrite, which also reorganised the editorial
+ *     sections around the reader's order of questions (purpose → action → forecast vs
+ *     alert → severity/levels/confidence → updates → validation → access/languages/gaps).
  */
 
 import { useEffect, useMemo, useState } from 'react';
@@ -193,7 +199,7 @@ const Figure: React.FC<{ value: string; label: string; tone?: 'default' | 'muted
     {/* leading-[1.1], not leading-none: values like "7 & 15 days" wrap on narrow
         screens, and zero leading would collide the wrapped lines. */}
     <p
-      className={`ap-display-md ap-mono ${
+      className={`ap-display-md ap-mono tabular-nums ${
         tone === 'muted'
           ? 'text-[length:var(--ap-type-headline-md-size)] text-[color:var(--ap-label-secondary)]'
           : 'text-[length:var(--ap-type-headline-xl-size)] text-[color:var(--ap-label)]'
@@ -457,16 +463,6 @@ export const FrontDoor: React.FC = () => {
               <h1 className="ap-hero hero-text-strong max-w-3xl text-balance drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                 {localised.h1 ?? localised.title}
               </h1>
-              {language === 'bn' && (
-                <p
-                  role="status"
-                  aria-live="polite"
-                  className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-warning-surface px-2 py-1 text-xs font-bold text-carbon-90 border border-warning-border"
-                >
-                  <MaterialIcon name="translate" className="text-xs" />
-                  {t('frontdoor.bengaliDraft')}
-                </p>
-              )}
               {localised.standfirst && (
                 <>
                   {/* The standfirst is 70 words - about eleven lines at this size on a 390px
@@ -608,7 +604,7 @@ export const FrontDoor: React.FC = () => {
             <h2 id="run-heading" className="text-lg font-bold text-carbon-90">
               {t('frontdoor.run.h2')}
             </h2>
-            <p className="font-mono text-xs uppercase tracking-wider text-carbon-60">{t('frontdoor.run.aside')}</p>
+            <p className="text-xs leading-[1.5] text-carbon-60">{t('frontdoor.run.aside')}</p>
           </div>
 
           <div className="rounded-2xl border border-carbon-20 bg-white p-5">
@@ -668,7 +664,10 @@ export const FrontDoor: React.FC = () => {
                       : ''}
                   {generatedAt ? t('frontdoor.run.noneGenerated', { at: generatedAt }) : '.'}
                 </p>
-                {error && <p className="text-ap-link">{t('frontdoor.run.errorPrefix', { error })}</p>}
+                {/* The raw loader error is not printed: a fetch or store message names an
+                    implementation, not the reader's problem or recovery. The copy names what
+                    is unknown and where to look instead (clarify, 2026-10-28). */}
+                {error && <p className="text-ap-link">{t('frontdoor.run.errorPrefix')}</p>}
                 <p>
                   {t('frontdoor.run.noneSilence')}{' '}
                   <strong className="font-bold text-carbon-90">{t('frontdoor.run.distinction')}</strong>.{' '}
@@ -858,7 +857,7 @@ export const FrontDoor: React.FC = () => {
 
           {!blogsLoading && blogsError && (
             <div className="flex flex-wrap items-center gap-3 rounded-xl border border-carbon-20 bg-white p-4 text-sm text-carbon-70">
-              <span>{t('frontdoor.blogs.error', { error: blogsError })}</span>
+              <span>{t('frontdoor.blogs.error')}</span>
               <button
                 type="button"
                 onClick={() => setBlogsReload((n) => n + 1)}

@@ -111,7 +111,7 @@ describe('the front door', () => {
     renderPage();
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(front!.h1 as string);
 
-    // Seven sections, in the route's order — including the one added by the 2026-09-19 redesign.
+    // The editorial sections, in the route's order (eleven since the 2026-10-28 clarify rewrite).
     const headings = screen.getAllByRole('heading', { level: 2 }).map((node) => node.textContent);
     for (const section of front!.sections ?? []) {
       if (section.h2) expect(headings).toContain(section.h2);
@@ -245,6 +245,9 @@ describe('the front door', () => {
 
     // The module writes a full BCP-47 tag, which is what a screen reader wants for voice selection.
     expect(document.documentElement.lang).toMatch(/^bn/);
+    // No draft badge: the route records an owner-approved native-speaker review
+    // (site-routes.json `i18n.bn.review`), so announcing the opposite would be a false claim.
+    expect(screen.queryByText(/বাংলা খসড়া/)).toBeNull();
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(bn!.h1 as string);
     const headings = screen.getAllByRole('heading', { level: 2 }).map((node) => node.textContent);
     for (const section of (bn!.sections as Array<{ h2?: string }>) ?? []) {
