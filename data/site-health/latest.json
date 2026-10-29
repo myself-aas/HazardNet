@@ -1,10 +1,10 @@
 {
   "schema": "hazardnet-site-probe/v1",
-  "ran_at": "2026-10-28T20:39:54Z",
-  "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/40765155826",
+  "ran_at": "2026-10-29T00:30:49Z",
+  "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/40794406428",
   "site_url": "https://hazardnet.live",
   "edge_challenged": false,
-  "outcome": "pass",
+  "outcome": "fail",
   "checks": [
     {
       "id": "homepage",
@@ -43,8 +43,8 @@
     },
     {
       "id": "runtime_paths",
-      "outcome": "success",
-      "detail": "8 sibling runtime paths passed"
+      "outcome": "failure",
+      "detail": "runtime sibling paths failed — weather_full_shape: request failed: The operation was aborted due to timeout "
     },
     {
       "id": "status_page",
