@@ -41,7 +41,7 @@ const ROW_KEYS = [
 const PAYLOAD_KEYS = [
   'schema', 'run', 'coverage', 'advisories', 'scope', 'status', 'asOf', 'selectedDate', 'count',
 ];
-const RUN_KEYS = ['id', 'generatedAt', 'dataCutoff', 'expiresAt', 'modelVersion', 'inputSha256'];
+const RUN_KEYS = ['id', 'generatedAt', 'dataCutoff', 'expiresAt', 'modelVersion', 'inputSha256', 'sourceDatasetVersion'];
 const COVERAGE_KEYS = ['districts', 'forecastDays', 'publishedRows'];
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const UTC = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/;
@@ -68,6 +68,7 @@ export interface DailyRun {
   dataCutoff: string;
   expiresAt: string;
   modelVersion: string;
+  sourceDatasetVersion?: number;
 }
 export interface DistrictDailyResult {
   status: DailyStatus;
@@ -169,6 +170,8 @@ export function parsePublicDailyPayload(payload: unknown, district: string): { r
   if (typeof run.id !== 'string' || !/^[a-zA-Z0-9._-]{1,100}$/.test(run.id)
     || typeof run.modelVersion !== 'string' || !run.modelVersion || run.modelVersion.length > 100
     || typeof run.inputSha256 !== 'string' || !/^[a-f0-9]{64}$/.test(run.inputSha256)
+    || (run.sourceDatasetVersion !== undefined && (!Number.isSafeInteger(run.sourceDatasetVersion)
+      || (run.sourceDatasetVersion as number) < 1 || (run.sourceDatasetVersion as number) > 1_000_000_000))
     || generated === null || cutoff === null || expires === null
     || generated < cutoff || expires !== cutoff + 36 * HOUR) return null;
   const rows: DailyAdvisory[] = [];
@@ -185,7 +188,8 @@ export function parsePublicDailyPayload(payload: unknown, district: string): { r
   }
   return {
     run: { id: run.id, generatedAt: run.generatedAt as string, dataCutoff: run.dataCutoff as string,
-      expiresAt: run.expiresAt as string, modelVersion: run.modelVersion },
+      expiresAt: run.expiresAt as string, modelVersion: run.modelVersion,
+      ...(run.sourceDatasetVersion === undefined ? {} : { sourceDatasetVersion: run.sourceDatasetVersion as number }) },
     advisories: rows.sort((a, b) => a.targetDate.localeCompare(b.targetDate)),
     remoteStale: payload.status === 'stale',
   };

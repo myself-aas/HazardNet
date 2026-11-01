@@ -10,7 +10,9 @@ import {
   DAILY_ADVISORY_SCHEMA, buildPublicDailySnapshot, parsePublicDailySnapshot,
   publicDailyStatus, validateDailyManifest, validatePublishableDailyManifest,
 } from '../backend/utils/dailyAdvisoryPublic.js';
-import { buildPublicDailyFile, projectDailyInput, readDailyCsv } from '../scripts/build_public_daily_advisories.mjs';
+import {
+  assertNewerPublicDaily, buildPublicDailyFile, optionsFromArgs, projectDailyInput, readDailyCsv,
+} from '../scripts/build_public_daily_advisories.mjs';
 import { checkPublicDailyAsset } from '../scripts/check_public_daily_asset.mjs';
 
 const describe = globalThis.describe ?? nodeTest.describe;
@@ -155,6 +157,13 @@ describe('public 15-day projection', () => {
     assert.throws(() => validateDailyManifest({ ...manifest(), generated_at: '2026-11-01 10:00:00' }, { sha256: SHA, now: NOW }), /UTC/);
     assert.throws(() => validateDailyManifest({ ...manifest(), data_cutoff: '2026-10-29T08:00:00Z' }, { sha256: SHA, now: NOW }), /stale/);
     assert.throws(() => validateDailyManifest({ ...manifest(), data_cutoff: '2026-11-02T08:00:00Z' }, { sha256: SHA, now: NOW }), /inconsistent/);
+    for (const candidate of [
+      { ...manifest(), run_id: 'TBD_BY_OWNER' },
+      { ...manifest(), model_version: 'unknown' },
+      { ...manifest(), generated_at: '2026-02-30T10:00:00Z' },
+    ]) {
+      assert.throws(() => validateDailyManifest(candidate, { sha256: SHA, now: NOW }), /UTC run manifest/);
+    }
   });
 
   test('an issued receipt binds objective CSV facts and both scoped approvals without exposing them', () => {
@@ -258,7 +267,9 @@ describe('deployment boundary for the public daily asset', () => {
       writeFileSync(assetPath, JSON.stringify(warned));
       assert.throws(() => checkPublicDailyAsset({ assetPath, now: NOW }), /public schema/);
       writeFileSync(assetPath, JSON.stringify(snapshot));
-      assert.throws(() => checkPublicDailyAsset({ assetPath, now: new Date('2026-11-04T08:00:00Z') }), /not a current/);
+      const later = new Date('2026-11-04T08:00:00Z');
+      assert.equal(checkPublicDailyAsset({ assetPath, now: later }).status, 'stale');
+      assert.throws(() => checkPublicDailyAsset({ assetPath, now: later, requirePublished: true }), /not a current/);
       const alias = join(temp, 'symlink.json');
       symlinkSync(assetPath, alias);
       assert.throws(() => checkPublicDailyAsset({ assetPath: alias, now: NOW }), /regular JSON file/);
@@ -337,6 +348,73 @@ describe('strict CSV-to-public-file builder', () => {
       assert.equal(snapshot.run.id, 'synthetic-test-1');
       assert(!JSON.stringify(snapshot).includes('Synthetic project owner'));
     } finally { rmSync(temp, { recursive: true, force: true }); }
+  });
+
+  test('the automated route projects a synthetic notebook run without human sign-off or a private-field leak', async () => {
+    const temp = mkdtempSync(join(tmpdir(), 'hazardnet-machine-run-'));
+    try {
+      const rows = sampleRows(64);
+      const content = csvFromRows(rows);
+      const sha = createHash('sha256').update(content).digest('hex');
+      const input = join(temp, 'input.csv');
+      const run = join(temp, 'run.json');
+      writeFileSync(input, content);
+      writeFileSync(run, JSON.stringify(manifest(sha)));
+      const snapshot = await projectDailyInput({
+        input, manifest: run, publish: true, automated: true, datasetVersion: 42, now: NOW,
+      });
+      assert.equal(snapshot.run.sourceDatasetVersion, 42);
+      assert.equal(snapshot.coverage.publishedRows, 960);
+      assert.equal(snapshot.run.inputSha256, sha);
+      assert(!JSON.stringify(snapshot).includes('unapproved_input_note'));
+      assert(!JSON.stringify(snapshot).includes('private reason'));
+      const assetPath = join(temp, 'public.json');
+      writeFileSync(assetPath, JSON.stringify(snapshot));
+      assert.equal(checkPublicDailyAsset({ assetPath, now: NOW, requirePublished: true }).status, 'validated');
+
+      rows[0].advisory_tier = 'EXTREME';
+      const withheld = buildPublicDailySnapshot(rows, manifest(sha), {
+        sourceDatasetVersion: 42,
+      });
+      assert.equal(withheld.coverage.publishedRows, 959);
+      assert(!JSON.stringify(withheld).includes('EXTREME'));
+      assert.equal(withheld.advisories[0].peak, 'unknown');
+      await assert.rejects(() => projectDailyInput({
+        input, manifest: run, publish: true, automated: true, now: NOW,
+      }), /pinned Ready/);
+      await assert.rejects(() => projectDailyInput({
+        input: 'frontend/public/data/technical.csv', manifest: run,
+        publish: true, automated: true, datasetVersion: 42, now: NOW,
+      }), /outside the public repository/);
+      writeFileSync(run, JSON.stringify(manifest('b'.repeat(64))));
+      await assert.rejects(() => projectDailyInput({
+        input, manifest: run, publish: true, automated: true, datasetVersion: 42, now: NOW,
+      }), /checksum/);
+    } finally { rmSync(temp, { recursive: true, force: true }); }
+  });
+
+  test('automated mode is explicit, pinned and cannot roll back an existing public result', () => {
+    const args = [
+      '--input', '/tmp/input.csv', '--manifest', '/tmp/run.json',
+      '--output', 'frontend/public/data/daily-advisories-v1.json',
+    ];
+    assert.throws(() => optionsFromArgs([...args, '--automated-publish']), /Usage/);
+    assert.throws(() => optionsFromArgs([...args, '--automated-publish', '--dataset-version', '42', '--publish']), /Usage/);
+    assert.equal(optionsFromArgs([...args, '--automated-publish', '--dataset-version', '42'])['dataset-version'], '42');
+    const previous = buildPublicDailySnapshot(sampleRows(64), manifest(), { sourceDatasetVersion: 42 });
+    const repeated = buildPublicDailySnapshot(sampleRows(64), manifest(), { sourceDatasetVersion: 43 });
+    assert.throws(() => assertNewerPublicDaily(previous, repeated), /repeated/);
+    const older = buildPublicDailySnapshot(sampleRows(64), {
+      ...manifest(), run_id: 'synthetic-old', generated_at: '2026-11-01T09:00:00.000Z',
+    }, { sourceDatasetVersion: 43 });
+    assert.throws(() => assertNewerPublicDaily(previous, older), /older data cutoff/);
+    const next = buildPublicDailySnapshot(sampleRows(64), {
+      ...manifest(), run_id: 'synthetic-next', generated_at: '2026-11-02T10:00:00.000Z',
+      data_cutoff: '2026-11-02T08:00:00.000Z',
+    }, { sourceDatasetVersion: 41 });
+    assert.throws(() => assertNewerPublicDaily(previous, next), /rolled-back/);
+    const newer = { ...next, run: { ...next.run, sourceDatasetVersion: 43 } };
+    assert.doesNotThrow(() => assertNewerPublicDaily(previous, newer));
   });
 
   test('writes a preview outside public assets only when the run manifest matches', async () => {

@@ -48,6 +48,14 @@ it('refuses higher tiers, leaked columns and invented actions instead of display
   expect(parsePublicDailyPayload({ ...payload, status: 'officially_verified' }, 'Kurigram')).toBeNull();
 });
 
+it('accepts a pinned public Kaggle version only when it is a bounded positive integer', () => {
+  const published = { ...payload, run: { ...payload.run, sourceDatasetVersion: 42 } };
+  expect(parsePublicDailyPayload(published, 'Kurigram')?.run.sourceDatasetVersion).toBe(42);
+  for (const bad of [0, -1, '42', 1.5, 1_000_000_001]) {
+    expect(parsePublicDailyPayload({ ...payload, run: { ...payload.run, sourceDatasetVersion: bad } }, 'Kurigram')).toBeNull();
+  }
+});
+
 it('tries the small API first, then a validated static asset, and labels offline/old copies', async () => {
   const calls: string[] = [];
   const staticPayload = {

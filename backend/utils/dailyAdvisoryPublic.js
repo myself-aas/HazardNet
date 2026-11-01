@@ -23,14 +23,19 @@ const UTC = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/;
 const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
 
-const utcTime = z.string().regex(UTC).refine((value) => !Number.isNaN(Date.parse(value)));
+const utcTime = z.string().regex(UTC).refine((value) => {
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) && new Date(parsed).toISOString().slice(0, 10) === value.slice(0, 10);
+});
 const digest = z.string().regex(/^[a-f0-9]{64}$/);
+const isRunFact = (value) => value === value.trim()
+  && !/^(?:TBD|TODO|UNKNOWN|N\/A)(?:\b|_)/i.test(value);
 export const dailyAdvisoryManifestSchema = z.object({
   schema_version: z.literal('4.3-pb'),
-  run_id: z.string().min(1).max(100).regex(/^[a-zA-Z0-9._-]+$/),
+  run_id: z.string().min(1).max(100).regex(/^[a-zA-Z0-9._-]+$/).refine(isRunFact),
   generated_at: utcTime,
   data_cutoff: utcTime,
-  model_version: z.string().min(1).max(100),
+  model_version: z.string().min(1).max(100).refine(isRunFact),
   csv_sha256: digest,
 }).strict();
 
@@ -113,6 +118,9 @@ export const publicDailySnapshotSchema = z.object({
     expiresAt: utcTime,
     modelVersion: z.string().min(1).max(100),
     inputSha256: z.string().regex(/^[a-f0-9]{64}$/),
+    // Public provenance for the automated Kaggle path. Older manual results
+    // have no dataset version; the field never asserts when the model ran.
+    sourceDatasetVersion: z.number().int().positive().max(1_000_000_000).optional(),
   }).strict(),
   coverage: z.object({
     districts: z.number().int().min(1).max(64),
@@ -232,10 +240,14 @@ export function validatePublishableDailyManifest(raw, {
  * The technical source rows are never retained on the returned object.
  * `expectedDistricts` is a test seam; production callers must use the default 64.
  */
-export function buildPublicDailySnapshot(rows, manifest, { expectedDistricts = 64 } = {}) {
+export function buildPublicDailySnapshot(rows, manifest, { expectedDistricts = 64, sourceDatasetVersion } = {}) {
   if (!Array.isArray(rows) || !Number.isInteger(expectedDistricts) || expectedDistricts < 1
     || expectedDistricts > 64 || rows.length !== expectedDistricts * DAILY_ADVISORY_DAYS) {
     fail(`expected ${expectedDistricts * DAILY_ADVISORY_DAYS} district/day rows`);
+  }
+  if (sourceDatasetVersion !== undefined && (!Number.isSafeInteger(sourceDatasetVersion)
+    || sourceDatasetVersion < 1 || sourceDatasetVersion > 1_000_000_000)) {
+    fail('invalid source dataset version');
   }
 
   const districts = new Map();
@@ -342,6 +354,7 @@ export function buildPublicDailySnapshot(rows, manifest, { expectedDistricts = 6
       expiresAt: new Date(Date.parse(meta.data_cutoff) + DAILY_ADVISORY_MAX_AGE_HOURS * HOUR).toISOString(),
       modelVersion: meta.model_version,
       inputSha256: meta.csv_sha256,
+      ...(sourceDatasetVersion === undefined ? {} : { sourceDatasetVersion }),
     },
     coverage: { districts: districts.size, forecastDays: DAILY_ADVISORY_DAYS, publishedRows: advisories.length },
     advisories,

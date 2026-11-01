@@ -18,7 +18,9 @@ const MAX_PUBLIC_BYTES = 4 * 1024 * 1024;
  * test seams; the CLI has no option to point this check at confidential input.
  * This is not an attestation that a private run, its reviewer or its inputs exist.
  */
-export function checkPublicDailyAsset({ assetPath = PUBLIC_ASSET, now = new Date(), requirePublished = false } = {}) {
+export function checkPublicDailyAsset({
+  assetPath = PUBLIC_ASSET, now = new Date(), requirePublished = false, requireCurrent = requirePublished,
+} = {}) {
   let info;
   try {
     info = lstatSync(assetPath);
@@ -37,23 +39,26 @@ export function checkPublicDailyAsset({ assetPath = PUBLIC_ASSET, now = new Date
   } catch {
     throw new Error('Public daily asset is not valid JSON');
   }
-  return validateReleasableDailySnapshot(raw, { now });
+  // A committed yesterday's asset is allowed in CI: the client labels it stale.
+  // --require (used before a new release/deployment) still demands a current run.
+  return validateReleasableDailySnapshot(raw, { now, allowExpired: !requireCurrent });
 }
 
 /** Same public-only release check before writing the asset and before a deploy. */
-export function validateReleasableDailySnapshot(raw, { now = new Date() } = {}) {
+export function validateReleasableDailySnapshot(raw, { now = new Date(), allowExpired = false } = {}) {
   const snapshot = parsePublicDailySnapshot(raw);
   if (!snapshot || snapshot.coverage.districts !== 64 || snapshot.advisories.length === 0) {
     throw new Error('Public daily asset is empty, incomplete, or outside the public schema');
   }
   if (!Number.isFinite(now.getTime())
-    || Date.parse(snapshot.run.generatedAt) > now.getTime() + 5 * 60_000
-    || publicDailyStatus(snapshot, now) !== 'fresh'
-    || !snapshot.advisories.some((row) => row.targetDate >= dhakaDate(now))) {
-    throw new Error('Public daily asset is not a current district outlook');
+    || Date.parse(snapshot.run.generatedAt) > now.getTime() + 5 * 60_000) {
+    throw new Error('Public daily asset has a future or invalid generation time');
   }
+  const current = publicDailyStatus(snapshot, now) === 'fresh'
+    && snapshot.advisories.some((row) => row.targetDate >= dhakaDate(now));
+  if (!allowExpired && !current) throw new Error('Public daily asset is not a current district outlook');
   return {
-    status: 'validated',
+    status: current ? 'validated' : 'stale',
     districts: snapshot.coverage.districts,
     publishedRows: snapshot.coverage.publishedRows,
     dataCutoff: snapshot.run.dataCutoff,
@@ -69,7 +74,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     if (result.status === 'unpublished') {
       console.log('[daily-public] No approved asset: public API remains unavailable (expected).');
     } else {
-      console.log(`[daily-public] Public-only asset valid: ${result.districts} districts, ${result.publishedRows} published days.`);
+      console.log(`[daily-public] Public-only asset ${result.status}: ${result.districts} districts, ${result.publishedRows} rows.`);
     }
   } catch (error) {
     // Do not echo source content or an operator-controlled path into CI logs.

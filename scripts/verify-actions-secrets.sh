@@ -64,13 +64,13 @@ SECRETS_CATALOG=(
   # Site-health probe authentication (docs/ops/owner-actions.md Action 18)
   "SITE_PROBE_TOKEN|opt|site-health|Shared secret the probe sends as x-hazardnet-probe; needs the matching Cloudflare WAF skip rule"
   # Cloudflare Pages deploy path (docs/ops/deployment.md)
-  "CF_PAGES_DEPLOY_HOOK|opt|daily_advisory_ingest|Deploy-hook URL that triggers the Pages production build after an artifact commit; unset means the ingest fails loudly at that step"
+  "CF_PAGES_DEPLOY_HOOK|opt|public_daily_advisories,legacy ingest|Deploy-hook URL for the Pages build; the public publisher refuses to commit when unset"
   "CLOUDFLARE_API_TOKEN|opt|manual wrangler fallback|Scoped token (Pages:Edit) for direct-upload deploys; never needed by a workflow in this repo"
   "CLOUDFLARE_ACCOUNT_ID|opt|manual wrangler fallback|Account id for wrangler / the Pages dashboard API"
   "CLOUDFLARE_PAGES_PROJECT|opt|manual wrangler fallback|Pages project name (the deploy hook's target)"
-  # Daily advisory ingest (Kaggle CLI)
-  "KAGGLE_USERNAME|opt|daily_advisory_ingest|Kaggle account the advisory dataset is published under"
-  "KAGGLE_KEY|opt|daily_advisory_ingest|Kaggle API key for that account"
+  # Daily public publisher (Kaggle public dataset; credentials optional if anonymous download works)
+  "KAGGLE_USERNAME|opt|public_daily_advisories|Kaggle account the advisory dataset is published under"
+  "KAGGLE_KEY|opt|public_daily_advisories|Kaggle API key for that account"
   # Firebase aliases consumed by the ingest / verify workflows
   "FIREBASE_SERVICE_ACCOUNT|opt|daily_advisory_ingest|Legacy alias mapped onto FIREBASE_SERVICE_ACCOUNT_JSON"
   "FIREBASE_SERVICE_ACCOUNT_JSON|opt|daily_advisory_ingest|Service-account JSON for Firestore writes from the ingest"

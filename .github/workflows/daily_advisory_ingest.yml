@@ -1,14 +1,14 @@
-name: Daily Advisory Ingestion
+name: Legacy Two-Horizon Advisory Ingestion
 
+# The current Kaggle export has 960 district/day rows, not the older 128
+# two-horizon rows. This workflow is manual-only; the daily schedule belongs to
+# public_daily_advisories.yml. Never feed the newer export to this Firestore path.
 on:
-  schedule:
-    # 05:30 UTC ≈ 11:30 BDT (runs daily after Kaggle notebook completes)
-    - cron: '30 5 * * *'
   workflow_dispatch:
     inputs:
       advisory_csv_path:
-        description: 'Optional path or URL to hazardnet_advisories_latest.csv override'
-        required: false
+        description: 'Required path or URL to a 128-row legacy two-horizon CSV (not the 960-row daily export)'
+        required: true
         default: ''
       allow_stale:
         description: 'Bypass staleness guard (>36h) for manual rehearsal'
@@ -41,127 +41,30 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Set up Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: '3.11'
+      - name: Install legacy ingestion dependencies
+        run: npm ci --legacy-peer-deps --no-audit --no-fund
 
-      - name: Install Kaggle CLI
-        run: pip install --no-cache-dir kaggle
-
-      - name: Create working directory
-        run: mkdir -p /tmp/advisory-ingest
-
-      - name: Fetch advisory output from Kaggle
+      - name: Load explicitly supplied legacy CSV
         id: fetch-advisory
         env:
-          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
-          # Prefer the notebook's published dataset (the stable public CSV) and use kernel
-          # output as a fallback for transient dataset API failures.
-          KAGGLE_DATASET: ${{ vars.ADVISORY_DATASET || 'ashifahmedshuvo/hazardnet-weekly-forecasts' }}
-          KAGGLE_KERNEL: ${{ vars.ADVISORY_KERNEL || 'myself-aas/8-hazardnet-advisory' }}
-          ADVISORY_CSV_NAME: hazardnet_advisories_latest.csv
           OVERRIDE_PATH: ${{ inputs.advisory_csv_path }}
+        shell: bash
         run: |
-          # NOTE: no `set -e` here. The fetcher's exit code IS the signal this step
-          # branches on (0 fresh / 2 unchanged / 1 failed), and `set -e` would kill the
-          # step before the branch could read it.
-          set -uo pipefail
-          OUT=/tmp/advisory-ingest
-          mkdir -p "$OUT"
-
-          # A manual override (URL or workspace path) short-circuits Kaggle entirely.
-          if [ -n "${OVERRIDE_PATH:-}" ]; then
-            echo "[fetch] Using provided advisory CSV override: $OVERRIDE_PATH"
-            if [[ "$OVERRIDE_PATH" =~ ^https?:// ]]; then
-              curl -fsSL "$OVERRIDE_PATH" -o "$OUT/hazardnet_advisories_latest.csv"
-            else
-              cp "$OVERRIDE_PATH" "$OUT/hazardnet_advisories_latest.csv"
-            fi
-            echo "fetched=true"  >> "$GITHUB_OUTPUT"
-            echo "fresh=true"    >> "$GITHUB_OUTPUT"
-            echo "via=override"  >> "$GITHUB_OUTPUT"
-            exit 0
+          set -euo pipefail
+          umask 077
+          if [ -z "${OVERRIDE_PATH:-}" ]; then
+            echo '::error::A legacy 128-row two-horizon CSV is required. The daily Kaggle dataset belongs to public_daily_advisories.yml.'
+            exit 1
           fi
-
-          # The dataset is public, so the HTTP download is unauthenticated by default.
-          # Optional Kaggle credentials unlock the CLI/kernel fallback if the API endpoint
-          # is unavailable. Do not make a private secret mandatory for a public CSV.
-          if [ -n "${KAGGLE_USERNAME:-}" ] && [ -n "${KAGGLE_KEY:-}" ]; then
-            mkdir -p ~/.kaggle
-            jq -n --arg username "$KAGGLE_USERNAME" --arg key "$KAGGLE_KEY" \
-              '{username:$username,key:$key}' > ~/.kaggle/kaggle.json
-            chmod 600 ~/.kaggle/kaggle.json
+          mkdir -p /tmp/advisory-ingest
+          if [[ "$OVERRIDE_PATH" =~ ^https?:// ]]; then
+            curl -fsSL "$OVERRIDE_PATH" -o /tmp/advisory-ingest/hazardnet_advisories_latest.csv
           else
-            echo "[fetch] Kaggle credentials unset; using the public dataset API."
+            cp -- "$OVERRIDE_PATH" /tmp/advisory-ingest/hazardnet_advisories_latest.csv
           fi
-
-          # --wait-minutes: a scheduled Kaggle notebook is allowed to be tardy. Poll rather
-          # than fail, but stay well inside the job's timeout-minutes. Wrap in an `if`: GitHub
-          # invokes bash with `-e`, and a bare exit code 2 would terminate the step before the
-          # branch below can distinguish unchanged from failed.
-          #
-          # --max-age-hours: the same gate `validate_advisory_csv.mjs` applies in the ingest
-          # step. Without it the fetch called a week-old publication "fresh" (it was newer than
-          # the committed run), the ingest then failed with STALE_DATA, and four downstream
-          # steps — including the artifact commit and the deploy trigger — were skipped while
-          # the failure looked like an ingest bug. Age is decided here, once.
-          if node scripts/fetch_kaggle_advisory.mjs --out "$OUT" --wait-minutes 12 --max-age-hours 36; then
-            code=0
-          else
-            code=$?
-          fi
-
-          case "$code" in
-            0)
-              echo "fetched=true" >> "$GITHUB_OUTPUT"
-              echo "fresh=true"   >> "$GITHUB_OUTPUT"
-              ;;
-            2)
-              # Fetched fine, but the file is not newer than what is already committed —
-              # or it is newer yet already older than the 36 h ingest gate. Either way the
-              # Kaggle schedule did not produce a run the pipeline can publish. This is a
-              # real finding, not a no-op: it is annotated, summarised and reported to Slack.
-              echo "fetched=true"  >> "$GITHUB_OUTPUT"
-              echo "fresh=false"   >> "$GITHUB_OUTPUT"
-              AGE=$(jq -r '.age_hours // "unknown"' "$OUT/fetch-report.json" 2>/dev/null || echo unknown)
-              if [ "$AGE" != "unknown" ] && [ "${AGE%%.*}" -gt 36 ]; then
-                echo "::warning::Advisory CSV fetched but ${AGE} h old — past the 36 h ingest gate, so the Kaggle notebook has not published a run the pipeline can use."
-                HEADLINE="### ⏭️ No advisory run inside the 36 h gate (published run is ${AGE} h old)"
-              else
-                echo "::warning::Advisory CSV fetched but unchanged since the last ingest — the Kaggle schedule did not produce a new run today."
-                HEADLINE="### ⏭️ No new advisory run"
-              fi
-              {
-                echo "$HEADLINE"
-                echo
-                echo "The fetch succeeded, but the CSV cannot be ingested: it is either identical to the"
-                echo "one already ingested, or older than the 36 h staleness gate the ingest enforces."
-                echo
-                echo "Check the notebook's last successful run on Kaggle (schedule: daily)."
-              } >> "$GITHUB_STEP_SUMMARY"
-              if [ -f "$OUT/fetch-report.json" ]; then
-                {
-                  echo
-                  echo '```json'
-                  cat "$OUT/fetch-report.json"
-                  echo '```'
-                } >> "$GITHUB_STEP_SUMMARY"
-              fi
-              # A scheduled no-update is a real feed failure; fail it so the always()-run
-              # operational notification is red. A manual rehearsal can legitimately be
-              # unchanged and remains a successful no-op.
-              if [ "${{ github.event_name }}" = "schedule" ]; then
-                echo "::error::Scheduled Kaggle advisory publication is unchanged or past the 36 h ingest gate — the notebook did not produce a publishable run today."
-                exit 1
-              fi
-              ;;
-            *)
-              echo "::error::Advisory fetch failed (exit $code). See the step log for the method-by-method diagnosis."
-              exit "$code"
-              ;;
-          esac
+          test -s /tmp/advisory-ingest/hazardnet_advisories_latest.csv
+          echo 'fetched=true' >> "$GITHUB_OUTPUT"
+          echo 'fresh=true' >> "$GITHUB_OUTPUT"
 
       - name: Validate Advisory CSV & Execute Ingestion
         id: run-ingest

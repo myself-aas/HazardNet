@@ -4,13 +4,14 @@
  * Never copy the input CSV or its private audit reports to frontend/public, CI or Git.
  */
 import { createHash } from 'node:crypto';
-import { readFileSync, mkdirSync, renameSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, realpathSync, mkdirSync, renameSync, writeFileSync } from 'node:fs';
 import { basename, dirname, resolve, sep } from 'node:path';
 import { Readable } from 'node:stream';
 import { fileURLToPath } from 'node:url';
 import csv from 'csv-parser';
 import {
-  buildPublicDailySnapshot, validateDailyManifest, validatePublishableDailyManifest,
+  buildPublicDailySnapshot, parsePublicDailySnapshot,
+  validateDailyManifest, validatePublishableDailyManifest,
 } from '../backend/utils/dailyAdvisoryPublic.js';
 import { validateReleasableDailySnapshot } from './check_public_daily_asset.mjs';
 
@@ -45,27 +46,55 @@ export async function readDailyCsv(content) {
   return rows;
 }
 
-function optionsFromArgs(args) {
+export function optionsFromArgs(args) {
   const values = {};
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
-    if (arg === '--publish' || arg === '--preview') { values[arg.slice(2)] = true; continue; }
-    if (!['--input', '--manifest', '--output', '--expected-districts'].includes(arg) || !args[index + 1]) {
+    if (['--publish', '--preview', '--automated-publish'].includes(arg)) {
+      values[arg.slice(2)] = true;
+      continue;
+    }
+    if (!['--input', '--manifest', '--output', '--expected-districts', '--dataset-version'].includes(arg)
+      || !args[index + 1] || args[index + 1].startsWith('--')) {
       throw new Error(`Unknown or incomplete option: ${arg}`);
     }
     values[arg.slice(2)] = args[++index];
   }
-  if (!values.input || !values.manifest || !values.output || Boolean(values.publish) === Boolean(values.preview)) {
-    throw new Error('Usage: node scripts/build_public_daily_advisories.mjs --input <private.csv> --manifest <utc-run.json> --output <public.json> (--publish | --preview)');
+  if (!values.input || !values.manifest || !values.output
+    || ['publish', 'preview', 'automated-publish'].filter((key) => values[key]).length !== 1
+    || Boolean(values['automated-publish']) !== Boolean(values['dataset-version'])) {
+    throw new Error('Usage: build_public_daily_advisories.mjs --input PRIVATE_CSV --manifest UTC_RUN_JSON --output PUBLIC_JSON (--publish | --preview | --automated-publish --dataset-version N)');
   }
   return values;
 }
 
+function ensurePrivateRunnerPath(file) {
+  const path = resolve(file);
+  const inside = (candidate) => candidate === resolve(ROOT) || candidate.startsWith(`${resolve(ROOT)}${sep}`);
+  if (inside(path) || (existsSync(path) && inside(realpathSync(path)))) {
+    throw new Error('Automated Kaggle inputs must be outside the public repository');
+  }
+}
+
 /** Read-only projection shared by the public-file builder and the manual mirror. */
 export async function projectDailyInput({
-  input, manifest, publish = false, allowStale = false, expectedDistricts = 64, now = new Date(),
+  input, manifest, publish = false, automated = false, datasetVersion,
+  allowStale = false, expectedDistricts = 64, now = new Date(),
 }) {
   if (publish && expectedDistricts !== 64) throw new Error('Production requires 64 districts');
+  if (automated && (!publish || !Number.isSafeInteger(datasetVersion)
+    || datasetVersion < 1 || datasetVersion > 1_000_000_000)) {
+    throw new Error('Automated publication requires a pinned Ready Kaggle dataset version');
+  }
+  if (!automated && datasetVersion !== undefined) {
+    throw new Error('Only automated publication may stamp a Kaggle dataset version');
+  }
+  if (automated) {
+    // Source authentication is performed by the preceding version-pinned
+    // fetch, not by this CLI flag; keep its ephemeral inputs out of the repo.
+    ensurePrivateRunnerPath(input);
+    ensurePrivateRunnerPath(manifest);
+  }
   let content;
   try {
     content = readFileSync(resolve(input));
@@ -81,15 +110,18 @@ export async function projectDailyInput({
   }
   const rows = await readDailyCsv(content);
   const dates = rows.map((row) => row.target_date).sort();
+  // The owner-issued release route keeps its copy-bound approval receipt. The
+  // separate scheduled route uses the notebook's own strict UTC run facts and
+  // a pinned, Ready dataset version; it never invents a reviewer or copy signoff.
   let copySha256;
-  if (publish || rawManifest?.manifest_version) {
+  if ((!automated && publish) || rawManifest?.manifest_version) {
     try {
       copySha256 = createHash('sha256').update(readFileSync(COPY_SOURCE)).digest('hex');
     } catch {
       throw new Error('Bangla copy revision could not be verified');
     }
   }
-  const runManifest = publish || rawManifest?.manifest_version
+  const runManifest = (!automated && publish) || rawManifest?.manifest_version
     ? validatePublishableDailyManifest(rawManifest, {
       sha256: checksum, copySha256, filename: basename(resolve(input)), sizeBytes: content.length,
       rows: rows.length, columns: Object.keys(rows[0] || {}).length,
@@ -97,10 +129,29 @@ export async function projectDailyInput({
       firstDate: dates[0], lastDate: dates[dates.length - 1], now, allowStale,
     })
     : validateDailyManifest(rawManifest, { sha256: checksum, now, allowStale });
-  return buildPublicDailySnapshot(rows, runManifest, { expectedDistricts });
+  return buildPublicDailySnapshot(rows, runManifest, {
+    expectedDistricts, sourceDatasetVersion: automated ? datasetVersion : undefined,
+  });
 }
 
-export async function buildPublicDailyFile({ input, manifest, output, publish = false, preview = false, expectedDistricts = 64, now = new Date() }) {
+export function assertNewerPublicDaily(previousRaw, next) {
+  const previous = parsePublicDailySnapshot(previousRaw);
+  if (!previous || previous.coverage.districts !== 64 || previous.advisories.length === 0) {
+    throw new Error('Existing public daily asset is invalid; refusing an unchecked replacement');
+  }
+  if (previous.run.id === next.run.id
+    || Date.parse(previous.run.dataCutoff) >= Date.parse(next.run.dataCutoff)
+    || (previous.run.sourceDatasetVersion !== undefined
+      && next.run.sourceDatasetVersion !== undefined
+      && previous.run.sourceDatasetVersion >= next.run.sourceDatasetVersion)) {
+    throw new Error('Refusing a repeated run, older data cutoff or rolled-back dataset version');
+  }
+}
+
+export async function buildPublicDailyFile({
+  input, manifest, output, publish = false, automated = false, datasetVersion,
+  preview = false, expectedDistricts = 64, now = new Date(),
+}) {
   const outputPath = resolve(output);
   if (publish === preview || (publish && outputPath !== PUBLIC_OUTPUT)
     || (preview && (outputPath === PUBLIC_OUTPUT || outputPath.startsWith(resolve(ROOT, 'frontend/public') + sep)))) {
@@ -111,11 +162,20 @@ export async function buildPublicDailyFile({ input, manifest, output, publish = 
     throw new Error('Production requires 64 districts; only previews may use a smaller test set');
   }
   const snapshot = await projectDailyInput({
-    input, manifest, publish, allowStale: preview, expectedDistricts: count, now,
+    input, manifest, publish, automated, datasetVersion,
+    allowStale: preview, expectedDistricts: count, now,
   });
   // Do not even create a temporary public file for an empty, incomplete, or
   // unusable run. Preview mode remains limited to paths outside public assets.
-  if (publish) validateReleasableDailySnapshot(snapshot, { now });
+  if (publish) {
+    validateReleasableDailySnapshot(snapshot, { now });
+    if (existsSync(outputPath)) {
+      let previous;
+      try { previous = JSON.parse(readFileSync(outputPath, 'utf8')); }
+      catch { throw new Error('Existing public daily asset cannot be read; refusing replacement'); }
+      assertNewerPublicDaily(previous, snapshot);
+    }
+  }
   mkdirSync(dirname(outputPath), { recursive: true });
   const tmp = `${outputPath}.${process.pid}.tmp`;
   try {
@@ -132,10 +192,12 @@ export async function buildPublicDailyFile({ input, manifest, output, publish = 
 async function main(args) {
   try {
     const options = optionsFromArgs(args);
+    const automated = Boolean(options['automated-publish']);
     const result = await buildPublicDailyFile({
       input: options.input, manifest: options.manifest, output: options.output,
-      publish: Boolean(options.publish), preview: Boolean(options.preview),
-      expectedDistricts: options['expected-districts'] ?? 64,
+      publish: Boolean(options.publish || automated), automated,
+      datasetVersion: automated ? Number(options['dataset-version']) : undefined,
+      preview: Boolean(options.preview), expectedDistricts: options['expected-districts'] ?? 64,
     });
     console.log(`[daily-advisories] Public-only snapshot: ${result.count} rows, ${result.districts} districts -> ${result.output}`);
   } catch (error) {

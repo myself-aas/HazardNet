@@ -116,12 +116,16 @@ for the queue.
 
 1. **Merge to `main`.** Pages builds on push — for everything except the two jobs whose
    commits carry `[skip ci]` (see below).
-2. **The ingest job triggers the build explicitly.** `daily_advisory_ingest.yml` commits the
-   refreshed artifacts with `[skip ci]` (so a data commit does not re-run the whole test
-   matrix) and Pages honours the same skip tokens, so the push does **not** rebuild the site.
-   The job therefore POSTs the deploy hook, retried 3× and failing loudly on a non-2xx or an
-   unset `CF_PAGES_DEPLOY_HOOK`: a trigger that silently does nothing is how the site ends up
-   serving yesterday's artifacts while every run is green.
+2. **The daily public publisher triggers the build explicitly.** `public_daily_advisories.yml`
+   polls for a new Ready Kaggle dataset version and its matching notebook-generated UTC
+   record. It commits **only** `frontend/public/data/daily-advisories-v1.json` with `[skip ci]`
+   after automated freshness, completeness and public-field checks. No person approves each
+   run; incomplete/missing input leaves the public result unchanged. The older 128-row
+   `daily_advisory_ingest.yml` is manual-only and never imports this daily export or stamps
+   its provenance onto older forecasts/alerts. Pages honours `[skip ci]`, so the publisher
+   POSTs the deploy hook, retried 3× and failing loudly on a non-2xx or an unset
+   `CF_PAGES_DEPLOY_HOOK`. The hook confirms a build was **triggered**, not that a live
+   deployment succeeded; verify the Pages deployment separately.
 3. **The site-health probe never deploys.** Its commit also carries `[skip ci]`, and
    `data/site-health/**` is excluded from the watch paths as a second guard. Phase 5 adds a
    third consequence: because no build runs, the *served* copy of the record at
