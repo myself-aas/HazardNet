@@ -1,7 +1,7 @@
 /**
  * Public-only projection of a district/day advisory export.
  *
- * The producer's technical ledger is a private input. This module knows only the
+ * The upstream technical export is a private input. This module knows only the
  * published result, date, district and a few availability flags. Never add a
  * pass-through of input rows to this snapshot: the static asset is world-readable.
  */
@@ -34,9 +34,10 @@ export const dailyAdvisoryManifestSchema = z.object({
   csv_sha256: digest,
 }).strict();
 
-// The private producer issues this minimal release receipt. It is never copied
-// into the public snapshot; its issuer and reviewers are checked outside this
-// repository for authority. Field validation alone cannot authenticate them.
+// An authorized project owner or release operator issues this minimal release
+// receipt. No separate producer identity is required. The receipt is never
+// copied into the public snapshot; issuer/reviewer authority and run evidence
+// must be verified outside this repository. Field validation cannot do that.
 const issuedName = z.string().min(2).max(120).refine((value) =>
   value === value.trim() && !/^(?:TBD|TODO|UNKNOWN|N\/A)(?:\b|_)/i.test(value));
 const approved = (scope, boundField) => z.object({
@@ -71,10 +72,9 @@ export const publishableDailyManifestSchema = z.object({
     data_cutoff_utc: utcTime,
     time_zone: z.literal('UTC'),
   }).strict(),
-  producer: z.object({
-    organization: issuedName,
+  issuer: z.object({
     issued_by: issuedName,
-    role: issuedName,
+    role: z.enum(['project_owner', 'authorized_operator']),
     issued_at_utc: utcTime,
   }).strict(),
   approvals: z.object({
@@ -184,9 +184,9 @@ export function validateDailyManifest(raw, {
 }
 
 /**
- * Machine-check a producer-issued, approval-bound receipt against objective CSV
- * facts. This does not verify the issuer's identity or a cryptographic signature;
- * the operator must authenticate the receipt outside this public checkout.
+ * Machine-check an owner/operator-issued, approval-bound receipt against CSV
+ * facts. This does not verify the issuer's authority, underlying UTC evidence
+ * or a cryptographic signature; those must be checked outside this checkout.
  * Nothing from the private approval record is returned in the public snapshot.
  */
 export function validatePublishableDailyManifest(raw, {
@@ -195,9 +195,9 @@ export function validatePublishableDailyManifest(raw, {
 } = {}) {
   const result = publishableDailyManifestSchema.safeParse(raw);
   if (!result.success || /^(?:TBD|TODO|UNKNOWN)(?:\b|_)/i.test(result.data?.run.run_id || '')) {
-    fail('a complete producer-issued publication manifest with bound approvals is required');
+    fail('a complete owner-issued publication receipt with bound approvals is required');
   }
-  const { artifact, run, producer, approvals } = result.data;
+  const { artifact, run, issuer, approvals } = result.data;
   if (artifact.sha256 !== sha256 || artifact.filename !== filename
     || artifact.size_bytes !== sizeBytes || artifact.rows !== rows || artifact.columns !== columns
     || artifact.district_count !== districts || artifact.forecast_window_start !== firstDate
@@ -211,7 +211,7 @@ export function validatePublishableDailyManifest(raw, {
   const completed = Date.parse(run.completed_at_utc);
   const released = Date.parse(approvals.release_approval.approved_at_utc);
   const copyApproved = Date.parse(approvals.bangla_copy_approval.approved_at_utc);
-  const issued = Date.parse(producer.issued_at_utc);
+  const issued = Date.parse(issuer.issued_at_utc);
   if (!Number.isFinite(current) || started > completed || released < completed
     || issued < completed || issued < released || issued < copyApproved
     || [started, released, copyApproved, issued].some((time) => time > current + 5 * 60_000)) {

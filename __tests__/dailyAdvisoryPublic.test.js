@@ -10,7 +10,7 @@ import {
   DAILY_ADVISORY_SCHEMA, buildPublicDailySnapshot, parsePublicDailySnapshot,
   publicDailyStatus, validateDailyManifest, validatePublishableDailyManifest,
 } from '../backend/utils/dailyAdvisoryPublic.js';
-import { buildPublicDailyFile, readDailyCsv } from '../scripts/build_public_daily_advisories.mjs';
+import { buildPublicDailyFile, projectDailyInput, readDailyCsv } from '../scripts/build_public_daily_advisories.mjs';
 import { checkPublicDailyAsset } from '../scripts/check_public_daily_asset.mjs';
 
 const describe = globalThis.describe ?? nodeTest.describe;
@@ -42,9 +42,9 @@ const issuedManifest = (sha = SHA) => ({
     completed_at_utc: '2026-11-01T10:00:00.000Z',
     data_cutoff_utc: '2026-11-01T08:00:00.000Z', time_zone: 'UTC',
   },
-  producer: {
-    organization: 'Synthetic producer', issued_by: 'Synthetic issuer',
-    role: 'Release owner', issued_at_utc: '2026-11-01T11:30:00.000Z',
+  issuer: {
+    issued_by: 'Synthetic project owner', role: 'project_owner',
+    issued_at_utc: '2026-11-01T11:30:00.000Z',
   },
   approvals: {
     release_approval: {
@@ -162,28 +162,40 @@ describe('public 15-day projection', () => {
     assert.deepEqual(run, manifest());
     const snapshot = buildPublicDailySnapshot(sampleRows(1), run, { expectedDistricts: 1 });
     const publicText = JSON.stringify(snapshot);
-    assert(!publicText.includes('Synthetic issuer'));
+    assert(!publicText.includes('Synthetic project owner'));
     assert(!publicText.includes('Synthetic reviewer'));
     assert(!publicText.includes('publication'));
   });
 
+  test('an authorized release operator may issue the receipt without a separate producer', () => {
+    const receipt = issuedManifest();
+    receipt.issuer = {
+      issued_by: 'Synthetic release operator', role: 'authorized_operator',
+      issued_at_utc: '2026-11-01T11:30:00.000Z',
+    };
+    assert.equal('producer' in receipt, false);
+    assert.equal(validatePublishableDailyManifest(receipt, releaseFacts()).run_id, 'synthetic-test-1');
+  });
+
   test('an incomplete receipt, mismatched artifact, or unbound approval cannot authorize publication', () => {
     const mutations = [
-      (value) => { value.status = 'partial_pending_producer_issue'; },
-      (value) => { value.run.run_id = 'TBD_BY_PRODUCER'; },
-      (value) => { value.run.time_zone = 'TBD_BY_PRODUCER'; },
+      (value) => { value.status = 'partial_pending_owner_issue'; },
+      (value) => { value.run.run_id = 'TBD_BY_OWNER'; },
+      (value) => { value.run.time_zone = 'TBD_BY_OWNER'; },
       (value) => { value.run.completed_at_utc = '2026-11-01 10:00:00'; },
       (value) => { value.run.started_at_utc = '2026-11-01T11:00:00.000Z'; },
-      (value) => { value.producer.issued_by = 'TBD_BY_PRODUCER'; },
-      (value) => { value.producer.issued_at_utc = '2026-11-01T10:30:00.000Z'; },
+      (value) => { value.issuer.issued_by = 'TBD_BY_OWNER'; },
+      (value) => { value.issuer.role = 'producer'; },
+      (value) => { value.issuer.issued_at_utc = '2026-11-01T10:30:00.000Z'; },
+      (value) => { value.producer = { organization: 'Not needed' }; },
       (value) => { value.approvals.release_approval.status = 'noted_by_operator'; },
-      (value) => { value.approvals.release_approval.approved_by = 'TBD_BY_PRODUCER'; },
+      (value) => { value.approvals.release_approval.approved_by = 'TBD_BY_OWNER'; },
       (value) => { value.approvals.release_approval.approved_at_utc = '2026-11-01T09:00:00.000Z'; },
       (value) => { value.approvals.release_approval.artifact_sha256 = 'd'.repeat(64); },
       (value) => { value.approvals.bangla_copy_approval.status = 'pending_manifest_binding'; },
       (value) => { value.approvals.bangla_copy_approval.copy_sha256 = 'd'.repeat(64); },
       (value) => { value.approvals.bangla_copy_approval.scope = 'some other copy'; },
-      (value) => { value.publication.status = 'blocked_pending_producer_manifest'; },
+      (value) => { value.publication.status = 'blocked_pending_owner_receipt'; },
       (value) => { value.artifact.sha256 = 'b'.repeat(64); },
       (value) => { value.artifact.size_bytes = 101; },
       (value) => { value.artifact.forecast_window_start = '2026-11-01'; },
@@ -293,14 +305,37 @@ describe('strict CSV-to-public-file builder', () => {
       writeFileSync(input, content);
       for (const candidate of [
         manifest(sha),
-        { ...issuedManifest(sha), status: 'partial_pending_producer_issue' },
+        { ...issuedManifest(sha), status: 'partial_pending_owner_issue' }
       ]) {
         writeFileSync(manifestPath, JSON.stringify(candidate));
         await assert.rejects(() => buildPublicDailyFile({
           input, manifest: manifestPath, output, publish: true, now: NOW,
-        }), /producer-issued publication manifest/);
+        }), /owner-issued publication receipt/);
       }
       assert.deepEqual(existsSync(output) ? readFileSync(output) : null, previous);
+    } finally { rmSync(temp, { recursive: true, force: true }); }
+  });
+
+  test('projects a synthetic owner-issued receipt without a separate producer, in memory only', async () => {
+    const temp = mkdtempSync(join(tmpdir(), 'hazardnet-owner-receipt-'));
+    try {
+      const rows = sampleRows(64);
+      const content = csvFromRows(rows);
+      const sha = createHash('sha256').update(content).digest('hex');
+      const receipt = issuedManifest(sha);
+      receipt.artifact.size_bytes = Buffer.byteLength(content);
+      receipt.artifact.columns = Object.keys(rows[0]).length;
+      receipt.approvals.bangla_copy_approval.copy_sha256 = createHash('sha256')
+        .update(readFileSync(resolve('frontend/src/lib/i18n.ts'))).digest('hex');
+      assert.equal('producer' in receipt, false);
+      const input = join(temp, 'input.csv');
+      const manifestPath = join(temp, 'issued.json');
+      writeFileSync(input, content);
+      writeFileSync(manifestPath, JSON.stringify(receipt));
+      const snapshot = await projectDailyInput({ input, manifest: manifestPath, publish: true, now: NOW });
+      assert.equal(snapshot.coverage.publishedRows, 960);
+      assert.equal(snapshot.run.id, 'synthetic-test-1');
+      assert(!JSON.stringify(snapshot).includes('Synthetic project owner'));
     } finally { rmSync(temp, { recursive: true, force: true }); }
   });
 
