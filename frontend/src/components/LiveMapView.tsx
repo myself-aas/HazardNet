@@ -1382,7 +1382,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               onClose={() => {
                 onSelectDistrict?.(null as any);
               }}
-              onOpenAnalytics={(districtId) => navigate(`/forecast/district/${districtId}`)}
+              onOpenDailyOutlook={(districtId) => navigate(`/forecast/district/${districtId}`)}
               onOpenAdvisory={onOpenAdvisory}
             />
           </div>

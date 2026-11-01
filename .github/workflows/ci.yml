@@ -209,6 +209,19 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps --no-audit --no-fund
 
+      # Public projection tests use synthetic rows and a synthetic UTC manifest.
+      # The private daily CSV, audits and external producer never enter CI.
+      - name: Daily public advisory publication gate
+        run: |
+          set -euo pipefail
+          node --test __tests__/dailyAdvisoryPublic.test.js
+          # The Admin-only Firestore mirror is exercised with synthetic data and
+          # an in-memory fake. It must not connect to Firebase or Kaggle in CI.
+          npx jest --ci --runInBand __tests__/publicDailyFirestore.test.js
+          # Missing is allowed; a present public asset must be a valid, current
+          # 64-district projection. Never import the private source into CI.
+          node scripts/check_public_daily_asset.mjs
+
       # Guards the workflow files themselves: every .github/workflows/*.yml must parse as
       # YAML and must not use the `secrets` context in ANY `if:` (job or step — GitHub
       # rejects the whole file with zero jobs either way; gate on a resolved step output

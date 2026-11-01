@@ -18,6 +18,7 @@ export default createDispatcher({
   param: 'resource',
   entry: 'api/v1/[resource].js',
   routes: {
+    advisories: () => import('../../serverless/v1/advisories.js'),
     alerts: () => import('../../serverless/v1/alerts/index.js'),
     kaggle: () => import('../../serverless/v1/kaggle.js'),
     telemetry: () => import('../../serverless/v1/telemetry.js'),

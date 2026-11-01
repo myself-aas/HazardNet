@@ -120,7 +120,9 @@ export default defineConfig(({ mode }) => {
       injectRegister: 'script-defer',
       injectManifest: {
         injectionPoint: 'self.__WB_MANIFEST',
-        globIgnores: ['**/hero-section/*.mp4'],
+        // The public daily outlook is network-first in serviceWorker.js. Never
+        // precache a run at install time and replay it as if it were current.
+        globIgnores: ['**/hero-section/*.mp4', '**/data/daily-advisories-v1.json'],
       },
     }),
   ],

@@ -13,11 +13,11 @@ mode: Read
 
 ## What the visitor is doing
 
-See one district or division: its outlook, its history, its exposure, and where the numbers come from.
+See one district or division: its outlook, its history, its exposure, and where the numbers come from. On `/forecast/district/:id`, first identify the district, dated hazard, seriousness and safe actions.
 
 ## Direction
 
-Read track with a console header. The district page opens with the level and the freshness, then the record, then the detail.
+Read track with a console header on the district and division archive pages. The daily district route opens with a short safety boundary, published tier and actions in a seven-day timeline; 15 days and reason/quality notes are progressively disclosed. Missing, stale and offline days must never read as safe. The older two-horizon public records remain an explicitly labelled alternate view, not an officer/private-data shortcut.
 
 ## Decisions to preserve
 

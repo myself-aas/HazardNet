@@ -41,7 +41,9 @@ const Privacy = lazy(() => import('./pages/Privacy'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const AdvisoriesPage = lazy(() => import('./pages/AdvisoriesPage').then((m) => ({ default: m.AdvisoriesPage })));
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage').then((m) => ({ default: m.AnalyticsPage })));
-const DistrictDetailPage = lazy(() => import('./pages/DistrictDetailPage').then((m) => ({ default: m.DistrictDetailPage })));
+// Farmer copy loads first by default; the page lazy-loads the existing public
+// two-horizon record only for ?view=published-records (never a role/permission gate).
+const DistrictDailyPage = lazy(() => import('./pages/DistrictDailyPage').then((m) => ({ default: m.DistrictDailyPage })));
 const DivisionsPage = lazy(() => import('./pages/DivisionsPage'));
 const DivisionDetailPage = lazy(() => import('./pages/DivisionDetailPage'));
 const HazardsPage = lazy(() => import('./pages/HazardsPage'));
@@ -143,7 +145,7 @@ const AppRoutes: React.FC<{ location: ReturnType<typeof useLocation> }> = ({ loc
               <Route path="/forecast/overview" element={<Dashboard defaultTab="gis" isFullScreen={true} />} />
               <Route path="/forecast/dashboard" element={<Navigate to="/analytics/forecast-dashboard" replace />} />
               <Route path="/forecast/my-districts" element={<Dashboard defaultTab="saved" />} />
-              <Route path="/forecast/district/:id" element={<DistrictDetailPage />} />
+              <Route path="/forecast/district/:id" element={<DistrictDailyPage />} />
               <Route path="/forecast/compare" element={<Dashboard defaultTab="compare" />} />
               <Route path="/forecast/settings" element={<Dashboard defaultTab="settings" />} />
               <Route path="/settings" element={<Dashboard defaultTab="settings" />} />

@@ -3,6 +3,7 @@ import MaterialIcon from '../MaterialIcon';
 import { LocationMap } from '../ui/expand-map';
 import { BottomSheet, type SheetDisclosureStage } from '../ui/BottomSheet';
 import { DistrictData } from '../../data/bangladeshDistricts';
+import { useI18n } from '../../hooks/useI18n';
 
 /**
  * Selected-district forecast for the live map, presented in the shared BottomSheet
@@ -18,7 +19,7 @@ export type DistrictWithRisk = DistrictData & { severity: number; risk: string }
 export interface DistrictForecastCardProps {
   district: DistrictWithRisk;
   onClose: () => void;
-  onOpenAnalytics: (districtId: string) => void;
+  onOpenDailyOutlook: (districtId: string) => void;
   /**
    * Opens the in-map AI advisory / model-metrics drawer. Optional because the
    * drawer only exists on the full-screen GIS stage; the card is also rendered
@@ -51,9 +52,10 @@ export type DisclosureStage = SheetDisclosureStage;
 export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
   district,
   onClose,
-  onOpenAnalytics,
+  onOpenDailyOutlook,
   onOpenAdvisory,
 }) => {
+  const { t } = useI18n();
   const [stage, setStage] = useState<DisclosureStage>('half');
   const [showLocationMap, setShowLocationMap] = useState(false);
   const tone = riskTone(district.severity);
@@ -92,11 +94,11 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
           )}
           <button
             type="button"
-            onClick={() => onOpenAnalytics(district.id)}
+            onClick={() => onOpenDailyOutlook(district.id)}
             className="flex-1 min-w-0 min-h-[44px] py-2.5 px-3 bg-primary hover:bg-primary-strong text-ap-action-fg font-semibold text-xs sm:text-sm leading-tight flex items-center justify-center gap-2 touch-manipulation rounded-full"
           >
             <MaterialIcon name="analytics" className="w-4 h-4 shrink-0" />
-            View Detailed Disaster Analytics
+            {t('daily.nav.open')}
           </button>
         </>
       }

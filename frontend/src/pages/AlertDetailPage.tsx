@@ -22,6 +22,8 @@ import { DataSourceBanner } from '../components/alerts/DataSourceBanner';
 import { Disclaimer } from '../components/alerts/Disclaimer';
 import { EvidenceCard, EvidenceCardExportButton } from '../components/alerts/EvidenceCard';
 import { LanguageToggle } from '../components/alerts/LanguageToggle';
+import { DailyOutlookEntry } from '../components/DailyOutlookEntry';
+import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
 import { AlertLevelBadge } from '../components/alerts/AlertLevelBadge';
 import { useBandwidthMode } from '../hooks/useBandwidthMode';
 import { useI18n } from '../hooks/useI18n';
@@ -152,6 +154,9 @@ export const AlertDetailPage: React.FC = () => {
         withinSlo={freshness.within_slo}
         offline={typeof navigator !== 'undefined' && navigator.onLine === false}
       />
+
+      <DailyOutlookEntry districtId={ALL_64_DISTRICTS.find((district) =>
+        district.name === alert.district_name)?.id} />
 
       <EvidenceCard alert={alert} disclaimer={alert.disclaimer} />
 

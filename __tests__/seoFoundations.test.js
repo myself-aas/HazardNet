@@ -142,6 +142,24 @@ maybe('the generated pages', () => {
   });
 });
 
+maybe('farmer-first district deep links', () => {
+  it('writes a noindex, safety-framed HTML shell for each of 64 known districts, without invented daily levels', () => {
+    const districtPages = routes.filter((route) => /^\/districts\/[a-z0-9-]+$/.test(route.path));
+    expect(districtPages).toHaveLength(64);
+    for (const page of districtPages) {
+      const farmerPath = page.path.replace('/districts/', '/forecast/district/');
+      const html = readDist(join(farmerPath.slice(1), 'index.html'));
+      expect(html).toMatch(/<meta name="robots" content="noindex,follow"/);
+      expect(html).toContain('BMD and FFWC');
+      expect(html).toContain('999');
+      expect(html).toContain('ongoing research project under development');
+      expect(html).toContain('daily model run');
+      expect(html).not.toMatch(/severity index|forecast_day|prob_top1/);
+      expect(sitemapPaths.has(farmerPath)).toBe(false);
+    }
+  });
+});
+
 maybe('the sitemap', () => {
   it('lists every indexable generated page and no noindex one', () => {
     for (const route of routes) {

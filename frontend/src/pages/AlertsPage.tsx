@@ -46,6 +46,7 @@ import { DISTRICT_ALERT_LAYER_ID, buildAlertLevelLayer } from '../lib/alertLayer
 import { downloadAlertsCsv } from '../lib/alertsCsv';
 import { EMERGENCY_NUMBERS } from '../lib/legal';
 import { DataCreditLines } from '../components/DataCreditLines';
+import { DailyOutlookEntry } from '../components/DailyOutlookEntry';
 
 export const AlertsPage: React.FC = () => {
   const { t, formatDate, formatNumber } = useI18n();
@@ -206,6 +207,10 @@ export const AlertsPage: React.FC = () => {
           </details>
         )}
       </div>
+
+      {/* A daily district outlook is a separate public result, never an alert
+          level or a substitute for an officer-reviewed warning. */}
+      <DailyOutlookEntry />
 
       {/* List first in the DOM (mobile). CSS order puts the map first on desktop. */}
       <div className="mt-6 flex flex-col">

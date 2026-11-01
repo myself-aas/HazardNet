@@ -1,7 +1,13 @@
 # Deployment
 
 HazardNet's web app is deployed **only** on Cloudflare Pages. There is no second hosting
-target, no deploy token for one, and no API on the public host.
+target or deploy token for one. Public read API routes are implemented as Pages
+Functions (`/api/v1/alerts`, forecast reads, weather, and the public-only
+**pending-deployment** daily-advisory route);
+Node-only write and private-research APIs are **not** hosted on Pages. See
+`docs/ops/route-register.json` and `docs/PUBLICATION_POLICY.md` for the
+current route and publication boundary. The 2026-10-26 observations below are dated
+history, not claims that the current Pages deployment has no Functions.
 
 This document is the source of truth for "where does the site come from". If a config file, a
 workflow or a doc disagrees with it, this document wins — and the disagreement is a bug.
@@ -180,7 +186,8 @@ curl -sSI https://www.hazardnet.live/                # 200 + server: cloudflare 
 curl -sSI https://hazardnet.live/                    # 301 → https://www.hazardnet.live/
 curl -sSI https://www.hazardnet.live/district/dhaka  # 200 text/html, prerendered body
 curl -sSI https://www.hazardnet.live/no-such-path    # 404 (not 200 + homepage)
-curl -sSI https://www.hazardnet.live/api/v1/alerts   # 404 — there is no API here; correct
+curl -sSI https://www.hazardnet.live/api/v1/alerts   # verify Pages Function route, not a static 404
+curl -sS 'https://www.hazardnet.live/api/v1/advisories/timeline?district=Kurigram&days=7' # expect 503 until an approved daily file is deployed; not live-verified
 curl -s  https://www.hazardnet.live/data/freshness.json | head -c 400   # built_at advances
 ```
 

@@ -1,7 +1,7 @@
 import MaterialIcon from '../components/MaterialIcon';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import Map from '../components/Map';
@@ -16,9 +16,11 @@ import ThirtyDayTrendChart from '../components/ThirtyDayTrendChart';
 import RegionSelector from '../components/RegionSelector';
 import DisasterDetailModal from '../components/DisasterDetailModal';
 import NationalOverview from '../components/NationalOverview';
+import { DailyOutlookEntry } from '../components/DailyOutlookEntry';
 import { PdfExportButton } from '../components/PdfExportButton';
 import { ALL_64_DISTRICTS, DistrictData, getDistrictById } from '../data/bangladeshDistricts';
 import { useAuth } from '../context/AuthContext';
+import { useI18n } from '../hooks/useI18n';
 import { findNearestDistrict } from '../services/geolocationService';
 import { AP_SPRING } from '../components/apple/motion';
 
@@ -84,6 +86,7 @@ const DistrictForecastPanel: React.FC<{
 const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen = false }) => {
   const [searchParams] = useSearchParams();
   const { user, userProfile } = useAuth();
+  const { t } = useI18n();
   const [activeView, setActiveView] = useState<'gis' | 'analytics' | 'saved' | 'compare' | 'settings'>(
     (defaultTab as any) || 'gis',
   );
@@ -355,6 +358,9 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
             <p className="truncate font-sans text-xs font-semibold leading-tight tracking-tight text-carbon-90 dark:text-white">
               National situational map
             </p>
+            <Link to="/districts" className="ap-focusable mt-1 inline-flex min-h-[44px] items-center font-sans text-xs font-semibold text-[var(--ap-link)] underline underline-offset-4">
+              {t('daily.nav.open')}
+            </Link>
           </div>
           <div className="pointer-events-auto hidden items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-carbon-50 [text-shadow:0_1px_2px_rgba(255,255,255,0.7),0_0_8px_rgba(255,255,255,0.5)] dark:[text-shadow:0_1px_2px_rgba(0,0,0,0.8),0_0_8px_rgba(0,0,0,0.6)] sm:flex">
             {predictionSource === 'live' ? 'Forecast synced' : 'Static baseline severity'}
@@ -383,8 +389,8 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
             The selected-district bottom sheet used to live here. It duplicated the
             pinned forecast card (district, risk, hazard, crop, close/deselect) and,
             because it was painted on top of it, swallowed the card's primary action:
-"View Detailed Disaster Analytics" was unclickable at the 1280x720 desktop
-            height and on phones, where the card sits in flow at the bottom of the
+the district-outlook action was unclickable at the 1280x720 desktop height
+            and on phones, where the card sits in flow at the bottom of the
             stage. The card is now the single selected-district surface; its
 "Open district intelligence" action opens the AI advisory drawer, which
             this sheet used to be the only trigger for.
@@ -575,6 +581,10 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
             </button>
           </div>
         </motion.div>
+
+        {/* A separate public daily read: it never changes the map's baseline or
+            the older forecast rows in the console tabs. */}
+        <DailyOutlookEntry districtId={selectedDistrict?.id} />
 
         {/* Control Switcher — Modernized Tab Navigation */}
         <motion.div

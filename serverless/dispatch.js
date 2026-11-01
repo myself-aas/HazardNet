@@ -1,8 +1,17 @@
 import { guardRequest } from '../backend/middleware/serverlessGuard.js';
 
-export function routeSegment(req, paramName, routesTable) {
+export function routeSegment(req, paramName, routesTable, entry = '') {
   const urlPath = (req.url || '').split('?')[0].replace(/\/+$/, '');
   const segments = urlPath.split('/').filter(Boolean);
+
+  // A resource may share its name with a nested path of another resource:
+  // /api/v1/kaggle/advisories must still select `kaggle`, not `advisories`.
+  // Match the position of the filesystem route before inspecting the last segment.
+  const prefix = entry.split(`[${paramName}]`)[0].split('/').filter(Boolean);
+  if (prefix.length && prefix.every((part, i) => segments[i] === part)
+    && segments.length > prefix.length) {
+    return segments[prefix.length];
+  }
 
   if (segments.length > 0) {
     const lastSeg = segments[segments.length - 1];
@@ -65,7 +74,7 @@ export function createDispatcher({ param, entry, routes = {} }) {
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('Cache-Control', 'no-store');
 
-    const key = routeSegment(req, param, table);
+    const key = routeSegment(req, param, table, entry);
 
     if (!key || !table.has(key)) {
       res.setHeader('cache-control', 'no-store');

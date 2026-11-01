@@ -1,6 +1,6 @@
 {
   "schema": "hazardnet-route-register/v1",
-  "updated": "2026-10-27",
+  "updated": "2026-11-01",
   "what_this_is": "Phase 1's route table and disposition list. `__tests__/routeReachability.test.js` fails if a route called from frontend/src is neither a file under functions/api/ nor listed here with a dated disposition. A dated disposition is a decision, not a TODO: it names the runtime property that keeps the route unhosted and the command that would disprove it.",
   "cutover": {
     "date": "2026-10-26",
@@ -120,6 +120,40 @@
       "phase6": "Production-only ANALYTICS guard (www.hazardnet.live / hazardnet.live), catch around writeDataPoint with a log fallback, optional env, and an 8 KiB properties-JSON cap shared with the Node handler. Thin dual-binding tests: __tests__/analyticsEngineBinding.test.js. The live dataset is still owner-side (Action 12 open).",
       "valueAssertion": "__tests__/routeValueAssertions.test.js",
       "status": "exercised"
+    },
+    {
+      "path": "/api/v1/advisories",
+      "methods": [
+        "GET"
+      ],
+      "file": "functions/api/v1/advisories/index.ts",
+      "nodeTwins": [
+        "serverless/v1/advisories.js",
+        "backend/routes/dailyAdvisories.js"
+      ],
+      "calledByFrontend": true,
+      "cutover404": true,
+      "firstLiveCall": null,
+      "verification": "Not yet called on a deployed site; await a separately attested UTC run manifest and approved snapshot, then probe a named district and the stale/unavailable cases.",
+      "valueAssertion": "__tests__/dailyAdvisoryServe.test.js",
+      "status": "pending-publication"
+    },
+    {
+      "path": "/api/v1/advisories/[scope]",
+      "methods": [
+        "GET"
+      ],
+      "file": "functions/api/v1/advisories/[scope].ts",
+      "nodeTwins": [
+        "serverless/v1/advisories.js",
+        "backend/routes/dailyAdvisories.js"
+      ],
+      "calledByFrontend": false,
+      "cutover404": true,
+      "firstLiveCall": null,
+      "verification": "Not yet called on a deployed site; await a separately attested UTC run manifest and approved snapshot, then probe a named district and the stale/unavailable cases.",
+      "valueAssertion": "__tests__/dailyAdvisoryServe.test.js",
+      "status": "pending-publication"
     }
   ],
   "dispositions": [
