@@ -233,11 +233,11 @@
       "expires": "2026-12-12"
     },
     {
-      "ghsa": "GHSA-86w9-cpqp-85rv",
-      "package": "node-forge (transitive via @expo/cli -> @expo/pkcs12)",
+      "ghsa": "GHSA-qr28-fpjm-wq7f",
+      "package": "decode-uri-component (transitive via React Navigation 6 / query-string 7, mobile only)",
       "severity": "high",
-      "reason": "Development/CLI toolchain dependency for Expo mobile build tooling; never shipped to web or runtime.",
-      "expires": "2026-12-31"
+      "reason": "React Navigation 6 requires CommonJS query-string 7, which requires the CommonJS decoder 0.2.2. The patched decoder 0.5.1 is ESM-only and cannot safely replace its synchronous CommonJS dependency. The mobile app has no React Navigation linking config; its separate deep-link parser does not call query-string, and the web/API do not use this path. Migrate the mobile navigation stack to v7 with a compatible Expo/react-native-screens upgrade, then remove this exception.",
+      "expires": "2026-11-16"
     },
     {
       "ghsa": "GHSA-vfj7-8cjw-p6xm",
