@@ -234,8 +234,8 @@ export const HazardsPage: React.FC = () => {
           Hazards of Bangladesh
         </h1>
         <p className="mt-2 text-base leading-[1.62] text-carbon-70 max-w-2xl">
-          The eight climatic classes the hazard model scores, and earthquake — tracked in the 2000–2026 archive but
-          outside the model. Grounded in the BGD Climatic Hazards Dataset and HazardNet forecasts.
+          The eight climatic classes the hazard model scores, plus earthquake (tracked in the 2000–2026 archive,
+          outside the model). Grounded in the BGD Climatic Hazards Dataset and HazardNet forecasts.
         </p>
         <KeyFigures
           className="mt-4"

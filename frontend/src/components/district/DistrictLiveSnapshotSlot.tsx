@@ -24,7 +24,7 @@ const EMPTY_DAILY: DistrictDailyResult = {
 export const DistrictLiveSnapshotSlot: React.FC<{ districtId: string }> = ({ districtId }) => {
   const district = getDistrictById(districtId);
   const { formatDate, formatNumber } = useI18n();
-  const horizon: '15_days' = '15_days';
+  const horizon = '15_days' as const;
   const { data: snapshot, isLoading: loading } = useKaggleAdvisories(horizon);
   const [dailyResult, setDailyResult] = useState<DistrictDailyResult>(EMPTY_DAILY);
 
