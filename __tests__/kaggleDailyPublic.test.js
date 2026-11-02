@@ -217,6 +217,7 @@ describe('version-pinned Kaggle daily public fetch (synthetic HTTP only)', () =>
     assert.match(automated, /sync_daily_to_forecasts\.mjs[\s\\]+--from-daily-json/);
     assert.match(automated, /frontend\/dist\/data\/daily-advisories-v1\.json/);
     assert.match(automated, /frontend\/dist\/data\/alerts-latest\.json/);
+    assert.match(automated, /SNAPSHOT_SOURCE=/);
     assert.match(automated, /--automated-publish --dataset-version/);
     assert.doesNotMatch(automated, /process_advisory_ingest|mirror_public_daily_to_firestore/);
     assert.doesNotMatch(legacy, /^\s*schedule:/m);

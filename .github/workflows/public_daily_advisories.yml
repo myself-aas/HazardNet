@@ -73,8 +73,9 @@ jobs:
             --output frontend/public/data/daily-advisories-v1.json \
             --automated-publish --dataset-version "$VERSION"
           node scripts/check_public_daily_asset.mjs --require
-          node scripts/sync_daily_to_forecasts.mjs \
-            --from-daily-json frontend/public/data/daily-advisories-v1.json
+          SNAPSHOT_SOURCE="Kaggle_Daily_Advisory (public_daily_advisories.yml, dataset v$VERSION)" \
+            node scripts/sync_daily_to_forecasts.mjs \
+              --from-daily-json frontend/public/data/daily-advisories-v1.json
           npx jest --ci --runInBand --silent \
             __tests__/dailyAdvisoryPublic.test.js \
             __tests__/kaggleDailyPublic.test.js \
