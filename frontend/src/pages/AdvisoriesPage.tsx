@@ -44,7 +44,7 @@ import {
 import { StructuredAdvisoryRenderer } from '../components/StructuredAdvisoryRenderer';
 import { PrintQrCode } from '../components/PrintQrCode';
 import { PdfExportButton } from '../components/PdfExportButton';
-import { DailyOutlookEntry } from '../components/DailyOutlookEntry';
+import { HazardGlyph } from '../components/apple/HazardGlyph';
 import { AlertLevelBadge } from '../components/alerts/AlertLevelBadge';
 import { StatusStrip } from '../components/StatusStrip';
 
@@ -317,22 +317,19 @@ export const AdvisoriesPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Kaggle Daily District Advisory & Metrics Panel */}
+      {/* Kaggle Daily District Advisory & Metrics Ledger */}
       <section
         aria-labelledby="kaggle-advisory-snapshot-heading"
-        className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-sm space-y-5"
+        className="rounded-xl border border-carbon-20 bg-white p-5 sm:p-7 space-y-5"
       >
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-carbon-20 pb-4">
-          <div className="space-y-1">
-            <div className="text-xs font-mono font-bold text-amber-800 uppercase tracking-wider">
-              Kaggle Daily Forecast Run ({kaggle?.rows.length ?? 0} districts)
-            </div>
-            <h2 id="kaggle-advisory-snapshot-heading" className="text-xl sm:text-2xl font-black text-carbon-90 tracking-tight">
-              District Advisory Tiers, Weather &amp; Forecast Metrics
+        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4 border-b border-carbon-20 pb-4">
+          <div className="space-y-1 max-w-2xl">
+            <h2 id="kaggle-advisory-snapshot-heading" className="text-xl sm:text-2xl font-bold text-carbon-90 tracking-tight">
+              District forecast, weather drivers, and model metrics
             </h2>
-            <p className="text-xs text-carbon-60 max-w-3xl">
-              Research model output from <span className="font-mono">{kaggle?.dataset ?? 'ashifahmedshuvo/hazardnet-weekly-forecasts'}</span>.
-              Not an official government warning. Confirm active alerts with BMD, FFWC, and DDM (call 999 in emergencies).
+            <p className="text-xs leading-relaxed text-carbon-60">
+              Research model run across {kaggle?.rows.length ?? 64} districts ({kaggle?.dataset ?? 'ashifahmedshuvo/hazardnet-weekly-forecasts'}).
+              Not an official government warning. Confirm active alerts with BMD, FFWC, and DDM; call 999 in emergencies.
             </p>
           </div>
           {kaggle?.rows && kaggle.rows.length > 0 && (
@@ -341,15 +338,15 @@ export const AdvisoriesPage: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <div className="w-full sm:w-72 space-y-1">
-            <label htmlFor="advisories-district-select" className="block text-xs font-mono font-bold text-carbon-70 uppercase">
-              District (64)
+          <div className="w-full sm:w-72 space-y-1.5">
+            <label htmlFor="advisories-district-select" className="block text-xs font-semibold text-carbon-70">
+              Select district (64)
             </label>
             <select
               id="advisories-district-select"
               value={aiDistrict}
               onChange={(e) => setAiDistrict(e.target.value)}
-              className="w-full min-h-[44px] px-3 py-2 rounded-xl bg-carbon-05 border border-carbon-20 text-carbon-90 text-sm font-semibold"
+              className="ap-focusable w-full min-h-[44px] px-3 py-2 rounded-xl bg-carbon-05 border border-carbon-20 text-carbon-90 text-sm font-semibold"
             >
               {ALL_64_DISTRICTS.map((d) => (
                 <option key={d.id} value={d.name}>
@@ -360,59 +357,67 @@ export const AdvisoriesPage: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setKaggleHorizon('7_days')}
-              aria-pressed={kaggleHorizon === '7_days'}
-              className={`min-h-[44px] px-4 py-2 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
-                kaggleHorizon === '7_days'
-                  ? 'bg-carbon-90 text-ap-on-inverse'
-                  : 'bg-carbon-10 text-carbon-80 hover:bg-carbon-20'
-              }`}
+            <div
+              className="inline-flex rounded-full border border-carbon-20 bg-carbon-05 p-1"
+              role="group"
+              aria-label="Forecast horizon"
             >
-              7-Day Window
-            </button>
-            <button
-              type="button"
-              onClick={() => setKaggleHorizon('15_days')}
-              aria-pressed={kaggleHorizon === '15_days'}
-              className={`min-h-[44px] px-4 py-2 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
-                kaggleHorizon === '15_days'
-                  ? 'bg-carbon-90 text-ap-on-inverse'
-                  : 'bg-carbon-10 text-carbon-80 hover:bg-carbon-20'
-              }`}
-            >
-              15-Day Window
-            </button>
+              <button
+                type="button"
+                onClick={() => setKaggleHorizon('7_days')}
+                aria-pressed={kaggleHorizon === '7_days'}
+                className={`ap-focusable min-h-[44px] px-4 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
+                  kaggleHorizon === '7_days'
+                    ? 'bg-white text-carbon-90 border border-carbon-20'
+                    : 'text-carbon-70 hover:text-carbon-90'
+                }`}
+              >
+                7-day window
+              </button>
+              <button
+                type="button"
+                onClick={() => setKaggleHorizon('15_days')}
+                aria-pressed={kaggleHorizon === '15_days'}
+                className={`ap-focusable min-h-[44px] px-4 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
+                  kaggleHorizon === '15_days'
+                    ? 'bg-white text-carbon-90 border border-carbon-20'
+                    : 'text-carbon-70 hover:text-carbon-90'
+                }`}
+              >
+                15-day window
+              </button>
+            </div>
             <Link
               to={`/forecast/district/${selectedDistrictMeta.id}`}
-              className="min-h-[44px] inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-carbon-30 text-xs font-bold text-carbon-90 hover:bg-carbon-05"
+              className="ap-focusable min-h-[44px] inline-flex items-center px-2 text-xs font-semibold text-ap-link underline underline-offset-4"
             >
-              <span>15-Day Daily Timeline</span>
-              <ChevronRight className="w-3.5 h-3.5" />
+              <span>Open 15-day daily outlook: {selectedDistrictMeta.name}</span>
             </Link>
           </div>
         </div>
 
         {kaggleQuery.isLoading ? (
-          <p className="text-sm font-mono text-carbon-60 py-4">Loading latest Kaggle district forecast snapshot...</p>
+          <p className="border-t border-carbon-20 pt-4 text-sm text-carbon-60">
+            Loading latest district forecast run...
+          </p>
         ) : kaggleRow ? (
-          <div className="rounded-2xl border border-carbon-20 bg-carbon-05/60 p-4 sm:p-5 space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-mono text-carbon-60">
-                  Run {kaggleRow.prediction_date} · Peak target date {kaggleRow.target_date}
-                  {kaggleRow.model_version ? ` · Model v${kaggleRow.model_version}` : ''}
-                </p>
-                <h3 className="text-lg font-black text-carbon-90 mt-0.5">
-                  {kaggleRow.district_name}: {kaggleRow.hazard_type}
+          <div className="border-t border-carbon-20 pt-5 space-y-4">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="space-y-1">
+                <h3 className="flex items-center gap-2 text-lg font-bold text-carbon-90">
+                  <HazardGlyph hazard={kaggleRow.hazard_type} size={20} />
+                  <span>{kaggleRow.district_name}: {kaggleRow.hazard_type}</span>
                 </h3>
+                <p className="text-xs tabular-nums text-carbon-60">
+                  Issued {kaggleRow.prediction_date}, peak target {kaggleRow.target_date}
+                  {kaggleRow.model_version ? `, model v${kaggleRow.model_version}` : ''}
+                </p>
               </div>
               <div className="flex items-center gap-3">
                 {kaggleTier && <AlertLevelBadge level={kaggleTier} label={kaggleTier} size="lg" />}
-                <div className="text-right font-mono">
+                <div className="text-right tabular-nums">
                   <div className="text-xs text-carbon-60">Severity score</div>
-                  <div className="text-base font-black text-carbon-90 tabular-nums">
+                  <div className="text-base font-bold text-carbon-90">
                     {Math.round(kaggleRow.severity_score * 100)}% ({kaggleRow.severity_score.toFixed(2)})
                   </div>
                 </div>
@@ -420,78 +425,76 @@ export const AdvisoriesPage: React.FC = () => {
             </div>
 
             {kaggleRow.requires_review && (
-              <p className="rounded-xl border border-amber-300 bg-amber-50/90 px-3.5 py-2 text-xs font-semibold text-amber-950" role="note">
+              <p className="rounded-lg border border-amber-300 bg-amber-50/90 px-3.5 py-2 text-xs font-medium text-amber-950" role="note">
                 Unreviewed research output above the watch threshold ({kaggleTier}). Do not treat as an issued official warning; verify with BMD, FFWC, or DDM.
               </p>
             )}
 
-            <dl className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 text-xs">
-              <div className="rounded-xl bg-white border border-carbon-20 p-2.5">
-                <dt className="text-carbon-60">Confidence</dt>
-                <dd className="font-mono font-bold text-carbon-90 tabular-nums mt-0.5">
+            <dl className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-4 border-t border-carbon-10 pt-4 text-xs">
+              <div>
+                <dt className="text-carbon-60">Rainfall</dt>
+                <dd className="mt-0.5 text-sm font-semibold text-carbon-90 tabular-nums">
+                  {kaggleRow.precipitation_mm !== undefined ? `${kaggleRow.precipitation_mm.toFixed(1)} mm` : 'n/a'}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-carbon-60">Temperature range</dt>
+                <dd className="mt-0.5 text-sm font-semibold text-carbon-90 tabular-nums">
+                  {kaggleRow.temperature_min !== undefined && kaggleRow.temperature_max !== undefined
+                    ? `${kaggleRow.temperature_min.toFixed(1)} to ${kaggleRow.temperature_max.toFixed(1)} °C`
+                    : kaggleRow.temperature_max !== undefined
+                      ? `${kaggleRow.temperature_max.toFixed(1)} °C`
+                      : 'n/a'}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-carbon-60">Max wind</dt>
+                <dd className="mt-0.5 text-sm font-semibold text-carbon-90 tabular-nums">
+                  {kaggleRow.wind_max_kmh !== undefined ? `${kaggleRow.wind_max_kmh.toFixed(1)} km/h` : 'n/a'}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-carbon-60">Model confidence</dt>
+                <dd className="mt-0.5 text-sm font-semibold text-carbon-90 tabular-nums">
                   {Math.round(kaggleRow.confidence * 100)}%
                 </dd>
               </div>
-              <div className="rounded-xl bg-white border border-carbon-20 p-2.5">
-                <dt className="text-carbon-60">Model severity</dt>
-                <dd className="font-mono font-bold text-carbon-90 tabular-nums mt-0.5">
-                  {kaggleRow.model_severity !== undefined ? `${Math.round(kaggleRow.model_severity * 100)}%` : '-'}
-                </dd>
-              </div>
-              <div className="rounded-xl bg-white border border-carbon-20 p-2.5">
-                <dt className="text-carbon-60">Physics severity</dt>
-                <dd className="font-mono font-bold text-carbon-90 tabular-nums mt-0.5">
-                  {kaggleRow.physics_severity !== undefined ? `${Math.round(kaggleRow.physics_severity * 100)}%` : '-'}
-                </dd>
-              </div>
-              <div className="rounded-xl bg-white border border-carbon-20 p-2.5">
+              <div>
                 <dt className="text-carbon-60">Fused severity</dt>
-                <dd className="font-mono font-bold text-carbon-90 tabular-nums mt-0.5">
+                <dd className="mt-0.5 text-sm font-semibold text-carbon-90 tabular-nums">
                   {kaggleRow.final_severity !== undefined ? `${Math.round(kaggleRow.final_severity * 100)}%` : `${Math.round(kaggleRow.severity_score * 100)}%`}
                 </dd>
               </div>
-              <div className="rounded-xl bg-white border border-carbon-20 p-2.5">
-                <dt className="text-carbon-60">Rain</dt>
-                <dd className="font-mono font-bold text-carbon-90 tabular-nums mt-0.5">
-                  {kaggleRow.precipitation_mm !== undefined ? `${kaggleRow.precipitation_mm.toFixed(1)} mm` : '-'}
+              <div>
+                <dt className="text-carbon-60">Model severity</dt>
+                <dd className="mt-0.5 text-sm font-semibold text-carbon-90 tabular-nums">
+                  {kaggleRow.model_severity !== undefined ? `${Math.round(kaggleRow.model_severity * 100)}%` : 'n/a'}
                 </dd>
               </div>
-              <div className="rounded-xl bg-white border border-carbon-20 p-2.5">
-                <dt className="text-carbon-60">Temp (min/max)</dt>
-                <dd className="font-mono font-bold text-carbon-90 tabular-nums mt-0.5">
-                  {kaggleRow.temperature_min !== undefined && kaggleRow.temperature_max !== undefined
-                    ? `${kaggleRow.temperature_min.toFixed(1)}° / ${kaggleRow.temperature_max.toFixed(1)}°C`
-                    : kaggleRow.temperature_max !== undefined
-                      ? `${kaggleRow.temperature_max.toFixed(1)}°C`
-                      : '-'}
+              <div>
+                <dt className="text-carbon-60">Physics severity</dt>
+                <dd className="mt-0.5 text-sm font-semibold text-carbon-90 tabular-nums">
+                  {kaggleRow.physics_severity !== undefined ? `${Math.round(kaggleRow.physics_severity * 100)}%` : 'n/a'}
                 </dd>
               </div>
-              <div className="rounded-xl bg-white border border-carbon-20 p-2.5">
-                <dt className="text-carbon-60">Max wind</dt>
-                <dd className="font-mono font-bold text-carbon-90 tabular-nums mt-0.5">
-                  {kaggleRow.wind_max_kmh !== undefined ? `${kaggleRow.wind_max_kmh.toFixed(1)} km/h` : '-'}
-                </dd>
-              </div>
-              <div className="rounded-xl bg-white border border-carbon-20 p-2.5">
+              <div>
                 <dt className="text-carbon-60">Top-3 class share</dt>
-                <dd className="font-mono font-bold text-carbon-90 tabular-nums mt-0.5">
+                <dd className="mt-0.5 text-sm font-semibold text-carbon-90 tabular-nums">
                   {kaggleRow.prob_top1 !== undefined
                     ? [kaggleRow.prob_top1, kaggleRow.prob_top2, kaggleRow.prob_top3]
                         .filter((p): p is number => p !== undefined)
                         .map((p) => `${Math.round(p * 100)}%`)
                         .join(' / ')
-                    : '-'}
+                    : 'n/a'}
                 </dd>
               </div>
             </dl>
           </div>
         ) : (
-          <p className="text-sm text-carbon-60">
+          <p className="border-t border-carbon-20 pt-4 text-sm text-carbon-60">
             No forecast record is currently available for {aiDistrict} in this horizon window.
           </p>
         )}
-
-        <DailyOutlookEntry districtId={selectedDistrictMeta.id} />
       </section>
 
       {/* 2. ACTIVE SECTOR EXECUTIVE INTELLIGENCE & MANDATE */}

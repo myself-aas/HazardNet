@@ -141,35 +141,29 @@ export const StatusStrip: React.FC<StatusStripProps> = ({
       data-testid="status-strip"
     >
       {showBadges ? (
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5">
           {extremeCount > 0 && (
-            <>
-              <AlertLevelBadge
-                level="EXTREME"
-                label={`${formatNumber(extremeCount)} ${labels.EXTREME}`}
-                size="sm"
-              />
-              <span className="text-carbon-60" aria-hidden="true">·</span>
-            </>
+            <AlertLevelBadge
+              level="EXTREME"
+              label={`${formatNumber(extremeCount)} ${labels.EXTREME}`}
+              size="sm"
+            />
           )}
           <AlertLevelBadge
             level="SEVERE"
             label={`${formatNumber(counts.SEVERE)} ${labels.SEVERE}`}
             size="sm"
           />
-          <span className="text-carbon-60" aria-hidden="true">·</span>
           <AlertLevelBadge
             level="WARNING"
             label={`${formatNumber(counts.WARNING)} ${labels.WARNING}`}
             size="sm"
           />
-          <span className="text-carbon-60" aria-hidden="true">·</span>
           <AlertLevelBadge
             level="WATCH"
             label={`${formatNumber(counts.WATCH)} ${labels.WATCH}`}
             size="sm"
           />
-          <span className="text-carbon-60" aria-hidden="true">·</span>
           <AlertLevelBadge
             level="NORMAL"
             label={`${formatNumber(counts.NORMAL)} ${labels.NORMAL}`}

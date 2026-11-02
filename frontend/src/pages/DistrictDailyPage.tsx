@@ -102,12 +102,33 @@ function DayOutlook({ row }: { row: DailyAdvisory }) {
     }
   }
 
+  const isPeakDay = row.peak === 'unique' || row.peak === 'tied';
+
   return (
-    <li className="border-t border-[var(--ap-separator-opaque)] py-5 first:border-t-0">
-      <article aria-label={`${formatDate(row.targetDate)} · ${hazardLabel(row.hazard, language)}`}>
+    <li
+      data-peak={isPeakDay ? 'true' : undefined}
+      className={
+        isPeakDay
+          ? 'my-2 rounded-xl border border-[var(--ap-separator-opaque)] bg-[var(--ap-bg-grouped)] px-4 py-5 sm:px-5'
+          : 'border-t border-[var(--ap-separator-opaque)] py-5 first:border-t-0 [[data-peak=true]+&]:border-t-0'
+      }
+    >
+      <article aria-label={`${formatDate(row.targetDate)}, ${hazardLabel(row.hazard, language)}`}>
         <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
           <div className="min-w-0">
-            <p className="font-semibold tabular-nums text-[var(--ap-label)]">{formatDate(row.targetDate)}</p>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <p className="font-semibold tabular-nums text-[var(--ap-label)]">{formatDate(row.targetDate)}</p>
+              {row.peak === 'unique' && (
+                <span className="text-xs font-medium text-[var(--ap-label-secondary)]">
+                  {t('daily.peakUnique')}
+                </span>
+              )}
+              {row.peak === 'tied' && (
+                <span className="text-xs font-medium text-[var(--ap-label-secondary)]">
+                  {t('daily.peakTied')}
+                </span>
+              )}
+            </div>
             <h3 className="mt-1 flex items-center gap-2 text-lg font-semibold text-[var(--ap-label)]">
               <HazardGlyph hazard={row.hazard} size={20} />
               {hazardLabel(row.hazard, language)}
@@ -129,50 +150,46 @@ function DayOutlook({ row }: { row: DailyAdvisory }) {
         )}
 
         {weatherItems.length > 0 && (
-          <div className="mt-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ap-label-secondary)]">
-              {t('daily.weatherTitle')}
-            </p>
-            <dl className="mt-1.5 grid grid-cols-2 gap-x-4 gap-y-1.5 rounded-lg border border-[var(--ap-separator-opaque)] bg-[var(--ap-bg-grouped)] px-3 py-2.5 text-xs sm:grid-cols-4">
-              {weatherItems.map((item) => (
-                <div key={item.label}>
-                  <dt className="text-[var(--ap-label-secondary)]">{item.label}</dt>
-                  <dd className="font-semibold tabular-nums text-[var(--ap-label)]">{item.value}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
+          <dl
+            aria-label={t('daily.weatherTitle')}
+            className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 border-t border-[var(--ap-separator-opaque)] pt-3 text-xs sm:grid-cols-4"
+          >
+            {weatherItems.map((item) => (
+              <div key={item.label}>
+                <dt className="text-[var(--ap-label-secondary)]">{item.label}</dt>
+                <dd className="mt-0.5 font-semibold tabular-nums text-[var(--ap-label)]">{item.value}</dd>
+              </div>
+            ))}
+          </dl>
         )}
 
-        <p className="mt-3 font-semibold text-[var(--ap-label)]">{t('daily.actions')}</p>
+        <p className="mt-3.5 font-semibold text-[var(--ap-label)]">{t('daily.actions')}</p>
         <ul className="mt-1 list-disc space-y-1 pl-5 text-[var(--ap-label)]">
           {row.actionIds.map((id) => <li key={id}>{t(`daily.action.${id}`)}</li>)}
         </ul>
 
-        <details className="group mt-4 text-sm text-[var(--ap-label-secondary)]">
+        <details className="group mt-3 text-sm text-[var(--ap-label-secondary)]">
           <summary className="ap-focusable flex min-h-[44px] cursor-pointer list-none items-center gap-2 text-[var(--ap-link)] underline underline-offset-4 [&::-webkit-details-marker]:hidden">
             {t('daily.why')}
             <ChevronDown aria-hidden="true" size={16} className="transition-transform group-open:rotate-180 motion-reduce:transition-none" />
           </summary>
-          <div className="max-w-prose space-y-3 pb-1">
+          <div className="max-w-prose space-y-3 border-t border-[var(--ap-separator-opaque)] pt-3 pb-1">
             {metricItems.length > 0 && (
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ap-label-secondary)]">
+                <p className="text-xs font-semibold text-[var(--ap-label)]">
                   {t('daily.metricsTitle')}
                 </p>
-                <dl className="mt-1.5 grid grid-cols-2 gap-x-4 gap-y-1.5 rounded-lg border border-[var(--ap-separator-opaque)] bg-[var(--ap-bg-grouped)] px-3 py-2.5 text-xs">
+                <dl className="mt-2 grid grid-cols-2 gap-x-6 gap-y-2 text-xs sm:grid-cols-4">
                   {metricItems.map((item) => (
                     <div key={item.label}>
                       <dt className="text-[var(--ap-label-secondary)]">{item.label}</dt>
-                      <dd className="font-semibold tabular-nums text-[var(--ap-label)]">{item.value}</dd>
+                      <dd className="mt-0.5 font-semibold tabular-nums text-[var(--ap-label)]">{item.value}</dd>
                     </div>
                   ))}
                 </dl>
               </div>
             )}
             <p>{t(`daily.reason.${row.reasonCode}`)}</p>
-            {row.peak === 'unique' && <p>{t('daily.peakUnique')}</p>}
-            {row.peak === 'tied' && <p>{t('daily.peakTied')}</p>}
             {row.peak === 'unknown' && <p>{t('daily.peakUnknown')}</p>}
             {row.qualityNotes.map((note) => <p key={note}>{t(`daily.quality.${note}`)}</p>)}
             {!m && <p>{t('daily.uncertainty')}</p>}
@@ -244,7 +261,7 @@ const FarmerDistrictDailyPage: React.FC = () => {
           <span lang="en">{district?.name || id || '-'}</span> {t('daily.title')}
         </h1>
         <p className="max-w-prose text-base text-[var(--ap-label-secondary)]">{t('daily.standfirst')}</p>
-        <div className="max-w-prose space-y-2 border border-[var(--ap-separator-opaque)] bg-[var(--ap-bg-grouped)] p-4 text-sm leading-relaxed text-[var(--ap-label)]" role="note">
+        <div className="max-w-prose space-y-2 rounded-xl border border-[var(--ap-separator-opaque)] bg-[var(--ap-bg-grouped)] p-4 text-sm leading-relaxed text-[var(--ap-label)]" role="note">
           <p>{t('daily.researchNotice')}</p>
           <p>{t('daily.authority')}</p>
         </div>

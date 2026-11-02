@@ -107,11 +107,11 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
     >
       {/* Forecast label and risk, above the facts. */}
       <div className="flex items-center justify-between gap-3">
-        <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-carbon-60">
+        <span className="flex items-center gap-2 text-xs font-semibold text-carbon-60">
           <span className="w-6 h-6 rounded-full bg-ap-primary/10 flex items-center justify-center shrink-0">
             <MaterialIcon name="radar" className="w-3.5 h-3.5 text-ap-link" />
           </span>
-          <span>Forecast</span>
+          <span>Forecast summary</span>
         </span>
         <div className="flex flex-wrap items-center gap-1.5">
           {district.advisoryTier && (
