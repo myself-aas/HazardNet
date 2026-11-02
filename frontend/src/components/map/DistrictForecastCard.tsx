@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import MaterialIcon from '../MaterialIcon';
 import { LocationMap } from '../ui/expand-map';
 import { BottomSheet, type SheetDisclosureStage } from '../ui/BottomSheet';
@@ -57,11 +58,12 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
   onOpenDailyOutlook,
   onOpenAdvisory,
 }) => {
-  const { t } = useI18n();
+  const { t, formatNumber } = useI18n();
   const [stage, setStage] = useState<DisclosureStage>('half');
   const [showLocationMap, setShowLocationMap] = useState(false);
   const tone = riskTone(district.severity);
   const severityPct = Math.round(district.severity * 100);
+  const fmt2 = (val: number) => formatNumber(val, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   // Peek shows the headline reading only; the facts appear from half upwards.
   const showDetails = stage !== 'peek';
 
@@ -94,14 +96,19 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
               Open district intelligence
             </button>
           )}
-          <button
-            type="button"
-            onClick={() => onOpenDailyOutlook(district.id)}
+          <Link
+            to={`/forecast/district/${district.id}`}
+            onClick={(e) => {
+              if (onOpenDailyOutlook && !e.metaKey && !e.ctrlKey && !e.shiftKey && e.button === 0) {
+                e.preventDefault();
+                onOpenDailyOutlook(district.id);
+              }
+            }}
             className="flex-1 min-w-0 min-h-[44px] py-2.5 px-3 bg-primary hover:bg-primary-strong text-ap-action-fg font-semibold text-xs sm:text-sm leading-tight flex items-center justify-center gap-2 touch-manipulation rounded-full"
           >
             <MaterialIcon name="analytics" className="w-4 h-4 shrink-0" />
             {t('daily.nav.open')}
-          </button>
+          </Link>
         </>
       }
     >
@@ -136,7 +143,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
               <span className="truncate">{district.hazardType}</span>
             </span>
             <span className={`shrink-0 font-mono text-xs sm:text-sm font-bold tabular-nums ${tone.text}`}>
-              Severity score {(severityPct / 100).toFixed(2)}
+              Severity score {fmt2(severityPct / 100)}
             </span>
           </div>
           <div
@@ -170,7 +177,9 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
                 </span>
                 Elevation
               </span>
-              <span className="shrink-0 text-sm sm:text-base font-bold text-carbon-90 dark:text-white">{district.elevationMeters}m MSL</span>
+              <span className="shrink-0 text-sm sm:text-base font-bold tabular-nums text-carbon-90 dark:text-white">
+                {formatNumber(district.elevationMeters)}m MSL
+              </span>
             </div>
 
             <div className="flex items-center justify-between gap-3 py-3 sm:py-3.5">
@@ -181,7 +190,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
                 Location
               </span>
               <span className="shrink-0 font-mono text-xs sm:text-sm font-bold tabular-nums text-carbon-90 dark:text-white">
-                {district.lat.toFixed(2)}°N, {district.lng.toFixed(2)}°E
+                {fmt2(district.lat)}°N, {fmt2(district.lng)}°E
               </span>
             </div>
 

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { getDistrictById } from '../../data/bangladeshDistricts';
+import { useI18n } from '../../hooks/useI18n';
 import { useKaggleAdvisories } from '../../hooks/useKaggleAdvisories';
 import { AlertLevelBadge } from '../alerts/AlertLevelBadge';
 import { HazardGlyph } from '../apple/HazardGlyph';
@@ -12,7 +13,17 @@ import { HazardGlyph } from '../apple/HazardGlyph';
  */
 export const DistrictLiveSnapshotSlot: React.FC<{ districtId: string }> = ({ districtId }) => {
   const district = getDistrictById(districtId);
-  const [horizon, setHorizon] = useState<'7_days' | '15_days'>('7_days');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { formatDate, formatNumber } = useI18n();
+  const horizon: '7_days' | '15_days' = searchParams.get('horizon') === '15_days' ? '15_days' : '7_days';
+  const setHorizon = (nextHorizon: '7_days' | '15_days') => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (nextHorizon === '7_days') next.delete('horizon');
+      else next.set('horizon', nextHorizon);
+      return next;
+    }, { replace: true });
+  };
   const { data: snapshot, isLoading: loading } = useKaggleAdvisories(horizon);
 
   if (!district) return null;
@@ -20,7 +31,9 @@ export const DistrictLiveSnapshotSlot: React.FC<{ districtId: string }> = ({ dis
   const targetName = district.name.toLowerCase();
   const row = snapshot?.rows.find((item) => item.district_name.toLowerCase() === targetName) ?? null;
   const severityVal = row ? (row.severity_score ?? row.final_severity) : null;
-  const runDate = row?.prediction_date || (snapshot?.generatedAt ? snapshot.generatedAt.slice(0, 10) : 'n/a');
+  const runDateRaw = row?.prediction_date || (snapshot?.generatedAt ? snapshot.generatedAt.slice(0, 10) : null);
+  const fmt1 = (val: number) => formatNumber(val, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const fmt2 = (val: number) => formatNumber(val, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   return (
     <section
@@ -71,7 +84,7 @@ export const DistrictLiveSnapshotSlot: React.FC<{ districtId: string }> = ({ dis
 
       {loading && !row ? (
         <p role="status" className="border-t border-[var(--ap-separator-opaque)] pt-4 text-sm text-[var(--ap-label-secondary)]">
-          Loading latest forecast run for {district.name}...
+          Loading latest forecast run for {district.name}…
         </p>
       ) : row ? (
         <>
@@ -82,7 +95,8 @@ export const DistrictLiveSnapshotSlot: React.FC<{ districtId: string }> = ({ dis
                 <span>{row.hazard_type}</span>
               </div>
               <p className="text-xs tabular-nums text-[var(--ap-label-secondary)]">
-                Issued {runDate}, peak target {row.target_date || 'n/a'}
+                Issued {runDateRaw ? <time dateTime={runDateRaw}>{formatDate(runDateRaw)}</time> : 'n/a'}, peak target{' '}
+                {row.target_date ? <time dateTime={row.target_date}>{formatDate(row.target_date)}</time> : 'n/a'}
               </p>
             </div>
 
@@ -94,7 +108,7 @@ export const DistrictLiveSnapshotSlot: React.FC<{ districtId: string }> = ({ dis
                 <div className="text-right tabular-nums">
                   <div className="text-xs text-[var(--ap-label-secondary)]">Severity score</div>
                   <div className="text-sm sm:text-base font-bold text-[var(--ap-label)]">
-                    {Math.round(severityVal * 100)}% ({severityVal.toFixed(2)})
+                    {formatNumber(Math.round(severityVal * 100))}% ({fmt2(severityVal)})
                   </div>
                 </div>
               )}
@@ -105,33 +119,33 @@ export const DistrictLiveSnapshotSlot: React.FC<{ districtId: string }> = ({ dis
             <div>
               <dt className="text-[var(--ap-label-secondary)]">Model confidence</dt>
               <dd className="mt-0.5 text-sm font-semibold tabular-nums text-[var(--ap-label)]">
-                {row.confidence !== null && row.confidence !== undefined ? `${Math.round(row.confidence * 100)}%` : 'n/a'}
+                {row.confidence !== null && row.confidence !== undefined ? `${formatNumber(Math.round(row.confidence * 100))}%` : 'n/a'}
               </dd>
             </div>
             <div>
               <dt className="text-[var(--ap-label-secondary)]">Model / physics track</dt>
               <dd className="mt-0.5 text-sm font-semibold tabular-nums text-[var(--ap-label)]">
-                {row.model_severity !== null && row.model_severity !== undefined ? `${Math.round(row.model_severity * 100)}%` : 'n/a'}
+                {row.model_severity !== null && row.model_severity !== undefined ? `${formatNumber(Math.round(row.model_severity * 100))}%` : 'n/a'}
                 {' / '}
-                {row.physics_severity !== null && row.physics_severity !== undefined ? `${Math.round(row.physics_severity * 100)}%` : 'n/a'}
+                {row.physics_severity !== null && row.physics_severity !== undefined ? `${formatNumber(Math.round(row.physics_severity * 100))}%` : 'n/a'}
               </dd>
             </div>
             <div>
               <dt className="text-[var(--ap-label-secondary)]">Temperature range</dt>
               <dd className="mt-0.5 text-sm font-semibold tabular-nums text-[var(--ap-label)]">
                 {row.temperature_min !== null && row.temperature_min !== undefined && row.temperature_max !== null && row.temperature_max !== undefined
-                  ? `${row.temperature_min.toFixed(1)} to ${row.temperature_max.toFixed(1)} °C`
+                  ? `${fmt1(row.temperature_min)} to ${fmt1(row.temperature_max)}\u00A0°C`
                   : row.temperature_max !== null && row.temperature_max !== undefined
-                    ? `${row.temperature_max.toFixed(1)} °C`
+                    ? `${fmt1(row.temperature_max)}\u00A0°C`
                     : 'n/a'}
               </dd>
             </div>
             <div>
               <dt className="text-[var(--ap-label-secondary)]">Rain and max wind</dt>
               <dd className="mt-0.5 text-sm font-semibold tabular-nums text-[var(--ap-label)]">
-                {row.precipitation_mm !== null && row.precipitation_mm !== undefined ? `${row.precipitation_mm.toFixed(1)} mm` : 'n/a'}
+                {row.precipitation_mm !== null && row.precipitation_mm !== undefined ? `${fmt1(row.precipitation_mm)}\u00A0mm` : 'n/a'}
                 {', '}
-                {row.wind_max_kmh !== null && row.wind_max_kmh !== undefined ? `${row.wind_max_kmh.toFixed(1)} km/h` : 'n/a'}
+                {row.wind_max_kmh !== null && row.wind_max_kmh !== undefined ? `${fmt1(row.wind_max_kmh)}\u00A0km/h` : 'n/a'}
               </dd>
             </div>
           </dl>

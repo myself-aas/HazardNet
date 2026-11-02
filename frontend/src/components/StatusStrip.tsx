@@ -137,11 +137,11 @@ export const StatusStrip: React.FC<StatusStripProps> = ({
     <div
       role="status"
       aria-live="polite"
-      className={`inline-flex flex-wrap items-center gap-2 px-3 py-1.5 rounded-xl bg-white/95 border border-carbon-20 shadow-xs backdrop-blur-md text-xs font-mono ${className}`}
+      className={`inline-flex flex-wrap items-center gap-2 px-3 py-1.5 rounded-xl bg-white/95 border border-carbon-20 shadow-xs backdrop-blur-md text-xs font-mono tabular-nums ${className}`}
       data-testid="status-strip"
     >
       {showBadges ? (
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5 tabular-nums">
           {extremeCount > 0 && (
             <AlertLevelBadge
               level="EXTREME"

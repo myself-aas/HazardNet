@@ -72,12 +72,12 @@ export function DailyOutlookEntry({ districtId }: { districtId?: string | null }
           </span>
           {typeof peakRow.severityScore === 'number' && Number.isFinite(peakRow.severityScore) && (
             <span className="tabular-nums text-[var(--ap-label-secondary)]">
-              {t('daily.severityScore')}: {formatNumber(Math.round(peakRow.severityScore * 100))}% ({peakRow.severityScore.toFixed(2)})
+              {t('daily.severityScore')}: {formatNumber(Math.round(peakRow.severityScore * 100))}% ({formatNumber(peakRow.severityScore, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
             </span>
           )}
           {peakRow.weather?.precipitationMm !== undefined && (
             <span className="tabular-nums text-[var(--ap-label-secondary)]">
-              {t('daily.weather.precip')}: {formatNumber(Number(peakRow.weather.precipitationMm.toFixed(1)))} mm
+              {t('daily.weather.precip')}: {formatNumber(peakRow.weather.precipitationMm, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}{'\u00A0'}mm
             </span>
           )}
         </div>

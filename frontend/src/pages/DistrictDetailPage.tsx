@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 import { ALL_64_DISTRICTS, getDistrictById } from '../data/bangladeshDistricts';
@@ -278,7 +278,9 @@ export const DistrictDetailPage: React.FC = () => {
     const element = document.getElementById(sectionId);
     if (element) {
       const y = element.getBoundingClientRect().top + window.pageYOffset - 120;
-      window.scrollTo({ top: y, behavior: 'smooth' });
+      const prefersReducedMotion =
+        typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: y, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
     }
   };
 
@@ -289,9 +291,9 @@ export const DistrictDetailPage: React.FC = () => {
         <p className="text-sm text-carbon-60">
           “{districtId}” is not one of the 64 districts HazardNet covers.
         </p>
-        <button onClick={() => navigate('/live')} className="text-sm font-semibold text-ap-link underline">
+        <Link to="/live" className="ap-focusable inline-flex min-h-[44px] items-center text-sm font-semibold text-ap-link underline">
           Back to the live map
-        </button>
+        </Link>
       </div>
     );
   }

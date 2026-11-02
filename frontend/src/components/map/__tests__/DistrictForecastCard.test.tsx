@@ -76,7 +76,9 @@ describe('DistrictForecastCard (HDS selected panel)', () => {
 
   it('opens the farmer daily outlook with the district id, without claiming a modelled hazard', () => {
     mount()
-    fireEvent.click(screen.getByRole('button', { name: /open the day-by-day district outlook/i }))
+    const link = screen.getByRole('link', { name: /open the day-by-day district outlook/i })
+    expect(link).toHaveAttribute('href', '/forecast/district/kurigram')
+    fireEvent.click(link)
     expect(onOpenDailyOutlook).toHaveBeenCalledWith('kurigram')
   })
 

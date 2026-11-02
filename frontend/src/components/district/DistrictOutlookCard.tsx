@@ -1,6 +1,7 @@
 import React from 'react';
 import { MapPin, Compass } from 'lucide-react';
 
+import { useI18n } from '../../hooks/useI18n';
 import { useDistrictBrief } from './DistrictBriefContext';
 
 /**
@@ -9,6 +10,8 @@ import { useDistrictBrief } from './DistrictBriefContext';
  */
 export const DistrictOutlookCard: React.FC = () => {
   const { data, district, peakSeverityInfo, metadata } = useDistrictBrief();
+  const { formatDate, formatNumber } = useI18n();
+  const fmt3 = (val: number) => formatNumber(val, { minimumFractionDigits: 3, maximumFractionDigits: 3 });
 
   return (
     <section aria-labelledby="district-outlook-heading" className="bg-white border border-carbon-20 rounded-xl p-4 sm:p-6 space-y-5">
@@ -17,9 +20,9 @@ export const DistrictOutlookCard: React.FC = () => {
           <MapPin className="w-3 h-3 text-carbon-60" />
           {data.division} Division
         </span>
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-carbon-10 border border-carbon-20 text-carbon-70 text-xs font-mono">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-carbon-10 border border-carbon-20 text-carbon-70 text-xs font-mono tabular-nums">
           <Compass className="w-3 h-3 text-carbon-60" />
-          {district.lat.toFixed(3)}°N, {district.lng.toFixed(3)}°E
+          {fmt3(district.lat)}°N, {fmt3(district.lng)}°E
         </span>
       </div>
 
@@ -30,10 +33,16 @@ export const DistrictOutlookCard: React.FC = () => {
         {peakSeverityInfo ? (
           <p className="mt-1 text-sm text-carbon-70 max-w-prose">
             The highest published severity for this district is{' '}
-            <strong className="text-carbon-90">{Math.round(peakSeverityInfo.peakScore * 100)}%</strong> for{' '}
+            <strong className="text-carbon-90 tabular-nums">{formatNumber(Math.round(peakSeverityInfo.peakScore * 100))}%</strong> for{' '}
             <strong className="text-carbon-90">{peakSeverityInfo.hazard}</strong> on{' '}
-            <strong className="text-carbon-90">{peakSeverityInfo.peakDate}</strong>, from the run dated{' '}
-            {metadata.predictionDate ?? 'not available'}.
+            <strong className="text-carbon-90">
+              <time dateTime={peakSeverityInfo.peakDate}>{formatDate(peakSeverityInfo.peakDate)}</time>
+            </strong>, from the run dated{' '}
+            {metadata.predictionDate ? (
+              <time dateTime={metadata.predictionDate}>{formatDate(metadata.predictionDate)}</time>
+            ) : (
+              'not available'
+            )}.
           </p>
         ) : (
           <p className="mt-1 text-sm text-carbon-70 max-w-prose">
@@ -46,16 +55,26 @@ export const DistrictOutlookCard: React.FC = () => {
         <dl className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
           <div className="rounded-lg bg-carbon-05 border border-carbon-20 p-4">
             <dt className="text-xs font-mono font-bold uppercase text-carbon-60">Peak severity</dt>
-            <dd className="mt-1 text-2xl font-black font-mono text-carbon-90">{Math.round(peakSeverityInfo.peakScore * 100)}%</dd>
+            <dd className="mt-1 text-2xl font-black font-mono tabular-nums text-carbon-90">
+              {formatNumber(Math.round(peakSeverityInfo.peakScore * 100))}%
+            </dd>
           </div>
           <div className="rounded-lg bg-carbon-05 border border-carbon-20 p-4">
             <dt className="text-xs font-mono font-bold uppercase text-carbon-60">Confidence score</dt>
-            <dd className="mt-1 text-2xl font-black font-mono text-carbon-90">{Math.round(peakSeverityInfo.confidence * 100)}%</dd>
+            <dd className="mt-1 text-2xl font-black font-mono tabular-nums text-carbon-90">
+              {formatNumber(Math.round(peakSeverityInfo.confidence * 100))}%
+            </dd>
             <dd className="mt-1 text-xs text-carbon-60">Uncalibrated model softmax. Not a probability.</dd>
           </div>
           <div className="rounded-lg bg-carbon-05 border border-carbon-20 p-4">
             <dt className="text-xs font-mono font-bold uppercase text-carbon-60">Forecast run</dt>
-            <dd className="mt-1 text-base font-bold font-mono text-carbon-90">{metadata.predictionDate ?? 'Not available'}</dd>
+            <dd className="mt-1 text-base font-bold font-mono tabular-nums text-carbon-90">
+              {metadata.predictionDate ? (
+                <time dateTime={metadata.predictionDate}>{formatDate(metadata.predictionDate)}</time>
+              ) : (
+                'Not available'
+              )}
+            </dd>
             <dd className="mt-1 text-xs text-carbon-60">{metadata.source ? `Source: ${metadata.source}` : 'Source not available'}</dd>
           </div>
         </dl>

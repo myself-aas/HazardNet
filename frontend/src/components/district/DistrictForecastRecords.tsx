@@ -2,12 +2,15 @@ import React from 'react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { Download, TrendingUp } from 'lucide-react';
 
+import { useI18n } from '../../hooks/useI18n';
 import { useDistrictBrief } from './DistrictBriefContext';
 import { AdvisorySignalCard } from './AdvisorySignalCard';
 import { CardStackRows } from '../ui/CardStackTable';
 
 /** Stored 7/15-day forecast table (text equivalent of the outlook chart). */
 export const DistrictForecastRecords: React.FC = () => {
+  const { formatDate, formatNumber } = useI18n();
+  const fmt1 = (val: number) => formatNumber(val, { minimumFractionDigits: 0, maximumFractionDigits: 1 });
   const {
     districtId,
     data,
@@ -167,7 +170,7 @@ export const DistrictForecastRecords: React.FC = () => {
 
         {loadingForecastTable ? (
           <div className="py-12 text-center text-carbon-60 font-mono text-sm animate-pulse">
-            Loading pipeline forecast records for {data.districtName}...
+            Loading pipeline forecast records for {data.districtName}…
           </div>
         ) : (
           <>
@@ -182,45 +185,45 @@ export const DistrictForecastRecords: React.FC = () => {
               <CardStackRows
                 rows={activeRows.map((row, idx) => ({
                   key: idx,
-                  heading: row.target_date,
+                  heading: formatDate(row.target_date),
                   fields: [
-                    { label: 'Prediction Run', value: row.prediction_date },
+                    { label: 'Prediction Run', value: formatDate(row.prediction_date) },
                     { label: 'Hazard Type', value: row.hazard_type },
                     { label: 'Advisory Tier', value: row.advisory_tier || '-' },
                     {
                       label: 'Physics Baseline',
-                      value: `${Math.round((row.physics_severity ?? row.severity_score) * 100)}%`,
+                      value: `${formatNumber(Math.round((row.physics_severity ?? row.severity_score) * 100))}%`,
                     },
                     {
                       label: 'Model Score',
                       value:
                         row.model_severity !== undefined
-                          ? `${Math.round(row.model_severity * 100)}%`
-                          : `${Math.round(row.severity_score * 100)}%`,
+                          ? `${formatNumber(Math.round(row.model_severity * 100))}%`
+                          : `${formatNumber(Math.round(row.severity_score * 100))}%`,
                     },
                     {
                       label: 'Blended Severity',
-                      value: row.final_severity !== undefined ? `${Math.round(row.final_severity * 100)}%` : '-',
+                      value: row.final_severity !== undefined ? `${formatNumber(Math.round(row.final_severity * 100))}%` : '-',
                     },
-                    { label: 'Confidence', value: `${Math.round(row.confidence * 100)}%` },
+                    { label: 'Confidence', value: `${formatNumber(Math.round(row.confidence * 100))}%` },
                     {
                       label: 'Temp (Min/Max)',
                       value:
                         row.temperature_min !== undefined && row.temperature_max !== undefined
-                          ? `${row.temperature_min}°C / ${row.temperature_max}°C`
+                          ? `${fmt1(row.temperature_min)}\u00A0°C / ${fmt1(row.temperature_max)}\u00A0°C`
                           : row.temperature_mean !== undefined
-                            ? `${row.temperature_mean}°C`
+                            ? `${fmt1(row.temperature_mean)}\u00A0°C`
                             : '-',
                     },
                     {
                       label: 'Precip.',
-                      value: row.precipitation_mm !== undefined ? `${row.precipitation_mm} mm` : '-',
+                      value: row.precipitation_mm !== undefined ? `${fmt1(row.precipitation_mm)}\u00A0mm` : '-',
                     },
-                    { label: 'Wind Max', value: row.wind_max_kmh !== undefined ? `${row.wind_max_kmh} km/h` : '-' },
+                    { label: 'Wind Max', value: row.wind_max_kmh !== undefined ? `${fmt1(row.wind_max_kmh)}\u00A0km/h` : '-' },
                     {
                       label: 'Top Hazard Classes',
                       value: [row.prob_top1, row.prob_top2, row.prob_top3]
-                        .map((p) => (p === undefined ? '-' : `${Math.round(p * 100)}%`))
+                        .map((p) => (p === undefined ? '-' : `${formatNumber(Math.round(p * 100))}%`))
                         .join(' / '),
                     },
                   ],
@@ -262,11 +265,11 @@ export const DistrictForecastRecords: React.FC = () => {
                         key={idx}
                         className={`transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-carbon-05/80'} hover:bg-amber-50/40`}
                       >
-                        <td className="px-3.5 py-3 font-mono font-bold text-carbon-90 whitespace-nowrap">
-                          {row.target_date}
+                        <td className="px-3.5 py-3 font-mono tabular-nums font-bold text-carbon-90 whitespace-nowrap">
+                          <time dateTime={row.target_date}>{formatDate(row.target_date)}</time>
                         </td>
-                        <td className="px-3.5 py-3 font-mono text-carbon-60 whitespace-nowrap">
-                          {row.prediction_date}
+                        <td className="px-3.5 py-3 font-mono tabular-nums text-carbon-60 whitespace-nowrap">
+                          <time dateTime={row.prediction_date}>{formatDate(row.prediction_date)}</time>
                         </td>
                         <td className="px-3.5 py-3 font-semibold text-carbon-80">{row.hazard_type}</td>
                         {/* The tier the advisory published. `advisoryTierOf` falls back to the
@@ -296,7 +299,7 @@ export const DistrictForecastRecords: React.FC = () => {
                             </span>
                           )}
                         </td>
-                        <td className="px-3.5 py-3 font-mono font-bold whitespace-nowrap">
+                        <td className="px-3.5 py-3 font-mono tabular-nums font-bold whitespace-nowrap">
                           <span
                             className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-black ${
                               (row.physics_severity ?? row.severity_score) >= 0.67
@@ -306,40 +309,40 @@ export const DistrictForecastRecords: React.FC = () => {
                                   : 'bg-carbon-10 text-carbon-80'
                             }`}
                           >
-                            {Math.round((row.physics_severity ?? row.severity_score) * 100)}%
+                            {formatNumber(Math.round((row.physics_severity ?? row.severity_score) * 100))}%
                           </span>
                         </td>
-                        <td className="px-3.5 py-3 font-mono text-carbon-70 whitespace-nowrap">
+                        <td className="px-3.5 py-3 font-mono tabular-nums text-carbon-70 whitespace-nowrap">
                           {row.model_severity !== undefined
-                            ? `${Math.round(row.model_severity * 100)}%`
-                            : `${Math.round(row.severity_score * 100)}%`}
+                            ? `${formatNumber(Math.round(row.model_severity * 100))}%`
+                            : `${formatNumber(Math.round(row.severity_score * 100))}%`}
                         </td>
                         {/* `final_severity` is the blended score the tier is cut from; it is
                           not always equal to either track above. */}
-                        <td className="px-3.5 py-3 font-mono text-carbon-80 whitespace-nowrap">
-                          {row.final_severity !== undefined ? `${Math.round(row.final_severity * 100)}%` : '—'}
+                        <td className="px-3.5 py-3 font-mono tabular-nums text-carbon-80 whitespace-nowrap">
+                          {row.final_severity !== undefined ? `${formatNumber(Math.round(row.final_severity * 100))}%` : '—'}
                         </td>
-                        <td className="px-3.5 py-3 font-mono font-bold text-carbon-90 whitespace-nowrap">
-                          {Math.round(row.confidence * 100)}%
+                        <td className="px-3.5 py-3 font-mono tabular-nums font-bold text-carbon-90 whitespace-nowrap">
+                          {formatNumber(Math.round(row.confidence * 100))}%
                         </td>
-                        <td className="px-3.5 py-3 font-mono text-carbon-70 whitespace-nowrap">
+                        <td className="px-3.5 py-3 font-mono tabular-nums text-carbon-70 whitespace-nowrap">
                           {row.temperature_min !== undefined && row.temperature_max !== undefined
-                            ? `${row.temperature_min}°C / ${row.temperature_max}°C`
+                            ? `${fmt1(row.temperature_min)}\u00A0°C / ${fmt1(row.temperature_max)}\u00A0°C`
                             : row.temperature_mean !== undefined
-                              ? `${row.temperature_mean}°C`
+                              ? `${fmt1(row.temperature_mean)}\u00A0°C`
                               : '—'}
                         </td>
-                        <td className="px-3.5 py-3 font-mono text-carbon-70 whitespace-nowrap">
-                          {row.precipitation_mm !== undefined ? `${row.precipitation_mm} mm` : '—'}
+                        <td className="px-3.5 py-3 font-mono tabular-nums text-carbon-70 whitespace-nowrap">
+                          {row.precipitation_mm !== undefined ? `${fmt1(row.precipitation_mm)}\u00A0mm` : '—'}
                         </td>
-                        <td className="px-3.5 py-3 font-mono text-carbon-70 whitespace-nowrap">
-                          {row.wind_max_kmh !== undefined ? `${row.wind_max_kmh} km/h` : '—'}
+                        <td className="px-3.5 py-3 font-mono tabular-nums text-carbon-70 whitespace-nowrap">
+                          {row.wind_max_kmh !== undefined ? `${fmt1(row.wind_max_kmh)}\u00A0km/h` : '—'}
                         </td>
                         {/* The model's ranked hazard probabilities, as published. */}
-                        <td className="px-3.5 py-3 font-mono text-carbon-60 whitespace-nowrap">
+                        <td className="px-3.5 py-3 font-mono tabular-nums text-carbon-60 whitespace-nowrap">
                           {row.prob_top1 !== undefined
                             ? [row.prob_top1, row.prob_top2, row.prob_top3]
-                                .map((p) => (p === undefined ? '—' : `${Math.round(p * 100)}`))
+                                .map((p) => (p === undefined ? '—' : `${formatNumber(Math.round(p * 100))}%`))
                                 .join(' / ')
                             : '—'}
                         </td>

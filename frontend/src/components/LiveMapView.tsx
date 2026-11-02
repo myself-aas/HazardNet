@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet.heat';
 import toast from 'react-hot-toast';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { LocationMap } from './ui/expand-map';
 import { BottomSheet } from './ui/BottomSheet';
 import { ALL_64_DISTRICTS, ALL_8_DIVISIONS } from '../data/bangladeshDistricts';
@@ -140,6 +140,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const districtMarkersRef = useRef<Map<string, L.Marker>>(new Map());
   const lastTargetedDistrictRef = useRef<DistrictGeo | null>(null);
+  const prefersReducedMotion = useReducedMotion();
 
   // Header collapse state
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState<boolean>(compactHeader);
@@ -1340,7 +1341,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             >
               <DataProcessingSkeleton
                 title="PROCESSING SATELLITE TILES & HIGH-CONTRAST RASTER"
-                subtitle="Streaming high resolution terrain raster over Bangladesh..."
+                subtitle="Streaming high resolution terrain raster over Bangladesh…"
                 mode="map"
                 onDismiss={() => setIsProcessingData(false)}
               />
@@ -1405,10 +1406,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           <AnimatePresence>
             {inspectedPoint && nearestDistrictData && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
+                exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.95 }}
+                transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
                 className="absolute bottom-16 lg:bottom-auto lg:top-4 left-0 right-0 lg:left-auto lg:right-4 z-[var(--ap-z-sticky)] pointer-events-auto lg:w-[clamp(280px,28vw,340px)] lg:max-w-[calc(100%-2rem)] max-w-full w-full"
               >
                 <div className="bg-white border border-carbon-20 rounded-2xl p-4 text-carbon-80 flex flex-col gap-2">

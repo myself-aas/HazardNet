@@ -30,35 +30,38 @@ function DayOutlook({ row }: { row: DailyAdvisory }) {
   const w = row.weather || {};
   const m = row.metrics;
 
+  const fmt1 = (val: number) => formatNumber(val, { minimumFractionDigits: 0, maximumFractionDigits: 1 });
+  const fmt2 = (val: number) => formatNumber(val, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
   const weatherItems: { label: string; value: string }[] = [];
   if (w.precipitationMm !== undefined) {
-    weatherItems.push({ label: t('daily.weather.precip'), value: `${formatNumber(Number(w.precipitationMm.toFixed(1)))} mm` });
+    weatherItems.push({ label: t('daily.weather.precip'), value: `${fmt1(w.precipitationMm)}\u00A0mm` });
   }
   if (w.temperatureMinC !== undefined && w.temperatureMaxC !== undefined) {
     weatherItems.push({
       label: t('daily.weather.tempRange'),
-      value: `${formatNumber(Number(w.temperatureMinC.toFixed(1)))}°C to ${formatNumber(Number(w.temperatureMaxC.toFixed(1)))}°C`,
+      value: `${fmt1(w.temperatureMinC)}\u00A0°C to ${fmt1(w.temperatureMaxC)}\u00A0°C`,
     });
   } else if (w.temperatureMaxC !== undefined) {
-    weatherItems.push({ label: t('daily.weather.tempMax'), value: `${formatNumber(Number(w.temperatureMaxC.toFixed(1)))}°C` });
+    weatherItems.push({ label: t('daily.weather.tempMax'), value: `${fmt1(w.temperatureMaxC)}\u00A0°C` });
   }
   if (w.temperatureMeanC !== undefined) {
-    weatherItems.push({ label: t('daily.weather.tempMean'), value: `${formatNumber(Number(w.temperatureMeanC.toFixed(1)))}°C` });
+    weatherItems.push({ label: t('daily.weather.tempMean'), value: `${fmt1(w.temperatureMeanC)}\u00A0°C` });
   }
   if (w.windKmh !== undefined) {
-    weatherItems.push({ label: t('daily.weather.wind'), value: `${formatNumber(Number(w.windKmh.toFixed(1)))} km/h` });
+    weatherItems.push({ label: t('daily.weather.wind'), value: `${fmt1(w.windKmh)}\u00A0km/h` });
   }
   if (w.humidityPct !== undefined) {
-    weatherItems.push({ label: t('daily.weather.humidity'), value: `${formatNumber(Math.round(w.humidityPct))}%` });
+    weatherItems.push({ label: t('daily.weather.humidity'), value: `${formatNumber(Math.round(w.humidityPct))}\u00A0%` });
   }
   if (w.dewpointC !== undefined) {
-    weatherItems.push({ label: t('daily.weather.dewpoint'), value: `${formatNumber(Number(w.dewpointC.toFixed(1)))}°C` });
+    weatherItems.push({ label: t('daily.weather.dewpoint'), value: `${fmt1(w.dewpointC)}\u00A0°C` });
   }
   if (w.solarRadiationMjM2 !== undefined) {
-    weatherItems.push({ label: t('daily.weather.solar'), value: `${formatNumber(Number(w.solarRadiationMjM2.toFixed(1)))} MJ/m²` });
+    weatherItems.push({ label: t('daily.weather.solar'), value: `${fmt1(w.solarRadiationMjM2)}\u00A0MJ/m²` });
   }
   if (w.evapotranspirationMm !== undefined) {
-    weatherItems.push({ label: t('daily.weather.et0'), value: `${formatNumber(Number(w.evapotranspirationMm.toFixed(1)))} mm` });
+    weatherItems.push({ label: t('daily.weather.et0'), value: `${fmt1(w.evapotranspirationMm)}\u00A0mm` });
   }
 
   const metricItems: { label: string; value: string }[] = [];
@@ -70,16 +73,16 @@ function DayOutlook({ row }: { row: DailyAdvisory }) {
       metricItems.push({ label: t('daily.metric.confidenceRaw'), value: `${formatNumber(Math.round(m.confidenceRaw * 100))}%` });
     }
     if (m.finalSeverity !== undefined) {
-      metricItems.push({ label: t('daily.metric.finalSeverity'), value: `${formatNumber(Math.round(m.finalSeverity * 100))}% (${m.finalSeverity.toFixed(2)})` });
+      metricItems.push({ label: t('daily.metric.finalSeverity'), value: `${formatNumber(Math.round(m.finalSeverity * 100))}% (${fmt2(m.finalSeverity)})` });
     }
     if (m.modelSeverity !== undefined) {
-      metricItems.push({ label: t('daily.metric.modelSeverity'), value: `${formatNumber(Math.round(m.modelSeverity * 100))}% (${m.modelSeverity.toFixed(2)})` });
+      metricItems.push({ label: t('daily.metric.modelSeverity'), value: `${formatNumber(Math.round(m.modelSeverity * 100))}% (${fmt2(m.modelSeverity)})` });
     }
     if (m.physicsSeverity !== undefined) {
-      metricItems.push({ label: t('daily.metric.physicsSeverity'), value: `${formatNumber(Math.round(m.physicsSeverity * 100))}% (${m.physicsSeverity.toFixed(2)})` });
+      metricItems.push({ label: t('daily.metric.physicsSeverity'), value: `${formatNumber(Math.round(m.physicsSeverity * 100))}% (${fmt2(m.physicsSeverity)})` });
     }
     if (m.trackDivergence !== undefined) {
-      metricItems.push({ label: t('daily.metric.trackDivergence'), value: m.trackDivergence.toFixed(2) });
+      metricItems.push({ label: t('daily.metric.trackDivergence'), value: fmt2(m.trackDivergence) });
     }
     if (m.probTop1 !== undefined) {
       const shares = [m.probTop1, m.probTop2, m.probTop3]
@@ -138,7 +141,7 @@ function DayOutlook({ row }: { row: DailyAdvisory }) {
             <AlertLevelBadge level={row.tier} label={t(`alerts.tier.${row.tier}`)}
               srPrefix={t('daily.tier')} role="" size="lg" />
             <span className="text-xs font-semibold tabular-nums text-[var(--ap-label-secondary)]">
-              {t('daily.severityScore')}: {formatNumber(Math.round(row.severityScore * 100))}% ({row.severityScore.toFixed(2)})
+              {t('daily.severityScore')}: {formatNumber(Math.round(row.severityScore * 100))}% ({fmt2(row.severityScore)})
             </span>
           </div>
         </div>
@@ -202,20 +205,29 @@ function DayOutlook({ row }: { row: DailyAdvisory }) {
 
 const FarmerDistrictDailyPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const district = getDistrictById(id || 'kurigram');
   const { t, formatDate } = useI18n();
   const [outlook, setOutlook] = useState<DistrictDailyResult>(EMPTY);
   const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState(false);
+  const expanded = searchParams.get('days') === 'all';
   const [revision, setRevision] = useState(0);
   const [now, setNow] = useState(() => new Date());
+
+  const toggleExpanded = () => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (next.get('days') === 'all') next.delete('days');
+      else next.set('days', 'all');
+      return next;
+    }, { replace: true });
+  };
 
   useEffect(() => {
     if (!district) return;
     const controller = new AbortController();
     setLoading(true);
     setOutlook(EMPTY);
-    setExpanded(false);
     const checkedAt = new Date();
     setNow(checkedAt);
     loadDistrictDaily(district.name, { now: checkedAt, signal: controller.signal })
@@ -314,7 +326,7 @@ const FarmerDistrictDailyPage: React.FC = () => {
                   {t(expanded ? 'daily.extendedDate' : 'daily.currentDate')}
                 </h2>
                 {rows.some((row) => row.targetDate > seventhDate) && (
-                  <button type="button" onClick={() => setExpanded((value) => !value)} aria-expanded={expanded}
+                  <button type="button" onClick={toggleExpanded} aria-expanded={expanded}
                     aria-controls="daily-outlook-days"
                     className="ap-focusable inline-flex min-h-[44px] items-center gap-2 text-sm font-semibold text-[var(--ap-link)] underline underline-offset-4">
                     {expanded ? t('daily.show7') : t('daily.show15')}
