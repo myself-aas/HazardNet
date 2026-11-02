@@ -1,7 +1,7 @@
 {
   "schema": "hazardnet-alerts/v1",
-  "generated_at": "2026-11-02T18:16:56.716Z",
-  "built_at": "2026-11-02T18:16:56.874Z",
+  "generated_at": "2026-11-02T18:34:24.937Z",
+  "built_at": "2026-11-02T18:34:25.141Z",
   "source": "alert-engine",
   "policy_version": "alert-policy/1.0.0",
   "assessed": 64,
@@ -66,9 +66,9 @@
       "pcode": "5795",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-10",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 9,
       "severity_score": 0.3,
       "confidence": 0.981,
       "confidence_kind": "model_softmax_top_class",
@@ -109,19 +109,19 @@
         },
         "line": [
           "Bagerhat · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 9 d (target 2026-11-10)",
           "uncalibrated score 0.981 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -133,7 +133,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__40__flash-flood__p2026-11-01",
+      "id": "2026-11-10__15_days__40__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -148,9 +148,9 @@
       "pcode": "5761",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-10",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 9,
       "severity_score": 0.3,
       "confidence": 0.9152,
       "confidence_kind": "model_softmax_top_class",
@@ -191,19 +191,19 @@
         },
         "line": [
           "Barguna · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 9 d (target 2026-11-10)",
           "uncalibrated score 0.9152 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -215,7 +215,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__53__flash-flood__p2026-11-01",
+      "id": "2026-11-10__15_days__53__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -230,9 +230,9 @@
       "pcode": "5762",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-10",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 9,
       "severity_score": 0.3,
       "confidence": 0.9431,
       "confidence_kind": "model_softmax_top_class",
@@ -273,19 +273,19 @@
         },
         "line": [
           "Barishal · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 9 d (target 2026-11-10)",
           "uncalibrated score 0.9431 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -297,7 +297,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__48__flash-flood__p2026-11-01",
+      "id": "2026-11-10__15_days__48__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -312,9 +312,9 @@
       "pcode": "5763",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-10",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 9,
       "severity_score": 0.3,
       "confidence": 0.8747,
       "confidence_kind": "model_softmax_top_class",
@@ -355,19 +355,19 @@
         },
         "line": [
           "Bhola · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 9 d (target 2026-11-10)",
           "uncalibrated score 0.8747 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -379,7 +379,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__49__flash-flood__p2026-11-01",
+      "id": "2026-11-10__15_days__49__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -444,12 +444,12 @@
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -476,9 +476,9 @@
       "pcode": "5768",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-10",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 9,
       "severity_score": 0.3,
       "confidence": 0.9502,
       "confidence_kind": "model_softmax_top_class",
@@ -519,19 +519,19 @@
         },
         "line": [
           "Brahmanbaria · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 9 d (target 2026-11-10)",
           "uncalibrated score 0.9502 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -543,7 +543,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__61__flash-flood__p2026-11-01",
+      "id": "2026-11-10__15_days__61__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -558,9 +558,9 @@
       "pcode": "5769",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-12",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 11,
       "severity_score": 0.3,
       "confidence": 0.8816,
       "confidence_kind": "model_softmax_top_class",
@@ -601,19 +601,19 @@
         },
         "line": [
           "Chandpur · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 11 d (target 2026-11-12)",
           "uncalibrated score 0.8816 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -625,7 +625,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__60__flash-flood__p2026-11-01",
+      "id": "2026-11-12__15_days__60__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -640,9 +640,9 @@
       "pcode": "5813",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-10",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 9,
       "severity_score": 0.3,
       "confidence": 0.8316,
       "confidence_kind": "model_softmax_top_class",
@@ -683,19 +683,19 @@
         },
         "line": [
           "Chapainawabganj · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 9 d (target 2026-11-10)",
           "uncalibrated score 0.8316 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -707,7 +707,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__15__flash-flood__p2026-11-01",
+      "id": "2026-11-10__15_days__15__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -722,9 +722,9 @@
       "pcode": "5770",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-10",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 9,
       "severity_score": 0.3,
       "confidence": 0.9323,
       "confidence_kind": "model_softmax_top_class",
@@ -765,19 +765,19 @@
         },
         "line": [
           "Chattogram · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 9 d (target 2026-11-10)",
           "uncalibrated score 0.9323 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -789,7 +789,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__54__flash-flood__p2026-11-01",
+      "id": "2026-11-10__15_days__54__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -804,9 +804,9 @@
       "pcode": "5796",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-11",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 10,
       "severity_score": 0.3,
       "confidence": 0.9522,
       "confidence_kind": "model_softmax_top_class",
@@ -847,19 +847,19 @@
         },
         "line": [
           "Chuadanga · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 10 d (target 2026-11-11)",
           "uncalibrated score 0.9522 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -871,7 +871,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__45__flash-flood__p2026-11-01",
+      "id": "2026-11-11__15_days__45__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -886,9 +886,9 @@
       "pcode": "5772",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-09",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 8,
       "severity_score": 0.3,
       "confidence": 0.9671,
       "confidence_kind": "model_softmax_top_class",
@@ -929,19 +929,19 @@
         },
         "line": [
           "Cox's Bazar · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 8 d (target 2026-11-09)",
           "uncalibrated score 0.9671 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -953,7 +953,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__55__flash-flood__p2026-11-01",
+      "id": "2026-11-09__15_days__55__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -968,9 +968,9 @@
       "pcode": "5771",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-12",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 11,
       "severity_score": 0.3,
       "confidence": 0.8783,
       "confidence_kind": "model_softmax_top_class",
@@ -1011,19 +1011,19 @@
         },
         "line": [
           "Cumilla · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 11 d (target 2026-11-12)",
           "uncalibrated score 0.8783 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -1035,7 +1035,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__56__flash-flood__p2026-11-01",
+      "id": "2026-11-12__15_days__56__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -1050,9 +1050,9 @@
       "pcode": "5778",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-12",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 11,
       "severity_score": 0.3,
       "confidence": 0.8831,
       "confidence_kind": "model_softmax_top_class",
@@ -1093,19 +1093,19 @@
         },
         "line": [
           "Dhaka · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 11 d (target 2026-11-12)",
           "uncalibrated score 0.8831 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -1117,7 +1117,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__25__flash-flood__p2026-11-01",
+      "id": "2026-11-12__15_days__25__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -1132,9 +1132,9 @@
       "pcode": "5806",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-04",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 3,
       "severity_score": 0.3,
       "confidence": 0.9698,
       "confidence_kind": "model_softmax_top_class",
@@ -1175,19 +1175,19 @@
         },
         "line": [
           "Dinajpur · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 3 d (target 2026-11-04)",
           "uncalibrated score 0.9698 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -1199,7 +1199,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__5__flash-flood__p2026-11-01",
+      "id": "2026-11-04__15_days__5__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -1214,9 +1214,9 @@
       "pcode": "5779",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-12",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 11,
       "severity_score": 0.3,
       "confidence": 0.9651,
       "confidence_kind": "model_softmax_top_class",
@@ -1257,19 +1257,19 @@
         },
         "line": [
           "Faridpur · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 11 d (target 2026-11-12)",
           "uncalibrated score 0.9651 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -1281,7 +1281,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__33__flash-flood__p2026-11-01",
+      "id": "2026-11-12__15_days__33__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -1296,9 +1296,9 @@
       "pcode": "5773",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-10",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 9,
       "severity_score": 0.3,
       "confidence": 0.9692,
       "confidence_kind": "model_softmax_top_class",
@@ -1339,19 +1339,19 @@
         },
         "line": [
           "Feni · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 9 d (target 2026-11-10)",
           "uncalibrated score 0.9692 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -1363,7 +1363,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__57__flash-flood__p2026-11-01",
+      "id": "2026-11-10__15_days__57__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -1428,12 +1428,12 @@
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -1460,9 +1460,9 @@
       "pcode": "5780",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-09",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 8,
       "severity_score": 0.3,
       "confidence": 0.9802,
       "confidence_kind": "model_softmax_top_class",
@@ -1503,19 +1503,19 @@
         },
         "line": [
           "Gazipur · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 8 d (target 2026-11-09)",
           "uncalibrated score 0.9802 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -1527,7 +1527,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__26__flash-flood__p2026-11-01",
+      "id": "2026-11-09__15_days__26__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -1542,9 +1542,9 @@
       "pcode": "5781",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-10",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 9,
       "severity_score": 0.3,
       "confidence": 0.9679,
       "confidence_kind": "model_softmax_top_class",
@@ -1585,19 +1585,19 @@
         },
         "line": [
           "Gopalganj · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 9 d (target 2026-11-10)",
           "uncalibrated score 0.9679 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -1609,7 +1609,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__34__flash-flood__p2026-11-01",
+      "id": "2026-11-10__15_days__34__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -1624,9 +1624,9 @@
       "pcode": "5821",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-12",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 11,
       "severity_score": 0.3,
       "confidence": 0.9603,
       "confidence_kind": "model_softmax_top_class",
@@ -1667,19 +1667,19 @@
         },
         "line": [
           "Habiganj · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 11 d (target 2026-11-12)",
           "uncalibrated score 0.9603 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -1691,7 +1691,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__23__flash-flood__p2026-11-01",
+      "id": "2026-11-12__15_days__23__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -1706,9 +1706,9 @@
       "pcode": "5782",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-12",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 11,
       "severity_score": 0.3,
       "confidence": 0.9666,
       "confidence_kind": "model_softmax_top_class",
@@ -1749,19 +1749,19 @@
         },
         "line": [
           "Jamalpur · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 11 d (target 2026-11-12)",
           "uncalibrated score 0.9666 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -1773,7 +1773,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__19__flash-flood__p2026-11-01",
+      "id": "2026-11-12__15_days__19__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -1788,9 +1788,9 @@
       "pcode": "5797",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-11",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 10,
       "severity_score": 0.3,
       "confidence": 0.9744,
       "confidence_kind": "model_softmax_top_class",
@@ -1831,19 +1831,19 @@
         },
         "line": [
           "Jashore · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 10 d (target 2026-11-11)",
           "uncalibrated score 0.9744 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -1855,7 +1855,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__41__flash-flood__p2026-11-01",
+      "id": "2026-11-11__15_days__41__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -1870,9 +1870,9 @@
       "pcode": "5764",
       "horizon": "15_days",
       "hazard_type": "Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-10",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 9,
       "severity_score": 0.3,
       "confidence": 0.7389,
       "confidence_kind": "model_softmax_top_class",
@@ -1913,19 +1913,19 @@
         },
         "line": [
           "Jhalokati · Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 9 d (target 2026-11-10)",
           "uncalibrated score 0.7389 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -1937,7 +1937,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__50__flood__p2026-11-01",
+      "id": "2026-11-10__15_days__50__flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -1952,9 +1952,9 @@
       "pcode": "5798",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-11",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 10,
       "severity_score": 0.3,
       "confidence": 0.8792,
       "confidence_kind": "model_softmax_top_class",
@@ -1995,19 +1995,19 @@
         },
         "line": [
           "Jhenaidah · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 10 d (target 2026-11-11)",
           "uncalibrated score 0.8792 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2019,7 +2019,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__42__flash-flood__p2026-11-01",
+      "id": "2026-11-11__15_days__42__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -2084,12 +2084,12 @@
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2116,9 +2116,9 @@
       "pcode": "5774",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-12",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 11,
       "severity_score": 0.3,
       "confidence": 0.8785,
       "confidence_kind": "model_softmax_top_class",
@@ -2159,19 +2159,19 @@
         },
         "line": [
           "Khagrachhari · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 11 d (target 2026-11-12)",
           "uncalibrated score 0.8785 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2183,7 +2183,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__62__flash-flood__p2026-11-01",
+      "id": "2026-11-12__15_days__62__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -2198,9 +2198,9 @@
       "pcode": "5799",
       "horizon": "15_days",
       "hazard_type": "Tropical Cyclone",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-09",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 8,
       "severity_score": 0.3,
       "confidence": 0.4726,
       "confidence_kind": "model_softmax_top_class",
@@ -2235,19 +2235,19 @@
         },
         "line": [
           "Khulna · Tropical Cyclone · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 8 d (target 2026-11-09)",
           "uncalibrated score 0.4726 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2259,7 +2259,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__38__tropical-cyclone__p2026-11-01",
+      "id": "2026-11-09__15_days__38__tropical-cyclone__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -2274,9 +2274,9 @@
       "pcode": "5783",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-12",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 11,
       "severity_score": 0.3,
       "confidence": 0.9289,
       "confidence_kind": "model_softmax_top_class",
@@ -2317,19 +2317,19 @@
         },
         "line": [
           "Kishoreganj · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 11 d (target 2026-11-12)",
           "uncalibrated score 0.9289 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2341,7 +2341,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__29__flash-flood__p2026-11-01",
+      "id": "2026-11-12__15_days__29__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -2356,9 +2356,9 @@
       "pcode": "5800",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-12",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 11,
       "severity_score": 0.3,
       "confidence": 0.951,
       "confidence_kind": "model_softmax_top_class",
@@ -2399,19 +2399,19 @@
         },
         "line": [
           "Kushtia · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 11 d (target 2026-11-12)",
           "uncalibrated score 0.951 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2423,7 +2423,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__46__flash-flood__p2026-11-01",
+      "id": "2026-11-12__15_days__46__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -2438,9 +2438,9 @@
       "pcode": "5775",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-10",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 9,
       "severity_score": 0.3,
       "confidence": 0.8878,
       "confidence_kind": "model_softmax_top_class",
@@ -2481,19 +2481,19 @@
         },
         "line": [
           "Lakshmipur · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 9 d (target 2026-11-10)",
           "uncalibrated score 0.8878 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2505,7 +2505,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__59__flash-flood__p2026-11-01",
+      "id": "2026-11-10__15_days__59__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -2564,12 +2564,12 @@
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2596,9 +2596,9 @@
       "pcode": "5784",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-09",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 8,
       "severity_score": 0.3,
       "confidence": 0.8944,
       "confidence_kind": "model_softmax_top_class",
@@ -2639,19 +2639,19 @@
         },
         "line": [
           "Madaripur · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 8 d (target 2026-11-09)",
           "uncalibrated score 0.8944 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2663,7 +2663,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__35__flash-flood__p2026-11-01",
+      "id": "2026-11-09__15_days__35__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -2678,9 +2678,9 @@
       "pcode": "5801",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-12",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 11,
       "severity_score": 0.3,
       "confidence": 0.9712,
       "confidence_kind": "model_softmax_top_class",
@@ -2721,19 +2721,19 @@
         },
         "line": [
           "Magura · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 11 d (target 2026-11-12)",
           "uncalibrated score 0.9712 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2745,7 +2745,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__43__flash-flood__p2026-11-01",
+      "id": "2026-11-12__15_days__43__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -2760,9 +2760,9 @@
       "pcode": "5785",
       "horizon": "15_days",
       "hazard_type": "Tropical Cyclone",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-12",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 11,
       "severity_score": 0.3,
       "confidence": 0.4522,
       "confidence_kind": "model_softmax_top_class",
@@ -2797,19 +2797,19 @@
         },
         "line": [
           "Manikganj · Tropical Cyclone · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 11 d (target 2026-11-12)",
           "uncalibrated score 0.4522 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2821,7 +2821,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__30__tropical-cyclone__p2026-11-01",
+      "id": "2026-11-12__15_days__30__tropical-cyclone__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -2836,9 +2836,9 @@
       "pcode": "5822",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-12",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 11,
       "severity_score": 0.3,
       "confidence": 0.9778,
       "confidence_kind": "model_softmax_top_class",
@@ -2879,19 +2879,19 @@
         },
         "line": [
           "Moulvibazar · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 11 d (target 2026-11-12)",
           "uncalibrated score 0.9778 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2903,7 +2903,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__24__flash-flood__p2026-11-01",
+      "id": "2026-11-12__15_days__24__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -2918,9 +2918,9 @@
       "pcode": "5786",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-12",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 11,
       "severity_score": 0.3,
       "confidence": 0.9474,
       "confidence_kind": "model_softmax_top_class",
@@ -2961,19 +2961,19 @@
         },
         "line": [
           "Munshiganj · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 11 d (target 2026-11-12)",
           "uncalibrated score 0.9474 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2985,7 +2985,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__31__flash-flood__p2026-11-01",
+      "id": "2026-11-12__15_days__31__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -3050,12 +3050,12 @@
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -3082,9 +3082,9 @@
       "pcode": "5811",
       "horizon": "15_days",
       "hazard_type": "Tropical Cyclone",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-05",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 4,
       "severity_score": 0.3,
       "confidence": 0.4657,
       "confidence_kind": "model_softmax_top_class",
@@ -3119,19 +3119,19 @@
         },
         "line": [
           "Naogaon · Tropical Cyclone · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 4 d (target 2026-11-05)",
           "uncalibrated score 0.4657 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -3143,7 +3143,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__13__tropical-cyclone__p2026-11-01",
+      "id": "2026-11-05__15_days__13__tropical-cyclone__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -3202,12 +3202,12 @@
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -3234,9 +3234,9 @@
       "pcode": "5788",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-12",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 11,
       "severity_score": 0.3,
       "confidence": 0.9506,
       "confidence_kind": "model_softmax_top_class",
@@ -3277,19 +3277,19 @@
         },
         "line": [
           "Narayanganj · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 11 d (target 2026-11-12)",
           "uncalibrated score 0.9506 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -3301,7 +3301,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__27__flash-flood__p2026-11-01",
+      "id": "2026-11-12__15_days__27__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -3316,9 +3316,9 @@
       "pcode": "5789",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-09",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 8,
       "severity_score": 0.3,
       "confidence": 0.9741,
       "confidence_kind": "model_softmax_top_class",
@@ -3359,19 +3359,19 @@
         },
         "line": [
           "Narsingdi · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 8 d (target 2026-11-09)",
           "uncalibrated score 0.9741 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -3383,7 +3383,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__32__flash-flood__p2026-11-01",
+      "id": "2026-11-09__15_days__32__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -3448,12 +3448,12 @@
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -3480,9 +3480,9 @@
       "pcode": "5814",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-04",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 3,
       "severity_score": 0.3,
       "confidence": 0.9622,
       "confidence_kind": "model_softmax_top_class",
@@ -3523,19 +3523,19 @@
         },
         "line": [
           "Nilphamari · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 3 d (target 2026-11-04)",
           "uncalibrated score 0.9622 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -3547,7 +3547,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__4__flash-flood__p2026-11-01",
+      "id": "2026-11-04__15_days__4__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -3562,9 +3562,9 @@
       "pcode": "5776",
       "horizon": "15_days",
       "hazard_type": "Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-11",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 10,
       "severity_score": 0.3,
       "confidence": 0.511,
       "confidence_kind": "model_softmax_top_class",
@@ -3599,19 +3599,19 @@
         },
         "line": [
           "Noakhali · Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 10 d (target 2026-11-11)",
           "uncalibrated score 0.511 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -3623,7 +3623,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__58__flood__p2026-11-01",
+      "id": "2026-11-11__15_days__58__flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -3638,9 +3638,9 @@
       "pcode": "5815",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-12",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 11,
       "severity_score": 0.3,
       "confidence": 0.8151,
       "confidence_kind": "model_softmax_top_class",
@@ -3681,19 +3681,19 @@
         },
         "line": [
           "Pabna · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 11 d (target 2026-11-12)",
           "uncalibrated score 0.8151 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -3705,7 +3705,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__12__flash-flood__p2026-11-01",
+      "id": "2026-11-12__15_days__12__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -3720,9 +3720,9 @@
       "pcode": "5816",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-04",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 3,
       "severity_score": 0.3,
       "confidence": 0.8088,
       "confidence_kind": "model_softmax_top_class",
@@ -3763,19 +3763,19 @@
         },
         "line": [
           "Panchagarh · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 3 d (target 2026-11-04)",
           "uncalibrated score 0.8088 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -3787,7 +3787,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__6__flash-flood__p2026-11-01",
+      "id": "2026-11-04__15_days__6__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -3802,9 +3802,9 @@
       "pcode": "5765",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-10",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 9,
       "severity_score": 0.3,
       "confidence": 0.9581,
       "confidence_kind": "model_softmax_top_class",
@@ -3845,19 +3845,19 @@
         },
         "line": [
           "Patuakhali · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 9 d (target 2026-11-10)",
           "uncalibrated score 0.9581 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -3869,7 +3869,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__51__flash-flood__p2026-11-01",
+      "id": "2026-11-10__15_days__51__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -3884,9 +3884,9 @@
       "pcode": "5766",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-10",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 9,
       "severity_score": 0.3,
       "confidence": 0.9154,
       "confidence_kind": "model_softmax_top_class",
@@ -3927,19 +3927,19 @@
         },
         "line": [
           "Pirojpur · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 9 d (target 2026-11-10)",
           "uncalibrated score 0.9154 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -3951,7 +3951,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__52__flash-flood__p2026-11-01",
+      "id": "2026-11-10__15_days__52__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -3966,9 +3966,9 @@
       "pcode": "5791",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-12",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 11,
       "severity_score": 0.3,
       "confidence": 0.9691,
       "confidence_kind": "model_softmax_top_class",
@@ -4009,19 +4009,19 @@
         },
         "line": [
           "Rajbari · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 11 d (target 2026-11-12)",
           "uncalibrated score 0.9691 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4033,7 +4033,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__36__flash-flood__p2026-11-01",
+      "id": "2026-11-12__15_days__36__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -4048,9 +4048,9 @@
       "pcode": "5817",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-12",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 11,
       "severity_score": 0.3,
       "confidence": 0.9601,
       "confidence_kind": "model_softmax_top_class",
@@ -4091,19 +4091,19 @@
         },
         "line": [
           "Rajshahi · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 11 d (target 2026-11-12)",
           "uncalibrated score 0.9601 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4115,7 +4115,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__9__flash-flood__p2026-11-01",
+      "id": "2026-11-12__15_days__9__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -4130,9 +4130,9 @@
       "pcode": "5777",
       "horizon": "15_days",
       "hazard_type": "Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-09",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 8,
       "severity_score": 0.3,
       "confidence": 0.7173,
       "confidence_kind": "model_softmax_top_class",
@@ -4173,19 +4173,19 @@
         },
         "line": [
           "Rangamati · Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 8 d (target 2026-11-09)",
           "uncalibrated score 0.7173 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4197,7 +4197,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__63__flood__p2026-11-01",
+      "id": "2026-11-09__15_days__63__flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -4262,12 +4262,12 @@
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4294,9 +4294,9 @@
       "pcode": "5804",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-10",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 9,
       "severity_score": 0.3,
       "confidence": 0.9608,
       "confidence_kind": "model_softmax_top_class",
@@ -4337,19 +4337,19 @@
         },
         "line": [
           "Satkhira · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 9 d (target 2026-11-10)",
           "uncalibrated score 0.9608 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4361,7 +4361,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__39__flash-flood__p2026-11-01",
+      "id": "2026-11-10__15_days__39__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -4376,9 +4376,9 @@
       "pcode": "5792",
       "horizon": "15_days",
       "hazard_type": "Tropical Cyclone",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-12",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 11,
       "severity_score": 0.3,
       "confidence": 0.454,
       "confidence_kind": "model_softmax_top_class",
@@ -4413,19 +4413,19 @@
         },
         "line": [
           "Shariatpur · Tropical Cyclone · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 11 d (target 2026-11-12)",
           "uncalibrated score 0.454 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4437,7 +4437,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__37__tropical-cyclone__p2026-11-01",
+      "id": "2026-11-12__15_days__37__tropical-cyclone__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -4452,9 +4452,9 @@
       "pcode": "5793",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-10",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 9,
       "severity_score": 0.3,
       "confidence": 0.9612,
       "confidence_kind": "model_softmax_top_class",
@@ -4495,19 +4495,19 @@
         },
         "line": [
           "Sherpur · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 9 d (target 2026-11-10)",
           "uncalibrated score 0.9612 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4519,7 +4519,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__20__flash-flood__p2026-11-01",
+      "id": "2026-11-10__15_days__20__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -4534,9 +4534,9 @@
       "pcode": "5819",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-12",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 11,
       "severity_score": 0.3,
       "confidence": 0.905,
       "confidence_kind": "model_softmax_top_class",
@@ -4577,19 +4577,19 @@
         },
         "line": [
           "Sirajganj · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 11 d (target 2026-11-12)",
           "uncalibrated score 0.905 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4601,7 +4601,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__11__flash-flood__p2026-11-01",
+      "id": "2026-11-12__15_days__11__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -4616,9 +4616,9 @@
       "pcode": "5823",
       "horizon": "15_days",
       "hazard_type": "Fire",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-09",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 8,
       "severity_score": 0.3,
       "confidence": 0.6942,
       "confidence_kind": "model_softmax_top_class",
@@ -4659,19 +4659,19 @@
         },
         "line": [
           "Sunamganj · Fire · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 8 d (target 2026-11-09)",
           "uncalibrated score 0.6942 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4683,7 +4683,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__22__fire__p2026-11-01",
+      "id": "2026-11-09__15_days__22__fire__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -4698,9 +4698,9 @@
       "pcode": "5824",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-12",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 11,
       "severity_score": 0.3,
       "confidence": 0.8097,
       "confidence_kind": "model_softmax_top_class",
@@ -4741,19 +4741,19 @@
         },
         "line": [
           "Sylhet · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 11 d (target 2026-11-12)",
           "uncalibrated score 0.8097 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4765,7 +4765,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__21__flash-flood__p2026-11-01",
+      "id": "2026-11-12__15_days__21__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -4780,9 +4780,9 @@
       "pcode": "5794",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-12",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 11,
       "severity_score": 0.3,
       "confidence": 0.9097,
       "confidence_kind": "model_softmax_top_class",
@@ -4823,19 +4823,19 @@
         },
         "line": [
           "Tangail · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 11 d (target 2026-11-12)",
           "uncalibrated score 0.9097 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4847,7 +4847,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__28__flash-flood__p2026-11-01",
+      "id": "2026-11-12__15_days__28__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -4862,9 +4862,9 @@
       "pcode": "5820",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-04",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 3,
       "severity_score": 0.3,
       "confidence": 0.9264,
       "confidence_kind": "model_softmax_top_class",
@@ -4905,19 +4905,19 @@
         },
         "line": [
           "Thakurgaon · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 3 d (target 2026-11-04)",
           "uncalibrated score 0.9264 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4929,7 +4929,7 @@
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__7__flash-flood__p2026-11-01",
+      "id": "2026-11-04__15_days__7__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     }
   ]

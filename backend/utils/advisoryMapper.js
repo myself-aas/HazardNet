@@ -308,6 +308,7 @@ export function forecastRowsToCsv(forecastRows) {
     'prob_top3',
     'data_source',
     'model_version',
+    'created_at',
     'confidence_raw',
     'confidence_calibrated',
     'confidence_kind',

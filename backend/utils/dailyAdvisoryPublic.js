@@ -693,12 +693,28 @@ export function rollupDailySnapshotToHorizons(snapshotInput) {
       if (windowRows.length === 0) continue;
 
       // Pick the peak-severity day within the horizon window (ties broken by
-      // unique peak marker, higher published tier, then earliest forecast day).
+      // unique peak marker, higher published tier, primary physical weather forcing,
+      // then earliest forecast day).
+      const weatherForce = (r) => {
+        const rw = r.weather || {};
+        const hz = String(r.hazard || '').toLowerCase();
+        if (hz.includes('flood')) return rw.precipitationMm ?? -Infinity;
+        if (hz.includes('cyclone') || hz.includes('storm')) return (rw.windKmh ?? 0) + (rw.precipitationMm ?? 0);
+        if (hz.includes('cold')) return -(rw.temperatureMinC ?? Infinity);
+        return rw.temperatureMaxC ?? -Infinity;
+      };
       const peakRow = windowRows.reduce((best, candidate) => {
         if (candidate.severityScore > best.severityScore) return candidate;
         if (candidate.severityScore < best.severityScore) return best;
         if (candidate.peak === 'unique' && best.peak !== 'unique') return candidate;
-        if ((TIER_RANK[candidate.tier] ?? 0) > (TIER_RANK[best.tier] ?? 0)) return candidate;
+        const cRank = TIER_RANK[candidate.tier] ?? 0;
+        const bRank = TIER_RANK[best.tier] ?? 0;
+        if (cRank > bRank) return candidate;
+        if (cRank < bRank) return best;
+        const cForce = weatherForce(candidate);
+        const bForce = weatherForce(best);
+        if (cForce > bForce) return candidate;
+        if (cForce < bForce) return best;
         return candidate.forecastDay < best.forecastDay ? candidate : best;
       }, windowRows[0]);
 
@@ -759,6 +775,8 @@ export function rollupDailySnapshotToHorizons(snapshotInput) {
         requires_review: peakRow.requiresReview,
         target_date: peakRow.targetDate,
         prediction_date: predictionDate,
+        created_at: snapshot.run.generatedAt,
+        data_cutoff: snapshot.run.dataCutoff,
         data_source: 'Kaggle_Daily_Advisory',
         model_version: snapshot.run.modelVersion,
         run_id: snapshot.run.id,

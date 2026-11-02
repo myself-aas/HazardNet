@@ -94,7 +94,14 @@ export const EvidenceCard: React.FC<EvidenceCardProps> = ({ alert, disclaimer, c
       </header>
 
       <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3">
-        <Field label={t('common.targetDate')} value={formatDate(alert.target_date)} />
+        <Field
+          label={alert.horizon === '15_days' ? t('alerts.evidence.peakSevereDate') : t('common.targetDate')}
+          value={formatDate(alert.target_date)}
+        />
+        <Field
+          label={t('daily.severityIndex')}
+          value={`${formatNumber(Math.round(Math.max(0, Math.min(1, Number(alert.severity_score ?? 0))) * 100))}/100 (${formatNumber(alert.severity_score)})`}
+        />
         <Field
           label={t('common.leadTime')}
           value={
@@ -111,6 +118,61 @@ export const EvidenceCard: React.FC<EvidenceCardProps> = ({ alert, disclaimer, c
         <Field label={t('evidence.alertId')} value={alert.id} mono />
         <Field label={t('evidence.alertKey')} value={dash(alert.id.replace(/__p\d{4}-\d{2}-\d{2}$/, ''))} mono />
       </dl>
+
+      {/* Dual-Track Severity & Divergence Visual Meter (plain DOM so PDF export renders it faithfully) */}
+      <div className="mt-5 rounded-xl border border-carbon-20 bg-carbon-05 p-4 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-xs font-bold uppercase tracking-wide text-carbon-60">
+            {t('alerts.evidence.trackComparison')}
+          </h3>
+          <span className="text-xs text-carbon-60 tabular-nums">
+            Watch 40 · Warning 70 · Severe 85
+          </span>
+        </div>
+        {(
+          [
+            {
+              key: 'model',
+              label: t('alerts.evidence.modelSeverity'),
+              val: Number(model.model_severity ?? alert.severity_score ?? 0),
+              barColor: 'var(--ap-tint-orange)',
+            },
+            {
+              key: 'physics',
+              label: t('alerts.evidence.physicsSeverity'),
+              val: typeof physics.physics_severity === 'number' ? physics.physics_severity : null,
+              barColor: 'var(--ap-tint-blue)',
+            },
+            {
+              key: 'divergence',
+              label: t('alerts.evidence.divergence'),
+              val: typeof physics.divergence === 'number' ? physics.divergence : null,
+              barColor: 'var(--ap-tint-purple)',
+            },
+          ] as const
+        ).map((item) => {
+          const pct = item.val === null || !Number.isFinite(item.val) ? 0 : Math.round(Math.max(0, Math.min(1, item.val)) * 100);
+          return (
+            <div key={item.key} className="space-y-1">
+              <div className="flex items-center justify-between gap-2 text-xs tabular-nums">
+                <span className="font-semibold text-carbon-80">{item.label}</span>
+                <span className="font-bold text-carbon-90">
+                  {item.val === null ? '—' : `${formatNumber(pct)}/100 (${formatNumber(item.val)})`}
+                </span>
+              </div>
+              <div
+                aria-hidden="true"
+                className="relative h-2.5 w-full overflow-hidden rounded-full bg-carbon-20"
+              >
+                <div
+                  className="h-full rounded-full"
+                  style={{ width: `${item.val === null ? 0 : Math.max(2, pct)}%`, backgroundColor: item.barColor }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <div className="border border-carbon-20 rounded-2xl bg-carbon-05 p-4">

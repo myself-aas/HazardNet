@@ -356,9 +356,21 @@ export function summarizeContinuous15Days(advisories: DailyAdvisory[]): Continuo
       peakRows = uniquePeaks;
     } else {
       const maxima = days.filter((r) => r.severityScore === maxSeverityScore);
-      // Highlight tied peak dates unless all 15 days are flat low-severity ties (< 0.40)
+      // Highlight tied peak dates; when an active WATCH+ plateau spans all 15 days,
+      // break the tie using the primary physical weather driver for that hazard.
       if (maxima.length < days.length || maxSeverityScore >= 0.4) {
         peakRows = maxima;
+      } else if (maxima.some((r) => r.tier !== 'NORMAL')) {
+        const forcingOf = (r: DailyAdvisory): number => {
+          const w = r.weather ?? {};
+          if (r.hazard === 'Flood' || r.hazard === 'Flash Flood') return w.precipitationMm ?? 0;
+          if (r.hazard === 'Tropical Cyclone' || r.hazard === 'Severe Local Storm') return w.windKmh ?? 0;
+          if (r.hazard === 'Cold Wave') return -(w.temperatureMinC ?? 99);
+          return w.temperatureMaxC ?? 0;
+        };
+        const maxForcing = Math.max(...maxima.map(forcingOf));
+        const byForcing = maxima.filter((r) => forcingOf(r) === maxForcing);
+        peakRows = byForcing.length > 0 && byForcing.length <= 4 ? byForcing : [maxima[0]];
       }
     }
   }

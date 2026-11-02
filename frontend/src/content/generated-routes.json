@@ -1,6 +1,6 @@
 {
   "schema": "hazardnet-generated-routes/v1",
-  "generated_at": "2026-11-02T18:16:57.012Z",
+  "generated_at": "2026-11-02T18:34:25.297Z",
   "generated_by": "scripts/build_content_engine.mjs",
   "origin": "https://www.hazardnet.live",
   "inputs": {
@@ -9,7 +9,7 @@
     "forecast_snapshot": {
       "path": "frontend/public/data/forecasts-latest.json",
       "prediction_date": "2026-11-01",
-      "generated_at": "2026-11-02T18:16:56.822Z"
+      "generated_at": "2026-11-02T18:34:25.076Z"
     },
     "event_archive": null,
     "model_performance": {
@@ -1376,7 +1376,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Kurigram across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -1694,7 +1694,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Nilphamari across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-04): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -1800,7 +1800,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Dinajpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-04): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -1906,7 +1906,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Panchagarh across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-04): Flash Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -2012,7 +2012,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Thakurgaon across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-04): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -2224,7 +2224,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Rajshahi across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-12): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -2436,7 +2436,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Sirajganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-12): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -2542,7 +2542,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Pabna across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-12): Flash Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -2648,7 +2648,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Naogaon across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-05): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -2754,7 +2754,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Natore across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flood, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-12): Flood, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -2860,7 +2860,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Chapainawabganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-10): Flash Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -3284,7 +3284,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Jamalpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-12): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -3390,7 +3390,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Sherpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-10): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -3496,7 +3496,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Sylhet across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-12): Flash Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -3602,7 +3602,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Sunamganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Fire, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-09): Fire, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -3708,7 +3708,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Habiganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-12): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -3814,7 +3814,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Moulvibazar across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-12): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -3920,7 +3920,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Dhaka across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-12): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -4026,7 +4026,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Gazipur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-09): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -4132,7 +4132,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Narayanganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-12): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -4238,7 +4238,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Tangail across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-12): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -4344,7 +4344,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Kishoreganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-12): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -4450,7 +4450,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Manikganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-12): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -4556,7 +4556,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Munshiganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-12): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -4662,7 +4662,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Narsingdi across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-09): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -4768,7 +4768,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Faridpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-12): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -4874,7 +4874,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Gopalganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-10): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -4980,7 +4980,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Madaripur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-09): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -5086,7 +5086,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Rajbari across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-12): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -5192,7 +5192,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Shariatpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-12): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -5298,7 +5298,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Khulna across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-09): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -5404,7 +5404,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Satkhira across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-10): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -5510,7 +5510,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Bagerhat across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-10): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -5616,7 +5616,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Jashore across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-11): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -5722,7 +5722,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Jhenaidah across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-11): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -5828,7 +5828,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Magura across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-12): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -6040,7 +6040,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Chuadanga across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-11): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -6146,7 +6146,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Kushtia across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-12): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -6252,7 +6252,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Meherpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-11): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -6358,7 +6358,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Barisal across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-10): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -6464,7 +6464,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Bhola across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-10): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -6570,7 +6570,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Jhalokati across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-10): Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -6676,7 +6676,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Patuakhali across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-10): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -6782,7 +6782,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Pirojpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-10): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -6888,7 +6888,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Barguna across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-10): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -6994,7 +6994,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Chattogram across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-10): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -7100,7 +7100,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Cox's Bazar across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-09): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -7206,7 +7206,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Cumilla across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-12): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -7312,7 +7312,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Feni across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-10): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -7418,7 +7418,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Noakhali across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flood, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-11): Flood, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -7524,7 +7524,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Lakshmipur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-10): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -7630,7 +7630,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Chandpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-12): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -7736,7 +7736,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Brahmanbaria across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-10): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -7842,7 +7842,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Khagrachhari across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-12): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -7948,7 +7948,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Rangamati across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-09): Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -8054,7 +8054,7 @@
             "The run this deployment ships (prediction date 2026-11-01) covers Bandarban across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-03): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-09): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {

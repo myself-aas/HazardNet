@@ -140,10 +140,10 @@ describe('the front door', () => {
     renderPage();
 
     const strip = await screen.findByTestId('front-door-status-strip');
-    // The alert artifact this deployment ships publishes 53 WATCH advisories across the 64
+    // The alert artifact this deployment ships publishes 60 WATCH advisories across the 64
     // continuous 15-day district trajectories (1 card per district, no duplicate horizons).
     expect(await within(strip).findByText(/Advisories are active/)).toBeInTheDocument();
-    expect(within(strip).getByText(/53 district advisories are published at WATCH or above/)).toBeInTheDocument();
+    expect(within(strip).getByText(/60 district advisories are published at WATCH or above/)).toBeInTheDocument();
 
     // The run card moved to /last-run on 2026-10-05: the hero reaches it as a hyperlink,
     // and the card itself is no longer part of this page.
@@ -321,8 +321,8 @@ describe('the front door', () => {
     // the alert artifact over fetch and renders its "reading" state until that resolves.
     const strip = screen.getByTestId('front-door-status-strip');
     expect(await within(strip).findByText(/সতর্কবার্তা সক্রিয়/)).toBeInTheDocument();
-    // Bengali verdict body with Bengali digits — the artifact's 53 published district advisories.
-    expect(within(strip).getByText(/৫৩টি জেলার সতর্কবার্তা/)).toBeInTheDocument();
+    // Bengali verdict body with Bengali digits — the artifact's 60 published district advisories.
+    expect(within(strip).getByText(/৬০টি জেলার সতর্কবার্তা/)).toBeInTheDocument();
   });
 
   it('falls back to English field by field when the Bengali block is incomplete', () => {

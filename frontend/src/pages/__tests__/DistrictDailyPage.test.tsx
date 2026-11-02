@@ -71,11 +71,20 @@ it('renders all 15 continuous days by default with severity index, peak severe d
   expect(districtSelect).toBeTruthy();
   expect(districtSelect?.querySelectorAll('option')).toHaveLength(64);
 
-  // Continuous 15-day trajectory strip + peak severe date banner
+  // Continuous 15-day trajectory strip + peak severe date banner + interactive chart & table
   const trajectory = screen.getByTestId('continuous-15day-trajectory');
   expect(trajectory.querySelectorAll('[data-forecast-day]')).toHaveLength(15);
   expect(trajectory.querySelectorAll('[data-peak="true"]')).toHaveLength(1);
   expect(screen.getByTestId('peak-severe-banner').textContent).toMatch(/92\/100/);
+  const chartBox = screen.getByTestId('trajectory-15day-chart');
+  expect(within(chartBox).getByRole('button', { name: /Severity & rainfall/i })).toHaveAttribute('aria-pressed', 'true');
+  fireEvent.click(within(chartBox).getByRole('button', { name: /Temperature & wind/i }));
+  expect(within(chartBox).getByRole('button', { name: /Temperature & wind/i })).toHaveAttribute('aria-pressed', 'true');
+  const tableBox = screen.getByTestId('trajectory-15day-table');
+  expect(tableBox.querySelectorAll('tr[data-table-day]')).toHaveLength(15);
+  const sortSelect = screen.getByTestId('trajectory-sort-picker') as HTMLSelectElement;
+  fireEvent.change(sortSelect, { target: { value: 'severity' } });
+  expect(tableBox.querySelectorAll('tr[data-table-day]')[0].getAttribute('data-table-day')).toBe('2');
 
   // All 15 continuous daily articles rendered immediately by default
   const days = document.getElementById('daily-outlook-days');

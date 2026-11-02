@@ -8,7 +8,7 @@
  */
 module.exports = {
   "schema": "hazardnet-alerts/v1",
-  "generated_at": "2026-11-02T18:16:56.716Z",
+  "generated_at": "2026-11-02T18:34:24.937Z",
   "policy_version": "alert-policy/1.0.0",
   "policy_source": "builder",
   "assessed": 64,
@@ -65,9 +65,9 @@ module.exports = {
       "pcode": "5795",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-10",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 9,
       "severity_score": 0.3,
       "confidence": 0.981,
       "confidence_kind": "model_softmax_top_class",
@@ -108,19 +108,19 @@ module.exports = {
         },
         "line": [
           "Bagerhat · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 9 d (target 2026-11-10)",
           "uncalibrated score 0.981 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -132,7 +132,7 @@ module.exports = {
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__40__flash-flood__p2026-11-01",
+      "id": "2026-11-10__15_days__40__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     },
     {
@@ -147,9 +147,9 @@ module.exports = {
       "pcode": "5761",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-03",
+      "target_date": "2026-11-10",
       "prediction_date": "2026-11-01",
-      "lead_time_days": 2,
+      "lead_time_days": 9,
       "severity_score": 0.3,
       "confidence": 0.9152,
       "confidence_kind": "model_softmax_top_class",
@@ -190,19 +190,19 @@ module.exports = {
         },
         "line": [
           "Barguna · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-03)",
+          "lead time 9 d (target 2026-11-10)",
           "uncalibrated score 0.9152 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
         "prediction_date": "2026-11-01",
-        "data_cutoff": "2026-11-01T00:00:00.000Z",
-        "data_cutoff_source": "row.prediction_date",
-        "age_hours": 42.28,
+        "data_cutoff": "2026-11-01T23:07:47.343Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 19.44,
         "slo_hours": 48,
         "within_slo": true,
-        "stale_soon": true
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -214,7 +214,7 @@ module.exports = {
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-03__15_days__53__flash-flood__p2026-11-01",
+      "id": "2026-11-10__15_days__53__flash-flood__p2026-11-01",
       "state": "PUBLISHED"
     }
   ]

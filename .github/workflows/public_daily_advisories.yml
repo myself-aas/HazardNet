@@ -4,9 +4,6 @@ on:
   schedule:
     - cron: '15 */3 * * *'
   workflow_dispatch: {}
-  push:
-    branches: [arena/58cfa6c2-hazardnet]
-    paths: ['.github/workflows/public_daily_advisories.yml']
 
 concurrency:
   group: daily-public-advisories-${{ github.ref }}
@@ -17,7 +14,7 @@ permissions:
 
 jobs:
   publish:
-    if: (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' || github.event_name == 'push') && github.actor != 'github-actions[bot]'
+    if: (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
