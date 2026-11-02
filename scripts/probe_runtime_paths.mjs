@@ -69,7 +69,7 @@ if (selfTestMode) {
       return send(broken ? 200 : 200, broken
         ? { status: 'fresh' }
         : {
-            schema: 'hazardnet.public-daily-advisories.v1',
+            schema: DAILY_ADVISORY_SCHEMA,
             status: 'fresh',
             scope: 'summary',
             count: 64,
@@ -221,7 +221,7 @@ await scenario('advisories_summary_contract', '/api/v1/advisories/summary', { me
   const isJson = (headers?.get?.('content-type') || '').includes('application/json');
   const publishedOk =
     status === 200
-    && body?.schema === 'hazardnet.public-daily-advisories.v1'
+    && body?.schema === DAILY_ADVISORY_SCHEMA
     && numeric(body?.summary?.districts);
   const prePublishOk =
     status === 503
@@ -232,7 +232,7 @@ await scenario('advisories_summary_contract', '/api/v1/advisories/summary', { me
     pass,
     detail: pass
       ? status === 200
-        ? `200 with schema=hazardnet.public-daily-advisories.v1 and summary.districts=${body.summary.districts}`
+        ? `200 with schema=${DAILY_ADVISORY_SCHEMA} and summary.districts=${body.summary.districts}`
         : `503 honest pre-publish unavailable (${body.error})`
       : `expected JSON 200 (daily summary schema) or 503 (unavailable error), got ${status} (missing: schema/summary.districts)`,
   };

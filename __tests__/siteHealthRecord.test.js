@@ -260,7 +260,7 @@ describe('probe_runtime_paths.mjs — sibling scenarios against a local mock', (
       }
       if (url.pathname === '/api/v1/advisories/summary' && req.method === 'GET') {
         return send(200, {
-          schema: 'hazardnet.public-daily-advisories.v1',
+          schema: 'hazardnet-daily-advisories/v1',
           status: 'fresh',
           scope: 'summary',
           count: 64,

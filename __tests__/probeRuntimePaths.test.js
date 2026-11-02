@@ -12,6 +12,7 @@ describe('probe_runtime_paths.mjs', () => {
     expect(ok.status).toBe(0);
     const out = ok.stdout + ok.stderr;
     expect(out).toMatch(/advisories_summary_contract/);
+    expect(out).toMatch(/schema=hazardnet-daily-advisories\/v1/);
     expect(out).toMatch(/kaggle_horizon_5tier_shape/);
     expect(out).toMatch(/predict_district_shape/);
   });
