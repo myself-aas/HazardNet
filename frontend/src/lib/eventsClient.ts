@@ -5,6 +5,8 @@
  * and hazardnet_forecasts_latest.csv.
  */
 
+import { ALL_64_DISTRICTS, type DistrictData } from '../data/bangladeshDistricts';
+
 export interface ClimaticEvent {
   id: string;
   glide: string;
@@ -144,22 +146,168 @@ export interface HazardEventsResponse {
   forecastDistrictsCount: number;
 }
 
+// Canonical division & district lookup helpers so historical archive spellings
+// ('Chittagong' vs 'Chattogram', 'Comilla' vs 'Cumilla', 'Bogura' vs 'Bogra',
+// 'Jashore' vs 'Jessore', 'Barishal' vs 'Barisal', "Cox's Bazar" vs 'coxsbazar')
+// resolve 1-to-1 across events, forecasts, and ALL_64_DISTRICTS.
+function normalizeKey(value: string): string {
+  return (value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+const DIVISION_CANONICAL_BY_NORM: Record<string, string> = {
+  dhaka: 'Dhaka',
+  chattogram: 'Chattogram',
+  chittagong: 'Chattogram',
+  rajshahi: 'Rajshahi',
+  khulna: 'Khulna',
+  barisal: 'Barisal',
+  barishal: 'Barisal',
+  sylhet: 'Sylhet',
+  rangpur: 'Rangpur',
+  mymensingh: 'Mymensingh',
+};
+
+const DISTRICT_ALIAS_TO_ID: Record<string, string> = {
+  chittagong: 'chattogram',
+  comilla: 'cumilla',
+  bogura: 'bogra',
+  jashore: 'jessore',
+  barishal: 'barisal',
+  nawabganj: 'chapainawabganj',
+  chapainawabganj: 'chapainawabganj',
+  maulvibazar: 'moulvibazar',
+  netrakona: 'netrokona',
+  jhalkathi: 'jhalokati',
+  jhalokathi: 'jhalokati',
+  khagrachari: 'khagrachhari',
+  coxsbazar: 'coxsbazar',
+};
+
+const DISTRICT_BY_NORM_KEY: Map<string, DistrictData> = (() => {
+  const map = new Map<string, DistrictData>();
+  for (const d of ALL_64_DISTRICTS) {
+    map.set(normalizeKey(d.id), d);
+    map.set(normalizeKey(d.name), d);
+  }
+  for (const [alias, canonicalId] of Object.entries(DISTRICT_ALIAS_TO_ID)) {
+    const target = map.get(normalizeKey(canonicalId));
+    if (target) map.set(normalizeKey(alias), target);
+  }
+  return map;
+})();
+
+export function canonicalDivisionName(raw: string): string {
+  const cleaned = normalizeKey((raw || '').replace(/\bdivision\b/gi, ''));
+  return DIVISION_CANONICAL_BY_NORM[cleaned] || (raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : 'Dhaka');
+}
+
+export function resolveCanonicalDistrict(raw: string): DistrictData | undefined {
+  const norm = normalizeKey(raw);
+  if (!norm) return undefined;
+  return DISTRICT_BY_NORM_KEY.get(norm);
+}
+
+interface RawCatalogIndexItem {
+  id?: string;
+  glide?: string;
+  date?: string;
+  year?: number | string;
+  district?: string;
+  division?: string;
+  latitude?: number | string;
+  longitude?: number | string;
+  hazard_type?: string;
+  severity_score?: number | string;
+  summary?: string;
+}
+
+interface RawEventsMasterItem {
+  glide?: string;
+  full_description?: string;
+}
+
 // In-memory cache for fast client navigation
 let cachedAllEvents: ClimaticEvent[] | null = null;
 let cachedForecasts: ForecastRecord[] | null = null;
 let cachedSummary: EventsSummary | null = null;
 
+export function resetEventsClientCacheForTests(): void {
+  cachedAllEvents = null;
+  cachedForecasts = null;
+  cachedSummary = null;
+}
+
 export async function fetchAllCompactEvents(): Promise<ClimaticEvent[]> {
   if (cachedAllEvents) return cachedAllEvents;
+
+  // 1. Optional pre-built compact events JSON if present in deployment
   try {
     const res = await fetch('/data/climatic_hazards_events.json');
     const ct = res.headers.get('content-type') || '';
     if (res.ok && !ct.includes('text/html')) {
-      cachedAllEvents = await res.json();
-      return cachedAllEvents!;
+      const parsed = await res.json();
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        cachedAllEvents = parsed;
+        return cachedAllEvents;
+      }
+    }
+  } catch {
+    // Fall through to shipped /data/historical/hazard-catalog-index.json
+  }
+
+  // 2. Canonical shipped 3,062-record historical catalog (+ optional GLIDE master narratives)
+  try {
+    const [catalogRes, masterRes] = await Promise.all([
+      fetch('/data/historical/hazard-catalog-index.json'),
+      fetch('/data/historical/events-master.json').catch(() => null),
+    ]);
+    const catalogCt = catalogRes.headers.get('content-type') || '';
+    if (catalogRes.ok && !catalogCt.includes('text/html')) {
+      const rawCatalog: RawCatalogIndexItem[] = await catalogRes.json();
+      const masterDescByGlide = new Map<string, string>();
+      if (masterRes && masterRes.ok && !(masterRes.headers.get('content-type') || '').includes('text/html')) {
+        try {
+          const rawMaster: RawEventsMasterItem[] = await masterRes.json();
+          if (Array.isArray(rawMaster)) {
+            for (const m of rawMaster) {
+              if (m.glide && m.full_description) {
+                masterDescByGlide.set(m.glide, m.full_description);
+              }
+            }
+          }
+        } catch {
+          // Optional enrichment only
+        }
+      }
+
+      if (Array.isArray(rawCatalog)) {
+        cachedAllEvents = rawCatalog.map((item, idx) => {
+          const canonical = resolveCanonicalDistrict(item.district || '');
+          const dateStr = item.date || '';
+          const parsedYear = Number(item.year) || Number(dateStr.slice(0, 4)) || 2000;
+          const parsedMonth = Number(dateStr.split('-')[1]) || 1;
+          const rawSummary = item.summary && item.summary !== 'No detailed description available.' ? item.summary : '';
+          const glide = item.glide || '';
+          return {
+            id: item.id || `Event_${String(idx).padStart(4, '0')}`,
+            glide,
+            date: dateStr,
+            year: parsedYear,
+            month: parsedMonth,
+            district: canonical?.name || item.district || 'Unknown',
+            division: canonical ? canonicalDivisionName(canonical.division) : canonicalDivisionName(item.division || 'Dhaka'),
+            lat: Number(item.latitude) || canonical?.lat || 23.8103,
+            lng: Number(item.longitude) || canonical?.lng || 90.4125,
+            hazard: item.hazard_type || 'Unknown',
+            severity: Number(item.severity_score) || 1,
+            desc: rawSummary || (glide ? masterDescByGlide.get(glide) || '' : ''),
+          };
+        });
+        return cachedAllEvents;
+      }
     }
   } catch (err) {
-    console.warn('Failed to load compact events JSON, trying API fallback', err);
+    console.warn('Failed to load historical hazard catalog JSON', err);
   }
   return [];
 }
@@ -218,7 +366,7 @@ export async function fetchEventsSummary(): Promise<EventsSummary> {
       cachedSummary = { ...(await res.json()), source: 'artifact' };
       return cachedSummary!;
     }
-    } catch {
+  } catch {
     // fall through to the unavailable sentinel
   }
 
@@ -247,7 +395,8 @@ export async function fetchDistrictEvents(districtId: string): Promise<DistrictE
   // 1. Try backend API
   try {
     const res = await fetch(`/api/v1/events/district/${encodeURIComponent(districtId)}`);
-    if (res.ok) {
+    const ct = res.headers.get('content-type') || '';
+    if (res.ok && !ct.includes('text/html')) {
       const json = await res.json();
       if (json.data) return json.data;
     }
@@ -261,9 +410,18 @@ export async function fetchDistrictEvents(districtId: string): Promise<DistrictE
     fetchAllForecastRecords(),
   ]);
 
-  const normTarget = districtId.toLowerCase().replace(/[^a-z0-9]/g, '');
-  const matchedEvents = events.filter(e => e.district.toLowerCase().replace(/[^a-z0-9]/g, '') === normTarget);
-  const matchedForecasts = forecasts.filter(f => f.districtName.toLowerCase().replace(/[^a-z0-9]/g, '') === normTarget);
+  const canonicalTarget = resolveCanonicalDistrict(districtId);
+  const normTarget = normalizeKey(canonicalTarget?.id || districtId);
+  const matchesDistrict = (rawName: string): boolean => {
+    const resolved = resolveCanonicalDistrict(rawName);
+    if (canonicalTarget && resolved) return resolved.id === canonicalTarget.id;
+    return normalizeKey(rawName) === normTarget;
+  };
+
+  const matchedEvents = events
+    .filter((e) => matchesDistrict(e.district))
+    .sort((a, b) => b.date.localeCompare(a.date));
+  const matchedForecasts = forecasts.filter((f) => matchesDistrict(f.districtName));
 
   const hazardCounts: Record<string, number> = {};
   for (const e of matchedEvents) {
@@ -271,47 +429,49 @@ export async function fetchDistrictEvents(districtId: string): Promise<DistrictE
   }
 
   const years = Array.from({ length: 27 }, (_, i) => 2000 + i);
-  const yearlyTrend = years.map(yr => {
-    const yrEvents = matchedEvents.filter(e => e.year === yr);
-    const row: any = { year: yr, total: yrEvents.length };
+  const yearlyTrend = years.map((yr) => {
+    const yrEvents = matchedEvents.filter((e) => e.year === yr);
+    const row: { year: number; total: number; [hazard: string]: number } = { year: yr, total: yrEvents.length };
     for (const h of Object.keys(hazardCounts)) {
-      row[h] = yrEvents.filter(e => e.hazard === h).length;
+      row[h] = yrEvents.filter((e) => e.hazard === h).length;
     }
     return row;
   });
 
   const seasonalPattern = Array.from({ length: 12 }, (_, i) => {
     const m = i + 1;
-    const mEvents = matchedEvents.filter(e => e.month === m);
+    const mEvents = matchedEvents.filter((e) => e.month === m);
     return {
       month: m,
       monthName: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
       count: mEvents.length,
-      flood: mEvents.filter(e => e.hazard.includes('Flood')).length,
-      cyclone: mEvents.filter(e => e.hazard.includes('Cyclone')).length,
-      storm: mEvents.filter(e => e.hazard.includes('Storm')).length,
-      coldWave: mEvents.filter(e => e.hazard.includes('Cold')).length,
-      drought: mEvents.filter(e => e.hazard.includes('Drought') || e.hazard.includes('Heat')).length,
+      flood: mEvents.filter((e) => e.hazard.includes('Flood')).length,
+      cyclone: mEvents.filter((e) => e.hazard.includes('Cyclone')).length,
+      storm: mEvents.filter((e) => e.hazard.includes('Storm')).length,
+      coldWave: mEvents.filter((e) => e.hazard.includes('Cold')).length,
+      drought: mEvents.filter((e) => e.hazard.includes('Drought') || e.hazard.includes('Heat')).length,
     };
   });
 
   return {
-    district: matchedEvents[0]?.district || districtId,
-    division: matchedEvents[0]?.division || 'Dhaka',
+    district: canonicalTarget?.name || matchedEvents[0]?.district || districtId,
+    division: canonicalTarget ? canonicalDivisionName(canonicalTarget.division) : matchedEvents[0]?.division || 'Dhaka',
     totalEvents: matchedEvents.length,
     primaryHazard: Object.entries(hazardCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || '',
-    hazardBreakdown: Object.entries(hazardCounts).map(([hazard, count]) => ({
-      hazard,
-      count,
-      percentage: Math.round((count / (matchedEvents.length || 1)) * 100),
-    })).sort((a, b) => b.count - a.count),
+    hazardBreakdown: Object.entries(hazardCounts)
+      .map(([hazard, count]) => ({
+        hazard,
+        count,
+        percentage: Math.round((count / (matchedEvents.length || 1)) * 100),
+      }))
+      .sort((a, b) => b.count - a.count),
     yearlyTrend,
     seasonalPattern,
     recentEvents: matchedEvents.slice(0, 30),
     allEvents: matchedEvents,
     forecasts: matchedForecasts,
-    forecast7D: matchedForecasts.find(f => f.horizon === '7_days') || null,
-    forecast15D: matchedForecasts.find(f => f.horizon === '15_days') || null,
+    forecast7D: matchedForecasts.find((f) => f.horizon === '7_days') || matchedForecasts[0] || null,
+    forecast15D: matchedForecasts.find((f) => f.horizon === '15_days') || matchedForecasts[0] || null,
   };
 }
 
@@ -319,7 +479,8 @@ export async function fetchDivisionEvents(divisionId: string): Promise<DivisionE
   // 1. Try backend API
   try {
     const res = await fetch(`/api/v1/events/division/${encodeURIComponent(divisionId)}`);
-    if (res.ok) {
+    const ct = res.headers.get('content-type') || '';
+    if (res.ok && !ct.includes('text/html')) {
       const json = await res.json();
       if (json.data) return json.data;
     }
@@ -333,38 +494,72 @@ export async function fetchDivisionEvents(divisionId: string): Promise<DivisionE
     fetchAllForecastRecords(),
   ]);
 
-  const normTarget = divisionId.toLowerCase().replace(/[^a-z0-9]/g, '');
-  const matchedEvents = events.filter(e => e.division.toLowerCase().replace(/[^a-z0-9]/g, '').includes(normTarget) || normTarget.includes(e.division.toLowerCase().replace(/[^a-z0-9]/g, '')));
-  const matchedForecasts = forecasts.filter(f => f.division.toLowerCase().replace(/[^a-z0-9]/g, '').includes(normTarget) || normTarget.includes(f.division.toLowerCase().replace(/[^a-z0-9]/g, '')));
+  const targetDivision = canonicalDivisionName(divisionId);
+  const constituentDistricts = ALL_64_DISTRICTS.filter(
+    (d) => canonicalDivisionName(d.division) === targetDivision,
+  );
+  const constituentIds = new Set(constituentDistricts.map((d) => d.id));
 
+  const matchedEvents = events
+    .filter((e) => {
+      const resolved = resolveCanonicalDistrict(e.district);
+      if (resolved) return constituentIds.has(resolved.id);
+      return canonicalDivisionName(e.division) === targetDivision;
+    })
+    .sort((a, b) => b.date.localeCompare(a.date));
+
+  const matchedForecasts = forecasts.filter((f) => {
+    const resolved = resolveCanonicalDistrict(f.districtName);
+    if (resolved) return constituentIds.has(resolved.id);
+    return canonicalDivisionName(f.division) === targetDivision;
+  });
+
+  // Seed every constituent district so forecast tables & charts always cover all districts
+  // in the division (even when a district has 0 historical archive rows).
   const districtCounts: Record<string, number> = {};
-  const hazardCounts: Record<string, number> = {};
+  for (const d of constituentDistricts) {
+    districtCounts[d.name] = 0;
+  }
+  for (const f of matchedForecasts) {
+    const canonicalName = resolveCanonicalDistrict(f.districtName)?.name || f.districtName;
+    if (!(canonicalName in districtCounts)) districtCounts[canonicalName] = 0;
+  }
 
+  const hazardCounts: Record<string, number> = {};
   for (const e of matchedEvents) {
-    districtCounts[e.district] = (districtCounts[e.district] || 0) + 1;
+    const canonicalName = resolveCanonicalDistrict(e.district)?.name || e.district;
+    districtCounts[canonicalName] = (districtCounts[canonicalName] || 0) + 1;
     hazardCounts[e.hazard] = (hazardCounts[e.hazard] || 0) + 1;
   }
 
-  const districtRankings = Object.entries(districtCounts).map(([district, count]) => {
-    const f15 =
-      matchedForecasts.find(f => f.districtName.toLowerCase() === district.toLowerCase() && f.horizon === '15_days') ||
-      matchedForecasts.find(f => f.districtName.toLowerCase() === district.toLowerCase());
-    return {
-      district,
-      eventCount: count,
-      forecast7DSeverity: f15 ? f15.severityScore : null,
-      forecast7DHazard: f15 ? f15.hazardType : null,
-      forecast15DSeverity: f15 ? f15.severityScore : null,
-      forecast15DHazard: f15 ? f15.hazardType : null,
-    };
-  }).sort((a, b) => b.eventCount - a.eventCount);
+  const districtRankings = Object.entries(districtCounts)
+    .map(([district, count]) => {
+      const canonical = resolveCanonicalDistrict(district);
+      const matchesRow = (f: ForecastRecord): boolean => {
+        const resolved = resolveCanonicalDistrict(f.districtName);
+        if (canonical && resolved) return resolved.id === canonical.id;
+        return normalizeKey(f.districtName) === normalizeKey(district);
+      };
+      const f15 =
+        matchedForecasts.find((f) => matchesRow(f) && f.horizon === '15_days') ||
+        matchedForecasts.find((f) => matchesRow(f));
+      return {
+        district,
+        eventCount: count,
+        forecast7DSeverity: f15 ? f15.severityScore : null,
+        forecast7DHazard: f15 ? f15.hazardType : null,
+        forecast15DSeverity: f15 ? f15.severityScore : null,
+        forecast15DHazard: f15 ? f15.hazardType : null,
+      };
+    })
+    .sort((a, b) => b.eventCount - a.eventCount || (b.forecast15DSeverity ?? 0) - (a.forecast15DSeverity ?? 0));
 
   const years = Array.from({ length: 27 }, (_, i) => 2000 + i);
-  const yearlyTrend = years.map(yr => {
-    const yrEvents = matchedEvents.filter(e => e.year === yr);
-    const row: any = { year: yr, total: yrEvents.length };
+  const yearlyTrend = years.map((yr) => {
+    const yrEvents = matchedEvents.filter((e) => e.year === yr);
+    const row: { year: number; total: number; [hazard: string]: number } = { year: yr, total: yrEvents.length };
     for (const h of Object.keys(hazardCounts)) {
-      row[h] = yrEvents.filter(e => e.hazard === h).length;
+      row[h] = yrEvents.filter((e) => e.hazard === h).length;
     }
     return row;
   });
@@ -372,29 +567,36 @@ export async function fetchDivisionEvents(divisionId: string): Promise<DivisionE
   const seasonalPattern = Array.from({ length: 12 }, (_, i) => ({
     month: i + 1,
     monthName: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
-    count: matchedEvents.filter(e => e.month === i + 1).length,
+    count: matchedEvents.filter((e) => e.month === i + 1).length,
   }));
 
-  const capName = divisionId.charAt(0).toUpperCase() + divisionId.slice(1);
+  const dominantHistoricalHazard =
+    Object.entries(hazardCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ||
+    matchedForecasts[0]?.hazardType ||
+    '';
+
+  const totalDistrictsCount = constituentDistricts.length || Object.keys(districtCounts).length;
 
   return {
-    division: capName,
+    division: targetDivision,
     meta: {
-      id: divisionId.toLowerCase(),
-      name: capName,
-      capital: capName,
-      districtCount: Object.keys(districtCounts).length,
-      primaryHazard: Object.entries(hazardCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || '',
+      id: targetDivision.toLowerCase(),
+      name: targetDivision,
+      capital: targetDivision,
+      districtCount: totalDistrictsCount,
+      primaryHazard: dominantHistoricalHazard,
     },
     totalEvents: matchedEvents.length,
-    totalDistricts: Object.keys(districtCounts).length,
-    primaryHazard: Object.entries(hazardCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || '',
+    totalDistricts: totalDistrictsCount,
+    primaryHazard: dominantHistoricalHazard,
     districtRankings,
-    hazardBreakdown: Object.entries(hazardCounts).map(([hazard, count]) => ({
-      hazard,
-      count,
-      percentage: Math.round((count / (matchedEvents.length || 1)) * 100),
-    })).sort((a, b) => b.count - a.count),
+    hazardBreakdown: Object.entries(hazardCounts)
+      .map(([hazard, count]) => ({
+        hazard,
+        count,
+        percentage: Math.round((count / (matchedEvents.length || 1)) * 100),
+      }))
+      .sort((a, b) => b.count - a.count),
     yearlyTrend,
     seasonalPattern,
     allEvents: matchedEvents,
@@ -403,11 +605,22 @@ export async function fetchDivisionEvents(divisionId: string): Promise<DivisionE
   };
 }
 
+function matchesHazardSlug(hazardName: string, slug: string): boolean {
+  const h = normalizeKey(hazardName);
+  const target = normalizeKey(slug);
+  if (!h || !target) return false;
+  if (target === 'flood') return h === 'flood' || h === 'monsoonflood' || h === 'riverflood';
+  if (target === 'cyclone' || target === 'tropicalcyclone') return h.includes('cyclone');
+  if (target === 'storm' || target === 'severelocalstorm') return h.includes('storm');
+  return h === target || h.includes(target);
+}
+
 export async function fetchHazardEvents(hazardId: string): Promise<HazardEventsResponse> {
   // 1. Try backend API
   try {
     const res = await fetch(`/api/v1/events/hazard/${encodeURIComponent(hazardId)}`);
-    if (res.ok) {
+    const ct = res.headers.get('content-type') || '';
+    if (res.ok && !ct.includes('text/html')) {
       const json = await res.json();
       if (json.data) return json.data;
     }
@@ -421,16 +634,11 @@ export async function fetchHazardEvents(hazardId: string): Promise<HazardEventsR
     fetchAllForecastRecords(),
   ]);
 
-  const normTarget = hazardId.toLowerCase().replace(/[^a-z0-9]/g, '');
-  const matchedEvents = events.filter(e => {
-    const h = e.hazard.toLowerCase().replace(/[^a-z0-9]/g, '');
-    return h.includes(normTarget) || normTarget.includes(h);
-  });
+  const matchedEvents = events
+    .filter((e) => matchesHazardSlug(e.hazard, hazardId))
+    .sort((a, b) => b.date.localeCompare(a.date));
 
-  const matchedForecasts = forecasts.filter(f => {
-    const h = f.hazardType.toLowerCase().replace(/[^a-z0-9]/g, '');
-    return h.includes(normTarget) || normTarget.includes(h);
-  });
+  const matchedForecasts = forecasts.filter((f) => matchesHazardSlug(f.hazardType, hazardId));
 
   const divisionCounts: Record<string, number> = {};
   const districtCounts: Record<string, number> = {};
@@ -442,23 +650,30 @@ export async function fetchHazardEvents(hazardId: string): Promise<HazardEventsR
     if (e.month) monthCounts[e.month] = (monthCounts[e.month] || 0) + 1;
   }
 
-  const topDistricts = Object.entries(districtCounts).map(([district, count]) => ({
-    district,
-    division: matchedEvents.find(e => e.district === district)?.division || 'Dhaka',
-    count,
-    percentage: Math.round((count / (matchedEvents.length || 1)) * 100),
-  })).sort((a, b) => b.count - a.count);
+  const topDistricts = Object.entries(districtCounts)
+    .map(([district, count]) => ({
+      district,
+      division:
+        resolveCanonicalDistrict(district)?.division ||
+        matchedEvents.find((e) => e.district === district)?.division ||
+        'Dhaka',
+      count,
+      percentage: Math.round((count / (matchedEvents.length || 1)) * 100),
+    }))
+    .sort((a, b) => b.count - a.count);
 
-  const divisionBreakdown = Object.entries(divisionCounts).map(([division, count]) => ({
-    division,
-    count,
-    percentage: Math.round((count / (matchedEvents.length || 1)) * 100),
-  })).sort((a, b) => b.count - a.count);
+  const divisionBreakdown = Object.entries(divisionCounts)
+    .map(([division, count]) => ({
+      division,
+      count,
+      percentage: Math.round((count / (matchedEvents.length || 1)) * 100),
+    }))
+    .sort((a, b) => b.count - a.count);
 
   const years = Array.from({ length: 27 }, (_, i) => 2000 + i);
-  const yearlyTrend = years.map(yr => ({
+  const yearlyTrend = years.map((yr) => ({
     year: yr,
-    count: matchedEvents.filter(e => e.year === yr).length,
+    count: matchedEvents.filter((e) => e.year === yr).length,
   }));
 
   const seasonalPattern = Array.from({ length: 12 }, (_, i) => ({
@@ -486,6 +701,8 @@ export async function fetchHazardEvents(hazardId: string): Promise<HazardEventsR
     allEvents: matchedEvents,
     recentEvents: matchedEvents.slice(0, 50),
     forecasts: matchedForecasts,
-    forecastDistrictsCount: new Set(matchedForecasts.map(f => f.districtName)).size,
+    forecastDistrictsCount: new Set(
+      matchedForecasts.map((f) => resolveCanonicalDistrict(f.districtName)?.name || f.districtName),
+    ).size,
   };
 }
