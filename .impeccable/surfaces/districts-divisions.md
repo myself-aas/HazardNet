@@ -17,7 +17,7 @@ See one district or division: its outlook, its history, its exposure, and where 
 
 ## Direction
 
-Read track with a console header on the district and division archive pages. The daily district route opens with a short safety boundary, published tier and actions in a seven-day timeline; 15 days and reason/quality notes are progressively disclosed. Missing, stale and offline days must never read as safe. The older two-horizon public records remain an explicitly labelled alternate view, not an officer/private-data shortcut.
+Read track with a console header on the district and division archive pages. The daily district route opens with a short safety boundary, published tier, 64-district selector, and safe actions alongside a continuous 15-day trajectory (`Days 1–15`) showing a `0–100` Severity Index and highlighted Peak Severe Date(s) (with an optional 7-day compact view via `?days=7`, while keeping raw model score and internal fusion reason unexposed). Missing, stale and offline days must never read as safe. The older two-horizon public records remain an explicitly labelled alternate view, not an officer/private-data shortcut.
 
 ## Decisions to preserve
 
