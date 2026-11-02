@@ -7,7 +7,7 @@
     "title": "HazardNet Multi-Hazard Early Warning",
     "version": "3.2.0"
   },
-  "description": "Multi-Hazard Early Warning AI server for Bangladesh agriculture. Provides tools for retrieving 7- and 15-day hazard outlooks across 8 climate hazards (flood, flash flood, tropical cyclone, drought, heat wave, cold wave, fire, severe local storm) for 64 districts, weather observations, published alerts, historical hazard data, AI advisory chat, and unit conversions.",
+  "description": "Multi-Hazard Early Warning AI server for Bangladesh agriculture. Provides tools for retrieving continuous 15-day daily hazard outlooks (Days 1–15) across 8 climate hazards (flood, flash flood, tropical cyclone, drought, heat wave, cold wave, fire, severe local storm) for 64 districts, weather observations, published alerts, historical hazard data, AI advisory chat, and unit conversions.",
   "iconUrl": "https://www.hazardnet.live/hazardnet-mark.svg",
   "documentationUrl": "https://www.hazardnet.live/docs",
   "transport": {
@@ -31,7 +31,7 @@
   "tools": [
     {
       "name": "get_hazard_forecast",
-      "description": "Retrieve 7- and 15-day hazard outlooks for Bangladesh's 64 districts across 8 hazard classes. Returns hazard class, severity index (0-1), confidence bin, and independent physics cross-check with full provenance.",
+      "description": "Retrieve continuous 15-day daily hazard outlooks (Days 1–15) for Bangladesh's 64 districts across 8 hazard classes. Returns hazard class, severity index (0-1 normalized, 0-100 index), peak severe dates, confidence bin, and independent physics cross-check with full provenance.",
       "inputSchema": {
         "type": "object",
         "properties": {

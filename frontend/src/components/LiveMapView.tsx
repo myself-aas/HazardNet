@@ -202,10 +202,9 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
     isMeasuringRef.current = isMeasuring;
   }, [isMeasuring]);
 
-  // Live forecast overlay (weekly pipeline via /api/v1/forecasts/bulk);
-  // falls back to the static district baseline when the API is unreachable,
-  // so every consumer below can treat `liveDistricts` as always-available.
-  const [forecastHorizon, setForecastHorizon] = useState<ForecastHorizon>('7_days');
+  // Live forecast overlay (daily Kaggle pipeline via /data/forecasts-latest.json + /api/v1/forecasts/bulk);
+  // defaults to the full continuous 15-day trajectory ('15_days').
+  const [forecastHorizon, setForecastHorizon] = useState<ForecastHorizon>('15_days');
   const { districts: liveDistricts, isLive, liveCount, predictionDate } = useLiveDistricts(forecastHorizon);
 
   // Selected district object

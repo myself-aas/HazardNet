@@ -638,7 +638,7 @@ export const FrontDoor: React.FC = () => {
           <div className="grid grid-cols-2 gap-x-4 gap-y-5 lg:grid-cols-4">
             <Figure value={formatNumber(hazards.length)} label={t('frontdoor.covers.hazards')} />
             <Figure value={formatNumber(ALL_64_DISTRICTS.length)} label={t('frontdoor.covers.districts')} />
-            <Figure value="7 & 15 days" label={t('frontdoor.covers.horizons')} tone="muted" />
+            <Figure value={t('frontdoor.covers.horizonsValue')} label={t('frontdoor.covers.horizons')} tone="muted" />
             <Figure
               value={scorecard.episodes != null ? formatNumber(scorecard.episodes) : '—'}
               label={t('frontdoor.covers.episodes')}

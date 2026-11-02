@@ -84,18 +84,6 @@ export const DistrictLiveSnapshotSlot: React.FC<{ districtId: string }> = ({ dis
         >
           <button
             type="button"
-            onClick={() => setHorizon('7_days')}
-            aria-pressed={horizon === '7_days'}
-            className={`ap-focusable min-h-[44px] px-4 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
-              horizon === '7_days'
-                ? 'bg-[var(--ap-bg-grouped)] text-[var(--ap-label)] border border-[var(--ap-separator-opaque)]'
-                : 'text-[var(--ap-label-secondary)] hover:text-[var(--ap-label)]'
-            }`}
-          >
-            7-day window
-          </button>
-          <button
-            type="button"
             onClick={() => setHorizon('15_days')}
             aria-pressed={horizon === '15_days'}
             className={`ap-focusable min-h-[44px] px-4 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
@@ -104,7 +92,19 @@ export const DistrictLiveSnapshotSlot: React.FC<{ districtId: string }> = ({ dis
                 : 'text-[var(--ap-label-secondary)] hover:text-[var(--ap-label)]'
             }`}
           >
-            15-day window
+            Continuous 15 days
+          </button>
+          <button
+            type="button"
+            onClick={() => setHorizon('7_days')}
+            aria-pressed={horizon === '7_days'}
+            className={`ap-focusable min-h-[44px] px-4 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
+              horizon === '7_days'
+                ? 'bg-[var(--ap-bg-grouped)] text-[var(--ap-label)] border border-[var(--ap-separator-opaque)]'
+                : 'text-[var(--ap-label-secondary)] hover:text-[var(--ap-label)]'
+            }`}
+          >
+            Days 1–7 subset
           </button>
         </div>
       </div>
@@ -203,7 +203,7 @@ export const DistrictLiveSnapshotSlot: React.FC<{ districtId: string }> = ({ dis
           to={`/forecast/district/${district.id}?view=published-records`}
           className="ap-focusable inline-flex min-h-[44px] items-center font-medium text-[var(--ap-link)] underline underline-offset-4"
         >
-          View published two-horizon records
+          View legacy summary records
         </Link>
       </div>
     </section>

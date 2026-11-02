@@ -468,7 +468,8 @@ const EN = {
   'frontdoor.covers.h2': 'What HazardNet covers',
   'frontdoor.covers.hazards': 'Hazard classes, from cold wave to tropical cyclone',
   'frontdoor.covers.districts': 'Districts addressed on the live map',
-  'frontdoor.covers.horizons': 'Forecast horizons: the next 7 days and the next 15 days',
+  'frontdoor.covers.horizonsValue': 'Days 1–15',
+  'frontdoor.covers.horizons': 'Continuous daily outlooks: 15 consecutive days with peak severe dates',
   'frontdoor.covers.episodes': 'Historical episodes checked in the validation scorecard',
   'frontdoor.covers.coverageValue': '{covered} of {expected} districts',
   'frontdoor.covers.noteLead':
@@ -510,14 +511,14 @@ const EN = {
   /* The reader's word for this section, not the vendor's: nothing on the page is for sale, and
      `Hazards` is what the top bar already calls the same thing. The caption keeps the count. */
   'frontdoor.products.h2': 'Hazards',
-  'frontdoor.products.aside': 'Eight classes · 7 and 15 day horizons',
-  'frontdoor.products.horizonsEyebrow': 'Forecast horizons',
-  'frontdoor.products.horizon7': '7-day outlook',
+  'frontdoor.products.aside': 'Eight classes · Continuous 15-day daily outlooks',
+  'frontdoor.products.horizonsEyebrow': 'Continuous 15-day trajectory',
+  'frontdoor.products.horizon7': 'Days 1–7 · Near-term daily trajectory',
   'frontdoor.products.horizon7desc':
-    'For the week ahead: each district\'s outlook over the next 7 days.',
-  'frontdoor.products.horizon15': '15-day outlook',
+    'Day-by-day severity index (0–100) and hazard class across the first seven days for short-notice field preparation.',
+  'frontdoor.products.horizon15': 'Days 8–15 · Extended daily trajectory & peak dates',
   'frontdoor.products.horizon15desc':
-    'For planning further ahead: the same district outlook over the next 15 days, published beside the week and read as the less certain of the two.',
+    'Extended daily steps completing the continuous 15-day window and highlighting peak severe dates for seasonal planning; read as more uncertain than Days 1–7.',
   'frontdoor.products.methodologyLink': 'How each class is scored',
   'frontdoor.products.forecastDocs': 'How to read a forecast',
   'frontdoor.blogs.h2': 'Newest from the blog',
@@ -1015,7 +1016,8 @@ const BN: Record<string, string> = {
   'frontdoor.covers.h2': 'HazardNet যা আওতা করে',
   'frontdoor.covers.hazards': 'দুর্যোগের শ্রেণি, শৈতপ্রবাহ থেকে ঘূর্ণিঝড় পর্যন্ত',
   'frontdoor.covers.districts': 'লাইভ মানচিত্রে আওতাভুক্ত জেলা',
-  'frontdoor.covers.horizons': 'পূর্বাভাসের সময়কাল: আগামী ৭ দিন ও আগামী ১৫ দিন',
+  'frontdoor.covers.horizonsValue': 'দিন ১–১৫',
+  'frontdoor.covers.horizons': 'ধারাবাহিক দৈনিক পূর্বাভাস: সর্বোচ্চ তীব্রতার তারিখসহ টানা ১৫ দিন',
   'frontdoor.covers.episodes': 'যাচাই স্কোরকার্ডে যাচাই করা ঐতিহাসিক ঘটনা',
   'frontdoor.covers.coverageValue': '{expected}টির মধ্যে {covered}টি জেলা',
   'frontdoor.covers.noteLead':
@@ -1055,13 +1057,13 @@ const BN: Record<string, string> = {
     'এইবার অন্তত একটি প্রকাশিত তথ্য-ফাইল পড়া যায়নি। যেখানে প্রযোজ্য, ওপরের প্যানেলগুলো তা জানিয়েছে; খালি ঘর কখনো শূন্য হিসেবে দেখানো হয় না।',
 
   'frontdoor.products.h2': 'ঝুঁকিসমূহ',
-  'frontdoor.products.aside': '৮টি শ্রেণি · ৭ ও ১৫ দিনের পূর্বাভাস',
-  'frontdoor.products.horizonsEyebrow': 'পূর্বাভাসের সময়সীমা',
-  'frontdoor.products.horizon7': '৭ দিনের পূর্বাভাস',
-  'frontdoor.products.horizon7desc': 'আগামী সপ্তাহের জন্য: পরবর্তী ৭ দিনে প্রতিটি জেলার পূর্বাভাস।',
-  'frontdoor.products.horizon15': '১৫ দিনের পূর্বাভাস',
+  'frontdoor.products.aside': '৮টি শ্রেণি · ধারাবাহিক ১৫ দিনের দৈনিক পূর্বাভাস',
+  'frontdoor.products.horizonsEyebrow': 'ধারাবাহিক ১৫ দিনের ধারা',
+  'frontdoor.products.horizon7': 'দিন ১–৭ · নিকটবর্তী দৈনিক ধারা',
+  'frontdoor.products.horizon7desc': 'স্বল্প সময়ের মাঠ প্রস্তুতির জন্য প্রথম সাত দিনের প্রতিদিনের তীব্রতা সূচক (০–১০০) ও দুর্যোগ শ্রেণি।',
+  'frontdoor.products.horizon15': 'দিন ৮–১৫ · বর্ধিত দৈনিক ধারা ও সর্বোচ্চ তীব্রতার তারিখ',
   'frontdoor.products.horizon15desc':
-    'আরও সামনের পরিকল্পনার জন্য: পরবর্তী ১৫ দিনে একই জেলা-পূর্বাভাস, সপ্তাহের পূর্বাভাসের পাশেই প্রকাশিত এবং দুটির মধ্যে কম নিশ্চিত হিসেবে পড়ার মতো।',
+    'ধারাবাহিক ১৫ দিনের পূর্ণ উইন্ডো ও সর্বোচ্চ তীব্রতার তারিখ চিহ্নিতকরণ, যা মৌসুমি পরিকল্পনার জন্য প্রকাশিত এবং দিন ১–৭-এর চেয়ে কম নিশ্চিত হিসেবে পড়ার মতো।',
   'frontdoor.products.methodologyLink': 'প্রতিটি শ্রেণি কীভাবে মূল্যায়ন করা হয়',
   'frontdoor.products.forecastDocs': 'পূর্বাভাস কীভাবে পড়বেন',
   'frontdoor.blogs.h2': 'ব্লগের সর্বশেষ লেখা',

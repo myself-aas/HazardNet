@@ -450,18 +450,6 @@ export const AdvisoriesPage: React.FC = () => {
             >
               <button
                 type="button"
-                onClick={() => setKaggleHorizon('7_days')}
-                aria-pressed={kaggleHorizon === '7_days'}
-                className={`ap-focusable min-h-[44px] px-4 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
-                  kaggleHorizon === '7_days'
-                    ? 'bg-white text-carbon-90 border border-carbon-20'
-                    : 'text-carbon-70 hover:text-carbon-90'
-                }`}
-              >
-                7-day window
-              </button>
-              <button
-                type="button"
                 onClick={() => setKaggleHorizon('15_days')}
                 aria-pressed={kaggleHorizon === '15_days'}
                 className={`ap-focusable min-h-[44px] px-4 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
@@ -470,7 +458,19 @@ export const AdvisoriesPage: React.FC = () => {
                     : 'text-carbon-70 hover:text-carbon-90'
                 }`}
               >
-                15-day window
+                Continuous 15 days
+              </button>
+              <button
+                type="button"
+                onClick={() => setKaggleHorizon('7_days')}
+                aria-pressed={kaggleHorizon === '7_days'}
+                className={`ap-focusable min-h-[44px] px-4 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
+                  kaggleHorizon === '7_days'
+                    ? 'bg-white text-carbon-90 border border-carbon-20'
+                    : 'text-carbon-70 hover:text-carbon-90'
+                }`}
+              >
+                Days 1–7 subset
               </button>
             </div>
             <Link

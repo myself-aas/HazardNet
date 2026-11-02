@@ -1,6 +1,6 @@
 import React from 'react';
 import MaterialIcon from '../MaterialIcon';
-import { FORECAST_HORIZONS, formatHorizonLabel, type ForecastHorizon } from '../../lib/forecasts';
+import { formatHorizonLabel, type ForecastHorizon } from '../../lib/forecasts';
 import type { HazardLayerDef } from './mapPrimitives';
 import { triggerHaptic } from '../../lib/haptics';
 
@@ -216,7 +216,7 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
         </div>
 
         <div className="flex items-center gap-2 shrink-0 flex-wrap" role="group" aria-label="Forecast horizon">
-          {FORECAST_HORIZONS.map((horizon) => (
+          {(['15_days', '7_days'] as const).map((horizon) => (
             <button
               key={horizon}
               type="button"

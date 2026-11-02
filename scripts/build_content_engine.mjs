@@ -608,7 +608,7 @@ function districtRoute({ district, rows, archive, now, outlook, shared }) {
           'Severity index (0.00–1.00) is the model\'s damage-potential score for the class it selected: not a probability and not a share of damage.',
           'Confidence is the model\'s own certainty in that class, published as uncalibrated; it is not a measure of whether the forecast is correct.',
           'The severity track is an independent formula-based estimate. Divergence between the two tracks is normal and is shown rather than hidden.',
-          'Horizons are 7 and 15 days. The 15-day outlook is the less certain of the two and is a planning aid, not a storm-specific prediction.',
+          'Each daily run covers 15 consecutive forecast dates (Days 1 to 15) with peak severe dates highlighted; Days 8 to 15 carry higher meteorological uncertainty than Days 1 to 7 and serve as a planning aid, not a storm-specific warning.',
           shared.publicationGate ?? SHARED_DEFAULTS.publicationGate,
         ],
       },

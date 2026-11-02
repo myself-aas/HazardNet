@@ -19,7 +19,7 @@ const base: MapToolbarProps = {
   onExport: jest.fn(),
   searchQuery: '',
   onSearchQueryChange: jest.fn(),
-  forecastHorizon: '7_days',
+  forecastHorizon: '15_days',
   onForecastHorizonChange: jest.fn(),
   isLive: true,
   liveCount: 64,
@@ -55,6 +55,16 @@ describe('MapToolbar', () => {
   it('shows stored-forecast count, not a live-inference claim', () => {
     render(<MapToolbar {...base} />);
     expect(screen.getByText('Stored 64/64')).toBeInTheDocument();
+  });
+
+  it('leads with Continuous 15 Days as the primary horizon control ahead of Days 1–7 Subset', () => {
+    render(<MapToolbar {...base} />);
+    const group = screen.getByRole('group', { name: 'Forecast horizon' });
+    const buttons = Array.from(group.querySelectorAll('button'));
+    expect(buttons.map((b) => b.textContent)).toEqual(['Continuous 15 Days', 'Days 1–7 Subset']);
+    expect(buttons[0]).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(buttons[1]);
+    expect(base.onForecastHorizonChange).toHaveBeenCalledWith('7_days');
   });
 
   it('offers no basemap switcher — the map ships one ground', () => {

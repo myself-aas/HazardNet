@@ -146,8 +146,8 @@ export function registerWebMCPTools(): void {
       name: 'get-forecast',
       title: 'Get Hazard Forecast',
       description:
-        'Get the current multi-hazard forecast for a Bangladesh district. Returns hazard class, ' +
-        'severity index, confidence, and physics cross-check for each horizon (7-day and 15-day).',
+        'Get the current continuous 15-day multi-hazard forecast for a Bangladesh district. Returns hazard class, ' +
+        'severity index, peak severe dates, confidence, and physics cross-check across the 15-day trajectory.',
       inputSchema: {
         type: 'object',
         properties: {

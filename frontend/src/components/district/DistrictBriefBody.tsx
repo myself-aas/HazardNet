@@ -66,7 +66,7 @@ export const DistrictBriefBody: React.FC = () => {
           <span className="px-3 text-carbon-60 font-mono text-xs uppercase font-bold">Jump:</span>
           {[
             { id: 'sec-exposure', label: 'Local exposure', icon: <Users className="w-3.5 h-3.5" /> },
-            { id: 'sec-hazard-trend', label: '7-day hazard trend', icon: <TrendingUp className="w-3.5 h-3.5" /> },
+            { id: 'sec-hazard-trend', label: '15-day hazard trend', icon: <TrendingUp className="w-3.5 h-3.5" /> },
             { id: 'sec-weather', label: 'Live weather', icon: <Cloud className="w-3.5 h-3.5" /> },
             { id: 'sec-history', label: 'Historical events', icon: <History className="w-3.5 h-3.5" /> },
             { id: 'sec-advisory', label: 'Advisory briefing', icon: <Sparkles className="w-3.5 h-3.5" /> },
@@ -142,8 +142,8 @@ export const DistrictBriefBody: React.FC = () => {
               <TrendingUp className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-carbon-90 tracking-tight">Hazard Trend: 7-Day Risk Level Fluctuations</h2>
-              <p className="text-xs text-carbon-60">Longitudinal risk scoring and multi-hazard severity progression over the forecast horizon.</p>
+              <h2 className="text-lg font-bold text-carbon-90 tracking-tight">Hazard Trend: Continuous 15-Day Risk Progression</h2>
+              <p className="text-xs text-carbon-60">Longitudinal risk scoring and multi-hazard severity progression across Days 1 to 15.</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5 bg-carbon-10 p-1 rounded-xl text-xs font-semibold screen-only">
@@ -634,7 +634,7 @@ export const DistrictBriefBody: React.FC = () => {
             <div>
               <strong className="text-carbon-90 font-bold block mb-1">[1] Published forecast record:</strong>
               <p className="text-carbon-70">
-                Each district unit is one record: hazard class, severity, confidence score and the 7- and 15-day horizons, stamped with the forecast date of the run that produced it. Nothing on this page is recomputed in the browser.
+                Each daily run publishes a continuous 15-day sequence (Days 1 to 15) per district: hazard class, 0 to 100 severity index, highlighted peak severe dates, and confidence score, stamped with the forecast date of the run that produced it. Nothing on this page is recomputed in the browser.
               </p>
             </div>
             <div>
@@ -659,7 +659,7 @@ export const DistrictBriefBody: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs text-carbon-60 font-mono">
             <div>Unit: <strong className="text-carbon-80">{data.districtName}</strong></div>
-            <div>Horizons: <strong className="text-carbon-80">7- and 15-day</strong></div>
+            <div>Trajectory: <strong className="text-carbon-80">Continuous 15-day (Days 1–15)</strong></div>
             <div>Validation: <strong className="text-carbon-80">Forecast skill not yet validated</strong></div>
           </div>
         </div>

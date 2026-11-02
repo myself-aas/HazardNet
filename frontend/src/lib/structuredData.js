@@ -140,7 +140,7 @@ function datasetNode(route, origin, attribution) {
     '@id': `${origin}/data-sources#forecast-archive`,
     name: 'HazardNet multi-hazard forecast archive (Bangladesh)',
     description:
-      'Per-district hazard classification and severity forecasts for Bangladesh at 7- and 15-day horizons, derived from environmental data, satellite data, satellite data and weather data, published as CSV and JSON with a provenance header on every snapshot.',
+      'Per-district continuous 15-day daily hazard classification and severity forecasts for Bangladesh (Days 1–15), derived from environmental, satellite, and weather data, published as CSV and JSON with a provenance header on every snapshot.',
     url: `${origin}/download`,
     spatialCoverage: { '@type': 'Place', name: 'Bangladesh' },
     variableMeasured: ['hazard class', 'severity index', 'confidence bin', 'physics cross-check severity'],
@@ -246,7 +246,7 @@ export function buildJsonLdGraph({ route, site, attribution }) {
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
       featureList: [
         'Multi-hazard forecasting for Bangladesh (8 hazard classes)',
-        '7- and 15-day district outlooks with confidence bins',
+        'Continuous 15-day daily district outlooks (Days 1–15) with peak severe dates and confidence bins',
         'Dual-track severity (model severity + formula-based physics estimate)',
         'Offline-capable map tiles and PDF export',
       ],

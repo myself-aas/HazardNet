@@ -105,8 +105,8 @@ export const Footer: React.FC = () => {
           <div className="max-w-xl space-y-3">
             <HazardNetBrand size="lg" />
             <p className="text-ap-caption leading-relaxed text-carbon-60">
-              A multi-hazard forecasting platform for 7- and 15-day multi-hazard outlooks across Bangladesh, with
-              dual-track severity and agronomic context.
+              A multi-hazard forecasting platform publishing continuous 15-day daily outlooks across Bangladesh’s 64
+              districts, with 0–100 severity index, peak severe dates, dual-track severity and agronomic context.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">

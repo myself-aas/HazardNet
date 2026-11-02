@@ -241,7 +241,7 @@ export const DivisionDetailPage: React.FC = () => {
                 Active Model Forecasts Across {data.division} Districts
               </h2>
               <p className="text-xs text-carbon-60">
-                The latest 7-day and 15-day forecast records for each district
+                Continuous 15-day forecast summaries and near-term Days 1–7 subsets for each district
               </p>
             </div>
             <span className="text-xs font-semibold px-2.5 py-1 bg-carbon-05 text-ap-link rounded-md">
@@ -252,7 +252,7 @@ export const DivisionDetailPage: React.FC = () => {
           {/* Interactive Rechart: District Forecast Severity Comparison */}
           <div className="pt-4 pb-2">
             <h3 className="text-xs font-bold text-carbon-70 uppercase tracking-wider mb-2">
-              District Forecast Severity Comparison (7-Day vs 15-Day Horizons)
+              District Forecast Severity Comparison (Days 1–7 Subset vs Full 15-Day Trajectory)
             </h3>
             <div className="h-64 sm:h-72 w-full">
               <ResponsiveContainer width="100%" height="100%">

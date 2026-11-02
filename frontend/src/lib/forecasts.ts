@@ -720,6 +720,6 @@ export const forecastAgeHours = (predictionDate: string, now: Date = new Date())
 
 /** Format a horizon for the map and individual forecast views. */
 export const formatHorizonLabel = (horizon: ForecastHorizon): string => {
-  const days = Number(horizon.replace('_days', ''));
-  return `Next ${days} Days`;
+  if (horizon === '15_days') return 'Continuous 15 Days';
+  return 'Days 1–7 Subset';
 };

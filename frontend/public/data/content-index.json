@@ -1,6 +1,6 @@
 {
   "schema": "hazardnet-content-index/v1",
-  "generated_at": "2026-11-02T14:47:17.184Z",
+  "generated_at": "2026-11-02T17:01:44.524Z",
   "generated_by": "scripts/build_content_engine.mjs",
   "origin": "https://www.hazardnet.live",
   "inputs": {

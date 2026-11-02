@@ -356,9 +356,15 @@ describe('the front door', () => {
     expect(await axe(bengali.container)).toHaveNoViolations();
   });
 
-  it('shows the hazards section: eight hazard classes and both horizons', async () => {
+  it('shows the hazards section and continuous 15-day daily outlook framing across English, Bangla, and site-routes.json', async () => {
+    expect(JSON.stringify(siteRoutes)).not.toMatch(/7- and 15-day/i);
     const { container, unmount } = renderPage();
     await waitFor(() => expect(screen.getByText('Monsoon outlook test post')).toBeInTheDocument());
+    expect(container.textContent).toMatch(/continuous 15-day daily outlooks/i);
+    expect(container.textContent).not.toMatch(/7- and 15-day outlooks/i);
+    expect(container.textContent).toContain('Days 1–15');
+    expect(container.textContent).not.toContain('7 & 15 days');
+
     // Called "Hazards" since 2026-10-07 - the reader's word for the section, and the word the top
     // bar uses for the same thing. "Products" was the vendor's word on a page that sells nothing.
     const heading = screen.getByRole('heading', { name: 'Hazards' });
@@ -368,14 +374,14 @@ describe('the front door', () => {
     const section = heading.closest('section')!;
     expect(section).toHaveAttribute('aria-labelledby', 'hazards-heading');
     expect(heading).toHaveAttribute('id', 'hazards-heading');
-    expect(within(section).getByText(/Eight classes · 7 and 15 day horizons/).tagName).toBe('SPAN');
+    expect(within(section).getByText(/Eight classes · Continuous 15-day daily outlooks/).tagName).toBe('SPAN');
     // The eight classes come from the same methodology file the /hazards page reads, including
     // that file's own summaries rather than a second set of card taglines.
     expect(container.textContent).toContain('Tropical Cyclone');
     expect(container.textContent).toContain('Cold Wave');
     expect(section.textContent).toContain('Riverine and monsoon flooding');
-    expect(container.textContent).toContain('7-day outlook');
-    expect(container.textContent).toContain('15-day outlook');
+    expect(container.textContent).toContain('Days 1–7 · Near-term daily trajectory');
+    expect(container.textContent).toContain('Days 8–15 · Extended daily trajectory & peak dates');
     // Critique P0: daily publication must not be sold as a live/real-time emergency feed.
     expect(container.textContent).not.toMatch(/Live emergency|real-time early warning/i);
     // Distilled index: every class is a row in page flow. There is no Shelf/Grid mode, no

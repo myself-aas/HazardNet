@@ -11,7 +11,7 @@
   "origin": "https://www.hazardnet.live",
   "locale": "en",
   "defaultTitle": "HazardNet: Multi-Hazard Early Warning for Bangladesh Agriculture",
-  "defaultDescription": "HazardNet publishes 7- and 15-day multi-hazard outlooks for Bangladesh's 64 districts: 8 hazards, dual-track severity, and the provenance to check every number.",
+  "defaultDescription": "HazardNet publishes continuous 15-day multi-hazard daily outlooks for Bangladesh's 64 districts: 8 hazards, 0–100 severity index, peak severe dates, and the provenance to check every number.",
   "twitter": "@hazardnet",
   "publisher": {
    "name": "HazardNet",
@@ -25,7 +25,7 @@
    "path": "/",
    "label": "Overview",
    "title": "HazardNet: multi-hazard early warning for Bangladesh agriculture",
-   "description": "Dated 7- and 15-day hazard outlooks for Bangladesh's 64 districts: the artifact behind every number, an open validation scorecard, and the limits stated.",
+   "description": "Dated continuous 15-day daily hazard outlooks for Bangladesh's 64 districts: the artifact behind every number, an open validation scorecard, and the limits stated.",
    "keywords": [
     "multi-hazard early warning Bangladesh",
     "agricultural disaster risk reduction",
@@ -60,8 +60,8 @@
    },
    "appShell": false,
    "h1": "A forecast you can check, not just read",
-   "standfirst": "HazardNet is an independent, open research platform that turns satellite observations and weather forecasts into 7- and 15-day outlooks for eight climate hazards across Bangladesh’s 64 districts. Every figure it shows comes from a named artifact with a build date, the validation scorecard is published whether it flatters the model or not, and the boundary between this platform and the agencies that issue official warnings is stated on every page.",
-   "updated": "2026-10-28",
+   "standfirst": "HazardNet is an independent, open research platform that turns satellite observations and weather forecasts into continuous 15-day daily outlooks for eight climate hazards across Bangladesh’s 64 districts. Every figure it shows comes from a named artifact with a build date, the validation scorecard is published whether it flatters the model or not, and the boundary between this platform and the agencies that issue official warnings is stated on every page.",
+   "updated": "2026-11-02",
    "sections": [
     {
      "h2": "Start here: what to do with an outlook",
@@ -152,14 +152,14 @@
     {
      "h2": "What a forecast is, and how it differs from an alert",
      "paragraphs": [
-      "Every forecast on HazardNet is a published record: one district, one hazard class, a severity value, a confidence score and 7- and 15-day horizons, stamped with the date of the run that produced it. No forecast, alert or figure on this site is produced by a language model: every number is read from a committed artifact, and no number is interpolated to fill a gap in a run.",
+      "Every forecast on HazardNet is a published record: one district, a continuous 15-day daily sequence (Days 1 to 15), a dominant hazard class, a continuous severity index (0 to 100), peak severe dates, and a confidence score, stamped with the date of the run that produced it. No forecast, alert or figure on this site is produced by a language model: every number is read from a committed artifact, and no number is interpolated to fill a gap in a run.",
       "An alert is narrower than a forecast. It is a forecast row the publication gate has released as a card, with its level, evidence, policy version and reviewer state attached. A district can therefore have a forecast on the map while no alert is published for it; and, as the strip under the headline states, no published alert is not the same as no hazard."
      ],
      "bullets": [
       "Results only: how a record is generated is research-private and is not published.",
       "Every figure on this site traces to a published forecast record with a forecast date.",
       "Two severity tracks are reported per record, a skill track and a physics track, each shown with its own honest label.",
-      "The 7-day horizon covers the week ahead. The 15-day horizon covers planning further ahead, and should be read as the less certain of the two."
+      "Each daily run covers 15 consecutive forecast dates (Days 1 to 15), highlighting peak severe dates across the full window; Days 8 to 15 carry greater meteorological uncertainty than Days 1 to 7."
      ],
      "links": [
       {
@@ -448,7 +448,7 @@
      "reviewedBy": "project owner",
      "label": "সারসংক্ষেপ",
      "h1": "এমন এক পূর্বাভাস, যা আপনি কেবল পড়বেন না: যাচাইও করতে পারবেন",
-     "standfirst": "HazardNet একটি স্বাধীন ও উন্মুক্ত গবেষণা প্ল্যাটফর্ম, যা উপগ্রহ পর্যবেক্ষণ ও আবহাওয়া পূর্বাভাস থেকে বাংলাদেশের ৬৪টি জেলার জন্য আটটি জলবায়ু-দুর্যোগের ৭ ও ১৫ দিনের পূর্বাভাস তৈরি করে। এতে দেখানো প্রতিটি সংখ্যা একটি নির্দিষ্ট আর্টিফ্যাক্ট থেকে আসে যার নির্মাণ-তারিখ আছে; যাচাই স্কোরকার্ড প্রকাশ করা হয় তা মডেলের পক্ষে যাক বা না যাক; এবং সরকারি সতর্কবার্তা প্রকাশকারী সংস্থাগুলোর সঙ্গে এই প্ল্যাটফর্মের সীমারেখা প্রতিটি পাতায় লেখা থাকে।",
+     "standfirst": "HazardNet একটি স্বাধীন ও উন্মুক্ত গবেষণা প্ল্যাটফর্ম, যা উপগ্রহ পর্যবেক্ষণ ও আবহাওয়া পূর্বাভাস থেকে বাংলাদেশের ৬৪টি জেলার জন্য আটটি জলবায়ু-দুর্যোগের ধারাবাহিক ১৫ দিনের দৈনিক পূর্বাভাস তৈরি করে। এতে দেখানো প্রতিটি সংখ্যা একটি নির্দিষ্ট আর্টিফ্যাক্ট থেকে আসে যার নির্মাণ-তারিখ আছে; যাচাই স্কোরকার্ড প্রকাশ করা হয় তা মডেলের পক্ষে যাক বা না যাক; এবং সরকারি সতর্কবার্তা প্রকাশকারী সংস্থাগুলোর সঙ্গে এই প্ল্যাটফর্মের সীমারেখা প্রতিটি পাতায় লেখা থাকে।",
      "sections": [
       {},
       {},
@@ -628,8 +628,8 @@
   {
    "path": "/live",
    "label": "Live map",
-   "title": "Live hazard map: 7- and 15-day outlooks for Bangladesh’s 64 districts",
-   "description": "The HazardNet GIS console: district-level hazard class, severity index, confidence bin and physics cross-check on an offline-capable map, with the run date printed beside it.",
+   "title": "Live hazard map: continuous 15-day daily outlooks for Bangladesh’s 64 districts",
+   "description": "The HazardNet GIS console: district-level continuous 15-day daily hazard trajectory, 0–100 severity index, peak severe dates, confidence bin and physics cross-check on an offline-capable map, with the run date printed beside it.",
    "keywords": [
     "live hazard map Bangladesh",
     "district flood outlook",
@@ -647,23 +647,23 @@
    },
    "appShell": true,
    "h1": "The live hazard map",
-   "standfirst": "HazardNet is a free, non-commercial early-warning platform for Bangladesh agriculture. It converts environmental observations and weather forecasts into 7- and 15-day outlooks for eight climate hazards, then shows them on a map that keeps working when the connection does not.",
-   "updated": "2026-09-18",
+   "standfirst": "HazardNet is a free, non-commercial early-warning platform for Bangladesh agriculture. It converts environmental observations and weather forecasts into continuous 15-day daily outlooks for eight climate hazards across all 64 districts, then shows them on a map that keeps working when the connection does not.",
+   "updated": "2026-11-02",
    "sections": [
     {
      "h2": "What you are looking at",
      "paragraphs": [
-      "The interactive map at the top of this page colours each district by the highest-severity hazard of its current outlook, where the latest model run covers it; districts outside that run keep their static baseline colour, and the district card in the dashboard states which of the two is shown. Selecting a district opens its forecast card: hazard type, severity index, confidence bin, the crops and land cover at risk, and the lead time in days.",
+      "The interactive map at the top of this page colours each district by the peak-severity hazard across its continuous 15-day daily outlook, where the latest model run covers it; districts outside that run keep their static baseline colour, and the district card in the dashboard states which of the two is shown. Selecting a district opens its forecast card: hazard type, severity index, peak severe dates, confidence bin, the crops and land cover at risk, and a direct link into all 15 daily steps.",
       "Every number on the map comes from the most recent forecast snapshot the platform holds. The snapshot's prediction date is printed next to the map: if that date is more than a few days old, treat the outlook as stale and read the banner that explains why."
      ]
     },
     {
      "h2": "How to read the numbers honestly",
      "bullets": [
-      "Severity index (0.00–1.00) is the model's continuous damage-potential score. It is not a probability and not a percentage of damage.",
+      "Severity index (0.00–1.00 normalized, 0–100 index) is the model's continuous damage-potential score across Days 1 to 15. It is not a probability and not a percentage of damage.",
       "Confidence (Certain ≥ 0.85, Probable 0.70–0.85, Uncertain < 0.70) is the model's own certainty in the hazard class it selected. It is not a measure of whether the forecast is correct, and it is not derived from the physics cross-check: the two tracks are computed separately and can disagree, and each district card shows both side by side so the divergence is visible.",
       "Physics severity is an independent, formula-based estimate (for example, a vegetation-health index for drought or an excess-heat factor for heat waves). Model and physics severity diverging is normal and is shown rather than hidden.",
-      "Lead time is the forecast horizon: 7 or 15 days. The 15-day outlook is the more uncertain of the two; treat both as planning windows, not warnings."
+      "Lead time spans a continuous 15-day daily trajectory (Days 1 to 15), with peak severe dates highlighted and an optional Days 1 to 7 near-term filter. Later days carry higher uncertainty; treat the entire trajectory as a planning window, not an official warning."
      ],
      "callout": {
       "tone": "warning",
@@ -683,7 +683,7 @@
    "path": "/alerts",
    "label": "Alerts",
    "title": "Live hazard alerts for Bangladesh districts: HazardNet",
-   "description": "Published HazardNet alerts by district: level, hazard, 7- and 15-day horizon, the evidence behind each one, and the policy that decides it. Available in Bengali and English, and it keeps working offline.",
+   "description": "Published HazardNet alerts by district: level, hazard, continuous 15-day outlook window, the evidence behind each one, and the policy that decides it. Available in Bengali and English, and it keeps working offline.",
    "keywords": [
     "bangladesh hazard alerts",
     "district alert levels",
@@ -698,13 +698,13 @@
    "appShell": false,
    "h1": "Hazard alerts",
    "standfirst": "Every alert HazardNet has published, district by district, with the evidence and the policy behind it. A watch is the highest level the engine can publish on its own; anything above a watch waits for a named duty officer to approve it. The list is rendered from live data, so this page also works from the snapshot the deployment carries when the API cannot be reached.",
-   "updated": "2026-09-18",
+   "updated": "2026-11-02",
    "sections": [
     {
      "h2": "1 · What a level means",
      "paragraphs": [
       "Four levels are published: no alert, watch, warning and severe. The level comes from the alert policy in force, at or below the configured ceiling for each hazard class, and is never inflated by this site.",
-      "Each alert states the hazard class, the district, the 7- or 15-day horizon, the forecast issue time, the data cutoff and the model version it came from."
+      "Each alert states the hazard class, the district, the forecast window within the 15-day trajectory, the forecast issue time, the data cutoff and the model version it came from."
      ]
     },
     {
@@ -748,10 +748,10 @@
     {
      "h2": "1 · What HazardNet publishes",
      "paragraphs": [
-      "Each forecast unit is one published record: district, hazard class, severity, confidence score and 7- and 15-day horizons, stamped with the forecast date of the run that produced it."
+      "Each daily forecast run publishes a continuous 15-day sequence (Days 1 to 15) per district: dominant hazard class, continuous severity index (0 to 100), peak severe dates, and confidence score, stamped with the forecast date of the run that produced it."
      ],
      "bullets": [
-      "Outlooks for all 64 districts and eight hazard classes.",
+      "Continuous 15-day daily outlooks for all 64 districts and eight hazard classes.",
       "A severity value in two tracks, a skill track and a physics track, each labelled honestly.",
       "Published alert levels where an alert policy applies.",
       "A validation scorecard and a live freshness record."
@@ -766,7 +766,7 @@
     {
      "h2": "3 · Horizons and lead time",
      "paragraphs": [
-      "Outlooks are published at 7 and 15 days. Both are planning windows, not warnings. The longer horizon is the more uncertain of the two."
+      "Outlooks are published as a continuous 15-day daily trajectory (Days 1 to 15) per district, alongside summary rollups for Days 1 to 7 and Days 1 to 15. Every step is a planning window, not an official warning, and Days 8 to 15 carry greater meteorological uncertainty than Days 1 to 7."
      ]
     },
     {
@@ -815,11 +815,11 @@
     {
      "h2": "Overview",
      "paragraphs": [
-      "HazardNet publishes multi-hazard outlooks for all 64 districts of Bangladesh: eight hazard classes, a severity value and a confidence score per district and forecast date, on 7- and 15-day horizons."
+      "HazardNet publishes continuous 15-day daily multi-hazard outlooks for all 64 districts of Bangladesh: eight hazard classes, a continuous severity index (0 to 100), highlighted peak severe dates, and a confidence score per district and forecast date across Days 1 to 15."
      ],
      "bullets": [
-      "Output: hazard class, severity and confidence per district and forecast date.",
-      "Horizons: 7 and 15 days.",
+      "Output: daily hazard class, severity index, peak severe dates, and confidence per district across Days 1 to 15.",
+      "Trajectory: 15 consecutive daily steps (Days 1 to 15), plus Days 1 to 7 and Days 1 to 15 rollup summaries.",
       "Precision: district level: not a metre-scale inundation map.",
       "Model internals are research-private."
      ]
@@ -951,7 +951,7 @@
     },
     {
      "question": "How far ahead can it really see?",
-     "answer": "HazardNet publishes 7- and 15-day outlooks, both driven by the same deterministic weather forecast window (Open-Meteo serves at most about 16 days). They are honest planning aids for seasonal decisions (irrigation, planting, stock movement), not storm-specific long-range predictions: read the 15-day outlook as the more uncertain of the two."
+     "answer": "HazardNet publishes continuous 15-day daily outlooks (Days 1 to 15) across all 64 districts, driven by the deterministic weather forecast window (Open-Meteo serves up to 16 days). Each district page shows all 15 consecutive days, a 0 to 100 severity index, and highlighted peak severe dates. They are honest planning aids for seasonal decisions (irrigation, planting, stock movement), not storm-specific long-range warnings: read Days 8 to 15 as carrying higher uncertainty than Days 1 to 7."
     },
     {
      "question": "Does HazardNet work offline?",
@@ -1113,7 +1113,7 @@
      "bullets": [
       "64 districts on the interactive map; 507 ADM3 units in the published archive.",
       "Eight hazards: cold wave, drought, fire, flash flood, flood, heat wave, severe local storm, tropical cyclone.",
-      "7- and 15-day horizons with confidence bins, dual-track severity and a physics cross-check."
+      "Continuous 15-day daily outlooks (Days 1 to 15) with 0–100 severity index, peak severe dates, confidence bins, dual-track severity and a physics cross-check."
      ]
     },
     {
@@ -1362,7 +1362,7 @@
     {
      "h2": "What HazardNet publishes",
      "paragraphs": [
-      "HazardNet is a multi-hazard early-warning decision-support system for Bangladesh. It combines a statistical classifier with independent physics proxies and publishes district-level outlooks for eight hazard classes across 7-day and 15-day horizons."
+      "HazardNet is a multi-hazard early-warning decision-support system for Bangladesh. It combines a statistical classifier with independent physics proxies and publishes continuous 15-day daily district-level outlooks (Days 1 to 15) for eight hazard classes."
      ],
      "bullets": [
       "Scope: the 64 districts of Bangladesh, grouped into 8 divisions.",
@@ -1647,11 +1647,11 @@
    "path": "/docs/forecasts",
    "label": "Forecasts",
    "title": "Reading a HazardNet forecast record",
-   "description": "How to read a HazardNet forecast: the fields of the published record, the two severity tracks, the 7-day and 15-day horizons, and the freshness policy.",
+   "description": "How to read a HazardNet forecast: the fields of the published record, the two severity tracks, the continuous 15-day daily trajectory, peak severe dates, and the freshness policy.",
    "keywords": [
     "forecast record",
     "severity tracks",
-    "7-day 15-day horizon",
+    "continuous 15-day outlook",
     "forecast freshness"
    ],
    "robots": "index,follow",
@@ -1662,7 +1662,7 @@
    "appShell": false,
    "h1": "Reading a forecast",
    "standfirst": "Every figure on the site traces to one published record. This is how to read it.",
-   "updated": "2026-10-05",
+   "updated": "2026-11-02",
    "sections": [
     {
      "h2": "The published record",
@@ -1672,9 +1672,9 @@
      "bullets": [
       "District: one of the 64 districts of Bangladesh.",
       "Hazard class: one of the eight classes.",
-      "Severity: a continuous value reported in two tracks (see below).",
+      "Severity: a continuous value (0.00 to 1.00 normalized, 0 to 100 index) reported alongside a physics cross-check.",
       "Confidence score: the score for the chosen class, reported as uncalibrated.",
-      "Horizons: 7-day and 15-day outlook windows.",
+      "Trajectory: 15 consecutive daily steps (Days 1 to 15) with peak severe dates highlighted, plus Days 1 to 7 and Days 1 to 15 summary windows.",
       "Forecast date: the run that produced the record."
      ]
     },
@@ -1687,7 +1687,7 @@
     {
      "h2": "Horizons",
      "paragraphs": [
-      "Each run publishes two outlook windows: 7 days and 15 days. The same district and class can carry a different severity at each horizon, and both are published as computed."
+      "Each daily run publishes 15 consecutive daily steps (Days 1 to 15) for each of the 64 districts (960 daily records total), highlighting the peak severe date or dates across the window. Summary rollups for Days 1 to 7 and the full 15-day trajectory are derived directly from those daily steps."
      ]
     },
     {
