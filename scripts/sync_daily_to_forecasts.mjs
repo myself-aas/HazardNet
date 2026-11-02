@@ -13,14 +13,16 @@
  */
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   parsePublicDailySnapshot,
   rollupDailySnapshotToHorizons,
 } from '../backend/utils/dailyAdvisoryPublic.js';
 import { forecastRowsToCsv, mapAdvisoryRows } from '../backend/utils/advisoryMapper.js';
+import { rehearseAlertEngine } from './rehearse_alert_engine.mjs';
 import { parseCsv } from './validate_advisory_csv.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -59,17 +61,54 @@ function toCamelCaseRecord(row) {
   };
 }
 
-export function syncDailyToForecastArtifacts({
+export async function refreshAlertSnapshotFromForecasts({
+  snapshotPath,
+  alertsOutPath,
+  now = new Date(),
+  rehearseFn = rehearseAlertEngine,
+} = {}) {
+  const report = await rehearseFn({ snapshotPath, now });
+  if (!report || !Number.isFinite(report.assessed) || report.assessed <= 0) {
+    throw new Error('Alert rehearsal assessed 0 rows; refusing to overwrite alerts-latest.json');
+  }
+
+  const tmpDir = mkdtempSync(join(tmpdir(), 'hn-alert-sync-'));
+  try {
+    const tmpRunPath = join(tmpDir, 'alert-run.json');
+    writeFileSync(tmpRunPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+    mkdirSync(dirname(alertsOutPath), { recursive: true });
+    execFileSync(
+      process.execPath,
+      [
+        resolve(ROOT, 'scripts/build_alert_snapshot.mjs'),
+        '--in',
+        tmpRunPath,
+        '--out',
+        alertsOutPath,
+        '--allow-empty',
+      ],
+      { cwd: ROOT, stdio: 'pipe' },
+    );
+  } finally {
+    rmSync(tmpDir, { recursive: true, force: true });
+  }
+  return alertsOutPath;
+}
+
+export async function syncDailyToForecastArtifacts({
   root = ROOT,
   dailyJsonPath = null,
   dailyCsvPath = null,
   syncExisting = false,
   runDerivedBuilders = true,
+  syncAlerts = true,
+  now = new Date(),
 } = {}) {
   const csvOutPath = resolve(root, 'backend/data/forecasts/hazardnet_forecasts_latest.csv');
   const jsonOutPath = resolve(root, 'backend/data/forecasts/hazardnet_forecasts_latest.json');
   const manifestOutPath = resolve(root, 'backend/data/forecasts/manifest.json');
   const snapshotOutPath = resolve(root, 'frontend/public/data/forecasts-latest.json');
+  const alertsOutPath = resolve(root, 'frontend/public/data/alerts-latest.json');
   const backendFallbackPath = resolve(root, 'frontend/src/data/backendForecasts.json');
   const publicLegacyJsonPath = resolve(root, 'frontend/public/data/hazardnet_forecasts_latest.json');
 
@@ -162,6 +201,15 @@ export function syncDailyToForecastArtifacts({
   mkdirSync(dirname(publicLegacyJsonPath), { recursive: true });
   writeFileSync(publicLegacyJsonPath, `${JSON.stringify(camelRows, null, 2)}\n`, 'utf8');
 
+  let writtenAlertsPath = null;
+  if (syncAlerts) {
+    writtenAlertsPath = await refreshAlertSnapshotFromForecasts({
+      snapshotPath: snapshotOutPath,
+      alertsOutPath,
+      now,
+    });
+  }
+
   if (runDerivedBuilders && root === ROOT) {
     execFileSync(process.execPath, [resolve(ROOT, 'scripts/build_climatic_hazards_summary.mjs')], {
       cwd: root,
@@ -181,10 +229,13 @@ export function syncDailyToForecastArtifacts({
     rows: flatRows.length,
     predictionDate: builtSnapshot.prediction_date,
     snapshotOutPath,
+    alertsOutPath: writtenAlertsPath,
   };
 }
 
-function main(argv) {
+export const syncDailyToForecasts = syncDailyToForecastArtifacts;
+
+async function main(argv) {
   let dailyJsonPath = null;
   let dailyCsvPath = null;
   let syncExisting = false;
@@ -202,15 +253,13 @@ function main(argv) {
     }
   }
 
-  const res = syncDailyToForecastArtifacts({ dailyJsonPath, dailyCsvPath, syncExisting });
+  const res = await syncDailyToForecastArtifacts({ dailyJsonPath, dailyCsvPath, syncExisting });
   console.log(`[sync-daily-forecasts] Synchronized ${res.rows} rows (prediction_date=${res.predictionDate}) -> ${res.snapshotOutPath}`);
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  try {
-    main(process.argv.slice(2));
-  } catch (err) {
+  main(process.argv.slice(2)).catch((err) => {
     console.error(`[sync-daily-forecasts] Failed: ${err.message}`);
     process.exitCode = 1;
-  }
+  });
 }

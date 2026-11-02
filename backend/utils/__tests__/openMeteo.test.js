@@ -209,3 +209,38 @@ describe('hourly catalogue — only names the upstream accepts', () => {
     }
   });
 });
+
+describe('upstream resilience — bounded timeout and transient single retry', () => {
+  test('attaches an AbortSignal, retries once on TimeoutError / HTTP 503, and succeeds on attempt 2', async () => {
+    let attempts = 0;
+    const signals = [];
+    upstreamStub(async (_url, init) => {
+      attempts += 1;
+      signals.push(init && init.signal);
+      if (attempts === 1) {
+        return new Response('Service Unavailable', { status: 503 });
+      }
+      return jsonResponse(OBJECT_FIXTURE);
+    });
+
+    const result = await fetchCurrentWeather(23.8103, 90.4125, { skipCache: true });
+    expect(attempts).toBe(2);
+    expect(signals[0]).toBeDefined();
+    expect(typeof signals[0].aborted).toBe('boolean');
+    expect(result.current.temperature_2m).toBe(OBJECT_FIXTURE.current.temperature_2m);
+  });
+
+  test('never retries non-transient HTTP 400 client/parameter errors', async () => {
+    let attempts = 0;
+    upstreamStub(async () => {
+      attempts += 1;
+      return new Response('{"error":true,"reason":"Invalid parameter"}', { status: 400 });
+    });
+
+    await expect(fetchCurrentWeather(23.8103, 90.4125, { skipCache: true })).rejects.toMatchObject({
+      status: 502,
+      message: expect.stringContaining('HTTP 400'),
+    });
+    expect(attempts).toBe(1);
+  });
+});

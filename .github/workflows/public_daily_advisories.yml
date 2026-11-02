@@ -83,6 +83,7 @@ jobs:
           npm run audit:pages:strict
           cmp frontend/public/data/daily-advisories-v1.json frontend/dist/data/daily-advisories-v1.json
           cmp frontend/public/data/forecasts-latest.json frontend/dist/data/forecasts-latest.json
+          cmp frontend/public/data/alerts-latest.json frontend/dist/data/alerts-latest.json
           test ! -e frontend/dist/data/hazardnet_advisories_latest.csv
           test ! -e frontend/dist/data/hazardnet_advisories_latest.run.json
 
@@ -95,6 +96,7 @@ jobs:
           git add -- \
             frontend/public/data/daily-advisories-v1.json \
             frontend/public/data/forecasts-latest.json \
+            frontend/public/data/alerts-latest.json \
             frontend/public/data/hazardnet_forecasts_latest.json \
             frontend/public/data/climatic_hazards_summary.json \
             frontend/public/data/freshness.json \

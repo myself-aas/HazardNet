@@ -1,7 +1,7 @@
 {
   "schema": "hazardnet-alerts/v1",
-  "generated_at": "2026-10-25T19:21:16.916Z",
-  "built_at": "2026-10-27T13:52:55.178Z",
+  "generated_at": "2026-11-02T14:47:16.852Z",
+  "built_at": "2026-11-02T14:47:17.002Z",
   "source": "alert-engine",
   "policy_version": "alert-policy/1.0.0",
   "assessed": 128,
@@ -123,10 +123,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -210,10 +210,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -297,10 +297,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -384,10 +384,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -471,10 +471,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -558,10 +558,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -645,10 +645,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -732,10 +732,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -819,10 +819,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -906,10 +906,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -993,10 +993,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -1080,10 +1080,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -1167,10 +1167,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -1254,10 +1254,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -1341,10 +1341,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -1428,10 +1428,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -1515,10 +1515,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -1602,10 +1602,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -1684,10 +1684,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -1766,10 +1766,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -1848,10 +1848,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -1930,10 +1930,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2012,10 +2012,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2094,10 +2094,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2170,10 +2170,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2246,10 +2246,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2328,10 +2328,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2410,10 +2410,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2492,10 +2492,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2574,10 +2574,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2650,10 +2650,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2726,10 +2726,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2808,10 +2808,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2890,10 +2890,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -2972,10 +2972,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -3054,10 +3054,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -3136,10 +3136,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -3218,10 +3218,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -3294,10 +3294,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -3370,10 +3370,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -3452,10 +3452,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -3534,10 +3534,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -3610,10 +3610,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -3692,10 +3692,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -3774,10 +3774,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -3850,10 +3850,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -3931,10 +3931,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4012,10 +4012,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4088,10 +4088,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4164,10 +4164,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4240,10 +4240,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4316,10 +4316,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4392,10 +4392,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4468,10 +4468,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4550,10 +4550,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4632,10 +4632,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4714,10 +4714,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4796,10 +4796,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4878,10 +4878,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -4960,10 +4960,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -5036,10 +5036,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -5112,10 +5112,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -5194,10 +5194,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -5276,10 +5276,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -5352,10 +5352,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -5428,10 +5428,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -5504,10 +5504,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -5580,10 +5580,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -5656,10 +5656,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -5732,10 +5732,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -5808,10 +5808,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -5884,10 +5884,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -5960,10 +5960,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -6036,10 +6036,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -6112,10 +6112,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -6188,10 +6188,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -6264,10 +6264,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -6340,10 +6340,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -6416,10 +6416,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -6492,10 +6492,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -6568,10 +6568,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -6644,10 +6644,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -6731,10 +6731,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -6818,10 +6818,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -6894,10 +6894,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -6970,10 +6970,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -7046,10 +7046,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -7122,10 +7122,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -7198,10 +7198,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -7274,10 +7274,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -7350,10 +7350,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -7426,10 +7426,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -7502,10 +7502,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -7578,10 +7578,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -7654,10 +7654,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -7730,10 +7730,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -7806,10 +7806,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -7882,10 +7882,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -7958,10 +7958,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -8034,10 +8034,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -8110,10 +8110,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -8186,10 +8186,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -8268,10 +8268,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -8350,10 +8350,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -8432,10 +8432,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",
@@ -8514,10 +8514,10 @@
         "prediction_date": "2026-10-24",
         "data_cutoff": "2026-10-24T00:00:00.000Z",
         "data_cutoff_source": "row.prediction_date",
-        "age_hours": 43.35,
+        "age_hours": 230.79,
         "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": true
+        "within_slo": false,
+        "stale_soon": false
       },
       "provenance": {
         "model_version": "2.1.9+model.0bb5bdaf1789",

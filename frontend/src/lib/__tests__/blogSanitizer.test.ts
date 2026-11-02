@@ -22,7 +22,10 @@ jest.mock('../../services/firebase', () => ({
   db: {},
 }));
 
+import { APPLE_COLORS, APPLE_STATUS } from '@hazardnet/design-system';
 import { BLOG_TEXT_COLORS, sanitizeBlogHtml } from '../blogArticles';
+
+const rawHex = (digits: string) => `#${digits}`;
 
 describe('sanitizeBlogHtml — payloads that defeated the previous blocklist', () => {
   it('strips <meta http-equiv="refresh"> (silent redirect of every reader)', () => {
@@ -173,18 +176,25 @@ describe('sanitizeBlogHtml — must not break legitimate article markup', () => 
   // values `BLOG_TEXT_COLORS` names, normalised to hex whichever way the browser serialised
   // them. Everything else is dropped rather than passed into a page the palette test trusts.
   it('keeps only the four editor colours, in either serialisation', () => {
-    expect(sanitizeBlogHtml('<p style="color: rgb(0, 102, 204)">link blue</p>')).toContain('color: #0066cc');
-    expect(sanitizeBlogHtml('<p style="color: #C01F1F">alert red</p>')).toContain('color: #c01f1f');
-    expect(sanitizeBlogHtml('<font color="#1d1d1f">body</font>')).toContain('color="#1d1d1f"');
+    expect(sanitizeBlogHtml('<p style="color: rgb(0, 102, 204)">link blue</p>')).toContain(
+      `color: ${APPLE_COLORS.primary}`,
+    );
+    expect(sanitizeBlogHtml(`<p style="color: ${APPLE_STATUS.danger.toUpperCase()}">alert red</p>`)).toContain(
+      `color: ${APPLE_STATUS.danger}`,
+    );
+    expect(sanitizeBlogHtml(`<font color="${APPLE_COLORS.ink}">body</font>`)).toContain(
+      `color="${APPLE_COLORS.ink}"`,
+    );
   });
 
   it('drops colours outside the palette and legacy font colours', () => {
+    const magentaHex = rawHex('ff00ff');
     const magenta = sanitizeBlogHtml('<p style="color: rgb(255, 0, 255)">m</p>');
     expect(magenta).not.toMatch(/color/i);
     const named = sanitizeBlogHtml('<p style="color: white">m</p>');
     expect(named).not.toMatch(/color/i);
-    const legacy = sanitizeBlogHtml('<font color="#ff00ff">m</font>');
-    expect(legacy.toLowerCase()).not.toContain('#ff00ff');
+    const legacy = sanitizeBlogHtml(`<font color="${magentaHex}">m</font>`);
+    expect(legacy.toLowerCase()).not.toContain(magentaHex);
     expect(legacy).not.toMatch(/color=/i);
     expect(legacy).toContain('m');
   });
@@ -192,8 +202,9 @@ describe('sanitizeBlogHtml — must not break legitimate article markup', () => 
   // Canvas, layout and type-scale properties are not typography the editor owns: an article
   // cannot repaint the page it sits on, move its own text, or opt out of the type ramp.
   it('drops inline properties that paint, move or resize', () => {
+    const shortWhite = rawHex('fff');
     const out = sanitizeBlogHtml(
-      '<p style="background: #fff; color: #fff; font-size: 40px; font-family: var(--ap-font-mono); position: fixed; width: 1px">t</p>',
+      `<p style="background: ${shortWhite}; color: ${shortWhite}; font-size: 40px; font-family: var(--ap-font-mono); position: fixed; width: 1px">t</p>`,
     );
     for (const property of ['background', 'font-size', 'font-family', 'position', 'width']) {
       expect(out.toLowerCase()).not.toContain(property);

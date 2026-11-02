@@ -8,7 +8,7 @@
     "never raise one - add the colour to the design system instead (see MAP_* in",
     "packages/design-system/src/mapPalette.ts for the map-stage pattern)."
   ],
-  "total": 223,
+  "total": 218,
   "files": {
     "frontend/src/utils/pdfExport.ts": 29,
     "frontend/src/components/RiskAnalytics.tsx": 21,
@@ -25,7 +25,6 @@
     "frontend/src/remotion/compositions/RunVisualComposition.tsx": 6,
     "frontend/src/components/NationalOverview.tsx": 5,
     "frontend/src/components/alerts/AlertLevelBadge.tsx": 5,
-    "frontend/src/components/blog/RichTextEditor.tsx": 5,
     "frontend/src/data/bangladeshDistricts.ts": 5,
     "frontend/src/remotion/compositions/HazardAlertStory.tsx": 5,
     "frontend/src/components/ui/expand-map.tsx": 4,

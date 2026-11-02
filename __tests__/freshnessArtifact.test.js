@@ -90,11 +90,25 @@ const probe = (over = {}) => ({
   ...over,
 });
 
+const daily = (over = {}) => ({
+  schemaVersion: 'hazardnet.public-daily-advisories.v1',
+  run: {
+    id: 'kaggle-v10-test',
+    generatedAt: hoursAgo(2),
+    dataCutoff: hoursAgo(4),
+    expiresAt: new Date(NOW.getTime() + 32 * 3_600_000).toISOString(),
+    modelVersion: '2.1.9',
+  },
+  advisories: new Array(960).fill({}),
+  ...over,
+});
+
 const build = (inputs = {}, now = NOW) =>
   buildFreshnessArtifact({
     now,
     snapshot: snapshot(),
     manifest: manifest(),
+    daily: daily(),
     alerts: alerts(),
     probe: probe(),
     ...inputs,
@@ -112,19 +126,55 @@ describe('classify', () => {
 });
 
 describe('buildFreshnessArtifact', () => {
-  it('states the schema, the producer and the four sources it derives from', () => {
+  it('states the schema, the producer and the five sources it derives from', () => {
     const artifact = build();
     expect(artifact.schema).toBe(FRESHNESS_SCHEMA);
     expect(artifact.generated_by).toBe('scripts/build_freshness_artifact.mjs');
     expect(artifact.sources.map((entry) => entry.id)).toEqual([
       'forecast_ingest',
       'forecast_snapshot',
+      'daily_advisories',
       'alert_engine',
       'site_probe',
     ]);
     expect(artifact.overall.state).toBe('fresh');
-    expect(artifact.overall.counts.fresh).toBe(4);
+    expect(artifact.overall.counts.fresh).toBe(5);
     expect(artifact.overall.not_fresh).toEqual([]);
+  });
+
+  it('reports pre-publish absent daily-advisories-v1.json as unknown without degrading overall to missing, and corrupt JSON as failing', () => {
+    const prePublish = build({ daily: null, dailyError: 'missing' });
+    expect(source(prePublish, 'daily_advisories').state).toBe('unknown');
+    expect(prePublish.overall.state).not.toBe('missing');
+
+    const corrupt = build({ daily: null, dailyError: 'unparseable JSON: Unexpected token {' });
+    expect(source(corrupt, 'daily_advisories').state).toBe('failing');
+    expect(source(corrupt, 'daily_advisories').reason).toMatch(/unparseable JSON/);
+  });
+
+  it('flips daily_advisories from fresh to stale across run.expiresAt and the 36 h dataCutoff SLO', () => {
+    const freshRun = {
+      schemaVersion: 'hazardnet.public-daily-advisories.v1',
+      run: {
+        id: 'r1',
+        generatedAt: '2026-09-18T00:00:00Z',
+        dataCutoff: '2026-09-17T22:00:00Z',
+        expiresAt: '2026-09-19T10:00:00Z',
+        modelVersion: '2.1.9',
+      },
+      advisories: new Array(960).fill({}),
+    };
+    const fresh = build({ daily: freshRun }); // NOW = 2026-09-18T12:00:00Z -> 14 h old
+    expect(source(fresh, 'daily_advisories').state).toBe('fresh');
+    expect(source(fresh, 'daily_advisories').age_hours).toBe(14);
+
+    const expiredRun = {
+      ...freshRun,
+      run: { ...freshRun.run, generatedAt: '2026-09-18T11:55:00Z', expiresAt: '2026-09-18T11:59:59Z' },
+    };
+    const expired = build({ daily: expiredRun });
+    expect(source(expired, 'daily_advisories').state).toBe('stale');
+    expect(source(expired, 'daily_advisories').reason).toMatch(/expiresAt|SLO 36 h/);
   });
 
   it('is deterministic for the same inputs and clock', () => {

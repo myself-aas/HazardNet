@@ -45,9 +45,12 @@ import { fileURLToPath } from 'node:url';
 
 export const FRESHNESS_SCHEMA = 'hazardnet-freshness/v1';
 export const PROBE_SCHEMA = 'hazardnet-site-probe/v1';
+export const DAILY_ADVISORIES_SCHEMA = 'hazardnet.public-daily-advisories.v1';
 
 /** Forecast-age SLO in hours — `monitoring/alerts.yml` (one missed daily run + grace). */
 export const FORECAST_SLO_HOURS = 192;
+/** Public daily district advisories SLO in hours — `backend/utils/dailyAdvisoryPublic.js` `DAILY_EXPIRY_HOURS`. */
+export const DAILY_ADVISORIES_SLO_HOURS = 36;
 /** Alert-snapshot SLO in hours — `frontend/src/lib/alerts.ts` `freshnessOf` default. */
 export const ALERTS_SLO_HOURS = 48;
 /** Probe-age SLO in hours — the probe runs every 30 min, so 2 h = four missed runs. */
@@ -59,6 +62,7 @@ export const STATE_SEVERITY = { fresh: 0, unknown: 1, stale: 2, failing: 3, miss
 const DEFAULT_PATHS = {
   snapshot: 'frontend/public/data/forecasts-latest.json',
   manifest: 'backend/data/forecasts/manifest.json',
+  daily: 'frontend/public/data/daily-advisories-v1.json',
   alerts: 'frontend/public/data/alerts-latest.json',
   probe: 'data/site-health/latest.json',
   out: 'frontend/public/data/freshness.json',
@@ -305,6 +309,69 @@ function siteProbeSource({ probe, now }) {
   };
 }
 
+export function dailyAdvisoriesSource({ daily, dailyError = null, now = new Date() } = {}) {
+  const base = {
+    id: 'daily_advisories',
+    label: 'Daily district advisories (15-day)',
+    artifact: DEFAULT_PATHS.daily,
+    generated_at: null,
+    age_hours: null,
+    slo_hours: DAILY_ADVISORIES_SLO_HOURS,
+    detail: null,
+  };
+  if (!isRecord(daily)) {
+    if (dailyError && dailyError !== 'missing') {
+      return {
+        ...base,
+        state: 'failing',
+        reason: dailyError,
+      };
+    }
+    return {
+      ...base,
+      state: 'unknown',
+      reason: 'no public daily advisory snapshot has been published to this checkout yet',
+    };
+  }
+  if (daily.schemaVersion !== DAILY_ADVISORIES_SCHEMA || !isRecord(daily.run)) {
+    return {
+      ...base,
+      state: 'failing',
+      reason: `unrecognised daily advisory schema (${daily.schemaVersion ?? 'none'})`,
+    };
+  }
+  const cutoff = typeof daily.run.dataCutoff === 'string' ? daily.run.dataCutoff : null;
+  const generatedAt = typeof daily.run.generatedAt === 'string' ? daily.run.generatedAt : null;
+  const expiresAt = typeof daily.run.expiresAt === 'string' ? daily.run.expiresAt : null;
+  const age = ageHoursFrom(cutoff ?? generatedAt, now);
+  const expiresMs = expiresAt ? Date.parse(expiresAt) : Number.NaN;
+  const pastExpires = Number.isFinite(expiresMs) && now.getTime() > expiresMs;
+  const classified = classify(age, DAILY_ADVISORIES_SLO_HOURS);
+  const state = pastExpires && classified === 'fresh' ? 'stale' : classified;
+  const reason =
+    state === 'fresh'
+      ? null
+      : pastExpires
+        ? `daily advisory run passed expiresAt ${expiresAt} (age ${round1(age)} h, SLO ${DAILY_ADVISORIES_SLO_HOURS} h)`
+        : state === 'stale'
+          ? `daily advisory dataCutoff is ${round1(age)} h old (SLO ${DAILY_ADVISORIES_SLO_HOURS} h)`
+          : 'the daily advisory run has no parseable dataCutoff timestamp';
+  return {
+    ...base,
+    state,
+    reason,
+    generated_at: generatedAt,
+    age_hours: round1(age),
+    detail: {
+      run_id: typeof daily.run.id === 'string' ? daily.run.id : null,
+      data_cutoff: cutoff,
+      expires_at: expiresAt,
+      model_version: typeof daily.run.modelVersion === 'string' ? daily.run.modelVersion : null,
+      advisory_count: Array.isArray(daily.advisories) ? daily.advisories.length : null,
+    },
+  };
+}
+
 /* ───────────────────────── authority / coverage ───────────────────────── */
 
 /**
@@ -378,6 +445,8 @@ export function gaugeBlock(sources) {
         'Age of the deployed alert snapshot. null = unknown.'),
       gauge('hazardnet_site_probe_age_hours', 'site_probe', PROBE_SLO_HOURS,
         'Age of the last published site-health probe record. null = no record.'),
+      gauge('hazardnet_daily_advisories_age_hours', 'daily_advisories', DAILY_ADVISORIES_SLO_HOURS,
+        'Age since dataCutoff of the deployed 15-day daily district advisory snapshot. null = unpublished.'),
     ],
   };
 }
@@ -449,13 +518,18 @@ export function buildFreshnessArtifact({
   now = new Date(),
   snapshot = null,
   manifest = null,
+  daily = null,
+  dailyError = null,
+  errors = null,
   alerts = null,
   probe = null,
   generatedBy = 'scripts/build_freshness_artifact.mjs',
 } = {}) {
+  const resolvedDailyError = dailyError ?? (isRecord(errors) && typeof errors.daily === 'string' ? errors.daily : null);
   const sources = [
     forecastIngestSource({ manifest, now }),
     forecastSnapshotSource({ snapshot, now }),
+    dailyAdvisoriesSource({ daily, dailyError: resolvedDailyError, now }),
     alertEngineSource({ alerts, now }),
     siteProbeSource({ probe, now }),
   ];
@@ -495,6 +569,13 @@ export function buildFreshnessArtifact({
       forecast_manifest: {
         path: DEFAULT_PATHS.manifest,
         generated_at: isRecord(manifest) && typeof manifest.generated_at === 'string' ? manifest.generated_at : null,
+      },
+      daily_advisories: {
+        path: DEFAULT_PATHS.daily,
+        generated_at:
+          isRecord(daily) && isRecord(daily.run) && typeof daily.run.generatedAt === 'string'
+            ? daily.run.generatedAt
+            : null,
       },
       alerts_snapshot: {
         path: DEFAULT_PATHS.alerts,
@@ -543,6 +624,7 @@ function parseArgs(argv) {
     else if (arg === '--out') args.out = argv[++i];
     else if (arg === '--snapshot') args.snapshot = argv[++i];
     else if (arg === '--manifest') args.manifest = argv[++i];
+    else if (arg === '--daily') args.daily = argv[++i];
     else if (arg === '--alerts') args.alerts = argv[++i];
     else if (arg === '--probe') args.probe = argv[++i];
   }
@@ -552,16 +634,19 @@ function parseArgs(argv) {
 export function readInputs(paths) {
   const snapshot = readJsonSafe(paths.snapshot);
   const manifest = readJsonSafe(paths.manifest);
+  const daily = readJsonSafe(paths.daily);
   const alerts = readJsonSafe(paths.alerts);
   const probe = readJsonSafe(paths.probe);
   return {
     snapshot: snapshot.value,
     manifest: manifest.value,
+    daily: daily.value,
     alerts: alerts.value,
     probe: probe.value,
     errors: {
       snapshot: snapshot.error,
       manifest: manifest.error,
+      daily: daily.error,
       alerts: alerts.error,
       probe: probe.error,
     },
@@ -576,6 +661,7 @@ function main() {
     ...DEFAULT_PATHS,
     snapshot: args.snapshot ?? path.join(repoRoot, DEFAULT_PATHS.snapshot),
     manifest: args.manifest ?? path.join(repoRoot, DEFAULT_PATHS.manifest),
+    daily: args.daily ?? path.join(repoRoot, DEFAULT_PATHS.daily),
     alerts: args.alerts ?? path.join(repoRoot, DEFAULT_PATHS.alerts),
     probe: args.probe ?? path.join(repoRoot, DEFAULT_PATHS.probe),
     out: args.out ?? path.join(repoRoot, DEFAULT_PATHS.out),
