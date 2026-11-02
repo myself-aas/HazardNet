@@ -25,6 +25,11 @@ import {
   classify,
   stableView,
 } from '../scripts/build_freshness_artifact.mjs';
+import { DISTRICT_REGISTRY } from '../backend/utils/advisoryMapper.js';
+import {
+  DAILY_ADVISORY_SCHEMA,
+  buildPublicDailySnapshot,
+} from '../backend/utils/dailyAdvisoryPublic.js';
 
 const NOW = new Date('2026-09-18T12:00:00Z');
 const hoursAgo = (hours) => new Date(NOW.getTime() - hours * 3_600_000).toISOString();
@@ -91,9 +96,10 @@ const probe = (over = {}) => ({
 });
 
 const daily = (over = {}) => ({
-  schemaVersion: 'hazardnet.public-daily-advisories.v1',
+  schema: DAILY_ADVISORY_SCHEMA,
   run: {
     id: 'kaggle-v10-test',
+    schemaVersion: '4.3-pb',
     generatedAt: hoursAgo(2),
     dataCutoff: hoursAgo(4),
     expiresAt: new Date(NOW.getTime() + 32 * 3_600_000).toISOString(),
@@ -152,25 +158,35 @@ describe('buildFreshnessArtifact', () => {
     expect(source(corrupt, 'daily_advisories').reason).toMatch(/unparseable JSON/);
   });
 
-  it('flips daily_advisories from fresh to stale across run.expiresAt and the 36 h dataCutoff SLO', () => {
-    const freshRun = {
-      schemaVersion: 'hazardnet.public-daily-advisories.v1',
-      run: {
-        id: 'r1',
-        generatedAt: '2026-09-18T00:00:00Z',
-        dataCutoff: '2026-09-17T22:00:00Z',
-        expiresAt: '2026-09-19T10:00:00Z',
-        modelVersion: '2.1.9',
-      },
-      advisories: new Array(960).fill({}),
-    };
-    const fresh = build({ daily: freshRun }); // NOW = 2026-09-18T12:00:00Z -> 14 h old
+  it('flips daily_advisories from fresh to stale across run.expiresAt and the 36 h dataCutoff SLO, including real buildPublicDailySnapshot output', () => {
+    const start = Date.parse('2026-09-18T00:00:00Z');
+    const rawRows = DISTRICT_REGISTRY.flatMap((dist) =>
+      Array.from({ length: 15 }, (_, idx) => ({
+        district: dist.district_name,
+        forecast_day: String(idx + 1),
+        target_date: new Date(start + idx * 86_400_000).toISOString().slice(0, 10),
+        hazard: 'Flood',
+        advisory_tier: idx === 2 ? 'WATCH' : 'NORMAL',
+        severity_score: idx === 2 ? '0.45' : '0.15',
+        is_peak_day: String(idx === 2),
+      })),
+    );
+    const realSnapshot = buildPublicDailySnapshot(rawRows, {
+      schema_version: '4.3-pb',
+      run_id: 'kaggle-real-producer-1',
+      generated_at: '2026-09-18T00:00:00.000Z',
+      data_cutoff: '2026-09-17T22:00:00.000Z',
+      model_version: '2.1.9',
+      csv_sha256: 'c'.repeat(64),
+    });
+    const fresh = build({ daily: realSnapshot }); // NOW = 2026-09-18T12:00:00Z -> 14 h old
     expect(source(fresh, 'daily_advisories').state).toBe('fresh');
     expect(source(fresh, 'daily_advisories').age_hours).toBe(14);
+    expect(source(fresh, 'daily_advisories').detail.advisory_count).toBe(960);
 
     const expiredRun = {
-      ...freshRun,
-      run: { ...freshRun.run, generatedAt: '2026-09-18T11:55:00Z', expiresAt: '2026-09-18T11:59:59Z' },
+      ...realSnapshot,
+      run: { ...realSnapshot.run, generatedAt: '2026-09-18T11:55:00Z', expiresAt: '2026-09-18T11:59:59Z' },
     };
     const expired = build({ daily: expiredRun });
     expect(source(expired, 'daily_advisories').state).toBe('stale');

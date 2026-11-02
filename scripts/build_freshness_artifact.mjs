@@ -42,10 +42,11 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { DAILY_ADVISORY_SCHEMA } from '../backend/utils/dailyAdvisoryPublic.js';
 
 export const FRESHNESS_SCHEMA = 'hazardnet-freshness/v1';
 export const PROBE_SCHEMA = 'hazardnet-site-probe/v1';
-export const DAILY_ADVISORIES_SCHEMA = 'hazardnet.public-daily-advisories.v1';
+export const DAILY_ADVISORIES_SCHEMA = DAILY_ADVISORY_SCHEMA;
 
 /** Forecast-age SLO in hours — `monitoring/alerts.yml` (one missed daily run + grace). */
 export const FORECAST_SLO_HOURS = 192;
@@ -333,11 +334,11 @@ export function dailyAdvisoriesSource({ daily, dailyError = null, now = new Date
       reason: 'no public daily advisory snapshot has been published to this checkout yet',
     };
   }
-  if (daily.schemaVersion !== DAILY_ADVISORIES_SCHEMA || !isRecord(daily.run)) {
+  if (daily.schema !== DAILY_ADVISORIES_SCHEMA || !isRecord(daily.run)) {
     return {
       ...base,
       state: 'failing',
-      reason: `unrecognised daily advisory schema (${daily.schemaVersion ?? 'none'})`,
+      reason: `unrecognised daily advisory schema (${daily.schema ?? daily.schemaVersion ?? 'none'})`,
     };
   }
   const cutoff = typeof daily.run.dataCutoff === 'string' ? daily.run.dataCutoff : null;
