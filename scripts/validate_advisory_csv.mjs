@@ -107,6 +107,110 @@ export function validateAdvisoryCsv(csvContent, options = {}) {
     };
   }
 
+  const isDaily960 = headers.includes('forecast_day') && !headers.includes('horizon');
+
+  if (isDaily960) {
+    const headerSet = new Set(headers);
+    if (!headerSet.has('district') && !headerSet.has('district_name')) {
+      errors.push('Missing required column: "district"');
+    }
+    for (const col of ['forecast_day', 'target_date', 'advisory_tier']) {
+      if (!headerSet.has(col)) errors.push(`Missing required column: "${col}"`);
+    }
+    if (!headerSet.has('hazard') && !headerSet.has('hazard_type')) {
+      errors.push('Missing required column: "hazard"');
+    }
+    if (!headerSet.has('severity_score') && !headerSet.has('final_severity')) {
+      errors.push('Missing required column: "severity_score"');
+    }
+    if (parsedRows.length !== 960) {
+      errors.push(`Invalid row count: expected 960, got ${parsedRows.length}`);
+    }
+
+    const districtDays = new Map();
+    const districts = new Set();
+    let newestTimestamp = null;
+    let earliestDay1 = null;
+
+    for (let i = 0; i < parsedRows.length; i++) {
+      const row = parsedRows[i];
+      const districtName = row.district || row.district_name;
+      const resolved = lookupDistrict(districtName);
+      if (!resolved) {
+        errors.push(`Unknown district "${districtName}" on row ${i + 1}`);
+        continue;
+      }
+      const canonicalName = resolved.district_name;
+      districts.add(canonicalName);
+
+      const day = Number(row.forecast_day);
+      if (!Number.isInteger(day) || day < 1 || day > 15) {
+        errors.push(`Invalid forecast_day "${row.forecast_day}" on row ${i + 1}`);
+      } else {
+        if (!districtDays.has(canonicalName)) districtDays.set(canonicalName, new Set());
+        districtDays.get(canonicalName).add(day);
+        if (day === 1 && row.target_date && (!earliestDay1 || row.target_date < earliestDay1)) {
+          earliestDay1 = row.target_date;
+        }
+      }
+
+      const tier = String(row.advisory_tier || '').trim().toUpperCase();
+      if (tier && !VALID_ADVISORY_TIERS.includes(tier)) {
+        errors.push(`Invalid advisory_tier "${row.advisory_tier}" on row ${i + 1}`);
+      }
+
+      const rawHazard = row.hazard || row.hazard_type;
+      const hazard = rawHazard === 'Heatwave' ? 'Heat Wave' : rawHazard;
+      if (hazard && !VALID_HAZARDS.includes(hazard)) {
+        errors.push(`Invalid hazard "${rawHazard}" on row ${i + 1}`);
+      }
+
+      if (row.generated_at) {
+        const dt = new Date(row.generated_at.includes('T') ? row.generated_at : `${row.generated_at.replace(' ', 'T')}Z`);
+        if (!isNaN(dt.getTime()) && (!newestTimestamp || dt > newestTimestamp)) {
+          newestTimestamp = dt;
+        }
+      }
+    }
+
+    for (const [dName, dSet] of districtDays.entries()) {
+      if (dSet.size !== 15) {
+        errors.push(`District "${dName}" missing complete 15-day coverage (got ${dSet.size} days)`);
+      }
+    }
+
+    if (!newestTimestamp && earliestDay1) {
+      const parsedDay1 = new Date(`${earliestDay1}T00:00:00Z`);
+      if (!isNaN(parsedDay1.getTime())) newestTimestamp = parsedDay1;
+    }
+
+    let isStale = false;
+    let ageHours = null;
+    if (newestTimestamp) {
+      const ageMs = current.getTime() - newestTimestamp.getTime();
+      ageHours = Math.max(0, ageMs / (1000 * 60 * 60));
+      if (ageHours > maxAgeHours) {
+        isStale = true;
+        if (!allowStale) {
+          errors.push(`STALE_DATA: Advisory publication is ${ageHours.toFixed(1)} h old, exceeds ${maxAgeHours} h gate`);
+        }
+      }
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+      summary: {
+        totalRows: parsedRows.length,
+        columnsCount: headers.length,
+        districtCount: districts.size,
+        format: 'daily_960',
+        isStale,
+        ageHours,
+      },
+    };
+  }
+
   if (headers.length !== ADVISORY_CSV_COLUMNS.length) {
     errors.push(`Invalid column count: expected ${ADVISORY_CSV_COLUMNS.length}, got ${headers.length}`);
   }

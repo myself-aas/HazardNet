@@ -1,12 +1,21 @@
 /** @jest-environment node */
-import { dhakaCalendarDate, loadDistrictDaily, parsePublicDailyPayload, DAILY_SCHEMA } from '../dailyAdvisories';
+import {
+  dhakaCalendarDate,
+  loadDistrictDaily,
+  parsePublicDailyPayload,
+  rollupDailyAdvisoriesToForecastRows,
+  DAILY_SCHEMA,
+} from '../dailyAdvisories';
 
 const now = new Date('2026-11-01T18:00:00Z');
 const row = {
   advisoryId: '1-2026-11-02-flood', districtId: 1, district: 'Kurigram', division: 'Rangpur',
-  forecastDay: 1, targetDate: '2026-11-02', hazard: 'Flood', tier: 'WATCH',
-  reasonCode: 'district_outlook', actionIds: ['check_drains', 'keep_feed_dry', 'check_official_updates'],
-  peak: 'tied', qualityNotes: ['official_update_unverified'], weather: { precipitationMm: 2.4 },
+  forecastDay: 1, targetDate: '2026-11-02', hazard: 'Flood', tier: 'WATCH' as const,
+  severityScore: 0.45, requiresReview: false,
+  reasonCode: 'district_outlook' as const, actionIds: ['check_drains', 'keep_feed_dry', 'check_official_updates'] as const,
+  peak: 'tied' as const, qualityNotes: ['official_update_unverified'] as const,
+  weather: { precipitationMm: 2.4, temperatureMaxC: 31.2, temperatureMinC: 22.8, windKmh: 18.5 },
+  metrics: { confidence: 0.88, modelSeverity: 0.48, physicsSeverity: 0.41, finalSeverity: 0.45, probTop1: 0.88 },
 };
 const payload = {
   schema: DAILY_SCHEMA,
@@ -24,15 +33,44 @@ const payload = {
 const answer = (body: unknown, headers: Record<string, string> = {}, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json', ...headers } });
 
-it('uses Bangladesh midnight and accepts only a validated published row', () => {
+it('uses Bangladesh midnight and accepts all 5 validated tiers with severityScore, weather and metrics', () => {
   expect(dhakaCalendarDate(new Date('2026-11-01T17:59:59Z'))).toBe('2026-11-01');
   expect(dhakaCalendarDate(now)).toBe('2026-11-02');
   expect(parsePublicDailyPayload(payload, 'Kurigram')?.advisories[0].targetDate).toBe('2026-11-02');
   expect(parsePublicDailyPayload(payload, 'Dhaka')?.advisories).toEqual([]);
+
+  for (const [tier, requiresReview] of [
+    ['NORMAL', false], ['WATCH', false], ['WARNING', true], ['SEVERE', true], ['EXTREME', true],
+  ] as const) {
+    const candidate = {
+      ...row,
+      tier,
+      requiresReview,
+      reasonCode: tier === 'NORMAL' ? 'no_major_risk' : 'district_outlook',
+      actionIds: tier === 'NORMAL'
+        ? ['check_official_updates', 'continue_safely']
+        : ['check_drains', 'keep_feed_dry', 'check_official_updates'],
+    };
+    const parsed = parsePublicDailyPayload({ ...payload, advisories: [candidate] }, 'Kurigram');
+    expect(parsed?.advisories[0].tier).toBe(tier);
+    expect(parsed?.advisories[0].requiresReview).toBe(requiresReview);
+  }
 });
 
-it('refuses higher tiers, leaked columns and invented actions instead of displaying partial results', () => {
-  expect(parsePublicDailyPayload({ ...payload, advisories: [{ ...row, tier: 'SEVERE' }] }, 'Kurigram')).toBeNull();
+it('rolls up daily advisories into 7_days and 15_days ForecastRow records', () => {
+  const parsed = parsePublicDailyPayload(payload, 'Kurigram')!;
+  const rolled = rollupDailyAdvisoriesToForecastRows(parsed.advisories, parsed.run, '7_days');
+  expect(rolled).toHaveLength(1);
+  expect(rolled[0].district_name).toBe('Kurigram');
+  expect(rolled[0].severity_score).toBe(0.45);
+  expect(rolled[0].advisory_tier).toBe('WATCH');
+  expect(rolled[0].precipitation_mm).toBe(2.4);
+  expect(rolled[0].confidence).toBe(0.88);
+});
+
+it('refuses unknown tiers, mismatched review flags, leaked columns and invented actions', () => {
+  expect(parsePublicDailyPayload({ ...payload, advisories: [{ ...row, tier: 'CATASTROPHIC' }] }, 'Kurigram')).toBeNull();
+  expect(parsePublicDailyPayload({ ...payload, advisories: [{ ...row, tier: 'SEVERE', requiresReview: false }] }, 'Kurigram')).toBeNull();
   expect(parsePublicDailyPayload({ ...payload, advisories: [{ ...row, fusionReason: 'secret' }] }, 'Kurigram')).toBeNull();
   expect(parsePublicDailyPayload({ ...payload, advisories: [{ ...row, actionIds: ['check_drains', 'avoid_burning'] }] }, 'Kurigram')).toBeNull();
   expect(parsePublicDailyPayload({ ...payload, run: { ...payload.run, dataCutoff: null } }, 'Kurigram')).toBeNull();

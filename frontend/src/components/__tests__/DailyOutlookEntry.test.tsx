@@ -48,6 +48,29 @@ test('reads only the public district result, naming its cutoff without mixing in
   expect(screen.queryByText(/low risk|severity score|official warning issued/i)).toBeNull();
 });
 
+test('summarizes peak tier, severityScore and rainfall when a complete daily row is present', async () => {
+  mockLoad.mockResolvedValue({
+    ...base,
+    status: 'fresh',
+    source: 'snapshot',
+    run: {
+      id: 'synthetic-run-2', generatedAt: '2026-11-01T10:00:00Z',
+      dataCutoff: '2026-11-01T08:00:00Z', expiresAt: '2026-11-02T20:00:00Z', modelVersion: 'test',
+    },
+    advisories: [{
+      advisoryId: '1-2026-11-03-flood', districtId: 1, district: 'Kurigram', division: 'Rangpur',
+      forecastDay: 2, targetDate: '2026-11-03', hazard: 'Flood', tier: 'EXTREME',
+      severityScore: 0.91, requiresReview: true, reasonCode: 'district_outlook',
+      actionIds: ['check_drains', 'keep_feed_dry', 'check_official_updates'],
+      peak: 'unique', qualityNotes: [], weather: { precipitationMm: 34.2 },
+    }],
+  });
+  renderEntry('kurigram');
+  await waitFor(() => expect(screen.getByText('Extreme')).toBeTruthy());
+  expect(screen.getByText(/Severity score: 91% \(0\.91\)/)).toBeTruthy();
+  expect(screen.getByText(/34\.2 mm/)).toBeTruthy();
+});
+
 test('leaves an unavailable district unknown, not safe, when the API and public file fail', async () => {
   mockLoad.mockResolvedValue(base);
   renderEntry('kurigram');

@@ -28,6 +28,7 @@ interface AdvisorySignalCardProps {
 const pct = (value: number): string => `${Math.round(value * 100)}%`;
 
 const TIER_STYLES: Record<string, string> = {
+  EXTREME: 'bg-rose-200 text-rose-950 border-rose-400',
   SEVERE: 'bg-red-100 text-red-800 border-red-300',
   WARNING: 'bg-amber-100 text-amber-800 border-amber-300',
   WATCH: 'bg-sky-100 text-sky-800 border-sky-300',
@@ -39,9 +40,14 @@ export const AdvisorySignalCard: React.FC<AdvisorySignalCardProps> = ({ rows, ho
 
   if (!rows || rows.length === 0) return null;
 
-  // The most recent target date wins: the card describes the advisory that is current.
+  // Highest severity row in the horizon window wins (ties break on latest target date).
   const row = rows.reduce(
-    (latest, candidate) => (candidate.target_date > latest.target_date ? candidate : latest),
+    (best, candidate) => (
+      candidate.severity_score > best.severity_score
+      || (candidate.severity_score === best.severity_score && candidate.target_date > best.target_date)
+        ? candidate
+        : best
+    ),
     rows[0],
   );
 

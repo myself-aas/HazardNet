@@ -1,7 +1,8 @@
 /**
- * Farmer-first district outlook. No raw technical ledger, score or inferred second
- * hazard is rendered. The existing published two-horizon record remains a
- * separate, explicitly labelled view, not a privileged/private expert drawer.
+ * District day-by-day outlook backed by the 960-row Kaggle daily dataset.
+ * Renders all 5 tiers (NORMAL, WATCH, WARNING, SEVERE, EXTREME), severityScore,
+ * weather values, and full forecast metrics alongside clear research /
+ * non-official-warning disclaimers pointing to BMD, FFWC, DDM, and 999.
  */
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
@@ -24,9 +25,83 @@ const EMPTY: DistrictDailyResult = {
   status: 'unavailable', source: 'none', run: null, advisories: [], fetchedAt: null,
 };
 
-/** Labels come from a published enum, not the producer's free-text explanation. */
 function DayOutlook({ row }: { row: DailyAdvisory }) {
-  const { language, t, formatDate } = useI18n();
+  const { language, t, formatDate, formatNumber } = useI18n();
+  const w = row.weather || {};
+  const m = row.metrics;
+
+  const weatherItems: { label: string; value: string }[] = [];
+  if (w.precipitationMm !== undefined) {
+    weatherItems.push({ label: t('daily.weather.precip'), value: `${formatNumber(Number(w.precipitationMm.toFixed(1)))} mm` });
+  }
+  if (w.temperatureMinC !== undefined && w.temperatureMaxC !== undefined) {
+    weatherItems.push({
+      label: t('daily.weather.tempRange'),
+      value: `${formatNumber(Number(w.temperatureMinC.toFixed(1)))}°C to ${formatNumber(Number(w.temperatureMaxC.toFixed(1)))}°C`,
+    });
+  } else if (w.temperatureMaxC !== undefined) {
+    weatherItems.push({ label: t('daily.weather.tempMax'), value: `${formatNumber(Number(w.temperatureMaxC.toFixed(1)))}°C` });
+  }
+  if (w.temperatureMeanC !== undefined) {
+    weatherItems.push({ label: t('daily.weather.tempMean'), value: `${formatNumber(Number(w.temperatureMeanC.toFixed(1)))}°C` });
+  }
+  if (w.windKmh !== undefined) {
+    weatherItems.push({ label: t('daily.weather.wind'), value: `${formatNumber(Number(w.windKmh.toFixed(1)))} km/h` });
+  }
+  if (w.humidityPct !== undefined) {
+    weatherItems.push({ label: t('daily.weather.humidity'), value: `${formatNumber(Math.round(w.humidityPct))}%` });
+  }
+  if (w.dewpointC !== undefined) {
+    weatherItems.push({ label: t('daily.weather.dewpoint'), value: `${formatNumber(Number(w.dewpointC.toFixed(1)))}°C` });
+  }
+  if (w.solarRadiationMjM2 !== undefined) {
+    weatherItems.push({ label: t('daily.weather.solar'), value: `${formatNumber(Number(w.solarRadiationMjM2.toFixed(1)))} MJ/m²` });
+  }
+  if (w.evapotranspirationMm !== undefined) {
+    weatherItems.push({ label: t('daily.weather.et0'), value: `${formatNumber(Number(w.evapotranspirationMm.toFixed(1)))} mm` });
+  }
+
+  const metricItems: { label: string; value: string }[] = [];
+  if (m) {
+    if (m.confidence !== undefined) {
+      metricItems.push({ label: t('daily.metric.confidence'), value: `${formatNumber(Math.round(m.confidence * 100))}%` });
+    }
+    if (m.confidenceRaw !== undefined) {
+      metricItems.push({ label: t('daily.metric.confidenceRaw'), value: `${formatNumber(Math.round(m.confidenceRaw * 100))}%` });
+    }
+    if (m.finalSeverity !== undefined) {
+      metricItems.push({ label: t('daily.metric.finalSeverity'), value: `${formatNumber(Math.round(m.finalSeverity * 100))}% (${m.finalSeverity.toFixed(2)})` });
+    }
+    if (m.modelSeverity !== undefined) {
+      metricItems.push({ label: t('daily.metric.modelSeverity'), value: `${formatNumber(Math.round(m.modelSeverity * 100))}% (${m.modelSeverity.toFixed(2)})` });
+    }
+    if (m.physicsSeverity !== undefined) {
+      metricItems.push({ label: t('daily.metric.physicsSeverity'), value: `${formatNumber(Math.round(m.physicsSeverity * 100))}% (${m.physicsSeverity.toFixed(2)})` });
+    }
+    if (m.trackDivergence !== undefined) {
+      metricItems.push({ label: t('daily.metric.trackDivergence'), value: m.trackDivergence.toFixed(2) });
+    }
+    if (m.probTop1 !== undefined) {
+      const shares = [m.probTop1, m.probTop2, m.probTop3]
+        .filter((v): v is number => v !== undefined)
+        .map((v) => `${formatNumber(Math.round(v * 100))}%`)
+        .join(' / ');
+      metricItems.push({ label: t('daily.metric.topClassShare'), value: shares });
+    }
+    if (m.top2Hazard || m.top3Hazard) {
+      const runners = [m.top2Hazard, m.top3Hazard]
+        .filter((h): h is NonNullable<typeof h> => Boolean(h))
+        .map((h) => hazardLabel(h, language))
+        .join(', ');
+      if (runners) {
+        metricItems.push({ label: t('daily.metric.secondaryHazards'), value: runners });
+      }
+    }
+    if (m.physicsOverride) {
+      metricItems.push({ label: t('daily.metric.physicsOverride'), value: 'Yes' });
+    }
+  }
+
   return (
     <li className="border-t border-[var(--ap-separator-opaque)] py-5 first:border-t-0">
       <article aria-label={`${formatDate(row.targetDate)} · ${hazardLabel(row.hazard, language)}`}>
@@ -38,25 +113,69 @@ function DayOutlook({ row }: { row: DailyAdvisory }) {
               {hazardLabel(row.hazard, language)}
             </h3>
           </div>
-          <AlertLevelBadge level={row.tier} label={t(`alerts.tier.${row.tier}`)}
-            srPrefix={t('daily.tier')} role="" size="lg" />
+          <div className="flex flex-col items-end gap-1.5">
+            <AlertLevelBadge level={row.tier} label={t(`alerts.tier.${row.tier}`)}
+              srPrefix={t('daily.tier')} role="" size="lg" />
+            <span className="text-xs font-semibold tabular-nums text-[var(--ap-label-secondary)]">
+              {t('daily.severityScore')}: {formatNumber(Math.round(row.severityScore * 100))}% ({row.severityScore.toFixed(2)})
+            </span>
+          </div>
         </div>
+
+        {row.requiresReview && (
+          <p className="mt-3 rounded-lg border border-amber-300 bg-amber-50/80 px-3 py-2 text-xs font-medium text-amber-950">
+            {t('daily.reviewNotice')}
+          </p>
+        )}
+
+        {weatherItems.length > 0 && (
+          <div className="mt-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ap-label-secondary)]">
+              {t('daily.weatherTitle')}
+            </p>
+            <dl className="mt-1.5 grid grid-cols-2 gap-x-4 gap-y-1.5 rounded-lg border border-[var(--ap-separator-opaque)] bg-[var(--ap-bg-grouped)] px-3 py-2.5 text-xs sm:grid-cols-4">
+              {weatherItems.map((item) => (
+                <div key={item.label}>
+                  <dt className="text-[var(--ap-label-secondary)]">{item.label}</dt>
+                  <dd className="font-semibold tabular-nums text-[var(--ap-label)]">{item.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        )}
+
         <p className="mt-3 font-semibold text-[var(--ap-label)]">{t('daily.actions')}</p>
         <ul className="mt-1 list-disc space-y-1 pl-5 text-[var(--ap-label)]">
           {row.actionIds.map((id) => <li key={id}>{t(`daily.action.${id}`)}</li>)}
         </ul>
+
         <details className="group mt-4 text-sm text-[var(--ap-label-secondary)]">
           <summary className="ap-focusable flex min-h-[44px] cursor-pointer list-none items-center gap-2 text-[var(--ap-link)] underline underline-offset-4 [&::-webkit-details-marker]:hidden">
             {t('daily.why')}
             <ChevronDown aria-hidden="true" size={16} className="transition-transform group-open:rotate-180 motion-reduce:transition-none" />
           </summary>
-          <div className="max-w-prose space-y-2 pb-1">
+          <div className="max-w-prose space-y-3 pb-1">
+            {metricItems.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ap-label-secondary)]">
+                  {t('daily.metricsTitle')}
+                </p>
+                <dl className="mt-1.5 grid grid-cols-2 gap-x-4 gap-y-1.5 rounded-lg border border-[var(--ap-separator-opaque)] bg-[var(--ap-bg-grouped)] px-3 py-2.5 text-xs">
+                  {metricItems.map((item) => (
+                    <div key={item.label}>
+                      <dt className="text-[var(--ap-label-secondary)]">{item.label}</dt>
+                      <dd className="font-semibold tabular-nums text-[var(--ap-label)]">{item.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            )}
             <p>{t(`daily.reason.${row.reasonCode}`)}</p>
             {row.peak === 'unique' && <p>{t('daily.peakUnique')}</p>}
             {row.peak === 'tied' && <p>{t('daily.peakTied')}</p>}
             {row.peak === 'unknown' && <p>{t('daily.peakUnknown')}</p>}
             {row.qualityNotes.map((note) => <p key={note}>{t(`daily.quality.${note}`)}</p>)}
-            <p>{t('daily.uncertainty')}</p>
+            {!m && <p>{t('daily.uncertainty')}</p>}
           </div>
         </details>
       </article>
@@ -122,7 +241,7 @@ const FarmerDistrictDailyPage: React.FC = () => {
 
       <header className="space-y-4">
         <h1 className="text-3xl font-semibold leading-tight text-[var(--ap-label)] sm:text-4xl">
-          <span lang="en">{district?.name || id || '—'}</span> {t('daily.title')}
+          <span lang="en">{district?.name || id || '-'}</span> {t('daily.title')}
         </h1>
         <p className="max-w-prose text-base text-[var(--ap-label-secondary)]">{t('daily.standfirst')}</p>
         <div className="max-w-prose space-y-2 border border-[var(--ap-separator-opaque)] bg-[var(--ap-bg-grouped)] p-4 text-sm leading-relaxed text-[var(--ap-label)]" role="note">

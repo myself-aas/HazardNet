@@ -1,67 +1,72 @@
 /**
- * The API's snapshot-backed read path — envelopes built from the committed artifact
- * `frontend/public/data/forecasts-latest.json` (`schema: hazardnet-forecast-snapshot/v2`).
+ * The API's snapshot-backed read path — envelopes built from the committed artifacts
+ * `frontend/public/data/forecasts-latest.json` and `frontend/public/data/daily-advisories-v1.json`.
  *
- * WHY THIS EXISTS
- * The Node runtimes (`backend/routes/*` behind Express, `serverless/v1/*` behind `api/`)
- * read Firestore first and fall back to the same committed snapshot. On Cloudflare Pages
- * Functions that fallback *is* the whole story, for three reasons that all point the same
- * way:
- *
- *   1. **No `fs`, no `firebase-admin`.** `backend/db.js` and `backend/forecastStore.js` are
- *      Node modules (gRPC, native deps) and cannot be bundled into a Worker.
- *   2. **Cost.** Firestore's Spark plan allows 50k reads/day. A Function that queries the
- *      store on every map load and every probe spends that budget on data that is already
- *      published as a static asset — the same budget `docs/ops/owner-actions.md` Action 10
- *      exists to protect. Reading the deployed asset costs no reads at all.
- *   3. **Coherence.** The site's primary read path is `/data/*.json` (ADR 0008), and the
- *      client already falls back to that file when the API is unavailable. Serving the API
- *      from the same bytes means the two can never disagree about what "the latest
- *      forecast" is — the failure mode where the API says one thing and the map's fallback
- *      says another cannot occur.
- *
- * The envelopes are deliberately **identical in shape** to the Node handlers'
- * (`serverless/v1/forecasts/{bulk,metadata}.js`), so the client's `parseBulkResponse` and
- * `fetchForecastMetadata` do not branch on which runtime answered. Query validation is not
- * re-implemented here either — the routes call `parseBulkQuery` from `./forecastServe.js`,
- * so an invalid horizon gets the same 400 and the same message on every runtime.
- *
- * KEEP THIS MODULE PLATFORM-NEUTRAL: no node built-ins. It is bundled into a Pages
- * Function; the only host object it touches is the `ASSETS` binding passed in by the caller.
+ * Platform-neutral (no node:* built-ins) so Cloudflare Pages Functions bundle cleanly.
  */
 
-/** The committed snapshot, served as a static asset from the deployment root. */
+import {
+  DAILY_ADVISORY_MAX_AGE_HOURS,
+  parsePublicDailySnapshot,
+  rollupDailySnapshotToHorizons,
+} from './dailyAdvisoryPublic.js';
+import { VALID_HORIZONS } from './forecastRow.js';
+import { predictFromStore } from './predictFromStore.js';
+
 export const FORECAST_SNAPSHOT_PATH = '/data/forecasts-latest.json';
-
-/** Same default as `metadataDataSource()` in `./forecastServe.js` — one label, two runtimes. */
+export const DAILY_SNAPSHOT_PATH = '/data/daily-advisories-v1.json';
 export const DEFAULT_DATA_SOURCE = 'hazardnet/weekly-forecasts';
-
-/** Provenance of the weekly run, served by `/metadata` on both runtimes. */
 export const NOTEBOOK_SOURCE = 'hazardnet/forecast-pipeline';
+export const DEFAULT_KAGGLE_DATASET = 'ashifahmedshuvo/hazardnet-weekly-forecasts';
+export const DEFAULT_KAGGLE_FILE = 'hazardnet_advisories_latest.csv';
 
-/**
- * The `data_source` label for a response. On the edge the override is a plain Pages
- * environment variable (`FORECAST_DATASET` in the Production scope), not `process.env`,
- * which does not exist in a Worker. Unset is the supported mode and yields the same
- * default the Node runtime uses.
- */
+const DISTRICT_ALIASES = {
+  jessore: 'jashore',
+  chittagong: 'chattogram',
+  comilla: 'cumilla',
+  barishal: 'barisal',
+  barisal: 'barishal',
+  khagrachari: 'khagrachhari',
+  bogura: 'bogra',
+  jaipurhat: 'joypurhat',
+  netrakona: 'netrokona',
+  maulvibazar: 'moulvibazar',
+  brahamanbaria: 'brahmanbaria',
+  jhalakathi: 'jhalokati',
+  nawabganj: 'chapainawabganj',
+  coxsbazar: 'coxsbazar',
+  coxbazar: 'coxsbazar',
+};
+
+function normalizeDistrictLookup(value) {
+  const clean = String(value).toLowerCase().replace(/[^a-z0-9]/g, '');
+  return DISTRICT_ALIASES[clean] || clean;
+}
+
 export function snapshotDataSource(env) {
   const configured = env && typeof env.FORECAST_DATASET === 'string' ? env.FORECAST_DATASET.trim() : '';
   return configured || DEFAULT_DATA_SOURCE;
 }
 
+async function fetchJsonAsset(assets, request, path) {
+  try {
+    const response = await assets.fetch(
+      new Request(new URL(path, request.url), {
+        headers: { accept: 'application/json' },
+      })
+    );
+    if (!response || !response.ok) {
+      return { ok: false, status: response ? response.status : 0 };
+    }
+    const json = await response.json();
+    return { ok: true, json };
+  } catch (error) {
+    return { ok: false, error: error && error.message ? error.message : 'unknown error' };
+  }
+}
+
 /**
- * Read the snapshot through the Pages `ASSETS` binding.
- *
- * `env.ASSETS.fetch` is the documented way for a Function to read a static asset, and it
- * is not a network hop: Pages serves the asset internally and applies the `_headers` rules
- * to the response (which is why the `/data/*` revalidate rule applies here too). A
- * same-origin `fetch()` would be the wrong call — it re-enters the edge, and if `/data/*`
- * were ever added to the Function routes it would recurse.
- *
- * Returns `{ snapshot }` or `{ error }`. Errors are values rather than exceptions because
- * every caller turns them into a specific HTTP status, and a 503 that names the reason is
- * more useful in a probe log than a generic 500.
+ * Read `/data/forecasts-latest.json` through the Pages `ASSETS` binding (single-asset read).
  */
 export async function loadForecastSnapshot(env, request) {
   const assets = env && env.ASSETS;
@@ -87,8 +92,8 @@ export async function loadForecastSnapshot(env, request) {
   let snapshot;
   try {
     snapshot = await response.json();
-  } catch {
-    return { error: 'the snapshot asset is not JSON' };
+  } catch (error) {
+    return { error: `the snapshot asset is not JSON (${error && error.message ? error.message : 'parse error'})` };
   }
 
   if (!snapshot || typeof snapshot !== 'object' || !snapshot.horizons || typeof snapshot.horizons !== 'object') {
@@ -98,21 +103,67 @@ export async function loadForecastSnapshot(env, request) {
   return { snapshot };
 }
 
-/** Rows for one horizon, defensively: a malformed horizon yields an empty list, not a crash. */
+/**
+ * Read `/data/daily-advisories-v1.json` alongside `/data/forecasts-latest.json` so
+ * `/api/predict` and `/api/v1/kaggle` prefer a newer 960-row daily Kaggle run when present.
+ */
+export async function loadForecastOrDailySnapshot(env, request) {
+  const assets = env && env.ASSETS;
+  if (!assets || typeof assets.fetch !== 'function') {
+    return { error: 'the ASSETS binding is not available to this Function' };
+  }
+
+  const [forecastRes, dailyRes] = await Promise.all([
+    fetchJsonAsset(assets, request, FORECAST_SNAPSHOT_PATH),
+    fetchJsonAsset(assets, request, DAILY_SNAPSHOT_PATH),
+  ]);
+
+  let dailyRollup = null;
+  let dailyMeta = null;
+  if (dailyRes.ok) {
+    const parsedDaily = parsePublicDailySnapshot(dailyRes.json);
+    if (parsedDaily) {
+      dailyRollup = rollupDailySnapshotToHorizons(parsedDaily);
+      dailyMeta = parsedDaily.run;
+    }
+  }
+
+  if (forecastRes.ok) {
+    const snapshot = forecastRes.json;
+    if (snapshot && typeof snapshot === 'object' && snapshot.horizons && typeof snapshot.horizons === 'object') {
+      if (dailyRollup && dailyRollup.prediction_date >= (snapshot.prediction_date || '')) {
+        return {
+          snapshot: {
+            ...snapshot,
+            generated_at: dailyRollup.generated_at,
+            prediction_date: dailyRollup.prediction_date,
+            horizons: dailyRollup.horizons,
+          },
+          dailyMeta,
+        };
+      }
+      return { snapshot, dailyMeta };
+    }
+    if (!dailyRollup) {
+      return { error: 'the snapshot asset is not a hazardnet-forecast-snapshot' };
+    }
+  }
+
+  if (dailyRollup) {
+    return { snapshot: dailyRollup, dailyMeta };
+  }
+
+  if (forecastRes.error) {
+    return { error: `the snapshot asset is not JSON (${forecastRes.error})` };
+  }
+  return { error: `the snapshot asset answered ${forecastRes.status || 'no response'}` };
+}
+
 export function snapshotRows(snapshot, horizon) {
   const rows = snapshot && snapshot.horizons ? snapshot.horizons[horizon] : undefined;
   return Array.isArray(rows) ? rows : [];
 }
 
-/**
- * `GET /api/v1/forecasts/bulk` — the same envelope as the Node handler:
- * `{ horizon, count, generated_at, data_source, forecasts }`.
- *
- * `generated_at` is the response time, matching the Node runtime (whose value is also the
- * response time, including on its snapshot fallback). It is **not** a freshness claim: the
- * data's own dates are `prediction_date` and `target_date` on each row, and `/metadata`
- * exposes `ingestion_timestamp` for anything that needs to age the artifact.
- */
 export function bulkEnvelopeFromSnapshot(snapshot, horizon, { dataSource, generatedAt } = {}) {
   const rows = snapshotRows(snapshot, horizon);
   return {
@@ -124,21 +175,6 @@ export function bulkEnvelopeFromSnapshot(snapshot, horizon, { dataSource, genera
   };
 }
 
-/**
- * `GET /api/v1/forecasts/metadata` — the freshness headline, from the artifact itself.
- *
- * Field-by-field against the Node handler, so the two can be compared without reading both:
- *
- *   - `prediction_date` — the snapshot's own `prediction_date`, falling back to the newest
- *     `prediction_date` across rows (the same rule `fetchSnapshotMetadata` uses client-side).
- *   - `ingestion_timestamp` — the snapshot's `generated_at`: when the artifact was built,
- *     which is the edge equivalent of "when the latest rows landed".
- *   - `row_count` — total rows across horizons, which is what the Node handler's
- *     "rows for the newest prediction_date" query counts, since both horizons share a date.
- *   - `datasets`, `notebook_source`, `data_source` — identical to the Node runtime, with
- *     `datasets` passed in by the route from `metadataDatasets()` rather than copied.
- *   - `generated_at` — response time, as above.
- */
 export function metadataEnvelopeFromSnapshot(snapshot, { dataSource, generatedAt, datasets } = {}) {
   const horizonRows = Object.values(snapshot && snapshot.horizons ? snapshot.horizons : {})
     .filter((rows) => Array.isArray(rows));
@@ -163,5 +199,89 @@ export function metadataEnvelopeFromSnapshot(snapshot, { dataSource, generatedAt
     notebook_source: NOTEBOOK_SOURCE,
     datasets: Array.isArray(datasets) ? datasets : [],
     generated_at: generatedAt || new Date().toISOString(),
+  };
+}
+
+/**
+ * `POST /api/predict` — edge twin of `backend/utils/storedPrediction.js`.
+ */
+export function storedPredictionFromSnapshot(snapshot, body, { now = new Date(), storeLatencyMs = 0 } = {}) {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return { status: 422, body: { error: 'District payload required' } };
+  }
+  if ('tensor' in body || 'rasterName' in body) {
+    return {
+      status: 400,
+      body: { error: 'On-demand tensor/raster inference is retired. Supply a district and horizon.' },
+    };
+  }
+  const district = body.district_id ?? body.districtId;
+  if (
+    !['string', 'number'].includes(typeof district) ||
+    !String(district).trim() ||
+    String(district).length > 100 ||
+    !/^[a-zA-Z0-9 _'-]+$/.test(String(district))
+  ) {
+    return { status: 422, body: { error: 'A valid district_id or districtId is required' } };
+  }
+  const horizon = body.horizon ?? '7_days';
+  if (!VALID_HORIZONS.includes(horizon)) {
+    return { status: 400, body: { error: 'Invalid horizon. Use: 7_days, 15_days' } };
+  }
+
+  const rows = snapshotRows(snapshot, horizon);
+  const numeric = /^\d+$/.test(String(district).trim());
+  const targetKey = normalizeDistrictLookup(district);
+
+  const matching = rows
+    .filter((r) => {
+      if (!r || typeof r !== 'object') return false;
+      if (numeric) return String(r.district_id) === String(district).trim();
+      return normalizeDistrictLookup(r.district_name || '') === targetKey;
+    })
+    .sort((a, b) => String(b.prediction_date || '').localeCompare(String(a.prediction_date || '')));
+
+  const selected = matching[0];
+  if (!selected) {
+    return { status: 404, body: { error: 'No stored forecast for this district and horizon' } };
+  }
+
+  return {
+    status: 200,
+    body: predictFromStore(selected, { now, storeLatencyMs }),
+  };
+}
+
+/**
+ * `GET /api/v1/kaggle` & `GET /api/v1/kaggle/advisories` — edge twin of `serverless/v1/kaggle.js`.
+ * @param {any} snapshot
+ * @param {string} horizon
+ * @param {{ dailyMeta?: any, now?: Date }} [options]
+ */
+export function kaggleEnvelopeFromSnapshot(snapshot, horizon, options = {}) {
+  const { dailyMeta = null, now = new Date() } = options;
+  const rows = snapshotRows(snapshot, horizon);
+  const generatedAt = (dailyMeta && dailyMeta.generatedAt)
+    || (snapshot && typeof snapshot.generated_at === 'string' ? snapshot.generated_at : null);
+  const cutoffMs = dailyMeta && dailyMeta.dataCutoff
+    ? Date.parse(dailyMeta.dataCutoff)
+    : generatedAt
+      ? Date.parse(generatedAt)
+      : NaN;
+  const isStale = !Number.isFinite(cutoffMs)
+    || now.getTime() - cutoffMs > DAILY_ADVISORY_MAX_AGE_HOURS * 3_600_000;
+
+  return {
+    status: rows.length === 0 ? 'unavailable' : isStale ? 'stale' : 'fresh',
+    source: dailyMeta ? 'kaggle-daily-snapshot' : 'forecast-snapshot',
+    dataset: DEFAULT_KAGGLE_DATASET,
+    file: DEFAULT_KAGGLE_FILE,
+    horizon,
+    fetchedAt: generatedAt,
+    generatedAt,
+    sha256: dailyMeta?.inputSha256 ?? null,
+    rowCount: rows.length,
+    lastError: null,
+    data: rows,
   };
 }

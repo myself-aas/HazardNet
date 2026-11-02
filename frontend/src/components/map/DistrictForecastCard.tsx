@@ -4,6 +4,8 @@ import { LocationMap } from '../ui/expand-map';
 import { BottomSheet, type SheetDisclosureStage } from '../ui/BottomSheet';
 import { DistrictData } from '../../data/bangladeshDistricts';
 import { useI18n } from '../../hooks/useI18n';
+import AlertLevelBadge from '../alerts/AlertLevelBadge';
+import type { AdvisoryTier } from '../../lib/forecasts';
 
 /**
  * Selected-district forecast for the live map, presented in the shared BottomSheet
@@ -111,9 +113,18 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
           </span>
           <span>Forecast</span>
         </span>
-        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border whitespace-nowrap ${tone.badge}`}>
-          {district.risk} Risk
-        </span>
+        <div className="flex flex-wrap items-center gap-1.5">
+          {district.advisoryTier && (
+            <AlertLevelBadge
+              level={district.advisoryTier.toUpperCase() as AdvisoryTier}
+              label={district.advisoryTier.toUpperCase()}
+              size="sm"
+            />
+          )}
+          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border whitespace-nowrap ${tone.badge}`}>
+            {district.risk} Risk
+          </span>
+        </div>
       </div>
 
       <div className="divide-y divide-carbon-10">

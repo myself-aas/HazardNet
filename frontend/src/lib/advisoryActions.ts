@@ -34,6 +34,7 @@ const TIER_ACTION_KEY: Record<AdvisoryTier, string> = {
   WATCH: 'advisory.action.WATCH',
   WARNING: 'advisory.action.WARNING',
   SEVERE: 'advisory.action.SEVERE',
+  EXTREME: 'advisory.action.EXTREME',
 };
 
 /** Every hazard class the model can emit (`Models/labels.json`, eight classes). */

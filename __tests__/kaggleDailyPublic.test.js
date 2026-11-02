@@ -129,11 +129,33 @@ describe('version-pinned Kaggle daily public fetch (synthetic HTTP only)', () =>
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
 
-  test('missing or mismatched notebook metadata, stale cutoff and version race fail before writing', async () => {
+  test('derives a run manifest directly from CSV + dataset timestamp when .run.json returns HTTP 404', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'hazardnet-kaggle-derived-'));
+    try {
+      const rows = syntheticDailyRows();
+      const columns = Object.keys(rows[0]);
+      const csv = Buffer.from([columns.join(','), ...rows.map((row) =>
+        columns.map((key) => row[key]).join(','))].join('\n') + '\n');
+      const { fetchImpl } = fakeKaggle({ csv, run: null });
+      const result = await fetchReadyDailyDataset({ outDir: join(dir, 'private'),
+        assetPath: join(dir, 'absent.json'), base: 'http://kaggle.test', fetchImpl, now: NOW,
+      });
+      assert.equal(result.status, 'fetched');
+      assert.equal(result.version, 42);
+      assert.match(result.runId, /^kaggle-v42-/);
+      const snapshot = await projectDailyInput({
+        input: join(dir, 'private', CSV_NAME), manifest: join(dir, 'private', RUN_NAME),
+        publish: true, automated: true, datasetVersion: result.version, now: NOW,
+      });
+      assert.equal(snapshot.coverage.publishedRows, 960);
+      assert.equal(snapshot.run.sourceDatasetVersion, 42);
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
+
+  test('mismatched notebook metadata, stale cutoff and version race fail before writing', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'hazardnet-kaggle-reject-'));
     try {
       for (const source of [
-        fakeKaggle({ run: null }),
         fakeKaggle({ run: { ...MANIFEST, csv_sha256: 'b'.repeat(64) } }),
         fakeKaggle({ run: { ...MANIFEST, data_cutoff: '2026-10-28T08:00:00.000Z' } }),
         fakeKaggle({ run: { ...MANIFEST, generated_at: '2026-11-01 10:00:00' } }),
@@ -142,7 +164,7 @@ describe('version-pinned Kaggle daily public fetch (synthetic HTTP only)', () =>
         await assert.rejects(() => fetchReadyDailyDataset({ outDir: join(dir, 'private'),
           assetPath: join(dir, 'absent.json'), base: 'http://kaggle.test', fetchImpl: source.fetchImpl,
           now: NOW,
-        }), /HTTP 404|checksum|stale|UTC run manifest|version changed/);
+        }), /checksum|stale|UTC run manifest|version changed/);
         assert.equal(existsSync(join(dir, 'private')), false);
       }
     } finally { rmSync(dir, { recursive: true, force: true }); }
@@ -182,13 +204,15 @@ describe('version-pinned Kaggle daily public fetch (synthetic HTTP only)', () =>
     }), /outside the public repository/);
   });
 
-  test('Actions schedules only the new route and stages only its public projection', () => {
+  test('Actions schedules the automated route and synchronizes all forecast snapshots', () => {
     const automated = readFileSync(join(process.cwd(), '.github/workflows/public_daily_advisories.yml'), 'utf8');
     const legacy = readFileSync(join(process.cwd(), '.github/workflows/daily_advisory_ingest.yml'), 'utf8');
     assert.match(automated, /schedule:\s*\n\s*- cron:/);
-    assert.match(automated, /git add -- frontend\/public\/data\/daily-advisories-v1\.json/);
+    assert.match(automated, /frontend\/public\/data\/daily-advisories-v1\.json/);
+    assert.match(automated, /sync_daily_to_forecasts\.mjs[\s\\]+--from-daily-json/);
+    assert.match(automated, /frontend\/dist\/data\/daily-advisories-v1\.json/);
     assert.match(automated, /--automated-publish --dataset-version/);
-    assert.doesNotMatch(automated, /process_advisory_ingest|mirror_public_daily_to_firestore|git add backend\/data/);
+    assert.doesNotMatch(automated, /process_advisory_ingest|mirror_public_daily_to_firestore/);
     assert.doesNotMatch(legacy, /^\s*schedule:/m);
     assert.match(legacy, /128-row legacy two-horizon CSV/);
   });

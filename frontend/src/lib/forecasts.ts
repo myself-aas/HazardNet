@@ -20,7 +20,7 @@ import type { DistrictData } from '../data/bangladeshDistricts';
 // Firestore doc shape written by POST /update / serverless/ingest.js)
 // ─────────────────────────────────────────────────────────────────────────
 
-export const ADVISORY_TIERS = ['SEVERE', 'WARNING', 'WATCH', 'NORMAL'] as const;
+export const ADVISORY_TIERS = ['EXTREME', 'SEVERE', 'WARNING', 'WATCH', 'NORMAL'] as const;
 export type AdvisoryTier = (typeof ADVISORY_TIERS)[number];
 
 export const HAZARD_CLASSES = [

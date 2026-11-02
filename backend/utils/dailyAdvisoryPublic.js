@@ -1,14 +1,18 @@
 /**
- * Public-only projection of a district/day advisory export.
+ * Public projection of the Kaggle 64-district × 15-day daily advisory export.
  *
- * The upstream technical export is a private input. This module knows only the
- * published result, date, district and a few availability flags. Never add a
- * pass-through of input rows to this snapshot: the static asset is world-readable.
+ * Publishes all 5 advisory tiers (NORMAL, WATCH, WARNING, SEVERE, EXTREME),
+ * severityScore, meteorological drivers, and forecast track metrics while
+ * keeping strict field whitelisting so private internal columns (e.g.,
+ * fusion_reason or free-text researcher notes) never enter public artifacts.
+ *
+ * Platform-neutral (zod + districtRegistry only; no node:* built-ins) so both
+ * Node scripts and Cloudflare Pages Functions bundle this module cleanly.
  */
 import { z } from 'zod';
-import { lookupDistrict } from './districtRegistry.js';
+import { DISTRICT_REGISTRY, lookupDistrict } from './districtRegistry.js';
 
-const VALID_HAZARDS = [
+export const VALID_HAZARDS = [
   'Cold Wave', 'Drought', 'Fire', 'Flash Flood', 'Flood', 'Heat Wave',
   'Severe Local Storm', 'Tropical Cyclone',
 ];
@@ -16,8 +20,9 @@ const VALID_HAZARDS = [
 export const DAILY_ADVISORY_SCHEMA = 'hazardnet-daily-advisories/v1';
 export const DAILY_ADVISORY_DAYS = 15;
 export const DAILY_ADVISORY_MAX_AGE_HOURS = 36;
-export const DAILY_PUBLIC_TIERS = ['NORMAL', 'WATCH'];
-const ALL_TIERS = [...DAILY_PUBLIC_TIERS, 'WARNING', 'SEVERE', 'EXTREME'];
+export const DAILY_PUBLIC_TIERS = ['NORMAL', 'WATCH', 'WARNING', 'SEVERE', 'EXTREME'];
+export const REQUIRES_REVIEW_TIERS = ['WARNING', 'SEVERE', 'EXTREME'];
+const ALL_TIERS = DAILY_PUBLIC_TIERS;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const UTC = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/;
 const HOUR = 3_600_000;
@@ -30,6 +35,7 @@ const utcTime = z.string().regex(UTC).refine((value) => {
 const digest = z.string().regex(/^[a-f0-9]{64}$/);
 const isRunFact = (value) => value === value.trim()
   && !/^(?:TBD|TODO|UNKNOWN|N\/A)(?:\b|_)/i.test(value);
+
 export const dailyAdvisoryManifestSchema = z.object({
   schema_version: z.literal('4.3-pb'),
   run_id: z.string().min(1).max(100).regex(/^[a-zA-Z0-9._-]+$/).refine(isRunFact),
@@ -39,10 +45,6 @@ export const dailyAdvisoryManifestSchema = z.object({
   csv_sha256: digest,
 }).strict();
 
-// An authorized project owner or release operator issues this minimal release
-// receipt. No separate producer identity is required. The receipt is never
-// copied into the public snapshot; issuer/reviewer authority and run evidence
-// must be verified outside this repository. Field validation cannot do that.
 const issuedName = z.string().min(2).max(120).refine((value) =>
   value === value.trim() && !/^(?:TBD|TODO|UNKNOWN|N\/A)(?:\b|_)/i.test(value));
 const approved = (scope, boundField) => z.object({
@@ -89,6 +91,36 @@ export const publishableDailyManifestSchema = z.object({
   publication: z.object({ status: z.literal('approved') }).strict(),
 }).strict();
 
+export const publicWeatherSchema = z.object({
+  precipitationMm: z.number().min(0).max(1000).optional(),
+  temperatureMaxC: z.number().min(-30).max(65).optional(),
+  temperatureMinC: z.number().min(-40).max(55).optional(),
+  temperatureMeanC: z.number().min(-35).max(60).optional(),
+  windKmh: z.number().min(0).max(450).optional(),
+  humidityPct: z.number().min(0).max(100).optional(),
+  dewpointC: z.number().min(-45).max(50).optional(),
+  solarRadiationMjM2: z.number().min(0).max(60).optional(),
+  evapotranspirationMm: z.number().min(0).max(50).optional(),
+}).strict();
+
+export const publicMetricsSchema = z.object({
+  confidence: z.number().min(0).max(1).optional(),
+  confidenceRaw: z.number().min(0).max(1).optional(),
+  modelSeverity: z.number().min(0).max(1).optional(),
+  modelSeverityRaw: z.number().min(0).max(1).optional(),
+  physicsSeverity: z.number().min(0).max(1).optional(),
+  finalSeverity: z.number().min(0).max(1).optional(),
+  physicsOverride: z.boolean().optional(),
+  physicsTopHazard: z.enum(VALID_HAZARDS).optional(),
+  physicsTopSeverity: z.number().min(0).max(1).optional(),
+  trackDivergence: z.number().min(0).max(1).optional(),
+  probTop1: z.number().min(0).max(1).optional(),
+  probTop2: z.number().min(0).max(1).optional(),
+  probTop3: z.number().min(0).max(1).optional(),
+  top2Hazard: z.enum(VALID_HAZARDS).optional(),
+  top3Hazard: z.enum(VALID_HAZARDS).optional(),
+}).strict();
+
 const publicAdvisorySchema = z.object({
   advisoryId: z.string().min(1),
   districtId: z.number().int().min(1).max(64),
@@ -98,15 +130,14 @@ const publicAdvisorySchema = z.object({
   targetDate: z.string().regex(DATE),
   hazard: z.enum(VALID_HAZARDS),
   tier: z.enum(DAILY_PUBLIC_TIERS),
+  severityScore: z.number().min(0).max(1),
+  requiresReview: z.boolean(),
   reasonCode: z.enum(['district_outlook', 'no_major_risk']),
   actionIds: z.array(z.string().regex(/^[a-z_]+$/)).min(2).max(4),
   peak: z.enum(['unique', 'tied', 'unknown', 'none']),
   qualityNotes: z.array(z.enum(['official_update_unverified', 'limited_forecast_detail'])),
-  weather: z.object({
-    precipitationMm: z.number().min(0).max(500).optional(),
-    temperatureMaxC: z.number().min(-20).max(60).optional(),
-    windKmh: z.number().min(0).max(400).optional(),
-  }).strict(),
+  weather: publicWeatherSchema,
+  metrics: publicMetricsSchema.optional(),
 }).strict();
 
 export const publicDailySnapshotSchema = z.object({
@@ -118,8 +149,6 @@ export const publicDailySnapshotSchema = z.object({
     expiresAt: utcTime,
     modelVersion: z.string().min(1).max(100),
     inputSha256: z.string().regex(/^[a-f0-9]{64}$/),
-    // Public provenance for the automated Kaggle path. Older manual results
-    // have no dataset version; the field never asserts when the model ran.
     sourceDatasetVersion: z.number().int().positive().max(1_000_000_000).optional(),
   }).strict(),
   coverage: z.object({
@@ -132,6 +161,10 @@ export const publicDailySnapshotSchema = z.object({
 
 function fail(message) {
   throw new Error(`Daily advisory publication refused: ${message}`);
+}
+
+function round4(value) {
+  return Math.round(value * 10000) / 10000;
 }
 
 function dateValue(value) {
@@ -152,7 +185,7 @@ function decimal(value, min, max) {
   const text = String(value ?? '').trim();
   if (!text) return null;
   const number = Number(text);
-  return Number.isFinite(number) && number >= min && number <= max ? number : null;
+  return Number.isFinite(number) && number >= min && number <= max ? round4(number) : null;
 }
 
 function bool(value) {
@@ -163,12 +196,60 @@ function bool(value) {
   return null;
 }
 
-/** An absent optional weather value stays absent; an invalid one is never coerced to zero. */
-function optionalWeather(raw, field, min, max, rowNumber) {
-  if (raw[field] === '' || raw[field] === null || raw[field] === undefined) return undefined;
-  const value = decimal(raw[field], min, max);
-  if (value === null) fail(`row ${rowNumber} has invalid ${field}`);
-  return value;
+function optionalBool(raw, field, defaultVal, rowNumber) {
+  if (raw[field] === '' || raw[field] === null || raw[field] === undefined) return defaultVal;
+  const parsed = bool(raw[field]);
+  if (parsed === null) fail(`row ${rowNumber} has an invalid required result, date, score or availability flag`);
+  return parsed;
+}
+
+function firstOptionalDecimal(raw, fields, min, max, rowNumber, transform = (v) => v) {
+  for (const field of fields) {
+    if (raw[field] === '' || raw[field] === null || raw[field] === undefined) continue;
+    const rawNum = Number(String(raw[field]).trim());
+    if (!Number.isFinite(rawNum)) fail(`row ${rowNumber} has invalid ${field}`);
+    const transformed = round4(transform(rawNum));
+    if (transformed < min || transformed > max) fail(`row ${rowNumber} has invalid ${field}`);
+    return transformed;
+  }
+  return undefined;
+}
+
+function firstOptionalHazard(raw, fields, rowNumber) {
+  for (const field of fields) {
+    if (raw[field] === '' || raw[field] === null || raw[field] === undefined) continue;
+    const value = String(raw[field]).trim();
+    if (!VALID_HAZARDS.includes(value)) fail(`row ${rowNumber} has invalid ${field}`);
+    return value;
+  }
+  return undefined;
+}
+
+/**
+ * Normalize an ISO-like UTC timestamp (including Kaggle's 7-digit fractional
+ * seconds or `YYYY-MM-DD HH:MM:SS` UTC strings) into canonical `.sssZ` ISO.
+ */
+export function normalizeUtcTimestamp(value) {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  let candidate = trimmed;
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)?$/.test(candidate)) {
+    candidate = `${candidate.replace(' ', 'T')}Z`;
+  } else if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{4,9}Z$/.test(candidate)) {
+    candidate = `${candidate.slice(0, 23)}Z`;
+  } else if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?\+00:00$/.test(candidate)) {
+    const base = candidate.slice(0, -6);
+    const dot = base.indexOf('.');
+    candidate = dot === -1 ? `${base}Z` : `${base.slice(0, dot + 4)}Z`;
+  }
+  if (!UTC.test(candidate)) return null;
+  const parsed = Date.parse(candidate);
+  if (!Number.isFinite(parsed)) return null;
+  const iso = new Date(parsed).toISOString();
+  if (iso.slice(0, 10) !== candidate.slice(0, 10)) return null;
+  return iso;
 }
 
 export function validateDailyManifest(raw, {
@@ -192,11 +273,115 @@ export function validateDailyManifest(raw, {
 }
 
 /**
- * Machine-check an owner/operator-issued, approval-bound receipt against CSV
- * facts. This does not verify the issuer's authority, underlying UTC evidence
- * or a cryptographic signature; those must be checked outside this checkout.
- * Nothing from the private approval record is returned in the public snapshot.
+ * Derive a validated daily run manifest directly from a 960-row Kaggle CSV
+ * (and optional Kaggle dataset version metadata) when a separate `.run.json`
+ * companion file is absent.
  */
+export function deriveDailyManifestFromCsv(rows, {
+  sha256,
+  datasetVersion,
+  datasetTimestamp,
+  defaultModelVersion = '2.1.9+model.0bb5bdaf1789',
+  now = new Date(),
+  allowStale = false,
+} = {}) {
+  if (!Array.isArray(rows) || rows.length === 0) {
+    fail('cannot derive run metadata from an empty CSV');
+  }
+  if (typeof sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(sha256)) {
+    fail('a valid CSV SHA-256 checksum is required');
+  }
+
+  const firstField = (names) => {
+    for (const row of rows) {
+      if (!row || typeof row !== 'object') continue;
+      for (const name of names) {
+        const val = row[name];
+        if (val !== undefined && val !== null && String(val).trim() !== '') {
+          return String(val).trim();
+        }
+      }
+    }
+    return null;
+  };
+
+  const day1Dates = rows
+    .filter((r) => String(r?.forecast_day ?? '').trim() === '1')
+    .map((r) => String(r?.target_date ?? '').trim())
+    .filter((d) => dateValue(d) !== null)
+    .sort();
+  const allDates = rows
+    .map((r) => String(r?.target_date ?? '').trim())
+    .filter((d) => dateValue(d) !== null)
+    .sort();
+  const day1Date = day1Dates[0] || allDates[0] || null;
+  const day1Epoch = day1Date ? dateValue(day1Date) : null;
+
+  // Guard against re-uploading an expired forecast window without `.run.json`.
+  if (!allowStale && day1Epoch !== null) {
+    const windowAgeMs = now.getTime() - (day1Epoch + DAY);
+    if (windowAgeMs > DAILY_ADVISORY_MAX_AGE_HOURS * HOUR) {
+      fail('source CSV forecast window is stale');
+    }
+  }
+
+  const csvGeneratedIso = normalizeUtcTimestamp(firstField(['generated_at', 'completed_at_utc']));
+  const datasetIso = normalizeUtcTimestamp(datasetTimestamp);
+  const csvPredictionIso = normalizeUtcTimestamp(firstField(['prediction_date']));
+
+  let generatedAt = csvGeneratedIso || datasetIso || csvPredictionIso;
+  if (!generatedAt) {
+    if (day1Epoch !== null) {
+      const currentMs = now.getTime();
+      if (Number.isFinite(currentMs) && Math.abs(currentMs - day1Epoch) <= 2 * DAY) {
+        generatedAt = new Date(currentMs).toISOString();
+      } else {
+        generatedAt = new Date(day1Epoch).toISOString();
+      }
+    } else {
+      fail('cannot determine generation timestamp from CSV or dataset metadata');
+    }
+  }
+
+  const csvCutoffIso = normalizeUtcTimestamp(firstField(['data_cutoff', 'data_cutoff_utc']));
+  let dataCutoff = csvCutoffIso;
+  if (!dataCutoff && csvPredictionIso && Date.parse(csvPredictionIso) <= Date.parse(generatedAt)) {
+    dataCutoff = csvPredictionIso;
+  }
+  if (!dataCutoff) {
+    dataCutoff = generatedAt;
+  }
+  if (Date.parse(dataCutoff) > Date.parse(generatedAt)) {
+    dataCutoff = generatedAt;
+  }
+
+  const rawRunId = firstField(['run_id']);
+  const validCsvRunId = rawRunId
+    && /^[a-zA-Z0-9._-]{1,100}$/.test(rawRunId)
+    && isRunFact(rawRunId)
+    ? rawRunId
+    : null;
+  const fallbackRunId = Number.isSafeInteger(datasetVersion) && datasetVersion > 0
+    ? `kaggle-v${datasetVersion}-${sha256.slice(0, 12)}`
+    : `daily-${day1Date || generatedAt.slice(0, 10)}-${sha256.slice(0, 12)}`;
+
+  const rawModelVersion = firstField(['model_version']);
+  const validModelVersion = rawModelVersion
+    && rawModelVersion.length <= 100
+    && isRunFact(rawModelVersion)
+    ? rawModelVersion
+    : defaultModelVersion;
+
+  return validateDailyManifest({
+    schema_version: '4.3-pb',
+    run_id: validCsvRunId || fallbackRunId,
+    generated_at: generatedAt,
+    data_cutoff: dataCutoff,
+    model_version: validModelVersion,
+    csv_sha256: sha256,
+  }, { sha256, now, allowStale });
+}
+
 export function validatePublishableDailyManifest(raw, {
   sha256, copySha256, filename, sizeBytes, rows, columns, districts, firstDate, lastDate,
   now = new Date(), allowStale = false,
@@ -235,10 +420,53 @@ export function validatePublishableDailyManifest(raw, {
   }, { sha256, now, allowStale });
 }
 
+function extractRowWeather(raw, rowNumber) {
+  const candidates = {
+    precipitationMm: firstOptionalDecimal(raw, ['om_precip_mm', 'precipitation_mm'], 0, 1000, rowNumber)
+      ?? firstOptionalDecimal(raw, ['om_precip_m'], 0, 1000, rowNumber, (v) => v * 1000),
+    temperatureMaxC: firstOptionalDecimal(raw, ['om_max_temp_c', 'om_temp_max_c', 'om_temp_max', 'temperature_max', 'om_max_temp_k'], -30, 65, rowNumber),
+    temperatureMinC: firstOptionalDecimal(raw, ['om_min_temp_c', 'om_temp_min_c', 'om_temp_min', 'temperature_min', 'om_min_temp_k'], -40, 55, rowNumber),
+    temperatureMeanC: firstOptionalDecimal(raw, ['om_temp_mean_c', 'temperature_mean', 'om_temp_2m_k'], -35, 60, rowNumber),
+    windKmh: firstOptionalDecimal(raw, ['om_wind_kmh', 'wind_max_kmh'], 0, 450, rowNumber)
+      ?? firstOptionalDecimal(raw, ['om_wind_max_ms'], 0, 450, rowNumber, (v) => v * 3.6),
+    humidityPct: firstOptionalDecimal(raw, ['om_humidity_pct', 'relative_humidity_pct', 'humidity_pct'], 0, 100, rowNumber),
+    dewpointC: firstOptionalDecimal(raw, ['dewpoint_mean', 'om_dewpoint_c', 'om_dewpoint_k'], -45, 50, rowNumber),
+    solarRadiationMjM2: firstOptionalDecimal(raw, ['solar_radiation_mj_m2', 'om_solar_mj_m2'], 0, 60, rowNumber),
+    evapotranspirationMm: firstOptionalDecimal(raw, ['evapotranspiration_mm', 'om_et_mm'], 0, 50, rowNumber),
+  };
+  return Object.fromEntries(Object.entries(candidates).filter(([, value]) => value !== undefined));
+}
+
+function extractRowMetrics(raw, rowNumber) {
+  const overrideRaw = raw.physics_override;
+  const physicsOverride = overrideRaw === '' || overrideRaw === null || overrideRaw === undefined
+    ? undefined
+    : optionalBool(raw, 'physics_override', false, rowNumber);
+
+  const candidates = {
+    confidence: firstOptionalDecimal(raw, ['confidence_calibrated', 'confidence'], 0, 1, rowNumber),
+    confidenceRaw: firstOptionalDecimal(raw, ['confidence_raw'], 0, 1, rowNumber),
+    modelSeverity: firstOptionalDecimal(raw, ['cnn_severity', 'model_severity'], 0, 1, rowNumber),
+    modelSeverityRaw: firstOptionalDecimal(raw, ['cnn_severity_raw', 'model_severity_raw'], 0, 1, rowNumber),
+    physicsSeverity: firstOptionalDecimal(raw, ['physics_severity'], 0, 1, rowNumber),
+    finalSeverity: firstOptionalDecimal(raw, ['final_severity'], 0, 1, rowNumber),
+    physicsOverride,
+    physicsTopHazard: firstOptionalHazard(raw, ['physics_top_hazard'], rowNumber),
+    physicsTopSeverity: firstOptionalDecimal(raw, ['physics_top_severity'], 0, 1, rowNumber),
+    trackDivergence: firstOptionalDecimal(raw, ['track_divergence'], 0, 1, rowNumber),
+    probTop1: firstOptionalDecimal(raw, ['prob_top1'], 0, 1, rowNumber),
+    probTop2: firstOptionalDecimal(raw, ['prob_top2'], 0, 1, rowNumber),
+    probTop3: firstOptionalDecimal(raw, ['prob_top3'], 0, 1, rowNumber),
+    top2Hazard: firstOptionalHazard(raw, ['prob_top2_hazard', 'hazard_top2', 'top2_hazard'], rowNumber),
+    top3Hazard: firstOptionalHazard(raw, ['prob_top3_hazard', 'hazard_top3', 'top3_hazard'], rowNumber),
+  };
+  return Object.fromEntries(Object.entries(candidates).filter(([, value]) => value !== undefined));
+}
+
 /**
- * Validate a complete continuous ledger and return ONLY the approved public projection.
- * The technical source rows are never retained on the returned object.
- * `expectedDistricts` is a test seam; production callers must use the default 64.
+ * Validate a complete 64×15 continuous ledger and return the public projection.
+ * Includes severityScore, all 5 advisory tiers, all present weather metrics,
+ * and whitelisted forecast track metrics while stripping any unknown/private columns.
  */
 export function buildPublicDailySnapshot(rows, manifest, { expectedDistricts = 64, sourceDatasetVersion } = {}) {
   if (!Array.isArray(rows) || !Number.isInteger(expectedDistricts) || expectedDistricts < 1
@@ -250,24 +478,31 @@ export function buildPublicDailySnapshot(rows, manifest, { expectedDistricts = 6
     fail('invalid source dataset version');
   }
 
+  const hasPeakColumn = rows.some((r) => r && r.is_peak_day !== undefined && r.is_peak_day !== null && String(r.is_peak_day).trim() !== '');
   const districts = new Map();
   const globalDates = new Map();
+
   for (const [index, raw] of rows.entries()) {
     const rowNumber = index + 2;
     if (!raw || typeof raw !== 'object') fail(`row ${rowNumber} is missing`);
-    const district = lookupDistrict(String(raw.district || '').trim());
+    const districtName = String(raw.district ?? raw.district_name ?? '').trim();
+    const district = lookupDistrict(districtName);
     if (!district) fail(`row ${rowNumber} has an unknown district`);
     const day = integer(raw.forecast_day, 1, DAILY_ADVISORY_DAYS);
-    const targetDate = dateValue(raw.target_date);
-    const hazard = String(raw.hazard || '').trim();
-    const tier = String(raw.advisory_tier || '').trim();
-    const severity = decimal(raw.severity_score, 0, 1);
-    const flagged = bool(raw.is_peak_day);
-    const bmdStale = bool(raw.bmd_stale);
-    const degraded = bool(raw.physics_degraded);
+    const targetDateStr = String(raw.target_date ?? '').trim();
+    const targetDate = dateValue(targetDateStr);
+    const hazard = String(raw.hazard ?? raw.hazard_type ?? '').trim();
+    const tier = String(raw.advisory_tier ?? '').trim().toUpperCase();
+    const rawScore = raw.severity_score !== undefined && raw.severity_score !== ''
+      ? raw.severity_score
+      : raw.final_severity;
+    const severity = decimal(rawScore, 0, 1);
+    const flagged = hasPeakColumn ? bool(raw.is_peak_day) : false;
+    const bmdStale = optionalBool(raw, 'bmd_stale', false, rowNumber);
+    const degraded = optionalBool(raw, 'physics_degraded', false, rowNumber);
+
     if (!day || targetDate === null || !VALID_HAZARDS.includes(hazard)
-      || !ALL_TIERS.includes(tier) || severity === null
-      || flagged === null || bmdStale === null || degraded === null) {
+      || !ALL_TIERS.includes(tier) || severity === null || flagged === null) {
       fail(`row ${rowNumber} has an invalid required result, date, score or availability flag`);
     }
     if (globalDates.has(day) && globalDates.get(day) !== targetDate) {
@@ -278,16 +513,17 @@ export function buildPublicDailySnapshot(rows, manifest, { expectedDistricts = 6
     const group = districts.get(district.district_id) || new Map();
     if (group.has(day)) fail(`district ${district.district_id} has duplicate day ${day}`);
     group.set(day, {
-      district, day, targetDate: raw.target_date, hazard, tier, severity, flagged,
-      bmdStale, degraded,
-      weather: {
-        ...(hazard === 'Flood' || hazard === 'Flash Flood' || hazard === 'Drought'
-          ? { precipitationMm: optionalWeather(raw, 'om_precip_mm', 0, 500, rowNumber) } : {}),
-        ...(hazard === 'Heat Wave' || hazard === 'Cold Wave'
-          ? { temperatureMaxC: optionalWeather(raw, 'om_max_temp_c', -20, 60, rowNumber) } : {}),
-        ...(hazard === 'Tropical Cyclone' || hazard === 'Severe Local Storm'
-          ? { windKmh: optionalWeather(raw, 'om_wind_kmh', 0, 400, rowNumber) } : {}),
-      },
+      district,
+      day,
+      targetDate: targetDateStr,
+      hazard,
+      tier,
+      severity,
+      flagged,
+      bmdStale,
+      degraded,
+      weather: extractRowWeather(raw, rowNumber),
+      metrics: extractRowMetrics(raw, rowNumber),
     });
     districts.set(district.district_id, group);
   }
@@ -309,22 +545,20 @@ export function buildPublicDailySnapshot(rows, manifest, { expectedDistricts = 6
     if (ordered.some((row) => !row)) fail(`district ${districtId} has missing days`);
     const max = Math.max(...ordered.map((row) => row.severity));
     const maxima = ordered.filter((row) => row.severity === max);
-    const marked = ordered.filter((row) => row.flagged);
-    if (marked.length !== 1 || marked[0] !== maxima[0]) {
-      fail(`district ${districtId} has an inconsistent peak marker`);
+    if (hasPeakColumn) {
+      const marked = ordered.filter((row) => row.flagged);
+      if (marked.length !== 1 || !maxima.includes(marked[0]) || marked[0] !== maxima[0]) {
+        fail(`district ${districtId} has an inconsistent peak marker`);
+      }
     }
-    const allPublic = ordered.every((row) => DAILY_PUBLIC_TIERS.includes(row.tier));
-    const peak = allPublic ? (maxima.length === 1 ? 'unique' : 'tied') : 'unknown';
+    const peakState = maxima.length === 1 ? 'unique' : 'tied';
     for (const row of ordered) {
-      // A higher tier is *not* a published alert. Only the existing reviewed alert
-      // lifecycle may make one public; this snapshot cannot authorize it.
-      if (!DAILY_PUBLIC_TIERS.includes(row.tier)) continue;
       const qualityNotes = [
         ...(row.bmdStale ? ['official_update_unverified'] : []),
         ...(row.degraded ? ['limited_forecast_detail'] : []),
       ];
       const slug = row.hazard.toLowerCase().replace(/\s+/g, '-');
-      advisories.push({
+      const entry = {
         advisoryId: `${districtId}-${row.targetDate}-${slug}`,
         districtId,
         district: row.district.district_name,
@@ -333,12 +567,16 @@ export function buildPublicDailySnapshot(rows, manifest, { expectedDistricts = 6
         targetDate: row.targetDate,
         hazard: row.hazard,
         tier: row.tier,
+        severityScore: row.severity,
+        requiresReview: REQUIRES_REVIEW_TIERS.includes(row.tier),
         reasonCode: row.tier === 'NORMAL' ? 'no_major_risk' : 'district_outlook',
         actionIds: actionsForHazard(row.hazard, row.tier),
-        peak: peak === 'unique' ? (row === maxima[0] ? 'unique' : 'none') : peak,
+        peak: peakState === 'unique' ? (row === maxima[0] ? 'unique' : 'none') : 'tied',
         qualityNotes,
-        weather: Object.fromEntries(Object.entries(row.weather).filter(([, value]) => value !== undefined)),
-      });
+        weather: row.weather,
+        ...(Object.keys(row.metrics).length > 0 ? { metrics: row.metrics } : {}),
+      };
+      advisories.push(entry);
     }
   }
   advisories.sort((a, b) => a.districtId - b.districtId || a.forecastDay - b.forecastDay);
@@ -395,7 +633,9 @@ export function parsePublicDailySnapshot(value) {
     const date = dateValue(row.targetDate);
     if (!district || district.district_id !== row.districtId
       || district.district_name !== row.district || district.division !== row.division
-      || date === null || row.reasonCode !== (row.tier === 'NORMAL' ? 'no_major_risk' : 'district_outlook')
+      || date === null
+      || row.requiresReview !== REQUIRES_REVIEW_TIERS.includes(row.tier)
+      || row.reasonCode !== (row.tier === 'NORMAL' ? 'no_major_risk' : 'district_outlook')
       || JSON.stringify(row.actionIds) !== JSON.stringify(actionsForHazard(row.hazard, row.tier))) return null;
     const key = `${row.districtId}-${row.targetDate}-${row.hazard.toLowerCase().replace(/\s+/g, '-')}`;
     if (row.advisoryId !== key || keys.has(key)) return null;
@@ -412,4 +652,123 @@ export function publicDailyStatus(snapshot, now = new Date()) {
   if (!snapshot || !Number.isFinite(now.getTime())) return 'unavailable';
   return now.getTime() < Date.parse(snapshot.run.dataCutoff) - 5 * 60_000
     || now.getTime() > Date.parse(snapshot.run.expiresAt) ? 'stale' : 'fresh';
+}
+
+const TIER_RANK = { NORMAL: 0, WATCH: 1, WARNING: 2, SEVERE: 3, EXTREME: 4 };
+
+/**
+ * Roll up a validated 960-row daily snapshot into canonical `7_days` and `15_days`
+ * `ForecastRow` arrays (64 districts × 2 horizons = 128 rows) so `/live`,
+ * `forecasts-latest.json`, `/advisories`, and district panels stay unified with
+ * the daily Kaggle run.
+ */
+export function rollupDailySnapshotToHorizons(snapshotInput) {
+  const snapshot = snapshotInput?.schema === DAILY_ADVISORY_SCHEMA
+    ? parsePublicDailySnapshot(snapshotInput)
+    : null;
+  if (!snapshot) return null;
+
+  const byDistrict = new Map();
+  for (const row of snapshot.advisories) {
+    const list = byDistrict.get(row.districtId) || [];
+    list.push(row);
+    byDistrict.set(row.districtId, list);
+  }
+
+  const predictionDate = snapshot.run.generatedAt.slice(0, 10);
+  const horizons = { '7_days': [], '15_days': [] };
+
+  for (const districtMeta of DISTRICT_REGISTRY) {
+    const districtRows = (byDistrict.get(districtMeta.district_id) || [])
+      .slice()
+      .sort((a, b) => a.forecastDay - b.forecastDay);
+    if (districtRows.length === 0) continue;
+
+    for (const [horizon, maxDay] of [['7_days', 7], ['15_days', 15]]) {
+      const windowRows = districtRows.filter((r) => r.forecastDay <= maxDay);
+      if (windowRows.length === 0) continue;
+
+      // Pick the peak-severity day within the horizon window (ties broken by
+      // unique peak marker, higher published tier, then earliest forecast day).
+      const peakRow = windowRows.reduce((best, candidate) => {
+        if (candidate.severityScore > best.severityScore) return candidate;
+        if (candidate.severityScore < best.severityScore) return best;
+        if (candidate.peak === 'unique' && best.peak !== 'unique') return candidate;
+        if ((TIER_RANK[candidate.tier] ?? 0) > (TIER_RANK[best.tier] ?? 0)) return candidate;
+        return candidate.forecastDay < best.forecastDay ? candidate : best;
+      }, windowRows[0]);
+
+      const m = peakRow.metrics || {};
+      const w = peakRow.weather || {};
+      const windowMaxTemps = windowRows.map((r) => r.weather?.temperatureMaxC).filter((v) => typeof v === 'number');
+      const windowMinTemps = windowRows.map((r) => r.weather?.temperatureMinC).filter((v) => typeof v === 'number');
+      const windowMeanTemps = windowRows.map((r) => r.weather?.temperatureMeanC).filter((v) => typeof v === 'number');
+      const windowWinds = windowRows.map((r) => r.weather?.windKmh).filter((v) => typeof v === 'number');
+      const windowPrecips = windowRows.map((r) => r.weather?.precipitationMm).filter((v) => typeof v === 'number');
+
+      const confidence = m.confidence ?? m.probTop1 ?? round4(Math.max(0.5, peakRow.severityScore));
+      const confidenceKind = m.confidence !== undefined
+        ? (m.confidenceRaw !== undefined ? 'calibrated_probability' : 'model_softmax_top_class')
+        : m.probTop1 !== undefined
+          ? 'model_softmax_top_class'
+          : 'severity_proxy';
+
+      const forecastRow = {
+        district_id: districtMeta.district_id,
+        district_name: districtMeta.district_name,
+        division: districtMeta.division,
+        pcode: districtMeta.pcode,
+        latitude: districtMeta.latitude,
+        longitude: districtMeta.longitude,
+        horizon,
+        hazard_type: peakRow.hazard,
+        severity_score: peakRow.severityScore,
+        final_severity: m.finalSeverity ?? peakRow.severityScore,
+        model_severity: m.modelSeverity ?? peakRow.severityScore,
+        ...(m.modelSeverityRaw !== undefined ? { model_severity_raw: m.modelSeverityRaw } : {}),
+        physics_severity: m.physicsSeverity ?? peakRow.severityScore,
+        ...(m.physicsOverride !== undefined ? { physics_override: m.physicsOverride } : {}),
+        ...(m.physicsTopHazard !== undefined ? { physics_top_hazard: m.physicsTopHazard } : {}),
+        ...(m.physicsTopSeverity !== undefined ? { physics_top_severity: m.physicsTopSeverity } : {}),
+        ...(m.trackDivergence !== undefined ? { track_divergence: m.trackDivergence } : {}),
+        confidence,
+        ...(m.confidenceRaw !== undefined ? { confidence_raw: m.confidenceRaw, confidence_calibrated: confidence } : {}),
+        confidence_kind: confidenceKind,
+        ...(m.probTop1 !== undefined ? { prob_top1: m.probTop1 } : {}),
+        ...(m.probTop2 !== undefined ? { prob_top2: m.probTop2 } : {}),
+        ...(m.probTop3 !== undefined ? { prob_top3: m.probTop3 } : {}),
+        ...(w.temperatureMaxC !== undefined || windowMaxTemps.length > 0
+          ? { temperature_max: w.temperatureMaxC ?? Math.max(...windowMaxTemps) } : {}),
+        ...(w.temperatureMinC !== undefined || windowMinTemps.length > 0
+          ? { temperature_min: w.temperatureMinC ?? Math.min(...windowMinTemps) } : {}),
+        ...(w.temperatureMeanC !== undefined || windowMeanTemps.length > 0
+          ? { temperature_mean: w.temperatureMeanC ?? round4(windowMeanTemps.reduce((s, v) => s + v, 0) / windowMeanTemps.length) } : {}),
+        ...(w.precipitationMm !== undefined || windowPrecips.length > 0
+          ? { precipitation_mm: w.precipitationMm ?? Math.max(...windowPrecips) } : {}),
+        ...(w.windKmh !== undefined || windowWinds.length > 0
+          ? { wind_max_kmh: w.windKmh ?? Math.max(...windowWinds) } : {}),
+        ...(w.dewpointC !== undefined ? { dewpoint_mean: w.dewpointC } : {}),
+        ...(w.solarRadiationMjM2 !== undefined ? { solar_radiation_mj_m2: w.solarRadiationMjM2 } : {}),
+        ...(w.evapotranspirationMm !== undefined ? { evapotranspiration_mm: w.evapotranspirationMm } : {}),
+        advisory_tier: peakRow.tier,
+        advisory_tier_source: 'published',
+        requires_review: peakRow.requiresReview,
+        target_date: peakRow.targetDate,
+        prediction_date: predictionDate,
+        data_source: 'Kaggle_Daily_Advisory',
+        model_version: snapshot.run.modelVersion,
+        run_id: snapshot.run.id,
+      };
+      horizons[horizon].push(forecastRow);
+    }
+  }
+
+  return {
+    schema: 'hazardnet-forecast-snapshot/v2',
+    generated_at: snapshot.run.generatedAt,
+    prediction_date: predictionDate,
+    source_daily_run_id: snapshot.run.id,
+    data_cutoff: snapshot.run.dataCutoff,
+    horizons,
+  };
 }

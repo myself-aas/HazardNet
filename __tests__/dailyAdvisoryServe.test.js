@@ -48,18 +48,21 @@ it('Dhaka date switches at local midnight, not UTC midnight', () => {
   expect(dhakaDate(NOW)).toBe('2026-11-02');
 });
 
-it('selects approved 1, 3, 7 and 15-day district timelines and no unpublished tiers', () => {
+it('selects approved 1, 3, 7 and 15-day district timelines across all 5 tiers with review flags', () => {
   const snapshot = published();
   for (const days of [1, 3, 7, 15]) {
     const result = queryPublicDaily(snapshot, { scope: 'timeline', district: 'Kurigram', days: String(days) }, NOW);
     expect(result.code).toBe(200);
     expect(result.body.advisories).toHaveLength(days);
     expect(result.body.advisories[0].targetDate).toBe('2026-11-02');
+    expect(result.body.advisories[0].severityScore).toBe(0.3);
     expect(JSON.stringify(result.body)).not.toContain('unapproved_input_note');
   }
-  expect(queryPublicDaily(snapshot, { scope: 'timeline' }, NOW).body.count).toBe(44);
-  expect(queryPublicDaily(snapshot, { scope: 'timeline', role: 'officer' }, NOW).body.count).toBe(44);
-  expect(JSON.stringify(queryPublicDaily(snapshot, {}, NOW).body)).not.toContain('WARNING');
+  expect(queryPublicDaily(snapshot, { scope: 'timeline' }, NOW).body.count).toBe(45);
+  expect(queryPublicDaily(snapshot, { scope: 'timeline', role: 'officer' }, NOW).body.count).toBe(45);
+  const warningRow = queryPublicDaily(snapshot, { scope: 'timeline', district_id: '2', days: '15' }, NOW)
+    .body.advisories.find((r) => r.tier === 'WARNING');
+  expect(warningRow.requiresReview).toBe(true);
 });
 
 it('latest, peak and summary are date/district/division-specific without manufactured peak', () => {
@@ -69,8 +72,10 @@ it('latest, peak and summary are date/district/division-specific without manufac
   expect(latest.body.count).toBe(3);
   const selected = queryPublicDaily(snapshot, { scope: 'latest', district_id: '1', date: '2026-11-06' }, NOW);
   expect(selected.body.advisories[0].peak).toBe('unique');
-  const withheld = queryPublicDaily(snapshot, { scope: 'peak', district_id: '2' }, NOW);
-  expect(withheld.body.count).toBe(0);
+  const secondPeak = queryPublicDaily(snapshot, { scope: 'peak', district_id: '2' }, NOW);
+  expect(secondPeak.body.count).toBe(1);
+  expect(secondPeak.body.advisories[0].tier).toBe('WARNING');
+  expect(secondPeak.body.advisories[0].requiresReview).toBe(true);
   const summary = queryPublicDaily(snapshot, { scope: 'summary', division: 'Rangpur' }, NOW);
   expect(summary.body.summary).toEqual({
     districts: 3, byTier: { WATCH: 3 }, byHazard: { Flood: 3 }, byDivision: { Rangpur: 3 },
@@ -90,7 +95,7 @@ it('unavailable or tampered assets fail closed; old runs become stale', () => {
     { ...snapshot.advisories[0], fusionReason: 'private' }, ...snapshot.advisories.slice(1),
   ] })).toBeNull();
   expect(queryPublicDaily({ ...snapshot, advisories: [
-    { ...snapshot.advisories[0], tier: 'SEVERE' }, ...snapshot.advisories.slice(1),
+    { ...snapshot.advisories[0], tier: 'SEVERE', requiresReview: false }, ...snapshot.advisories.slice(1),
   ] }, {}, NOW).code).toBe(503);
 });
 
@@ -103,14 +108,14 @@ it('Node reads only the built public JSON, never a technical export or an altern
     const publicDir = join(root, 'frontend', 'public', 'data');
     mkdirSync(publicDir, { recursive: true });
     writeFileSync(join(publicDir, 'daily-advisories-v1.json'), JSON.stringify(published()));
-    expect((await readPublishedDailySnapshot(root)).advisories).toHaveLength(44);
+    expect((await readPublishedDailySnapshot(root)).advisories).toHaveLength(45);
     process.env.NODE_ENV = 'production';
     // Production must not fall back to the development asset if its own build is missing.
     expect(await readPublishedDailySnapshot(root)).toBeNull();
     const distDir = join(root, 'frontend', 'dist', 'data');
     mkdirSync(distDir, { recursive: true });
     writeFileSync(join(distDir, 'daily-advisories-v1.json'), JSON.stringify(published()));
-    expect((await readPublishedDailySnapshot(root)).advisories).toHaveLength(44);
+    expect((await readPublishedDailySnapshot(root)).advisories).toHaveLength(45);
   } finally {
     if (priorEnv === undefined) delete process.env.NODE_ENV;
     else process.env.NODE_ENV = priorEnv;

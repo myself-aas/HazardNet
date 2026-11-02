@@ -34,15 +34,19 @@ import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
 import { useKaggleAdvisories } from '../hooks/useKaggleAdvisories';
 import {
   advisorySignalOf,
+  advisoryTierOf,
   buildForecastIndex,
   canonicalKey,
   forecastAgeHours,
+  type ForecastHorizon,
   type ForecastRow,
 } from '../lib/forecasts';
 import { StructuredAdvisoryRenderer } from '../components/StructuredAdvisoryRenderer';
 import { PrintQrCode } from '../components/PrintQrCode';
 import { PdfExportButton } from '../components/PdfExportButton';
 import { DailyOutlookEntry } from '../components/DailyOutlookEntry';
+import { AlertLevelBadge } from '../components/alerts/AlertLevelBadge';
+import { StatusStrip } from '../components/StatusStrip';
 
 export const AdvisoriesPage: React.FC = () => {
   const { subCategory } = useParams<{ subCategory?: string }>();
@@ -72,13 +76,19 @@ export const AdvisoriesPage: React.FC = () => {
   // Gemini Live AI Advisory Generator State
   const [showAiSynthesizer, setShowAiSynthesizer] = useState(false);
   const [aiDistrict, setAiDistrict] = useState<string>('Kurigram');
+  const [kaggleHorizon, setKaggleHorizon] = useState<ForecastHorizon>('7_days');
   // Severity, confidence and hazard come from the daily Kaggle ingest (the
-  // 7-day row for the selected district). They are never read from the static
-  // district table, and nothing is typed by hand.
-  const kaggleQuery = useKaggleAdvisories('7_days');
+  // selected horizon row for the selected district). They are never read from
+  // the static district table, and nothing is typed by hand.
+  const kaggleQuery = useKaggleAdvisories(kaggleHorizon);
   const kaggle = kaggleQuery.data;
   const forecastIndex = useMemo(() => buildForecastIndex(kaggle?.rows ?? []), [kaggle]);
   const kaggleRow: ForecastRow | null = forecastIndex.get(canonicalKey(aiDistrict)) ?? null;
+  const selectedDistrictMeta = useMemo(
+    () => ALL_64_DISTRICTS.find((d) => canonicalKey(d.name) === canonicalKey(aiDistrict)) ?? ALL_64_DISTRICTS[0],
+    [aiDistrict],
+  );
+  const kaggleTier = kaggleRow ? advisoryTierOf(kaggleRow) : null;
   const aiSeverity: number | null = kaggleRow ? advisorySignalOf(kaggleRow).final : null;
   const aiConfidence: number | null = kaggleRow && Number.isFinite(kaggleRow.confidence) ? kaggleRow.confidence : null;
   const aiHazard: string = kaggleRow?.hazard_type ?? '';
@@ -307,9 +317,182 @@ export const AdvisoriesPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Link to the separate public district/day contract, not to a generated
-          sector directive or a two-horizon Kaggle forecast row. */}
-      <DailyOutlookEntry />
+      {/* Kaggle Daily District Advisory & Metrics Panel */}
+      <section
+        aria-labelledby="kaggle-advisory-snapshot-heading"
+        className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-sm space-y-5"
+      >
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-carbon-20 pb-4">
+          <div className="space-y-1">
+            <div className="text-xs font-mono font-bold text-amber-800 uppercase tracking-wider">
+              Kaggle Daily Forecast Run ({kaggle?.rows.length ?? 0} districts)
+            </div>
+            <h2 id="kaggle-advisory-snapshot-heading" className="text-xl sm:text-2xl font-black text-carbon-90 tracking-tight">
+              District Advisory Tiers, Weather &amp; Forecast Metrics
+            </h2>
+            <p className="text-xs text-carbon-60 max-w-3xl">
+              Research model output from <span className="font-mono">{kaggle?.dataset ?? 'ashifahmedshuvo/hazardnet-weekly-forecasts'}</span>.
+              Not an official government warning. Confirm active alerts with BMD, FFWC, and DDM (call 999 in emergencies).
+            </p>
+          </div>
+          {kaggle?.rows && kaggle.rows.length > 0 && (
+            <StatusStrip forecasts={kaggle.rows} horizon={kaggleHorizon} />
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="w-full sm:w-72 space-y-1">
+            <label htmlFor="advisories-district-select" className="block text-xs font-mono font-bold text-carbon-70 uppercase">
+              District (64)
+            </label>
+            <select
+              id="advisories-district-select"
+              value={aiDistrict}
+              onChange={(e) => setAiDistrict(e.target.value)}
+              className="w-full min-h-[44px] px-3 py-2 rounded-xl bg-carbon-05 border border-carbon-20 text-carbon-90 text-sm font-semibold"
+            >
+              {ALL_64_DISTRICTS.map((d) => (
+                <option key={d.id} value={d.name}>
+                  {d.name} ({d.division})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setKaggleHorizon('7_days')}
+              aria-pressed={kaggleHorizon === '7_days'}
+              className={`min-h-[44px] px-4 py-2 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
+                kaggleHorizon === '7_days'
+                  ? 'bg-carbon-90 text-ap-on-inverse'
+                  : 'bg-carbon-10 text-carbon-80 hover:bg-carbon-20'
+              }`}
+            >
+              7-Day Window
+            </button>
+            <button
+              type="button"
+              onClick={() => setKaggleHorizon('15_days')}
+              aria-pressed={kaggleHorizon === '15_days'}
+              className={`min-h-[44px] px-4 py-2 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
+                kaggleHorizon === '15_days'
+                  ? 'bg-carbon-90 text-ap-on-inverse'
+                  : 'bg-carbon-10 text-carbon-80 hover:bg-carbon-20'
+              }`}
+            >
+              15-Day Window
+            </button>
+            <Link
+              to={`/forecast/district/${selectedDistrictMeta.id}`}
+              className="min-h-[44px] inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-carbon-30 text-xs font-bold text-carbon-90 hover:bg-carbon-05"
+            >
+              <span>15-Day Daily Timeline</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+
+        {kaggleQuery.isLoading ? (
+          <p className="text-sm font-mono text-carbon-60 py-4">Loading latest Kaggle district forecast snapshot...</p>
+        ) : kaggleRow ? (
+          <div className="rounded-2xl border border-carbon-20 bg-carbon-05/60 p-4 sm:p-5 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-mono text-carbon-60">
+                  Run {kaggleRow.prediction_date} · Peak target date {kaggleRow.target_date}
+                  {kaggleRow.model_version ? ` · Model v${kaggleRow.model_version}` : ''}
+                </p>
+                <h3 className="text-lg font-black text-carbon-90 mt-0.5">
+                  {kaggleRow.district_name}: {kaggleRow.hazard_type}
+                </h3>
+              </div>
+              <div className="flex items-center gap-3">
+                {kaggleTier && <AlertLevelBadge level={kaggleTier} label={kaggleTier} size="lg" />}
+                <div className="text-right font-mono">
+                  <div className="text-xs text-carbon-60">Severity score</div>
+                  <div className="text-base font-black text-carbon-90 tabular-nums">
+                    {Math.round(kaggleRow.severity_score * 100)}% ({kaggleRow.severity_score.toFixed(2)})
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {kaggleRow.requires_review && (
+              <p className="rounded-xl border border-amber-300 bg-amber-50/90 px-3.5 py-2 text-xs font-semibold text-amber-950" role="note">
+                Unreviewed research output above the watch threshold ({kaggleTier}). Do not treat as an issued official warning; verify with BMD, FFWC, or DDM.
+              </p>
+            )}
+
+            <dl className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 text-xs">
+              <div className="rounded-xl bg-white border border-carbon-20 p-2.5">
+                <dt className="text-carbon-60">Confidence</dt>
+                <dd className="font-mono font-bold text-carbon-90 tabular-nums mt-0.5">
+                  {Math.round(kaggleRow.confidence * 100)}%
+                </dd>
+              </div>
+              <div className="rounded-xl bg-white border border-carbon-20 p-2.5">
+                <dt className="text-carbon-60">Model severity</dt>
+                <dd className="font-mono font-bold text-carbon-90 tabular-nums mt-0.5">
+                  {kaggleRow.model_severity !== undefined ? `${Math.round(kaggleRow.model_severity * 100)}%` : '-'}
+                </dd>
+              </div>
+              <div className="rounded-xl bg-white border border-carbon-20 p-2.5">
+                <dt className="text-carbon-60">Physics severity</dt>
+                <dd className="font-mono font-bold text-carbon-90 tabular-nums mt-0.5">
+                  {kaggleRow.physics_severity !== undefined ? `${Math.round(kaggleRow.physics_severity * 100)}%` : '-'}
+                </dd>
+              </div>
+              <div className="rounded-xl bg-white border border-carbon-20 p-2.5">
+                <dt className="text-carbon-60">Fused severity</dt>
+                <dd className="font-mono font-bold text-carbon-90 tabular-nums mt-0.5">
+                  {kaggleRow.final_severity !== undefined ? `${Math.round(kaggleRow.final_severity * 100)}%` : `${Math.round(kaggleRow.severity_score * 100)}%`}
+                </dd>
+              </div>
+              <div className="rounded-xl bg-white border border-carbon-20 p-2.5">
+                <dt className="text-carbon-60">Rain</dt>
+                <dd className="font-mono font-bold text-carbon-90 tabular-nums mt-0.5">
+                  {kaggleRow.precipitation_mm !== undefined ? `${kaggleRow.precipitation_mm.toFixed(1)} mm` : '-'}
+                </dd>
+              </div>
+              <div className="rounded-xl bg-white border border-carbon-20 p-2.5">
+                <dt className="text-carbon-60">Temp (min/max)</dt>
+                <dd className="font-mono font-bold text-carbon-90 tabular-nums mt-0.5">
+                  {kaggleRow.temperature_min !== undefined && kaggleRow.temperature_max !== undefined
+                    ? `${kaggleRow.temperature_min.toFixed(1)}° / ${kaggleRow.temperature_max.toFixed(1)}°C`
+                    : kaggleRow.temperature_max !== undefined
+                      ? `${kaggleRow.temperature_max.toFixed(1)}°C`
+                      : '-'}
+                </dd>
+              </div>
+              <div className="rounded-xl bg-white border border-carbon-20 p-2.5">
+                <dt className="text-carbon-60">Max wind</dt>
+                <dd className="font-mono font-bold text-carbon-90 tabular-nums mt-0.5">
+                  {kaggleRow.wind_max_kmh !== undefined ? `${kaggleRow.wind_max_kmh.toFixed(1)} km/h` : '-'}
+                </dd>
+              </div>
+              <div className="rounded-xl bg-white border border-carbon-20 p-2.5">
+                <dt className="text-carbon-60">Top-3 class share</dt>
+                <dd className="font-mono font-bold text-carbon-90 tabular-nums mt-0.5">
+                  {kaggleRow.prob_top1 !== undefined
+                    ? [kaggleRow.prob_top1, kaggleRow.prob_top2, kaggleRow.prob_top3]
+                        .filter((p): p is number => p !== undefined)
+                        .map((p) => `${Math.round(p * 100)}%`)
+                        .join(' / ')
+                    : '-'}
+                </dd>
+              </div>
+            </dl>
+          </div>
+        ) : (
+          <p className="text-sm text-carbon-60">
+            No forecast record is currently available for {aiDistrict} in this horizon window.
+          </p>
+        )}
+
+        <DailyOutlookEntry districtId={selectedDistrictMeta.id} />
+      </section>
 
       {/* 2. ACTIVE SECTOR EXECUTIVE INTELLIGENCE & MANDATE */}
       <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-6 relative overflow-hidden">

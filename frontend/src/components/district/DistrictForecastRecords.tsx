@@ -276,13 +276,15 @@ export const DistrictForecastRecords: React.FC = () => {
                           {row.advisory_tier ? (
                             <span
                               className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-black border ${
-                                row.advisory_tier === 'SEVERE'
-                                  ? 'bg-red-100 text-red-800 border-red-300'
-                                  : row.advisory_tier === 'WARNING'
-                                    ? 'bg-amber-100 text-amber-800 border-amber-300'
-                                    : row.advisory_tier === 'WATCH'
-                                      ? 'bg-sky-100 text-sky-800 border-sky-300'
-                                      : 'bg-carbon-10 text-carbon-80 border-carbon-20'
+                                row.advisory_tier === 'EXTREME'
+                                  ? 'bg-rose-200 text-rose-950 border-rose-400'
+                                  : row.advisory_tier === 'SEVERE'
+                                    ? 'bg-red-100 text-red-800 border-red-300'
+                                    : row.advisory_tier === 'WARNING'
+                                      ? 'bg-amber-100 text-amber-800 border-amber-300'
+                                      : row.advisory_tier === 'WATCH'
+                                        ? 'bg-sky-100 text-sky-800 border-sky-300'
+                                        : 'bg-carbon-10 text-carbon-80 border-carbon-20'
                               }`}
                               title="Published by the advisory pipeline"
                             >

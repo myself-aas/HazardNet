@@ -74,21 +74,34 @@ function isApprovedDailyPayload(value) {
     || !value.coverage || typeof value.coverage !== 'object'
     || !Array.isArray(value.advisories) || value.advisories.length > 960) return false;
   const top = ['schema', 'run', 'coverage', 'advisories', 'scope', 'status', 'asOf', 'selectedDate', 'count'];
-  const runKeys = ['id', 'generatedAt', 'dataCutoff', 'expiresAt', 'modelVersion', 'inputSha256'];
+  const requiredRunKeys = ['id', 'generatedAt', 'dataCutoff', 'expiresAt', 'modelVersion', 'inputSha256'];
+  const allowedRunKeys = [...requiredRunKeys, 'sourceDatasetVersion'];
   const rowKeys = ['advisoryId', 'districtId', 'district', 'division', 'forecastDay', 'targetDate',
-    'hazard', 'tier', 'reasonCode', 'actionIds', 'peak', 'qualityNotes', 'weather'];
+    'hazard', 'tier', 'severityScore', 'requiresReview', 'reasonCode', 'actionIds', 'peak',
+    'qualityNotes', 'weather', 'metrics'];
+  const tiers = ['NORMAL', 'WATCH', 'WARNING', 'SEVERE', 'EXTREME'];
+  const reviewTiers = ['WARNING', 'SEVERE', 'EXTREME'];
   const hazards = ['Cold Wave', 'Drought', 'Fire', 'Flash Flood', 'Flood', 'Heat Wave',
     'Severe Local Storm', 'Tropical Cyclone'];
   const actions = ['cover_seedlings', 'shelter_animals', 'save_irrigation', 'mulch_soil',
     'avoid_burning', 'clear_dry_debris', 'check_drains', 'keep_feed_dry', 'work_cool_hours',
     'shade_animals', 'avoid_open_fields', 'secure_loose_items', 'store_drinking_water',
     'check_official_updates', 'continue_safely'];
+  const weatherKeys = ['precipitationMm', 'temperatureMaxC', 'temperatureMinC', 'temperatureMeanC',
+    'windKmh', 'humidityPct', 'dewpointC', 'solarRadiationMjM2', 'evapotranspirationMm'];
+  const metricNumKeys = ['confidence', 'confidenceRaw', 'modelSeverity', 'modelSeverityRaw',
+    'physicsSeverity', 'finalSeverity', 'physicsTopSeverity', 'trackDivergence',
+    'probTop1', 'probTop2', 'probTop3'];
+  const metricHazardKeys = ['physicsTopHazard', 'top2Hazard', 'top3Hazard'];
+  const metricKeys = [...metricNumKeys, ...metricHazardKeys, 'physicsOverride'];
   if (value.scope !== undefined && value.scope !== 'timeline') return false;
   const utc = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/;
   const cutoff = Date.parse(value.run.dataCutoff);
   if (Object.keys(value).some((key) => !top.includes(key))
-    || Object.keys(value.run).some((key) => !runKeys.includes(key))
-    || runKeys.some((key) => typeof value.run[key] !== 'string' || !value.run[key])
+    || Object.keys(value.run).some((key) => !allowedRunKeys.includes(key))
+    || requiredRunKeys.some((key) => typeof value.run[key] !== 'string' || !value.run[key])
+    || (value.run.sourceDatasetVersion !== undefined && (!Number.isSafeInteger(value.run.sourceDatasetVersion)
+      || value.run.sourceDatasetVersion < 1 || value.run.sourceDatasetVersion > 1_000_000_000))
     || !/^[a-zA-Z0-9._-]{1,100}$/.test(value.run.id)
     || !/^[a-f0-9]{64}$/.test(value.run.inputSha256)
     || !['generatedAt', 'dataCutoff', 'expiresAt'].every((key) => utc.test(value.run[key]))
@@ -108,17 +121,27 @@ function isApprovedDailyPayload(value) {
     && typeof row.division === 'string' && row.division.length > 0 && row.division.length < 100
     && Number.isInteger(row.forecastDay) && row.forecastDay > 0 && row.forecastDay <= 15
     && /^\d{4}-\d{2}-\d{2}$/.test(row.targetDate)
-    && (row.tier === 'WATCH' || row.tier === 'NORMAL')
-    && row.reasonCode === (row.tier === 'WATCH' ? 'district_outlook' : 'no_major_risk')
+    && tiers.includes(row.tier)
+    && typeof row.severityScore === 'number' && Number.isFinite(row.severityScore)
+    && row.severityScore >= 0 && row.severityScore <= 1
+    && typeof row.requiresReview === 'boolean' && row.requiresReview === reviewTiers.includes(row.tier)
+    && row.reasonCode === (row.tier === 'NORMAL' ? 'no_major_risk' : 'district_outlook')
     && ['unique', 'tied', 'unknown', 'none'].includes(row.peak)
     && hazards.includes(row.hazard)
     && Array.isArray(row.actionIds) && row.actionIds.length >= 2 && row.actionIds.length <= 4
     && row.actionIds.every((id) => actions.includes(id))
     && Array.isArray(row.qualityNotes)
     && row.qualityNotes.every((note) => ['official_update_unverified', 'limited_forecast_detail'].includes(note))
-    && row.weather && typeof row.weather === 'object'
-    && Object.keys(row.weather).every((key) => ['precipitationMm', 'temperatureMaxC', 'windKmh'].includes(key))
-    && Object.values(row.weather).every((n) => typeof n === 'number' && Number.isFinite(n)));
+    && row.weather && typeof row.weather === 'object' && !Array.isArray(row.weather)
+    && Object.keys(row.weather).every((key) => weatherKeys.includes(key))
+    && Object.values(row.weather).every((n) => typeof n === 'number' && Number.isFinite(n))
+    && (row.metrics === undefined || (row.metrics && typeof row.metrics === 'object' && !Array.isArray(row.metrics)
+      && Object.keys(row.metrics).every((key) => metricKeys.includes(key))
+      && Object.entries(row.metrics).every(([key, v]) => {
+        if (key === 'physicsOverride') return typeof v === 'boolean';
+        if (metricHazardKeys.includes(key)) return hazards.includes(v);
+        return typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1;
+      }))));
 }
 
 function isCacheableResponse(request, response) {

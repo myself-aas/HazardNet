@@ -145,10 +145,26 @@ export function parseAdvisoryCsv(text) {
   }
   const lines = text.split(/\r?\n/).filter((line) => line.trim() !== '');
   const header = splitCsvLine(lines[0]).map((c) => c.trim());
-  const missing = ADVISORY_CSV_COLUMNS.filter((col) => !header.includes(col));
-  if (missing.length > 0) {
-    throw new KaggleClientError('SCHEMA_MISMATCH', `Advisory file is missing columns: ${missing.join(', ')}`);
+  const isDaily960 = header.includes('forecast_day') && !header.includes('horizon');
+
+  if (isDaily960) {
+    const missingDaily = [];
+    if (!header.includes('district') && !header.includes('district_name')) missingDaily.push('district');
+    for (const col of ['forecast_day', 'target_date', 'advisory_tier']) {
+      if (!header.includes(col)) missingDaily.push(col);
+    }
+    if (!header.includes('hazard') && !header.includes('hazard_type')) missingDaily.push('hazard');
+    if (!header.includes('severity_score') && !header.includes('final_severity')) missingDaily.push('severity_score');
+    if (missingDaily.length > 0) {
+      throw new KaggleClientError('SCHEMA_MISMATCH', `Advisory file is missing columns: ${missingDaily.join(', ')}`);
+    }
+  } else {
+    const missing = ADVISORY_CSV_COLUMNS.filter((col) => !header.includes(col));
+    if (missing.length > 0) {
+      throw new KaggleClientError('SCHEMA_MISMATCH', `Advisory file is missing columns: ${missing.join(', ')}`);
+    }
   }
+
   const rawRows = lines.slice(1).map((line) => {
     const cells = splitCsvLine(line);
     return Object.fromEntries(header.map((col, idx) => [col, cells[idx] ?? '']));
@@ -162,7 +178,12 @@ export function parseAdvisoryCsv(text) {
   } catch (err) {
     throw new KaggleClientError('INVALID_ROWS', `Advisory file failed validation: ${err.message}`);
   }
-  const generatedAt = rawRows.map((r) => r.generated_at).find((v) => v && v.trim()) || null;
+  const generatedAt = rawRows.map((r) => r.generated_at).find((v) => v && v.trim())
+    || (isDaily960
+      ? rawRows
+        .filter((r) => String(r.forecast_day).trim() === '1' && r.target_date)
+        .map((r) => `${String(r.target_date).trim()}T00:00:00Z`)[0] || null
+      : null);
   return { rows, generatedAt, rowCount: rows.length };
 }
 

@@ -263,7 +263,7 @@ export function parseCsvForecastRow(row, rowNumber) {
   // ── Advisory Tier & Physical Override (Phase A/C TASK-008) ───────────────
   if (row.advisory_tier !== undefined && row.advisory_tier !== '') {
     const tier = String(row.advisory_tier).trim().toUpperCase();
-    if (!['SEVERE', 'WARNING', 'WATCH', 'NORMAL'].includes(tier)) {
+    if (!['EXTREME', 'SEVERE', 'WARNING', 'WATCH', 'NORMAL'].includes(tier)) {
       return { ok: false, error: `Row ${rowNumber}: Invalid advisory_tier "${row.advisory_tier}"` };
     }
     value.advisory_tier = tier;

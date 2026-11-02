@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 
 import { ALL_64_DISTRICTS, getDistrictById } from '../data/bangladeshDistricts';
 import { fetchForecastMetadata, fetchStaticForecastSnapshot, ForecastRow, canonicalKey } from '../lib/forecasts';
+import { dailyAdvisoriesToDistrictForecastRows, loadDistrictDaily } from '../lib/dailyAdvisories';
 import { loadKaggleAdvisories } from '../hooks/useKaggleAdvisories';
 import { useWeather } from '../hooks/useWeather';
 import { fetchDistrictEvents, DistrictEventsResponse } from '../lib/eventsClient';
@@ -96,17 +97,26 @@ export const DistrictDetailPage: React.FC = () => {
     }
 
     Promise.all([
+      loadDistrictDaily(district.name).catch(() => null),
       fetchHorizonRows('7_days'),
       fetchHorizonRows('15_days'),
-    ]).then(([res7, res15]) => {
+    ]).then(([dailyResult, res7, res15]) => {
       if (!isMounted) return;
-      setDistrictForecasts7D(res7.rows);
-      setDistrictForecasts15D(res15.rows);
+      const hasDailyRows = dailyResult && dailyResult.run && dailyResult.advisories.length > 0;
+      const rows7 = hasDailyRows
+        ? dailyAdvisoriesToDistrictForecastRows(dailyResult.advisories, dailyResult.run!, '7_days')
+        : res7.rows;
+      const rows15 = hasDailyRows
+        ? dailyAdvisoriesToDistrictForecastRows(dailyResult.advisories, dailyResult.run!, '15_days')
+        : res15.rows;
+
+      setDistrictForecasts7D(rows7.length > 0 ? rows7 : res7.rows);
+      setDistrictForecasts15D(rows15.length > 0 ? rows15 : res15.rows);
 
       // If Kaggle advisory data was fetched, wire real-time metadata (generatedAt/fetchedAt)
-      const liveSource = res7.source || res15.source;
-      const generatedAt = res7.generatedAt || res15.generatedAt;
-      const fetchedAt = res7.fetchedAt || res15.fetchedAt;
+      const liveSource = hasDailyRows ? 'Kaggle_Daily_Advisory' : (res7.source || res15.source);
+      const generatedAt = (hasDailyRows ? dailyResult.run!.generatedAt : null) || res7.generatedAt || res15.generatedAt;
+      const fetchedAt = (hasDailyRows ? dailyResult.fetchedAt : null) || res7.fetchedAt || res15.fetchedAt;
       if (liveSource && generatedAt) {
         setMetadata({
           predictionDate: generatedAt.slice(0, 10),
@@ -117,7 +127,9 @@ export const DistrictDetailPage: React.FC = () => {
 
       // The pipeline does not always emit both horizons for every district, so open the horizon that has rows.
       setActiveTableHorizon((current) => {
-        const rowsFor = (h: '7_days' | '15_days') => (h === '7_days' ? res7.rows : res15.rows);
+        const final7 = rows7.length > 0 ? rows7 : res7.rows;
+        const final15 = rows15.length > 0 ? rows15 : res15.rows;
+        const rowsFor = (h: '7_days' | '15_days') => (h === '7_days' ? final7 : final15);
         if (rowsFor(current).length > 0) return current;
         const other = current === '7_days' ? '15_days' : '7_days';
         return rowsFor(other).length > 0 ? other : current;

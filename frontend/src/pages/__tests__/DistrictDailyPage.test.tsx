@@ -22,11 +22,19 @@ const run = {
 };
 const rows: DailyAdvisory[] = Array.from({ length: 15 }, (_, index) => {
   const date = new Date(Date.parse('2026-11-02T00:00:00Z') + index * 86_400_000).toISOString().slice(0, 10);
+  const isExtreme = index === 1;
   return {
     advisoryId: `1-${date}-flood`, districtId: 1, district: 'Kurigram', division: 'Rangpur',
-    forecastDay: index + 1, targetDate: date, hazard: 'Flood', tier: 'WATCH',
-    reasonCode: 'district_outlook', actionIds: ['check_drains', 'keep_feed_dry', 'check_official_updates'],
-    peak: 'tied', qualityNotes: ['official_update_unverified'], weather: {},
+    forecastDay: index + 1, targetDate: date, hazard: 'Flood',
+    tier: isExtreme ? 'EXTREME' : 'WATCH',
+    severityScore: isExtreme ? 0.92 : 0.45,
+    requiresReview: isExtreme,
+    reasonCode: 'district_outlook',
+    actionIds: ['check_drains', 'keep_feed_dry', 'check_official_updates'],
+    peak: isExtreme ? 'unique' : 'none',
+    qualityNotes: ['official_update_unverified'],
+    weather: { precipitationMm: 28.4, temperatureMinC: 23.1, temperatureMaxC: 31.6, windKmh: 42.5 },
+    metrics: { confidence: 0.91, modelSeverity: 0.9, physicsSeverity: 0.84, finalSeverity: 0.92, probTop1: 0.91, top2Hazard: 'Flash Flood' },
   };
 });
 const outcome = (changes: Partial<DistrictDailyResult> = {}): DistrictDailyResult => ({
@@ -49,7 +57,7 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-it('answers what, when, seriousness and safe actions in a seven-day default view', async () => {
+it('renders tiers (including EXTREME), severityScore, weather values, forecast metrics and research disclaimers', async () => {
   mockLoad.mockResolvedValue(outcome());
   mount();
   await act(async () => { await Promise.resolve(); });
@@ -58,9 +66,13 @@ it('answers what, when, seriousness and safe actions in a seven-day default view
   expect(screen.getByRole('note').textContent).toMatch(/outputs of a published HazardNet daily model run/i);
   expect(screen.getAllByText(/not an official warning service/i).length).toBeGreaterThan(0);
   const days = document.getElementById('daily-outlook-days');
-  // List structure is semantic even when browser media queries are unavailable in jsdom.
   expect(screen.getAllByRole('article')).toHaveLength(7);
   expect(within(screen.getAllByRole('article')[0]).getByText('Watch')).toBeTruthy();
+  expect(within(screen.getAllByRole('article')[1]).getByText('Extreme')).toBeTruthy();
+  expect(within(screen.getAllByRole('article')[1]).getByText(/Severity score: 92% \(0\.92\)/)).toBeTruthy();
+  expect(within(screen.getAllByRole('article')[1]).getByText(/Unreviewed research output above the watch threshold/i)).toBeTruthy();
+  expect(within(screen.getAllByRole('article')[0]).getByText('28.4 mm')).toBeTruthy();
+  expect(within(screen.getAllByRole('article')[0]).getByText('42.5 km/h')).toBeTruthy();
   expect(screen.getAllByText('Check field drainage and keep an exit route clear.')).toHaveLength(7);
   expect(screen.queryByText(/severity index|model score|fusion reason/i)).toBeNull();
   const toggle = screen.getByRole('button', { name: /Show all available days/i });
@@ -69,8 +81,9 @@ it('answers what, when, seriousness and safe actions in a seven-day default view
   expect(screen.getAllByRole('article')).toHaveLength(15);
   expect(screen.getByRole('button', { name: /Show first 7 days/i }).getAttribute('aria-expanded')).toBe('true');
   expect(days).toBeTruthy();
-  fireEvent.click(within(screen.getAllByRole('article')[0]).getByText('Why this outlook?'));
-  expect(within(screen.getAllByRole('article')[0]).getByText(/No single highest-risk day/)).toBeTruthy();
+  fireEvent.click(within(screen.getAllByRole('article')[1]).getByText('Why this outlook?'));
+  expect(within(screen.getAllByRole('article')[1]).getAllByText('91%').length).toBeGreaterThan(0);
+  expect(within(screen.getAllByRole('article')[1]).getByText('Flash Flood')).toBeTruthy();
 });
 
 it('says unavailable rather than inventing a quiet forecast or falling back to baseline scores', async () => {

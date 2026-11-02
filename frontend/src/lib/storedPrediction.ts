@@ -46,6 +46,8 @@ function isOfflineFailure(error: unknown): boolean {
 }
 
 import backendForecasts from '../data/backendForecasts.json';
+import { fetchStaticForecastSnapshot, type ForecastHorizon } from './forecasts';
+import { loadNationalDailySnapshot, rollupDailyAdvisoriesToForecastRows } from './dailyAdvisories';
 
 const DISTRICT_ALIASES: Record<string, string> = {
   jessore: 'jashore',
@@ -176,6 +178,76 @@ export function getStoredForecastFromData(districtId: string, requestedHorizon: 
   };
 }
 
+async function resolveStaticStoredForecast(
+  districtId: string,
+  requestedHorizon: ForecastHorizon,
+  signal?: AbortSignal,
+): Promise<StoredPrediction> {
+  const targetKey = normalizeKey(districtId);
+  const numeric = /^\d+$/.test(districtId.trim());
+
+  const daily = await loadNationalDailySnapshot({ signal }).catch(() => null);
+  if (daily && daily.run && daily.advisories.length > 0) {
+    const rolled = rollupDailyAdvisoriesToForecastRows(daily.advisories, daily.run, requestedHorizon);
+    const hit = rolled.find((r) =>
+      numeric ? String(r.district_id) === districtId.trim() : normalizeKey(r.district_name) === targetKey,
+    );
+    if (hit) {
+      return {
+        prediction: {
+          hazard: hit.hazard_type,
+          confidence: hit.confidence,
+          confidence_kind: hit.confidence_kind || 'model_softmax_top_class',
+          severity_score: hit.severity_score,
+        },
+        provenance: {
+          district_id: String(hit.district_id),
+          district_name: hit.district_name,
+          prediction_date: hit.prediction_date,
+          target_date: hit.target_date,
+          horizon: hit.horizon,
+        },
+        inference: {
+          served_from: 'stored-forecast',
+          model_version: hit.model_version ?? null,
+          latency_ms: null,
+        },
+      };
+    }
+  }
+
+  const snapshotRows = await fetchStaticForecastSnapshot(requestedHorizon).catch(() => []);
+  if (snapshotRows.length > 0) {
+    const hit = snapshotRows.find((r) =>
+      numeric ? String(r.district_id) === districtId.trim() : normalizeKey(r.district_name) === targetKey,
+    );
+    if (hit) {
+      return {
+        prediction: {
+          hazard: hit.hazard_type,
+          confidence: hit.confidence,
+          confidence_kind: hit.confidence_kind || 'model_softmax_top_class',
+          severity_score: hit.severity_score,
+        },
+        provenance: {
+          district_id: String(hit.district_id),
+          district_name: hit.district_name,
+          prediction_date: hit.prediction_date,
+          target_date: hit.target_date,
+          horizon: hit.horizon,
+        },
+        inference: {
+          served_from: 'stored-forecast',
+          model_version: hit.model_version ?? null,
+          latency_ms: null,
+        },
+      };
+    }
+  }
+
+  return getStoredForecastFromData(districtId, requestedHorizon);
+}
+
 export async function fetchStoredPrediction(
   districtId: string,
   horizon = '7_days',
@@ -201,7 +273,7 @@ export async function fetchStoredPrediction(
     if (isOfflineFailure(error)) {
       throw new StoredPredictionError('offline', 'Stored forecast could not be loaded while offline.');
     }
-    return getStoredForecastFromData(districtId, horizon);
+    return resolveStaticStoredForecast(districtId, horizon, options.signal);
   }
 
   if (response.status === 429) {
@@ -214,7 +286,7 @@ export async function fetchStoredPrediction(
   const isHtml = contentType.includes('text/html');
 
   if (isHtml) {
-    return getStoredForecastFromData(districtId, horizon);
+    return resolveStaticStoredForecast(districtId, horizon, options.signal);
   }
 
   if (!response.ok) {

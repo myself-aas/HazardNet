@@ -796,10 +796,11 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   }, [liveDistricts]);
 
   const statusStripCounts = useMemo(() => {
-    const counts = { SEVERE: 0, WARNING: 0, WATCH: 0, NORMAL: 0 };
+    const counts = { EXTREME: 0, SEVERE: 0, WARNING: 0, WATCH: 0, NORMAL: 0 };
     for (const d of liveDistricts) {
       const tier = (d.advisoryTier || '').toUpperCase();
-      if (tier === 'SEVERE') counts.SEVERE += 1;
+      if (tier === 'EXTREME') counts.EXTREME += 1;
+      else if (tier === 'SEVERE') counts.SEVERE += 1;
       else if (tier === 'WARNING') counts.WARNING += 1;
       else if (tier === 'WATCH') counts.WATCH += 1;
       else if (tier === 'NORMAL') counts.NORMAL += 1;

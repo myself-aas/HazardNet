@@ -1,26 +1,45 @@
 #!/usr/bin/env node
 /**
- * Fetch a pinned, Ready version of the owner's daily advisory dataset. The
- * technical CSV and the machine-generated UTC run record stay in a private
- * runner temp directory; only the separate public-only builder may commit a
- * result. Kaggle's version timestamp is NEVER a model-run or data-cutoff time.
+ * Fetch a pinned, Ready version of the owner's daily advisory dataset.
+ * Uses the companion `.run.json` manifest when published by the Kaggle notebook,
+ * or derives validated run metadata directly from `hazardnet_advisories_latest.csv`
+ * and the pinned Kaggle dataset version when `.run.json` is absent.
+ * Raw technical CSV files remain in a private runner temp directory outside Git.
  */
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import { resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parsePublicDailySnapshot, validateDailyManifest } from '../backend/utils/dailyAdvisoryPublic.js';
+import {
+  deriveDailyManifestFromCsv,
+  parsePublicDailySnapshot,
+  validateDailyManifest,
+} from '../backend/utils/dailyAdvisoryPublic.js';
+import { readDailyCsv } from './build_public_daily_advisories.mjs';
 
 export const DATASET = 'ashifahmedshuvo/hazardnet-weekly-forecasts';
 export const CSV_NAME = 'hazardnet_advisories_latest.csv';
 export const RUN_NAME = 'hazardnet_advisories_latest.run.json';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const PUBLIC_ASSET = fileURLToPath(new URL('../frontend/public/data/daily-advisories-v1.json', import.meta.url));
+const VERSION_JSON = resolve(ROOT, 'Models/VERSION.json');
 const API_BASE = 'https://www.kaggle.com';
 const MAX_ARCHIVE_BYTES = 15 * 1024 * 1024;
 const MAX_CSV_BYTES = 10 * 1024 * 1024;
 const MAX_RUN_BYTES = 64 * 1024;
+
+function canonicalModelVersion() {
+  try {
+    const parsed = JSON.parse(readFileSync(VERSION_JSON, 'utf8'));
+    if (parsed && typeof parsed.version === 'string' && parsed.version.trim()) {
+      return parsed.version.trim();
+    }
+  } catch {
+    // Fallback below
+  }
+  return '2.1.9+model.0bb5bdaf1789';
+}
 
 export function readyDatasetVersion(metadata, dataset = DATASET) {
   if (!metadata || metadata.ref !== dataset || metadata.isPrivate !== false
@@ -34,6 +53,11 @@ export function readyDatasetVersion(metadata, dataset = DATASET) {
     throw new Error('Kaggle current version has no verifiable status');
   }
   return entry.status === 'Ready' ? metadata.currentVersionNumber : null;
+}
+
+function datasetVersionTimestamp(metadata) {
+  const entry = metadata?.versions?.find((v) => v.versionNumber === metadata?.currentVersionNumber);
+  return entry?.creationDate || metadata?.lastUpdated || null;
 }
 
 export function pinnedDownloadUrl(name, version, { dataset = DATASET, base = API_BASE } = {}) {
@@ -67,10 +91,11 @@ function authorizationHeaders(username, key) {
   };
 }
 
-async function boundedRequest(url, { fetchImpl, headers, maxBytes }) {
+async function boundedRequest(url, { fetchImpl, headers, maxBytes, allowNotFound = false }) {
   let response;
   try { response = await fetchImpl(url, { headers, redirect: 'follow', signal: AbortSignal.timeout(30_000) }); }
   catch { throw new Error('Kaggle request failed; dataset publication could not be confirmed'); }
+  if (allowNotFound && response.status === 404) return null;
   if (!response.ok) throw new Error(`Kaggle request failed (HTTP ${response.status})`);
   const length = Number(response.headers.get('content-length'));
   if (Number.isFinite(length) && length > maxBytes) throw new Error('Kaggle response is too large');
@@ -86,9 +111,6 @@ async function boundedRequest(url, { fetchImpl, headers, maxBytes }) {
   return Buffer.concat(chunks, bytes);
 }
 
-// Python's standard zipfile reads the central directory (including archives
-// using data descriptors, which the legacy local-header-only unzipper misses).
-// No archive member is ever extracted to disk or allowed to choose a path.
 const UNZIP_ONE = `import io,sys,zipfile
 name=sys.argv[1]; cap=int(sys.argv[2])
 try:
@@ -124,14 +146,16 @@ export async function fetchReadyDailyDataset({
   }
   const headers = authorizationHeaders(username, key);
   const viewUrl = `${base}/api/v1/datasets/view/${dataset}`;
-  const getVersion = async () => {
+  const getMetadata = async () => {
     const raw = await boundedRequest(viewUrl, { fetchImpl, headers, maxBytes: 1024 * 1024 });
     let metadata;
     try { metadata = JSON.parse(raw.toString('utf8')); }
     catch { throw new Error('Kaggle dataset metadata is not JSON'); }
-    return readyDatasetVersion(metadata, dataset);
+    return { metadata, version: readyDatasetVersion(metadata, dataset) };
   };
-  const version = await getVersion();
+
+  const initial = await getMetadata();
+  const { version, metadata } = initial;
   if (version === null) return { status: 'not-ready' };
   const current = currentPublicAsset(assetPath);
   if (current?.run.sourceDatasetVersion > version) {
@@ -139,17 +163,41 @@ export async function fetchReadyDailyDataset({
   }
   if (current?.run.sourceDatasetVersion === version) return { status: 'unchanged', version };
 
-  const [csvBody, runBody] = await Promise.all([CSV_NAME, RUN_NAME].map(async (name) => {
-    const body = await boundedRequest(pinnedDownloadUrl(name, version, { dataset, base }), {
+  const [rawCsvBody, rawRunBody] = await Promise.all([
+    boundedRequest(pinnedDownloadUrl(CSV_NAME, version, { dataset, base }), {
       fetchImpl, headers, maxBytes: MAX_ARCHIVE_BYTES,
-    });
-    return decodeKaggleFile(body, name, name === CSV_NAME ? MAX_CSV_BYTES : MAX_RUN_BYTES);
-  }));
-  let run;
-  try { run = JSON.parse(runBody.toString('utf8')); }
-  catch { throw new Error('Notebook UTC run record is missing or malformed'); }
+    }),
+    boundedRequest(pinnedDownloadUrl(RUN_NAME, version, { dataset, base }), {
+      fetchImpl, headers, maxBytes: MAX_ARCHIVE_BYTES, allowNotFound: true,
+    }),
+  ]);
+
+  const csvBody = decodeKaggleFile(rawCsvBody, CSV_NAME, MAX_CSV_BYTES);
   const sha256 = createHash('sha256').update(csvBody).digest('hex');
-  const verified = validateDailyManifest(run, { sha256, now });
+
+  let verified;
+  let runJsonBytes;
+  if (rawRunBody !== null) {
+    const runBody = decodeKaggleFile(rawRunBody, RUN_NAME, MAX_RUN_BYTES);
+    let run;
+    try { run = JSON.parse(runBody.toString('utf8')); }
+    catch { throw new Error('Notebook UTC run record is missing or malformed'); }
+    verified = validateDailyManifest(run, { sha256, now });
+    runJsonBytes = runBody;
+  } else {
+    // Companion `.run.json` was not published by the Kaggle notebook; derive
+    // run metadata directly from the validated CSV and dataset version metadata.
+    const rows = await readDailyCsv(csvBody);
+    verified = deriveDailyManifestFromCsv(rows, {
+      sha256,
+      datasetVersion: version,
+      datasetTimestamp: datasetVersionTimestamp(metadata),
+      defaultModelVersion: canonicalModelVersion(),
+      now,
+    });
+    runJsonBytes = Buffer.from(`${JSON.stringify(verified, null, 2)}\n`, 'utf8');
+  }
+
   if (current && current.run.inputSha256 === sha256 && current.run.id === verified.run_id) {
     return { status: 'unchanged', version };
   }
@@ -157,9 +205,7 @@ export async function fetchReadyDailyDataset({
     || Date.parse(verified.generated_at) <= Date.parse(current.run.generatedAt))) {
     throw new Error('Kaggle run would roll back the published model time or data cutoff');
   }
-  // The pinned URLs already bind both files to one dataset version. If the
-  // latest version changes mid-request, retry on the next poll, never mixing.
-  if (await getVersion() !== version) throw new Error('Kaggle version changed during the fetch');
+  if ((await getMetadata()).version !== version) throw new Error('Kaggle version changed during the fetch');
 
   const dir = resolve(outDir);
   if (dir === resolve(ROOT) || dir.startsWith(`${resolve(ROOT)}${sep}`)) {
@@ -171,7 +217,7 @@ export async function fetchReadyDailyDataset({
     throw new Error('Technical Kaggle files must stay outside the public repository');
   }
   writeFileSync(resolve(dir, CSV_NAME), csvBody, { flag: 'wx', mode: 0o600 });
-  writeFileSync(resolve(dir, RUN_NAME), runBody, { flag: 'wx', mode: 0o600 });
+  writeFileSync(resolve(dir, RUN_NAME), runJsonBytes, { flag: 'wx', mode: 0o600 });
   writeFileSync(resolve(dir, 'dataset-version.txt'), `${version}\n`, { flag: 'wx', mode: 0o600 });
   return { status: 'fetched', version, runId: verified.run_id };
 }
@@ -189,7 +235,6 @@ async function main(argv) {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   main(process.argv.slice(2)).catch((error) => {
-    // Never print the downloaded CSV/JSON, source free text or credentials.
     console.error(`[kaggle-daily] Publication fetch refused: ${error.message}`);
     process.exitCode = 1;
   });
