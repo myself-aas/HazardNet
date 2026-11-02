@@ -61,7 +61,7 @@ export const DistrictDetailPage: React.FC = () => {
   const [districtForecasts7D, setDistrictForecasts7D] = useState<ForecastRow[]>([]);
   const [districtForecasts15D, setDistrictForecasts15D] = useState<ForecastRow[]>([]);
   const [loadingForecastTable, setLoadingForecastTable] = useState<boolean>(true);
-  const [activeTableHorizon, setActiveTableHorizon] = useState<'7_days' | '15_days'>('7_days');
+  const [activeTableHorizon, setActiveTableHorizon] = useState<'7_days' | '15_days'>('15_days');
 
   useEffect(() => {
     if (!district) return;
@@ -223,15 +223,18 @@ export const DistrictDetailPage: React.FC = () => {
       return;
     }
     const headers = [
-      'District ID', 'District Name', 'Horizon', 'Target Date', 'Prediction Date', 'Hazard Type',
-      'Physics Severity', 'CNN Model Severity', 'Confidence', 'Min Temp (°C)', 'Max Temp (°C)',
-      'Precipitation (mm)', 'Wind Max (km/h)',
+      'District ID', 'District Name', 'Horizon', 'Day', 'Target Date', 'Peak Severe Date', 'Prediction Date',
+      'Hazard Type', 'Severity Index (0-100)', 'Physics Severity', 'CNN Model Severity', 'Confidence',
+      'Min Temp (°C)', 'Max Temp (°C)', 'Precipitation (mm)', 'Wind Max (km/h)',
     ];
+    const maxScore = Math.max(...rowsToExport.map((r) => r.severity_score), 0);
     const csvRows = [headers.join(',')];
-    for (const r of rowsToExport) {
+    for (const [idx, r] of rowsToExport.entries()) {
+      const isPeak = r.is_peak_day ?? (maxScore > 0 && r.severity_score === maxScore);
       csvRows.push([
-        r.district_id, r.district_name, r.horizon || activeTableHorizon, r.target_date, r.prediction_date,
-        r.hazard_type, r.physics_severity ?? r.severity_score, r.model_severity ?? r.severity_score,
+        r.district_id, r.district_name, r.horizon || activeTableHorizon, r.forecast_day ?? idx + 1,
+        r.target_date, isPeak, r.prediction_date, r.hazard_type, Math.round(r.severity_score * 100),
+        r.physics_severity ?? r.severity_score, r.model_severity ?? r.severity_score,
         r.confidence, r.temperature_min, r.temperature_max, r.precipitation_mm, r.wind_max_kmh,
       ].map(csvCell).join(','));
     }

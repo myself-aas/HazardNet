@@ -67,6 +67,8 @@ test('summarizes peak tier, severityScore and rainfall when a complete daily row
   });
   renderEntry('kurigram');
   await waitFor(() => expect(screen.getByText('Extreme')).toBeTruthy());
+  expect(screen.getByText(/Peak severe date: 3 November 2026/)).toBeTruthy();
+  expect(screen.getByText(/Severity index: 91\/100/)).toBeTruthy();
   expect(screen.getByText(/Severity score: 91% \(0\.91\)/)).toBeTruthy();
   expect(screen.getByText(/34\.2 mm/)).toBeTruthy();
 });

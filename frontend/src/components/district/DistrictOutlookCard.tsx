@@ -53,10 +53,13 @@ export const DistrictOutlookCard: React.FC = () => {
 
       {peakSeverityInfo && (
         <dl className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-          <div className="rounded-lg bg-carbon-05 border border-carbon-20 p-4">
-            <dt className="text-xs font-mono font-bold uppercase text-carbon-60">Peak severity</dt>
+          <div className="rounded-lg bg-amber-50/70 border border-amber-300 p-4">
+            <dt className="text-xs font-mono font-bold uppercase text-amber-950">Peak severity index</dt>
             <dd className="mt-1 text-2xl font-black font-mono tabular-nums text-carbon-90">
-              {formatNumber(Math.round(peakSeverityInfo.peakScore * 100))}%
+              {formatNumber(Math.round(peakSeverityInfo.peakScore * 100))}/100
+            </dd>
+            <dd className="mt-1 text-xs font-semibold text-amber-950">
+              Peak severe date: <time dateTime={peakSeverityInfo.peakDate}>{formatDate(peakSeverityInfo.peakDate)}</time>
             </dd>
           </div>
           <div className="rounded-lg bg-carbon-05 border border-carbon-20 p-4">

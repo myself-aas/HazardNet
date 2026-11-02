@@ -52,6 +52,9 @@ export const DistrictForecastRecords: React.FC = () => {
   // One binding for both branches: the phone cards and the table must never read
   // different horizons.
   const activeRows = activeTableHorizon === '7_days' ? districtForecasts7D : districtForecasts15D;
+  const maxActiveScore = activeRows.length > 0 ? Math.max(...activeRows.map((r) => r.severity_score)) : 0;
+  const isPeakRow = (row: (typeof activeRows)[number]) =>
+    row.is_peak_day ?? (maxActiveScore > 0 && row.severity_score === maxActiveScore);
 
   return (
     <>
@@ -183,51 +186,56 @@ export const DistrictForecastRecords: React.FC = () => {
               </p>
             ) : (
               <CardStackRows
-                rows={activeRows.map((row, idx) => ({
-                  key: idx,
-                  heading: formatDate(row.target_date),
-                  fields: [
-                    { label: 'Prediction Run', value: formatDate(row.prediction_date) },
-                    { label: 'Hazard Type', value: row.hazard_type },
-                    { label: 'Advisory Tier', value: row.advisory_tier || '-' },
-                    {
-                      label: 'Physics Baseline',
-                      value: `${formatNumber(Math.round((row.physics_severity ?? row.severity_score) * 100))}%`,
-                    },
-                    {
-                      label: 'Model Score',
-                      value:
-                        row.model_severity !== undefined
-                          ? `${formatNumber(Math.round(row.model_severity * 100))}%`
-                          : `${formatNumber(Math.round(row.severity_score * 100))}%`,
-                    },
-                    {
-                      label: 'Blended Severity',
-                      value: row.final_severity !== undefined ? `${formatNumber(Math.round(row.final_severity * 100))}%` : '-',
-                    },
-                    { label: 'Confidence', value: `${formatNumber(Math.round(row.confidence * 100))}%` },
-                    {
-                      label: 'Temp (Min/Max)',
-                      value:
-                        row.temperature_min !== undefined && row.temperature_max !== undefined
-                          ? `${fmt1(row.temperature_min)}\u00A0°C / ${fmt1(row.temperature_max)}\u00A0°C`
-                          : row.temperature_mean !== undefined
-                            ? `${fmt1(row.temperature_mean)}\u00A0°C`
-                            : '-',
-                    },
-                    {
-                      label: 'Precip.',
-                      value: row.precipitation_mm !== undefined ? `${fmt1(row.precipitation_mm)}\u00A0mm` : '-',
-                    },
-                    { label: 'Wind Max', value: row.wind_max_kmh !== undefined ? `${fmt1(row.wind_max_kmh)}\u00A0km/h` : '-' },
-                    {
-                      label: 'Top Hazard Classes',
-                      value: [row.prob_top1, row.prob_top2, row.prob_top3]
-                        .map((p) => (p === undefined ? '-' : `${formatNumber(Math.round(p * 100))}%`))
-                        .join(' / '),
-                    },
-                  ],
-                }))}
+                rows={activeRows.map((row, idx) => {
+                  const peak = isPeakRow(row);
+                  return {
+                    key: idx,
+                    heading: `${row.forecast_day ? `Day ${row.forecast_day} · ` : ''}${formatDate(row.target_date)}${peak ? ' · PEAK SEVERE DATE' : ''}`,
+                    fields: [
+                      { label: 'Severity Index', value: `${formatNumber(Math.round(row.severity_score * 100))}/100` },
+                      { label: 'Peak Severe Date', value: peak ? 'Yes (Peak)' : 'No' },
+                      { label: 'Prediction Run', value: formatDate(row.prediction_date) },
+                      { label: 'Hazard Type', value: row.hazard_type },
+                      { label: 'Advisory Tier', value: row.advisory_tier || '-' },
+                      {
+                        label: 'Physics Baseline',
+                        value: `${formatNumber(Math.round((row.physics_severity ?? row.severity_score) * 100))}%`,
+                      },
+                      {
+                        label: 'Model Score',
+                        value:
+                          row.model_severity !== undefined
+                            ? `${formatNumber(Math.round(row.model_severity * 100))}%`
+                            : `${formatNumber(Math.round(row.severity_score * 100))}%`,
+                      },
+                      {
+                        label: 'Blended Severity',
+                        value: row.final_severity !== undefined ? `${formatNumber(Math.round(row.final_severity * 100))}%` : '-',
+                      },
+                      { label: 'Confidence', value: `${formatNumber(Math.round(row.confidence * 100))}%` },
+                      {
+                        label: 'Temp (Min/Max)',
+                        value:
+                          row.temperature_min !== undefined && row.temperature_max !== undefined
+                            ? `${fmt1(row.temperature_min)}\u00A0°C / ${fmt1(row.temperature_max)}\u00A0°C`
+                            : row.temperature_mean !== undefined
+                              ? `${fmt1(row.temperature_mean)}\u00A0°C`
+                              : '-',
+                      },
+                      {
+                        label: 'Precip.',
+                        value: row.precipitation_mm !== undefined ? `${fmt1(row.precipitation_mm)}\u00A0mm` : '-',
+                      },
+                      { label: 'Wind Max', value: row.wind_max_kmh !== undefined ? `${fmt1(row.wind_max_kmh)}\u00A0km/h` : '-' },
+                      {
+                        label: 'Top Hazard Classes',
+                        value: [row.prob_top1, row.prob_top2, row.prob_top3]
+                          .map((p) => (p === undefined ? '-' : `${formatNumber(Math.round(p * 100))}%`))
+                          .join(' / '),
+                      },
+                    ],
+                  };
+                })}
               />
             )}
             <div className="rounded-xl hidden overflow-x-auto border border-carbon-20/90 md:block">
@@ -235,6 +243,7 @@ export const DistrictForecastRecords: React.FC = () => {
                 <thead>
                   <tr className="bg-carbon-90 text-carbon-05 font-bold text-xs uppercase tracking-wider font-mono">
                     <th className="px-3.5 py-3">Target Date</th>
+                    <th className="px-3.5 py-3">Severity Index</th>
                     <th className="px-3.5 py-3">Prediction</th>
                     <th className="px-3.5 py-3">Hazard Type</th>
                     <th className="px-3.5 py-3">Tier</th>
@@ -251,7 +260,7 @@ export const DistrictForecastRecords: React.FC = () => {
                 <tbody className="divide-y divide-carbon-10">
                   {activeRows.length === 0 ? (
                     <tr>
-                      <td colSpan={12} className="p-8 text-center text-carbon-60 font-sans text-sm">
+                      <td colSpan={13} className="p-8 text-center text-carbon-60 font-sans text-sm">
                         The latest pipeline run did not emit a {activeTableHorizon === '7_days' ? '7-day' : '15-day'}{' '}
                         record for {data.districtName}.
                         {(activeTableHorizon === '7_days' ? districtForecasts15D : districtForecasts7D).length > 0
@@ -260,17 +269,39 @@ export const DistrictForecastRecords: React.FC = () => {
                       </td>
                     </tr>
                   ) : (
-                    activeRows.map((row, idx) => (
-                      <tr
-                        key={idx}
-                        className={`transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-carbon-05/80'} hover:bg-amber-50/40`}
-                      >
-                        <td className="px-3.5 py-3 font-mono tabular-nums font-bold text-carbon-90 whitespace-nowrap">
-                          <time dateTime={row.target_date}>{formatDate(row.target_date)}</time>
-                        </td>
-                        <td className="px-3.5 py-3 font-mono tabular-nums text-carbon-60 whitespace-nowrap">
-                          <time dateTime={row.prediction_date}>{formatDate(row.prediction_date)}</time>
-                        </td>
+                    activeRows.map((row, idx) => {
+                      const peak = isPeakRow(row);
+                      return (
+                        <tr
+                          key={idx}
+                          data-peak={peak ? 'true' : undefined}
+                          className={`transition-colors ${
+                            peak
+                              ? 'bg-amber-50/90 font-semibold'
+                              : idx % 2 === 0
+                                ? 'bg-white'
+                                : 'bg-carbon-05/80'
+                          } hover:bg-amber-50/60`}
+                        >
+                          <td className="px-3.5 py-3 font-mono tabular-nums font-bold text-carbon-90 whitespace-nowrap">
+                            <div className="flex items-center gap-2">
+                              {row.forecast_day !== undefined && (
+                                <span className="text-carbon-60">D{formatNumber(row.forecast_day)}</span>
+                              )}
+                              <time dateTime={row.target_date}>{formatDate(row.target_date)}</time>
+                              {peak && (
+                                <span className="rounded border border-amber-400 bg-amber-100 px-1.5 py-0.5 text-xs font-black text-amber-950">
+                                  PEAK
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-3.5 py-3 font-mono tabular-nums font-black text-carbon-90 whitespace-nowrap">
+                            {formatNumber(Math.round(row.severity_score * 100))}/100
+                          </td>
+                          <td className="px-3.5 py-3 font-mono tabular-nums text-carbon-60 whitespace-nowrap">
+                            <time dateTime={row.prediction_date}>{formatDate(row.prediction_date)}</time>
+                          </td>
                         <td className="px-3.5 py-3 font-semibold text-carbon-80">{row.hazard_type}</td>
                         {/* The tier the advisory published. `advisoryTierOf` falls back to the
                           severity bin only when the row carries no tier at all, so a
@@ -346,8 +377,9 @@ export const DistrictForecastRecords: React.FC = () => {
                                 .join(' / ')
                             : '—'}
                         </td>
-                      </tr>
-                    ))
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>

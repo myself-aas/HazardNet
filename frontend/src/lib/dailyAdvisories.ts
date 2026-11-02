@@ -11,6 +11,7 @@ import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
 
 export const DAILY_API_URL = '/api/v1/advisories';
 export const DAILY_SNAPSHOT_URL = '/data/daily-advisories-v1.json';
+export const DAILY_KAGGLE_URL = '/api/v1/kaggle?horizon=daily';
 export const DAILY_SCHEMA = 'hazardnet-daily-advisories/v1';
 
 export const DAILY_TIERS = ['NORMAL', 'WATCH', 'WARNING', 'SEVERE', 'EXTREME'] as const;
@@ -306,7 +307,81 @@ export function parsePublicDailyPayload(
 
 export interface LoadDailyOptions { fetcher?: typeof fetch; now?: Date; signal?: AbortSignal }
 
-/** Try a small district API answer, then the separately validated public static asset. */
+export interface Continuous15DaySummary {
+  days: DailyAdvisory[];
+  isComplete15: boolean;
+  maxSeverityScore: number;
+  maxSeverityIndex: number;
+  peakRows: DailyAdvisory[];
+  peakDates: string[];
+  peakDateSet: Set<string>;
+  primaryPeak: DailyAdvisory | null;
+}
+
+/** Integer 0..100 Severity Index corresponding to normalized `severityScore` (0..1). */
+export function severityIndexOf(score: number): number {
+  if (!Number.isFinite(score)) return 0;
+  return Math.round(Math.max(0, Math.min(1, score)) * 100);
+}
+
+/**
+ * Summarize a district's continuous 15-day series, identifying peak severe date(s)
+ * (unique peak or tied maximum-severity dates when severity > 0) without falsely
+ * highlighting flat zero-risk runs.
+ */
+export function summarizeContinuous15Days(advisories: DailyAdvisory[]): Continuous15DaySummary {
+  const days = advisories
+    .slice()
+    .sort((a, b) => a.forecastDay - b.forecastDay || a.targetDate.localeCompare(b.targetDate));
+  if (days.length === 0) {
+    return {
+      days: [],
+      isComplete15: false,
+      maxSeverityScore: 0,
+      maxSeverityIndex: 0,
+      peakRows: [],
+      peakDates: [],
+      peakDateSet: new Set<string>(),
+      primaryPeak: null,
+    };
+  }
+
+  const maxSeverityScore = Math.max(...days.map((r) => r.severityScore));
+  const maxSeverityIndex = severityIndexOf(maxSeverityScore);
+
+  let peakRows: DailyAdvisory[] = [];
+  if (maxSeverityScore > 0) {
+    const uniquePeaks = days.filter((r) => r.peak === 'unique');
+    if (uniquePeaks.length > 0) {
+      peakRows = uniquePeaks;
+    } else {
+      const maxima = days.filter((r) => r.severityScore === maxSeverityScore);
+      // Highlight tied peak dates unless all 15 days are flat low-severity ties (< 0.40)
+      if (maxima.length < days.length || maxSeverityScore >= 0.4) {
+        peakRows = maxima;
+      }
+    }
+  }
+
+  const peakDates = peakRows.map((r) => r.targetDate);
+  const peakDateSet = new Set(peakDates);
+  const primaryPeak = peakRows.length > 0
+    ? peakRows.reduce((best, cand) => (TIER_RANK[cand.tier] > TIER_RANK[best.tier] ? cand : best), peakRows[0])
+    : days.reduce((best, cand) => (cand.severityScore > best.severityScore ? cand : best), days[0]);
+
+  return {
+    days,
+    isComplete15: days.length === 15,
+    maxSeverityScore,
+    maxSeverityIndex,
+    peakRows,
+    peakDates,
+    peakDateSet,
+    primaryPeak,
+  };
+}
+
+/** Try a small district API answer, then the separately validated public static asset, then live Kaggle daily. */
 export async function loadDistrictDaily(
   district: string,
   { fetcher = fetch, now = new Date(), signal }: LoadDailyOptions = {},
@@ -315,10 +390,13 @@ export async function loadDistrictDaily(
   for (const [url, source] of [
     [`${DAILY_API_URL}?scope=timeline&district=${encodeURIComponent(district)}&days=15`, 'api'],
     [DAILY_SNAPSHOT_URL, 'snapshot'],
+    [`${DAILY_KAGGLE_URL}&district=${encodeURIComponent(district)}`, 'api'],
   ] as const) {
     try {
       const response = await fetcher(url, { signal, cache: 'no-store', headers: { accept: 'application/json' } });
       if (!response.ok) continue;
+      const ct = response.headers.get('content-type') || '';
+      if (ct.includes('text/html')) continue;
       const parsed = parsePublicDailyPayload(await response.json(), district);
       if (!parsed) continue;
       const offline = response.headers.get('X-HazardNet-Stale') === '1';
@@ -326,11 +404,17 @@ export async function loadDistrictDaily(
         : parsed.remoteStale || now.getTime() > Date.parse(parsed.run.expiresAt)
           || now.getTime() < Date.parse(parsed.run.dataCutoff) - 5 * 60_000 ? 'stale' : 'fresh';
       const today = dhakaCalendarDate(now);
+      // When the run is fresh (within its 36-hour update window) and carries the
+      // complete 15-day continuous series, preserve all 15 continuous days even after
+      // Dhaka local midnight so Day 1 is never truncated.
+      const continuous = status === 'fresh' && parsed.advisories.length === 15
+        ? parsed.advisories.slice().sort((a, b) => a.forecastDay - b.forecastDay)
+        : parsed.advisories.filter((row) => row.targetDate >= today);
       return {
         source: offline ? 'offline' : source,
         status,
         run: parsed.run,
-        advisories: parsed.advisories.filter((row) => row.targetDate >= today),
+        advisories: continuous,
         fetchedAt: offline ? null : now.toISOString(),
       };
     } catch {
@@ -348,6 +432,7 @@ export async function loadNationalDailySnapshot(
   for (const [url, source] of [
     [`${DAILY_API_URL}?scope=timeline&days=15`, 'api'],
     [DAILY_SNAPSHOT_URL, 'snapshot'],
+    [DAILY_KAGGLE_URL, 'api'],
   ] as const) {
     try {
       const response = await fetcher(url, { signal, cache: 'no-store', headers: { accept: 'application/json' } });
@@ -457,10 +542,11 @@ export function dailyAdvisoriesToDistrictForecastRows(
 ): ForecastRow[] {
   const maxDay = horizon === '7_days' ? 7 : 15;
   const predictionDate = run.generatedAt.slice(0, 10);
+  const summary = summarizeContinuous15Days(advisories);
 
   return advisories
     .filter((row) => row.forecastDay <= maxDay)
-    .sort((a, b) => a.targetDate.localeCompare(b.targetDate))
+    .sort((a, b) => a.forecastDay - b.forecastDay || a.targetDate.localeCompare(b.targetDate))
     .map((row) => {
       const districtMeta = ALL_64_DISTRICTS[row.districtId - 1];
       const m = row.metrics || {};
@@ -471,6 +557,8 @@ export function dailyAdvisoriesToDistrictForecastRows(
         district_name: row.district,
         division: row.division,
         horizon,
+        forecast_day: row.forecastDay,
+        is_peak_day: summary.peakDateSet.has(row.targetDate),
         hazard_type: row.hazard,
         severity_score: row.severityScore,
         final_severity: m.finalSeverity ?? row.severityScore,

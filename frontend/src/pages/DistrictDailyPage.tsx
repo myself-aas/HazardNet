@@ -5,16 +5,23 @@
  * non-official-warning disclaimers pointing to BMD, FFWC, DDM, and 999.
  */
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, ChevronDown, ChevronRight, RefreshCw } from 'lucide-react';
-import { getDistrictById } from '../data/bangladeshDistricts';
-import { AlertLevelBadge } from '../components/alerts/AlertLevelBadge';
+import { ALL_64_DISTRICTS, getDistrictById } from '../data/bangladeshDistricts';
+import { AlertLevelBadge, ADVISORY_TIER_COLOURS } from '../components/alerts/AlertLevelBadge';
 import { HazardGlyph } from '../components/apple/HazardGlyph';
 import { LanguageToggle } from '../components/alerts/LanguageToggle';
+import { Continuous15DayTrajectory } from '../components/district/Continuous15DayTrajectory';
 import { useI18n } from '../hooks/useI18n';
 import { hazardLabel } from '../hooks/useHazardLabel';
 import {
-  dhakaCalendarDate, loadDistrictDaily, type DailyAdvisory, type DistrictDailyResult, type DailyStatus,
+  dhakaCalendarDate,
+  loadDistrictDaily,
+  severityIndexOf,
+  summarizeContinuous15Days,
+  type DailyAdvisory,
+  type DistrictDailyResult,
+  type DailyStatus,
 } from '../lib/dailyAdvisories';
 
 // The published-records view is a separate public chunk, never a privileged
@@ -25,13 +32,15 @@ const EMPTY: DistrictDailyResult = {
   status: 'unavailable', source: 'none', run: null, advisories: [], fetchedAt: null,
 };
 
-function DayOutlook({ row }: { row: DailyAdvisory }) {
+function DayOutlook({ row, isPeakDay }: { row: DailyAdvisory; isPeakDay: boolean }) {
   const { language, t, formatDate, formatNumber } = useI18n();
   const w = row.weather || {};
   const m = row.metrics;
 
   const fmt1 = (val: number) => formatNumber(val, { minimumFractionDigits: 0, maximumFractionDigits: 1 });
   const fmt2 = (val: number) => formatNumber(val, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const sevIndex = severityIndexOf(row.severityScore);
+  const tierColour = ADVISORY_TIER_COLOURS[row.tier] ?? ADVISORY_TIER_COLOURS.NORMAL;
 
   const weatherItems: { label: string; value: string }[] = [];
   if (w.precipitationMm !== undefined) {
@@ -105,28 +114,38 @@ function DayOutlook({ row }: { row: DailyAdvisory }) {
     }
   }
 
-  const isPeakDay = row.peak === 'unique' || row.peak === 'tied';
-
   return (
     <li
+      id={`day-${row.targetDate}`}
       data-peak={isPeakDay ? 'true' : undefined}
       className={
         isPeakDay
-          ? 'my-2 rounded-xl border border-[var(--ap-separator-opaque)] bg-[var(--ap-bg-grouped)] px-4 py-5 sm:px-5'
+          ? 'my-2 rounded-xl border-2 bg-[var(--ap-bg-grouped)] px-4 py-5 sm:px-5 shadow-2xs'
           : 'border-t border-[var(--ap-separator-opaque)] py-5 first:border-t-0 [[data-peak=true]+&]:border-t-0'
       }
+      style={isPeakDay ? { borderColor: tierColour } : undefined}
     >
       <article aria-label={`${formatDate(row.targetDate)}, ${hazardLabel(row.hazard, language)}`}>
         <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <p className="font-semibold tabular-nums text-[var(--ap-label)]">{formatDate(row.targetDate)}</p>
+            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+              <span className="text-xs font-semibold tabular-nums text-[var(--ap-label-secondary)]">
+                {t('daily.dayOf15', { day: formatNumber(row.forecastDay) })}
+              </span>
+              <p className="font-semibold tabular-nums text-[var(--ap-label)]">
+                <time dateTime={row.targetDate}>{formatDate(row.targetDate)}</time>
+              </p>
+              {isPeakDay && (
+                <span className="rounded border border-[var(--ap-separator-opaque)] bg-[var(--ap-canvas)] px-2 py-0.5 text-xs font-bold text-[var(--ap-label)]">
+                  {t('daily.peakBannerSingle')}
+                </span>
+              )}
               {row.peak === 'unique' && (
                 <span className="text-xs font-medium text-[var(--ap-label-secondary)]">
                   {t('daily.peakUnique')}
                 </span>
               )}
-              {row.peak === 'tied' && (
+              {isPeakDay && row.peak === 'tied' && (
                 <span className="text-xs font-medium text-[var(--ap-label-secondary)]">
                   {t('daily.peakTied')}
                 </span>
@@ -137,12 +156,24 @@ function DayOutlook({ row }: { row: DailyAdvisory }) {
               {hazardLabel(row.hazard, language)}
             </h3>
           </div>
-          <div className="flex flex-col items-end gap-1.5">
+          <div className="flex flex-col items-end gap-1.5 min-w-[160px]">
             <AlertLevelBadge level={row.tier} label={t(`alerts.tier.${row.tier}`)}
               srPrefix={t('daily.tier')} role="" size="lg" />
-            <span className="text-xs font-semibold tabular-nums text-[var(--ap-label-secondary)]">
-              {t('daily.severityScore')}: {formatNumber(Math.round(row.severityScore * 100))}% ({fmt2(row.severityScore)})
+            <span className="text-xs font-semibold tabular-nums text-[var(--ap-label)]">
+              {t('daily.severityIndex')}: {formatNumber(sevIndex)}/100 ({fmt2(row.severityScore)})
             </span>
+            <span className="text-xs tabular-nums text-[var(--ap-label-secondary)]">
+              {t('daily.severityScore')}: {formatNumber(sevIndex)}% ({fmt2(row.severityScore)})
+            </span>
+            <div
+              aria-hidden="true"
+              className="h-1.5 w-28 overflow-hidden rounded-full bg-[var(--ap-separator-opaque)]"
+            >
+              <div
+                className="h-full rounded-full"
+                style={{ width: `${Math.max(4, sevIndex)}%`, backgroundColor: tierColour }}
+              />
+            </div>
           </div>
         </div>
 
@@ -205,20 +236,22 @@ function DayOutlook({ row }: { row: DailyAdvisory }) {
 
 const FarmerDistrictDailyPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const district = getDistrictById(id || 'kurigram');
   const { t, formatDate } = useI18n();
   const [outlook, setOutlook] = useState<DistrictDailyResult>(EMPTY);
   const [loading, setLoading] = useState(true);
-  const expanded = searchParams.get('days') === 'all';
+  // Default to showing all 15 continuous days; `?days=7` optionally narrows to the first 7 days.
+  const expanded = searchParams.get('days') !== '7';
   const [revision, setRevision] = useState(0);
   const [now, setNow] = useState(() => new Date());
 
   const toggleExpanded = () => {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
-      if (next.get('days') === 'all') next.delete('days');
-      else next.set('days', 'all');
+      if (next.get('days') === '7') next.delete('days');
+      else next.set('days', '7');
       return next;
     }, { replace: true });
   };
@@ -251,12 +284,19 @@ const FarmerDistrictDailyPage: React.FC = () => {
   }, []);
 
   const today = dhakaCalendarDate(now);
-  const rows = useMemo(() => outlook.advisories.filter((row) => row.targetDate >= today), [outlook.advisories, today]);
-  const seventhDate = new Date(Date.parse(`${today}T00:00:00Z`) + 6 * 86_400_000).toISOString().slice(0, 10);
-  const firstWeek = rows.filter((row) => row.targetDate <= seventhDate);
-  const visible = expanded ? rows : firstWeek;
   const status: DailyStatus = outlook.status === 'fresh' && outlook.run && now.getTime() > Date.parse(outlook.run.expiresAt)
     ? 'stale' : outlook.status;
+  const rows = useMemo(
+    () => (status === 'fresh' && outlook.advisories.length === 15
+      ? outlook.advisories.slice().sort((a, b) => a.forecastDay - b.forecastDay)
+      : outlook.advisories.filter((row) => row.targetDate >= today)),
+    [outlook.advisories, status, today],
+  );
+  const summary15 = useMemo(() => summarizeContinuous15Days(rows), [rows]);
+  const anchorStart = rows[0]?.targetDate ?? today;
+  const seventhDate = new Date(Date.parse(`${anchorStart}T00:00:00Z`) + 6 * 86_400_000).toISOString().slice(0, 10);
+  const firstWeek = rows.filter((row) => row.targetDate <= seventhDate);
+  const visible = expanded ? rows : firstWeek;
   const expiredOffline = status === 'offline' && outlook.run && now.getTime() > Date.parse(outlook.run.expiresAt);
 
   return (
@@ -265,7 +305,29 @@ const FarmerDistrictDailyPage: React.FC = () => {
         <Link to="/live" className="ap-focusable inline-flex min-h-[44px] items-center gap-2 text-sm font-semibold text-[var(--ap-link)] underline underline-offset-4">
           <ArrowLeft aria-hidden="true" size={18} />{t('daily.return')}
         </Link>
-        <LanguageToggle variant="switch" tone="daily" />
+        <div className="flex flex-wrap items-center gap-3">
+          {district && (
+            <label htmlFor="daily-district-select" className="inline-flex items-center gap-2 text-xs font-semibold text-[var(--ap-label-secondary)]">
+              <span>{t('daily.switchDistrict')}</span>
+              <select
+                id="daily-district-select"
+                value={district.id}
+                onChange={(e) => {
+                  const qs = searchParams.toString();
+                  navigate(`/forecast/district/${e.target.value}${qs ? `?${qs}` : ''}`);
+                }}
+                className="ap-focusable min-h-[44px] rounded-lg border border-[var(--ap-separator-opaque)] bg-[var(--ap-canvas)] px-3 py-1.5 text-sm font-semibold text-[var(--ap-label)]"
+              >
+                {ALL_64_DISTRICTS.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name} ({d.division})
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          <LanguageToggle variant="switch" tone="daily" />
+        </div>
       </nav>
 
       <header className="space-y-4">
@@ -320,7 +382,10 @@ const FarmerDistrictDailyPage: React.FC = () => {
           </section>
 
           {!loading && status !== 'unavailable' && (
-            <section aria-labelledby="daily-days-heading" className="space-y-4">
+            <section aria-labelledby="daily-days-heading" className="space-y-5">
+              {rows.length > 0 && (
+                <Continuous15DayTrajectory advisories={rows} interactiveAnchors />
+              )}
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 id="daily-days-heading" className="text-2xl font-semibold text-[var(--ap-label)]">
                   {t(expanded ? 'daily.extendedDate' : 'daily.currentDate')}
@@ -341,7 +406,13 @@ const FarmerDistrictDailyPage: React.FC = () => {
                 <>
                   {visible[0].targetDate > today && <p>{t('daily.nextPublished', { date: formatDate(visible[0].targetDate) })}</p>}
                   <ol id="daily-outlook-days" className="max-w-3xl">
-                    {visible.map((row) => <DayOutlook key={row.advisoryId} row={row} />)}
+                    {visible.map((row) => (
+                      <DayOutlook
+                        key={row.advisoryId}
+                        row={row}
+                        isPeakDay={summary15.peakDateSet.has(row.targetDate)}
+                      />
+                    ))}
                   </ol>
                 </>
               )}

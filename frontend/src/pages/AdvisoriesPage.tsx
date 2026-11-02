@@ -32,6 +32,8 @@ import MaterialIcon from '../components/MaterialIcon';
 import { SECTOR_ADVISORIES, SectorAdvisoryData, TechnicalStep } from '../data/sectorAdvisoriesData';
 import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
 import { useKaggleAdvisories } from '../hooks/useKaggleAdvisories';
+import { loadDistrictDaily, severityIndexOf, type DistrictDailyResult } from '../lib/dailyAdvisories';
+import { Continuous15DayTrajectory } from '../components/district/Continuous15DayTrajectory';
 import {
   advisorySignalOf,
   advisoryTierOf,
@@ -130,18 +132,38 @@ export const AdvisoriesPage: React.FC = () => {
     );
   };
 
-  const kaggleHorizon: ForecastHorizon = searchParams.get('horizon') === '15_days' ? '15_days' : '7_days';
+  const kaggleHorizon: ForecastHorizon = searchParams.get('horizon') === '7_days' ? '7_days' : '15_days';
   const setKaggleHorizon = (nextHorizon: ForecastHorizon) => {
     setSearchParams(
       (prev) => {
         const next = new URLSearchParams(prev);
-        if (nextHorizon === '7_days') next.delete('horizon');
+        if (nextHorizon === '15_days') next.delete('horizon');
         else next.set('horizon', nextHorizon);
         return next;
       },
       { replace: true },
     );
   };
+  const [dailyDistrictResult, setDailyDistrictResult] = useState<DistrictDailyResult>({
+    status: 'unavailable',
+    source: 'none',
+    run: null,
+    advisories: [],
+    fetchedAt: null,
+  });
+  useEffect(() => {
+    const controller = new AbortController();
+    loadDistrictDaily(aiDistrict, { now: new Date(), signal: controller.signal })
+      .then((res) => {
+        if (!controller.signal.aborted) setDailyDistrictResult(res);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setDailyDistrictResult({ status: 'unavailable', source: 'none', run: null, advisories: [], fetchedAt: null });
+        }
+      });
+    return () => controller.abort();
+  }, [aiDistrict]);
   // Severity, confidence and hazard come from the daily Kaggle ingest (the
   // selected horizon row for the selected district). They are never read from
   // the static district table, and nothing is typed by hand.
@@ -473,17 +495,19 @@ export const AdvisoriesPage: React.FC = () => {
                   <span>{kaggleRow.district_name}: {kaggleRow.hazard_type}</span>
                 </h3>
                 <p className="text-xs tabular-nums text-carbon-60">
-                  Issued <time dateTime={kaggleRow.prediction_date}>{formatDate(kaggleRow.prediction_date)}</time>, peak target{' '}
-                  <time dateTime={kaggleRow.target_date}>{formatDate(kaggleRow.target_date)}</time>
+                  Issued <time dateTime={kaggleRow.prediction_date}>{formatDate(kaggleRow.prediction_date)}</time>,{' '}
+                  <strong className="font-semibold text-carbon-90">
+                    peak severe date <time dateTime={kaggleRow.target_date}>{formatDate(kaggleRow.target_date)}</time>
+                  </strong>
                   {kaggleRow.model_version ? `, model v${kaggleRow.model_version}` : ''}
                 </p>
               </div>
               <div className="flex items-center gap-3">
                 {kaggleTier && <AlertLevelBadge level={kaggleTier} label={kaggleTier} size="lg" />}
                 <div className="text-right tabular-nums">
-                  <div className="text-xs text-carbon-60">Severity score</div>
+                  <div className="text-xs text-carbon-60">Severity index</div>
                   <div className="text-base font-bold text-carbon-90">
-                    {formatNumber(Math.round(kaggleRow.severity_score * 100))}% ({fmt2(kaggleRow.severity_score)})
+                    {formatNumber(severityIndexOf(kaggleRow.severity_score))}/100 ({fmt2(kaggleRow.severity_score)})
                   </div>
                 </div>
               </div>
@@ -556,6 +580,12 @@ export const AdvisoriesPage: React.FC = () => {
                 </dd>
               </div>
             </dl>
+
+            {dailyDistrictResult.advisories.length > 0 && (
+              <div className="border-t border-carbon-20 pt-4">
+                <Continuous15DayTrajectory advisories={dailyDistrictResult.advisories} />
+              </div>
+            )}
           </div>
         ) : (
           <p className="border-t border-carbon-20 pt-4 text-sm text-carbon-60">

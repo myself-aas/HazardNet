@@ -106,6 +106,9 @@ export interface ForecastRow {
   confidence_raw?: number;
   confidence_calibrated?: number;
   confidence_kind?: string;
+  /** 1..15 continuous day index and peak severe date marker from the 960-row daily run. */
+  forecast_day?: number;
+  is_peak_day?: boolean;
 }
 
 /**

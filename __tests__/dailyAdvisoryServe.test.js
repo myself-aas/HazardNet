@@ -63,6 +63,16 @@ it('selects approved 1, 3, 7 and 15-day district timelines across all 5 tiers wi
   const warningRow = queryPublicDaily(snapshot, { scope: 'timeline', district_id: '2', days: '15' }, NOW)
     .body.advisories.find((r) => r.tier === 'WARNING');
   expect(warningRow.requiresReview).toBe(true);
+
+  // Even after Dhaka midnight rolls to 2026-11-03 while the 36h run is still fresh,
+  // requesting the 15-day timeline returns all 15 continuous days (Day 1..15).
+  const nextMorningStillFresh = new Date('2026-11-02T20:00:00Z'); // 2026-11-03 02:00 BST (< 36h from 2026-11-01T15:00Z)
+  const continuous = queryPublicDaily(snapshot, { scope: 'timeline', district: 'Kurigram', days: '15' }, nextMorningStillFresh);
+  expect(continuous.code).toBe(200);
+  expect(continuous.body.status).toBe('fresh');
+  expect(continuous.body.advisories).toHaveLength(15);
+  expect(continuous.body.advisories[0].forecastDay).toBe(1);
+  expect(continuous.body.advisories[14].forecastDay).toBe(15);
 });
 
 it('latest, peak and summary are date/district/division-specific without manufactured peak', () => {

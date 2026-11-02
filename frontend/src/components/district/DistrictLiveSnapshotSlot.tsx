@@ -1,10 +1,20 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { getDistrictById } from '../../data/bangladeshDistricts';
 import { useI18n } from '../../hooks/useI18n';
 import { useKaggleAdvisories } from '../../hooks/useKaggleAdvisories';
+import { loadDistrictDaily, severityIndexOf, type DistrictDailyResult } from '../../lib/dailyAdvisories';
 import { AlertLevelBadge } from '../alerts/AlertLevelBadge';
 import { HazardGlyph } from '../apple/HazardGlyph';
+import { Continuous15DayTrajectory } from './Continuous15DayTrajectory';
+
+const EMPTY_DAILY: DistrictDailyResult = {
+  status: 'unavailable',
+  source: 'none',
+  run: null,
+  advisories: [],
+  fetchedAt: null,
+};
 
 /**
  * Editorial-track live forecast ledger injected into `/districts/:id` (`ArticlePage` `introSlot`).
@@ -15,16 +25,33 @@ export const DistrictLiveSnapshotSlot: React.FC<{ districtId: string }> = ({ dis
   const district = getDistrictById(districtId);
   const [searchParams, setSearchParams] = useSearchParams();
   const { formatDate, formatNumber } = useI18n();
-  const horizon: '7_days' | '15_days' = searchParams.get('horizon') === '15_days' ? '15_days' : '7_days';
+  const horizon: '7_days' | '15_days' = searchParams.get('horizon') === '7_days' ? '7_days' : '15_days';
   const setHorizon = (nextHorizon: '7_days' | '15_days') => {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
-      if (nextHorizon === '7_days') next.delete('horizon');
+      if (nextHorizon === '15_days') next.delete('horizon');
       else next.set('horizon', nextHorizon);
       return next;
     }, { replace: true });
   };
   const { data: snapshot, isLoading: loading } = useKaggleAdvisories(horizon);
+  const [dailyResult, setDailyResult] = useState<DistrictDailyResult>(EMPTY_DAILY);
+
+  useEffect(() => {
+    if (!district) {
+      setDailyResult(EMPTY_DAILY);
+      return;
+    }
+    const controller = new AbortController();
+    loadDistrictDaily(district.name, { now: new Date(), signal: controller.signal })
+      .then((res) => {
+        if (!controller.signal.aborted) setDailyResult(res);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setDailyResult(EMPTY_DAILY);
+      });
+    return () => controller.abort();
+  }, [district?.name]);
 
   if (!district) return null;
 
@@ -95,8 +122,11 @@ export const DistrictLiveSnapshotSlot: React.FC<{ districtId: string }> = ({ dis
                 <span>{row.hazard_type}</span>
               </div>
               <p className="text-xs tabular-nums text-[var(--ap-label-secondary)]">
-                Issued {runDateRaw ? <time dateTime={runDateRaw}>{formatDate(runDateRaw)}</time> : 'n/a'}, peak target{' '}
-                {row.target_date ? <time dateTime={row.target_date}>{formatDate(row.target_date)}</time> : 'n/a'}
+                Issued {runDateRaw ? <time dateTime={runDateRaw}>{formatDate(runDateRaw)}</time> : 'n/a'},{' '}
+                <strong className="font-semibold text-[var(--ap-label)]">
+                  peak severe date{' '}
+                  {row.target_date ? <time dateTime={row.target_date}>{formatDate(row.target_date)}</time> : 'n/a'}
+                </strong>
               </p>
             </div>
 
@@ -106,9 +136,9 @@ export const DistrictLiveSnapshotSlot: React.FC<{ districtId: string }> = ({ dis
               )}
               {severityVal !== null && Number.isFinite(severityVal) && (
                 <div className="text-right tabular-nums">
-                  <div className="text-xs text-[var(--ap-label-secondary)]">Severity score</div>
+                  <div className="text-xs text-[var(--ap-label-secondary)]">Severity index</div>
                   <div className="text-sm sm:text-base font-bold text-[var(--ap-label)]">
-                    {formatNumber(Math.round(severityVal * 100))}% ({fmt2(severityVal)})
+                    {formatNumber(severityIndexOf(severityVal))}/100 ({fmt2(severityVal)})
                   </div>
                 </div>
               )}
@@ -154,6 +184,12 @@ export const DistrictLiveSnapshotSlot: React.FC<{ districtId: string }> = ({ dis
         <p className="border-t border-[var(--ap-separator-opaque)] pt-4 text-sm text-[var(--ap-label-secondary)]">
           No forecast row is published for {district.name} in this horizon window. Unknown does not mean safe.
         </p>
+      )}
+
+      {dailyResult.advisories.length > 0 && (
+        <div className="border-t border-[var(--ap-separator-opaque)] pt-4">
+          <Continuous15DayTrajectory advisories={dailyResult.advisories} />
+        </div>
       )}
 
       <div className="flex flex-wrap items-center gap-x-6 gap-y-1 border-t border-[var(--ap-separator-opaque)] pt-2 text-sm">

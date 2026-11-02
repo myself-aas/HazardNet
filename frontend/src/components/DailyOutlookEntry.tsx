@@ -9,7 +9,12 @@ import { getDistrictById } from '../data/bangladeshDistricts';
 import { AlertLevelBadge } from './alerts/AlertLevelBadge';
 import { useI18n } from '../hooks/useI18n';
 import { hazardLabel } from '../hooks/useHazardLabel';
-import { loadDistrictDaily, type DistrictDailyResult } from '../lib/dailyAdvisories';
+import {
+  loadDistrictDaily,
+  severityIndexOf,
+  summarizeContinuous15Days,
+  type DistrictDailyResult,
+} from '../lib/dailyAdvisories';
 
 const UNAVAILABLE: DistrictDailyResult = {
   status: 'unavailable', source: 'none', run: null, advisories: [], fetchedAt: null,
@@ -38,16 +43,13 @@ export function DailyOutlookEntry({ districtId }: { districtId?: string | null }
     return () => controller.abort();
   }, [districtName]);
 
-  const peakRow = useMemo(() => {
+  const summary15 = useMemo(() => {
     const valid = result.advisories.filter(
       (row) => row && typeof row.hazard === 'string' && typeof row.tier === 'string' && typeof row.targetDate === 'string',
     );
-    if (!valid.length) return null;
-    return valid.reduce(
-      (best, row) => ((row.severityScore ?? 0) > (best.severityScore ?? 0) ? row : best),
-      valid[0],
-    );
+    return summarizeContinuous15Days(valid);
   }, [result.advisories]);
+  const peakRow = summary15.primaryPeak;
 
   let state: string;
   if (!district) state = t('daily.nav.choose');
@@ -68,13 +70,25 @@ export function DailyOutlookEntry({ districtId }: { districtId?: string | null }
         <div className="mt-2 flex flex-wrap items-center gap-2.5 text-xs">
           <AlertLevelBadge level={peakRow.tier} label={t(`alerts.tier.${peakRow.tier}`)} size="sm" />
           <span className="font-semibold text-[var(--ap-label)]">
-            {hazardLabel(peakRow.hazard, language)} ({formatDate(peakRow.targetDate)})
+            {summary15.peakRows.length > 1 ? t('daily.peakBannerMultiple') : t('daily.peakBannerSingle')}:{' '}
+            {summary15.peakRows.length > 0
+              ? summary15.peakRows.map((r) => formatDate(r.targetDate)).join(' · ')
+              : formatDate(peakRow.targetDate)}{' '}
+            ({hazardLabel(peakRow.hazard, language)})
           </span>
           {typeof peakRow.severityScore === 'number' && Number.isFinite(peakRow.severityScore) && (
-            <span className="tabular-nums text-[var(--ap-label-secondary)]">
-              {t('daily.severityScore')}: {formatNumber(Math.round(peakRow.severityScore * 100))}% ({formatNumber(peakRow.severityScore, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
-            </span>
+            <>
+              <span className="tabular-nums font-semibold text-[var(--ap-label)]">
+                {t('daily.severityIndex')}: {formatNumber(severityIndexOf(peakRow.severityScore))}/100
+              </span>
+              <span className="tabular-nums text-[var(--ap-label-secondary)]">
+                {t('daily.severityScore')}: {formatNumber(Math.round(peakRow.severityScore * 100))}% ({formatNumber(peakRow.severityScore, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
+              </span>
+            </>
           )}
+          <span className="tabular-nums text-[var(--ap-label-secondary)]">
+            {formatNumber(summary15.days.length)}-day continuous output
+          </span>
           {peakRow.weather?.precipitationMm !== undefined && (
             <span className="tabular-nums text-[var(--ap-label-secondary)]">
               {t('daily.weather.precip')}: {formatNumber(peakRow.weather.precipitationMm, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}{'\u00A0'}mm

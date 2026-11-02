@@ -111,6 +111,20 @@ describe('public 15-day projection', () => {
     assert(snapshot.advisories.every((row) => row.peak === 'tied'));
   });
 
+  test('marks only the tied maximum-severity dates as peak=tied while keeping lower-severity dates as peak=none', () => {
+    const rows = sampleRows(1, {
+      score: (day) => (day === 4 || day === 5 ? 0.88 : 0.22),
+      peakDay: 4,
+    });
+    rows[3].advisory_tier = 'EXTREME';
+    rows[4].advisory_tier = 'EXTREME';
+    const snapshot = buildPublicDailySnapshot(rows, manifest(), { expectedDistricts: 1 });
+    const tiedDays = snapshot.advisories.filter((row) => row.peak === 'tied').map((row) => row.forecastDay);
+    const noneDays = snapshot.advisories.filter((row) => row.peak === 'none').map((row) => row.forecastDay);
+    assert.deepEqual(tiedDays, [4, 5]);
+    assert.equal(noneDays.length, 13);
+  });
+
   test('publishes all 5 tiers (including EXTREME) with severityScore, requiresReview, weather and metrics', () => {
     const rows = sampleRows(1);
     rows[0].advisory_tier = 'NORMAL';

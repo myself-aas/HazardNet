@@ -8,6 +8,7 @@ import {
   kaggleEnvelopeFromSnapshot,
   loadForecastOrDailySnapshot,
 } from '../../../../backend/utils/forecastSnapshotServe.js';
+import { loadPublicDailyAsset, queryPublicDaily } from '../../../../backend/utils/dailyAdvisoryServe.js';
 
 interface PagesContext {
   request: Request;
@@ -30,8 +31,19 @@ export async function onRequestGet(context: PagesContext): Promise<Response> {
   const url = new URL(request.url);
   const horizon = url.searchParams.get('horizon') || '7_days';
 
-  if (horizon !== '7_days' && horizon !== '15_days') {
-    return json({ error: 'horizon must be 7_days or 15_days' }, 400);
+  if (horizon !== '7_days' && horizon !== '15_days' && horizon !== 'daily') {
+    return json({ error: 'horizon must be 7_days, 15_days, or daily' }, 400);
+  }
+
+  if (horizon === 'daily') {
+    const dailySnapshot = await loadPublicDailyAsset(env, request);
+    const district = url.searchParams.get('district') || undefined;
+    const result = queryPublicDaily(dailySnapshot, {
+      scope: 'timeline',
+      days: '15',
+      ...(district ? { district } : {}),
+    });
+    return json(result.body, result.code);
   }
 
   const loaded = await loadForecastOrDailySnapshot(env, request);

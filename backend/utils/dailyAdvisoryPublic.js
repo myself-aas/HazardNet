@@ -571,7 +571,11 @@ export function buildPublicDailySnapshot(rows, manifest, { expectedDistricts = 6
         requiresReview: REQUIRES_REVIEW_TIERS.includes(row.tier),
         reasonCode: row.tier === 'NORMAL' ? 'no_major_risk' : 'district_outlook',
         actionIds: actionsForHazard(row.hazard, row.tier),
-        peak: peakState === 'unique' ? (row === maxima[0] ? 'unique' : 'none') : 'tied',
+        peak: max === 0 && maxima.length < DAILY_ADVISORY_DAYS
+          ? 'none'
+          : peakState === 'unique'
+            ? (row === maxima[0] ? 'unique' : 'none')
+            : (maxima.includes(row) ? 'tied' : 'none'),
         qualityNotes,
         weather: row.weather,
         ...(Object.keys(row.metrics).length > 0 ? { metrics: row.metrics } : {}),

@@ -24,6 +24,7 @@ import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { ADVISORY_CSV_COLUMNS, mapAdvisoryRows } from '../utils/advisoryMapper.js';
+import { buildPublicDailySnapshot, deriveDailyManifestFromCsv } from '../utils/dailyAdvisoryPublic.js';
 
 export const DEFAULT_DATASET = 'ashifahmedshuvo/hazardnet-weekly-forecasts';
 export const DEFAULT_CSV_FILE = 'hazardnet_advisories_latest.csv';
@@ -178,13 +179,23 @@ export function parseAdvisoryCsv(text) {
   } catch (err) {
     throw new KaggleClientError('INVALID_ROWS', `Advisory file failed validation: ${err.message}`);
   }
+  let dailySnapshot = null;
+  if (isDaily960 && rawRows.length === 64 * 15) {
+    try {
+      const csvSha = createHash('sha256').update(text).digest('hex');
+      const manifest = deriveDailyManifestFromCsv(rawRows, { sha256: csvSha });
+      dailySnapshot = buildPublicDailySnapshot(rawRows, manifest);
+    } catch {
+      dailySnapshot = null;
+    }
+  }
   const generatedAt = rawRows.map((r) => r.generated_at).find((v) => v && v.trim())
     || (isDaily960
       ? rawRows
         .filter((r) => String(r.forecast_day).trim() === '1' && r.target_date)
         .map((r) => `${String(r.target_date).trim()}T00:00:00Z`)[0] || null
       : null);
-  return { rows, generatedAt, rowCount: rows.length };
+  return { rows, dailySnapshot, generatedAt, rowCount: rows.length };
 }
 
 /** One HTTPS request to the Kaggle Dataset API. Never includes the key in an error. */
@@ -240,6 +251,7 @@ export async function fetchAdvisorySnapshot(config, options = {}) {
     bytes: file.bytes,
     rowCount: parsed.rowCount,
     rows: parsed.rows,
+    ...(parsed.dailySnapshot ? { dailySnapshot: parsed.dailySnapshot } : {}),
   };
 }
 

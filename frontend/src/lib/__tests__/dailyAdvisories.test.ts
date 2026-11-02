@@ -4,6 +4,8 @@ import {
   loadDistrictDaily,
   parsePublicDailyPayload,
   rollupDailyAdvisoriesToForecastRows,
+  severityIndexOf,
+  summarizeContinuous15Days,
   DAILY_SCHEMA,
 } from '../dailyAdvisories';
 
@@ -124,4 +126,44 @@ it('never substitutes a historic or unrelated forecast when both public reads fa
     now, fetcher: (async () => answer({ error: 'none' }, {}, 503)) as typeof fetch,
   });
   expect(result).toEqual({ status: 'unavailable', source: 'none', run: null, advisories: [], fetchedAt: null });
+});
+
+it('retains all 15 continuous days across Dhaka midnight while fresh and highlights peak severe dates with 0-100 severity index', async () => {
+  const full15 = Array.from({ length: 15 }, (_, idx) => {
+    const day = idx + 1;
+    const targetDate = new Date(Date.parse('2026-11-02T00:00:00Z') + idx * 86_400_000).toISOString().slice(0, 10);
+    const isPeak = day === 4 || day === 5;
+    return {
+      ...row,
+      advisoryId: `1-${targetDate}-flood`,
+      forecastDay: day,
+      targetDate,
+      tier: isPeak ? ('EXTREME' as const) : ('WATCH' as const),
+      severityScore: isPeak ? 0.92 : 0.31,
+      requiresReview: isPeak,
+      peak: isPeak ? ('tied' as const) : ('none' as const),
+    };
+  });
+  const fullPayload = {
+    ...payload,
+    coverage: { districts: 1, forecastDays: 15, publishedRows: 15 },
+    count: 15,
+    advisories: full15,
+  };
+  // 2026-11-02T20:00:00Z is 2026-11-03 02:00 BST (still inside the 36h window ending 2026-11-03T03:00:00Z)
+  const afterMidnightFresh = await loadDistrictDaily('Kurigram', {
+    now: new Date('2026-11-02T20:00:00Z'),
+    fetcher: (async () => answer(fullPayload)) as typeof fetch,
+  });
+  expect(afterMidnightFresh.status).toBe('fresh');
+  expect(afterMidnightFresh.advisories).toHaveLength(15);
+  expect(afterMidnightFresh.advisories[0].forecastDay).toBe(1);
+  expect(afterMidnightFresh.advisories[14].forecastDay).toBe(15);
+
+  const summary = summarizeContinuous15Days(afterMidnightFresh.advisories);
+  expect(summary.isComplete15).toBe(true);
+  expect(summary.maxSeverityIndex).toBe(92);
+  expect(severityIndexOf(0.924)).toBe(92);
+  expect(summary.peakDates).toEqual(['2026-11-05', '2026-11-06']);
+  expect(summary.primaryPeak?.tier).toBe('EXTREME');
 });
