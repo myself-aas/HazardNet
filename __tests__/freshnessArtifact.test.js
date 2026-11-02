@@ -20,6 +20,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import {
+  DAILY_ADVISORIES_SCHEMA,
   FRESHNESS_SCHEMA,
   buildFreshnessArtifact,
   classify,
@@ -132,6 +133,16 @@ describe('classify', () => {
 });
 
 describe('buildFreshnessArtifact', () => {
+  it('imports only node:* built-ins so site-health.yml runs without npm ci while matching DAILY_ADVISORY_SCHEMA', () => {
+    expect(DAILY_ADVISORIES_SCHEMA).toBe(DAILY_ADVISORY_SCHEMA);
+    const src = readFileSync(
+      join(process.cwd(), 'scripts', 'build_freshness_artifact.mjs'),
+      'utf8',
+    );
+    const specifiers = [...src.matchAll(/^\s*import\s+[^'"]*from\s+['"]([^'"]+)['"]/gm)].map((m) => m[1]);
+    expect(specifiers).toEqual(['node:fs', 'node:path', 'node:url']);
+  });
+
   it('states the schema, the producer and the five sources it derives from', () => {
     const artifact = build();
     expect(artifact.schema).toBe(FRESHNESS_SCHEMA);

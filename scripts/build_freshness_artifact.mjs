@@ -42,11 +42,10 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DAILY_ADVISORY_SCHEMA } from '../backend/utils/dailyAdvisoryPublic.js';
 
 export const FRESHNESS_SCHEMA = 'hazardnet-freshness/v1';
 export const PROBE_SCHEMA = 'hazardnet-site-probe/v1';
-export const DAILY_ADVISORIES_SCHEMA = DAILY_ADVISORY_SCHEMA;
+export const DAILY_ADVISORIES_SCHEMA = 'hazardnet-daily-advisories/v1';
 
 /** Forecast-age SLO in hours — `monitoring/alerts.yml` (one missed daily run + grace). */
 export const FORECAST_SLO_HOURS = 192;
