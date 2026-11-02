@@ -64,10 +64,11 @@ function toCamelCaseRecord(row) {
 export async function refreshAlertSnapshotFromForecasts({
   snapshotPath,
   alertsOutPath,
+  horizon = '15_days',
   now = new Date(),
   rehearseFn = rehearseAlertEngine,
 } = {}) {
-  const report = await rehearseFn({ snapshotPath, now });
+  const report = await rehearseFn({ snapshotPath, horizon, now });
   if (!report || !Number.isFinite(report.assessed) || report.assessed <= 0) {
     throw new Error('Alert rehearsal assessed 0 rows; refusing to overwrite alerts-latest.json');
   }

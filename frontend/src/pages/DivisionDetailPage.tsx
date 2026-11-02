@@ -117,15 +117,13 @@ export const DivisionDetailPage: React.FC = () => {
     });
   }, [data, searchQuery, selectedHazard, selectedDistrict]);
 
-  // Forecast Comparison Chart Data (per district in this division)
+  // Continuous 15-Day Trajectory Chart Data (per district in this division)
   const forecastChartData = useMemo(() => {
     if (!data || !data.districtRankings) return [];
     return data.districtRankings.map((d) => ({
       district: d.district,
-      '7-Day Severity': d.forecast7DSeverity,
-      '15-Day Severity': d.forecast15DSeverity,
-      forecast7DHazard: d.forecast7DHazard,
-      forecast15DHazard: d.forecast15DHazard,
+      'Peak Severity (Days 1–15)': d.forecast15DSeverity,
+      hazard: d.forecast15DHazard,
     }));
   }, [data]);
 
@@ -241,25 +239,25 @@ export const DivisionDetailPage: React.FC = () => {
                 Active Model Forecasts Across {data.division} Districts
               </h2>
               <p className="text-xs text-carbon-60">
-                Continuous 15-day forecast summaries and near-term Days 1–7 subsets for each district
+                Continuous 15-day daily trajectory summaries (Days 1–15) and peak severe dates for each district
               </p>
             </div>
             <span className="text-xs font-semibold px-2.5 py-1 bg-carbon-05 text-ap-link rounded-md">
-              {data.forecasts.length} records
+              {data.forecasts.length} districts
             </span>
           </div>
 
-          {/* Interactive Rechart: District Forecast Severity Comparison */}
+          {/* Interactive Rechart: District Continuous 15-Day Trajectory Severity */}
           <div className="pt-4 pb-2">
             <h3 className="text-xs font-bold text-carbon-70 uppercase tracking-wider mb-2">
-              District Forecast Severity Comparison (Days 1–7 Subset vs Full 15-Day Trajectory)
+              District Continuous 15-Day Trajectory Peak Severity (Days 1–15)
             </h3>
             <div className="h-64 sm:h-72 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={forecastChartData} margin={{ top: 10, right: 20, left: -10, bottom: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--ap-separator)" vertical={false} />
                   <XAxis dataKey="district" tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
-                  <YAxis tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} domain={[0, 4]} />
+                  <YAxis tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} domain={[0, 1]} />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: 'var(--ap-bg-canvas)',
@@ -269,38 +267,35 @@ export const DivisionDetailPage: React.FC = () => {
                     }}
                   />
                   <Legend wrapperStyle={{ paddingTop: '8px' }} />
-                  <Bar dataKey="7-Day Severity" fill="var(--ap-primary)" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="15-Day Severity" fill="var(--ap-sev-low)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Peak Severity (Days 1–15)" fill="var(--ap-primary)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          {/* District Forecast Table. Below md the same rows render as cards: eight numeric
-              columns at 390px was a sideways scroll, and the card names each figure. */}
+          {/* District Forecast Table. Below md the same rows render as cards. */}
           <CardStackRows
             className="mt-4 pt-4 border-t border-carbon-20"
             rows={data.districtRankings.map((dr) => {
-              const f7 = data.forecasts.find(
-                (f) => f.districtName.toLowerCase() === dr.district.toLowerCase() && f.horizon === '7_days',
+              const fRow = data.forecasts.find(
+                (f) => f.districtName.toLowerCase() === dr.district.toLowerCase(),
               );
               const targetDistrictSlug = dr.district.toLowerCase().replace(/[^a-z0-9]/g, '');
               return {
                 key: dr.district,
                 heading: dr.district,
                 fields: [
-                  { label: '7-Day Threat', value: dr.forecast7DHazard || 'Not in this run' },
+                  { label: 'Dominant Hazard (Days 1–15)', value: dr.forecast15DHazard || 'Not in this run' },
                   {
-                    label: '7-Day Severity',
-                    value: dr.forecast7DSeverity !== null ? dr.forecast7DSeverity.toFixed(2) : 'Not available',
+                    label: 'Peak Severity Index',
+                    value:
+                      dr.forecast15DSeverity !== null
+                        ? `${Math.round(dr.forecast15DSeverity * 100)}/100 (${dr.forecast15DSeverity.toFixed(2)})`
+                        : 'Not available',
                   },
-                  { label: '15-Day Threat', value: dr.forecast15DHazard || 'Not in this run' },
-                  {
-                    label: '15-Day Severity',
-                    value: dr.forecast15DSeverity !== null ? dr.forecast15DSeverity.toFixed(2) : 'Not available',
-                  },
-                  { label: 'Precipitation', value: f7 ? `${f7.precipitationMm.toFixed(1)} mm` : '-' },
-                  { label: 'Max Wind', value: f7 ? `${f7.windMaxKmh.toFixed(1)} km/h` : '-' },
+                  { label: 'Peak Target Date', value: fRow?.targetDate || '-' },
+                  { label: 'Precipitation', value: fRow ? `${fRow.precipitationMm.toFixed(1)} mm` : '-' },
+                  { label: 'Max Wind', value: fRow ? `${fRow.windMaxKmh.toFixed(1)} km/h` : '-' },
                 ],
                 footer: (
                   <Link
@@ -319,10 +314,9 @@ export const DivisionDetailPage: React.FC = () => {
               <thead className="bg-carbon-05 text-carbon-60 font-semibold border-b border-carbon-20">
                 <tr>
                   <th className="p-3">District</th>
-                  <th className="p-3">7-Day Threat</th>
-                  <th className="p-3">7-Day Severity</th>
-                  <th className="p-3">15-Day Threat</th>
-                  <th className="p-3">15-Day Severity</th>
+                  <th className="p-3">Dominant Hazard (Days 1–15)</th>
+                  <th className="p-3">Peak Severity Index</th>
+                  <th className="p-3">Peak Target Date</th>
                   <th className="p-3">Precipitation (mm)</th>
                   <th className="p-3">Max Wind (km/h)</th>
                   <th className="p-3 text-right">Action</th>
@@ -330,11 +324,8 @@ export const DivisionDetailPage: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-carbon-10">
                 {data.districtRankings.map((dr) => {
-                  const f7 = data.forecasts.find(
-                    (f) => f.districtName.toLowerCase() === dr.district.toLowerCase() && f.horizon === '7_days',
-                  );
-                  const f15 = data.forecasts.find(
-                    (f) => f.districtName.toLowerCase() === dr.district.toLowerCase() && f.horizon === '15_days',
+                  const fRow = data.forecasts.find(
+                    (f) => f.districtName.toLowerCase() === dr.district.toLowerCase(),
                   );
                   const targetDistrictSlug = dr.district.toLowerCase().replace(/[^a-z0-9]/g, '');
 
@@ -342,43 +333,28 @@ export const DivisionDetailPage: React.FC = () => {
                     <tr key={dr.district} className="hover:bg-carbon-05/80 transition-colors">
                       <td className="p-3 font-semibold text-carbon-90">{dr.district}</td>
                       <td className="p-3">
-                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-carbon-05 text-ap-link border border-carbon-20">
-                          {dr.forecast7DHazard || 'No threat'}
-                        </span>
-                      </td>
-                      <td className="p-3">
-                        <span
-                          className={`font-semibold ${
-                            (dr.forecast7DSeverity || 0) >= 2.5
-                              ? 'text-red-600'
-                              : (dr.forecast7DSeverity || 0) >= 1.5
-                                ? 'text-amber-600'
-                                : 'text-carbon-70'
-                          }`}
-                        >
-                          {dr.forecast7DSeverity !== null ? dr.forecast7DSeverity.toFixed(2) : 'N/A'}
-                        </span>
-                      </td>
-                      <td className="p-3">
                         <span className="px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
                           {dr.forecast15DHazard || 'No threat'}
                         </span>
                       </td>
                       <td className="p-3">
                         <span
-                          className={`font-semibold ${
-                            (dr.forecast15DSeverity || 0) >= 2.5
+                          className={`font-semibold tabular-nums ${
+                            (dr.forecast15DSeverity || 0) >= 0.7
                               ? 'text-red-600'
-                              : (dr.forecast15DSeverity || 0) >= 1.5
+                              : (dr.forecast15DSeverity || 0) >= 0.4
                                 ? 'text-amber-600'
                                 : 'text-carbon-70'
                           }`}
                         >
-                          {dr.forecast15DSeverity !== null ? dr.forecast15DSeverity.toFixed(2) : 'N/A'}
+                          {dr.forecast15DSeverity !== null
+                            ? `${Math.round(dr.forecast15DSeverity * 100)}/100 (${dr.forecast15DSeverity.toFixed(2)})`
+                            : 'N/A'}
                         </span>
                       </td>
-                      <td className="p-3 text-carbon-60">{f7 ? `${f7.precipitationMm.toFixed(1)} mm` : '-'}</td>
-                      <td className="p-3 text-carbon-60">{f7 ? `${f7.windMaxKmh.toFixed(1)} km/h` : '-'}</td>
+                      <td className="p-3 text-carbon-60 whitespace-nowrap">{fRow?.targetDate || '-'}</td>
+                      <td className="p-3 text-carbon-60">{fRow ? `${fRow.precipitationMm.toFixed(1)} mm` : '-'}</td>
+                      <td className="p-3 text-carbon-60">{fRow ? `${fRow.windMaxKmh.toFixed(1)} km/h` : '-'}</td>
                       <td className="p-3 text-right">
                         <Link
                           to={`/forecast/district/${targetDistrictSlug}`}

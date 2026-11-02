@@ -1,5 +1,5 @@
 /* Provenance — required by __tests__/testQuality.test.js; do not remove.
- * # Captured from https://www.hazardnet.live/data/forecasts-latest.json (committed as frontend/public/data/forecasts-latest.json) on 2026-10-27 by `node scripts/capture_edge_fixtures.mjs`.
+ * # Captured from https://www.hazardnet.live/data/forecasts-latest.json (committed as frontend/public/data/forecasts-latest.json) on 2026-11-02 by `node scripts/capture_edge_fixtures.mjs`.
  * # Shape: object — hazardnet-forecast-snapshot/v2; first 2 rows of 7_days and first 1 of 15_days retained.
  * # To refresh: node scripts/capture_edge_fixtures.mjs (reads the committed artifact after an ingest).
  *
@@ -8,9 +8,9 @@
  */
 module.exports = {
   "schema": "hazardnet-forecast-snapshot/v2",
-  "generated_at": "2026-10-25T10:49:05.018Z",
+  "generated_at": "2026-11-02T17:38:37.906Z",
   "prediction_date": "2026-10-24",
-  "source": "Kaggle 8-hazardnet-advisory (daily ingestion pipeline)",
+  "source": "unspecified: built outside a workflow (no SNAPSHOT_SOURCE); the declared producer would have been hazardnet/forecast-pipeline",
   "kernel": "hazardnet/forecast-pipeline",
   "horizons": {
     "7_days": [

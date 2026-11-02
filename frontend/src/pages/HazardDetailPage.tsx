@@ -380,13 +380,13 @@ export const HazardDetailPage: React.FC = () => {
             </span>
           </div>
 
-          {/* Forecast grid. Below md the same ten columns become one card per district:
+          {/* Forecast grid. Below md the same nine columns become one card per district:
               model and physics severity, confidence and the driver values in one column. */}
           <CardStackRows
             className="mt-4"
             rows={data.forecasts.map((fc, idx) => ({
-              key: `${fc.districtName}-${fc.horizon}-${idx}`,
-              heading: `${fc.districtName} (${fc.horizon === '7_days' ? '7-Day' : '15-Day'})`,
+              key: `${fc.districtName}-${idx}`,
+              heading: fc.districtName,
               fields: [
                 {
                   label: 'Division',
@@ -396,7 +396,8 @@ export const HazardDetailPage: React.FC = () => {
                     </Link>
                   ),
                 },
-                { label: 'Target Date', value: fc.targetDate },
+                { label: 'Trajectory', value: 'Days 1–15' },
+                { label: 'Peak Target Date', value: fc.targetDate },
                 { label: 'Model Severity', value: fc.modelSeverity.toFixed(2) },
                 { label: 'Physics Severity', value: fc.physicsSeverity.toFixed(2) },
                 { label: 'Confidence', value: `${Math.round(fc.confidence * 100)}%` },
@@ -420,8 +421,8 @@ export const HazardDetailPage: React.FC = () => {
                 <tr>
                   <th className="p-3">District</th>
                   <th className="p-3">Division</th>
-                  <th className="p-3">Horizon</th>
-                  <th className="p-3">Target Date</th>
+                  <th className="p-3">Trajectory</th>
+                  <th className="p-3">Peak Target Date</th>
                   <th className="p-3">Model Severity</th>
                   <th className="p-3">Physics Severity</th>
                   <th className="p-3">Confidence</th>
@@ -435,7 +436,7 @@ export const HazardDetailPage: React.FC = () => {
                   const districtSlug = fc.districtName.toLowerCase().replace(/[^a-z0-9]/g, '');
                   return (
                     <tr
-                      key={`${fc.districtName}-${fc.horizon}-${idx}`}
+                      key={`${fc.districtName}-${idx}`}
                       className="hover:bg-carbon-05/80 transition-colors"
                     >
                       <td className="p-3 font-semibold text-carbon-90">{fc.districtName}</td>
@@ -446,7 +447,7 @@ export const HazardDetailPage: React.FC = () => {
                       </td>
                       <td className="p-3">
                         <span className="px-2 py-0.5 rounded text-xs font-medium bg-carbon-10 text-carbon-70">
-                          {fc.horizon === '7_days' ? '7-Day' : '15-Day'}
+                          Days 1–15
                         </span>
                       </td>
                       <td className="p-3 text-carbon-60 whitespace-nowrap">{fc.targetDate}</td>

@@ -270,13 +270,19 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
             </Interactive.Div>
             <p className="mt-2.5 font-mono text-xs leading-[1.62] text-carbon-60">
               {coverage?.status ? `${t('frontdoor.runVisual.coverageStatus')}: ${coverage.status}` : '—'}
-              {coverage?.produced_units != null
-                ? ` · ${formatNumber(coverage.produced_units)} ${t('frontdoor.runVisual.units')}`
-                : ''}
-              {horizons.length > 0 &&
-                ` · ${horizons
-                  .map(([horizon, units]) => `${formatNumber(Number(units))} × ${horizon.replace('_', ' ')}`)
-                  .join(', ')}`}
+              {coverage?.status === 'complete'
+                ? ` · ${formatNumber(coverage.districts_covered ?? 64)} districts · continuous 15-day trajectory (Days 1–15)`
+                : (
+                  <>
+                    {coverage?.produced_units != null
+                      ? ` · ${formatNumber(coverage.produced_units)} ${t('frontdoor.runVisual.units')}`
+                      : ''}
+                    {horizons.length > 0 &&
+                      ` · ${horizons
+                        .map(([horizon, units]) => `${formatNumber(Number(units))} × ${horizon.replace('_', ' ')}`)
+                        .join(', ')}`}
+                  </>
+                )}
             </p>
           </div>
 

@@ -52,7 +52,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
   const [forecasts, setForecasts] = useState<ForecastRow[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [dbSource, setDbSource] = useState<'firestore' | 'fallback'>('firestore');
-  const [selectedHorizon, setSelectedHorizon] = useState<'7_days' | '15_days'>('7_days');
+  const [selectedHorizon] = useState<'7_days' | '15_days'>('15_days');
   const [selectedDistrict, setSelectedDistrict] = useState<string>(initialDistrictId);
   const [selectedHazard, setSelectedHazard] = useState<string>('all');
   const [selectedRiskLevel, setSelectedRiskLevel] = useState<'all' | 'high' | 'moderate' | 'low'>('all');
@@ -392,28 +392,13 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
         onSelectChip={(chipId) => setSelectedHazard(chipId)}
       />
 
-      {/* Control Toolbar / Horizon Filters */}
+      {/* Control Toolbar / Trajectory Filter */}
       <div className="bg-white border border-carbon-20/90 rounded-2xl p-4 shadow-2xs space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          {/* Horizon Switcher */}
-          <div className="inline-flex rounded-xl p-1 bg-carbon-10 border border-carbon-20 shrink-0">
-            <button
-              onClick={() => setSelectedHorizon('7_days')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors min-h-[44px] ${
-                selectedHorizon === '7_days' ? 'bg-white text-carbon-90 shadow-2xs font-extrabold' : 'text-carbon-60 hover:text-carbon-90'
-              }`}
-            >
-              7-Day Tactical
-            </button>
-            <button
-              onClick={() => setSelectedHorizon('15_days')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors min-h-[44px] ${
-                selectedHorizon === '15_days' ? 'bg-white text-carbon-90 shadow-2xs font-extrabold' : 'text-carbon-60 hover:text-carbon-90'
-              }`}
-            >
-              15-Day Strategic
-            </button>
-          </div>
+          {/* Continuous 15-Day Trajectory Badge */}
+          <span className="inline-flex min-h-[44px] items-center rounded-xl border border-carbon-20 bg-carbon-10 px-4 text-xs font-extrabold text-carbon-90 shrink-0">
+            Continuous 15-Day Trajectory (Days 1–15)
+          </span>
 
           {/* Filter Dropdowns */}
           <div className="flex flex-wrap gap-2 flex-1 justify-end">

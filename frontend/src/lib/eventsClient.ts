@@ -176,8 +176,11 @@ export async function fetchForecastFeed(): Promise<ForecastFeed> {
     const res = await fetch('/data/hazardnet_forecasts_latest.json');
     const ct = res.headers.get('content-type') || '';
     if (res.ok && !ct.includes('text/html')) {
-      cachedForecasts = await res.json();
-      return { records: cachedForecasts!, source: 'artifact' };
+      const raw: ForecastRecord[] = await res.json();
+      cachedForecasts = raw.some((r) => r.horizon === '15_days')
+        ? raw.filter((r) => r.horizon === '15_days')
+        : raw;
+      return { records: cachedForecasts, source: 'artifact' };
     }
   } catch (err) {
     console.warn('Failed to load forecast records JSON', err);
@@ -343,13 +346,14 @@ export async function fetchDivisionEvents(divisionId: string): Promise<DivisionE
   }
 
   const districtRankings = Object.entries(districtCounts).map(([district, count]) => {
-    const f7 = matchedForecasts.find(f => f.districtName.toLowerCase() === district.toLowerCase() && f.horizon === '7_days');
-    const f15 = matchedForecasts.find(f => f.districtName.toLowerCase() === district.toLowerCase() && f.horizon === '15_days');
+    const f15 =
+      matchedForecasts.find(f => f.districtName.toLowerCase() === district.toLowerCase() && f.horizon === '15_days') ||
+      matchedForecasts.find(f => f.districtName.toLowerCase() === district.toLowerCase());
     return {
       district,
       eventCount: count,
-      forecast7DSeverity: f7 ? f7.severityScore : null,
-      forecast7DHazard: f7 ? f7.hazardType : null,
+      forecast7DSeverity: f15 ? f15.severityScore : null,
+      forecast7DHazard: f15 ? f15.hazardType : null,
       forecast15DSeverity: f15 ? f15.severityScore : null,
       forecast15DHazard: f15 ? f15.hazardType : null,
     };

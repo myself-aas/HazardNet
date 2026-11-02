@@ -69,11 +69,9 @@ export const AnalyticsPage: React.FC = () => {
     field('Kernel', snapshot?.kernel),
     field('Source', snapshot?.source),
     field(
-      'Horizons',
-      snapshot?.horizons
-        ? Object.entries(snapshot.horizons)
-            .map(([h, rows]) => `${h}: ${Array.isArray(rows) ? rows.length : '?'} rows`)
-            .join(' · ')
+      'Trajectory coverage',
+      snapshot?.horizons?.['15_days']
+        ? `${Array.isArray(snapshot.horizons['15_days']) ? snapshot.horizons['15_days'].length : '?'} districts (Days 1–15 continuous)`
         : null,
     ),
   ].filter((row): row is { label: string; value: string } => row !== null);

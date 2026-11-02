@@ -6,7 +6,7 @@
  */
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, ChevronRight, RefreshCw } from 'lucide-react';
+import { ArrowLeft, ChevronDown, RefreshCw } from 'lucide-react';
 import { ALL_64_DISTRICTS, getDistrictById } from '../data/bangladeshDistricts';
 import { AlertLevelBadge, ADVISORY_TIER_COLOURS } from '../components/alerts/AlertLevelBadge';
 import { HazardGlyph } from '../components/apple/HazardGlyph';
@@ -239,19 +239,20 @@ const FarmerDistrictDailyPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const district = getDistrictById(id || 'kurigram');
-  const { t, formatDate } = useI18n();
+  const { t, formatDate, formatNumber } = useI18n();
   const [outlook, setOutlook] = useState<DistrictDailyResult>(EMPTY);
   const [loading, setLoading] = useState(true);
-  // Default to showing all 15 continuous days; `?days=7` optionally narrows to the first 7 days.
-  const expanded = searchParams.get('days') !== '7';
+  // Default to all 15 continuous days (`all`); `?day=peak` or `?day=1..15` focuses the timeline.
+  const dayFilter = searchParams.get('day') || 'all';
   const [revision, setRevision] = useState(0);
   const [now, setNow] = useState(() => new Date());
 
-  const toggleExpanded = () => {
+  const setDayFilter = (nextDay: string) => {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
-      if (next.get('days') === '7') next.delete('days');
-      else next.set('days', '7');
+      next.delete('days');
+      if (!nextDay || nextDay === 'all') next.delete('day');
+      else next.set('day', nextDay);
       return next;
     }, { replace: true });
   };
@@ -293,10 +294,15 @@ const FarmerDistrictDailyPage: React.FC = () => {
     [outlook.advisories, status, today],
   );
   const summary15 = useMemo(() => summarizeContinuous15Days(rows), [rows]);
-  const anchorStart = rows[0]?.targetDate ?? today;
-  const seventhDate = new Date(Date.parse(`${anchorStart}T00:00:00Z`) + 6 * 86_400_000).toISOString().slice(0, 10);
-  const firstWeek = rows.filter((row) => row.targetDate <= seventhDate);
-  const visible = expanded ? rows : firstWeek;
+  const visible = useMemo(() => {
+    if (dayFilter === 'peak') return summary15.peakRows;
+    if (/^\d+$/.test(dayFilter)) {
+      const targetDay = Number(dayFilter);
+      const matched = rows.filter((row) => row.forecastDay === targetDay);
+      return matched.length > 0 ? matched : rows;
+    }
+    return rows;
+  }, [dayFilter, rows, summary15.peakRows]);
   const expiredOffline = status === 'offline' && outlook.run && now.getTime() > Date.parse(outlook.run.expiresAt);
 
   return (
@@ -388,15 +394,35 @@ const FarmerDistrictDailyPage: React.FC = () => {
               )}
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 id="daily-days-heading" className="text-2xl font-semibold text-[var(--ap-label)]">
-                  {t(expanded ? 'daily.extendedDate' : 'daily.currentDate')}
+                  {t('daily.extendedDate')}
                 </h2>
-                {rows.some((row) => row.targetDate > seventhDate) && (
-                  <button type="button" onClick={toggleExpanded} aria-expanded={expanded}
-                    aria-controls="daily-outlook-days"
-                    className="ap-focusable inline-flex min-h-[44px] items-center gap-2 text-sm font-semibold text-[var(--ap-link)] underline underline-offset-4">
-                    {expanded ? t('daily.show7') : t('daily.show15')}
-                    <ChevronRight aria-hidden="true" size={16} className={expanded ? 'rotate-90' : ''} />
-                  </button>
+                {rows.length > 0 && (
+                  <label
+                    htmlFor="daily-day-filter"
+                    className="inline-flex items-center gap-2 text-xs font-semibold text-[var(--ap-label-secondary)]"
+                  >
+                    <span>{t('daily.filterLabel')}</span>
+                    <select
+                      id="daily-day-filter"
+                      value={dayFilter}
+                      onChange={(e) => setDayFilter(e.target.value)}
+                      aria-controls="daily-outlook-days"
+                      className="ap-focusable min-h-[44px] rounded-lg border border-[var(--ap-separator-opaque)] bg-[var(--ap-canvas)] px-3 py-1.5 text-sm font-semibold text-[var(--ap-label)]"
+                    >
+                      <option value="all">{t('daily.filterAll')}</option>
+                      {summary15.peakRows.length > 0 && (
+                        <option value="peak">{t('daily.filterPeak')}</option>
+                      )}
+                      {rows.map((row) => (
+                        <option key={row.advisoryId} value={String(row.forecastDay)}>
+                          {t('daily.filterDay', {
+                            day: formatNumber(row.forecastDay),
+                            date: formatDate(row.targetDate),
+                          })}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
                 )}
               </div>
               <p className="max-w-prose text-sm text-[var(--ap-label-secondary)]">{t('daily.coverage')}</p>

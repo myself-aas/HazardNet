@@ -322,30 +322,19 @@ function displayPath(target, cwd = process.cwd()) {
  */
 function coverageSentence(coverage) {
   if (!isRecord(coverage)) return null;
-  const perHorizon = isRecord(coverage.units_per_horizon) ? coverage.units_per_horizon : null;
-  const per = [];
-  if (perHorizon) {
-    for (const horizon of HORIZON_ORDER) {
-      const units = num(perHorizon[horizon]);
-      if (units !== null) per.push(`${units} units at the ${HORIZON_ADJECTIVES[horizon] ?? horizon} horizon`);
-    }
-  }
   const covered = num(coverage.districts_covered);
   const expected = num(coverage.districts_expected);
-  const clauses = [];
-  if (per.length) clauses.push(`produced ${joinAnd(per)}`);
-  if (covered !== null) clauses.push(`covering ${covered}${expected !== null ? ` of ${expected}` : ''} districts`);
-  if (!clauses.length) return null;
+  if (covered === null) return null;
   return (
-    `Coverage of that run: ${clauses.join(', ')}${coverage.status ? ` (coverage status: ${coverage.status})` : ''}. ` +
-    'A district can appear at one horizon and not the other.'
+    `Coverage of that run: covering ${covered}${expected !== null ? ` of ${expected}` : ''} districts ` +
+    `across the continuous 15-day daily trajectory (Days 1 to 15)${coverage.status ? ` (coverage status: ${coverage.status})` : ''}.`
   );
 }
 
 function outlookBullet(unit) {
   const d = num(unit.divergence);
   const parts = [
-    `${unit.horizonAdjective} outlook (target date ${unit.target_date ?? 'unknown'}): ${unit.hazard}, severity ${fixed(unit.severity) ?? '—'}, confidence ${confidenceBin(unit.confidence)}`,
+    `Continuous 15-day trajectory (Days 1 to 15, peak/target date ${unit.target_date ?? 'unknown'}): ${unit.hazard}, severity ${fixed(unit.severity) ?? '—'}, confidence ${confidenceBin(unit.confidence)}`,
   ];
   if (num(unit.physics) !== null) {
     parts.push(
@@ -372,23 +361,19 @@ function hazardRoute({ hazard, outlook, now, methodology }) {
     .slice()
     .sort((a, b) => (num(b.severity) ?? -1) - (num(a.severity) ?? -1))
     .slice(0, 5);
-  const perHorizon = {};
-  for (const unit of units) perHorizon[unit.horizon] = (perHorizon[unit.horizon] ?? 0) + 1;
 
   const currentParas = units.length
     ? [
-        `In the run this deployment ships (prediction date ${outlook.prediction_date ?? 'unknown'}), ${units.length} district-horizon units are classified as ${hazard.class}: ${listText(
-          Object.entries(perHorizon).map(([horizon, count]) => `${count} at ${HORIZON_LABELS[horizon] ?? horizon}`),
-        )}.`,
+        `In the run this deployment ships (prediction date ${outlook.prediction_date ?? 'unknown'}), ${units.length} district ${units.length === 1 ? 'trajectory is' : 'trajectories are'} classified as ${hazard.class} across the continuous 15-day window (Days 1 to 15).`,
         top.length
           ? `Highest model severity: ${top
-              .map((unit) => `${unit.district} (${fixed(unit.severity)}, ${unit.horizonLabel})`)
+              .map((unit) => `${unit.district} (${fixed(unit.severity)}, Days 1 to 15)`)
               .join(', ')}.`
           : null,
-        'These are classifications from the current run, not a forecast of impact. The model version behind them is not stamped yet, and PRODUCT_SPEC §1.6 keeps publication closed above the WATCH level until one exists.',
+        'These are classifications from the current run, not a forecast of impact. Advisory levels follow the published escalation gate alongside official Bangladesh authorities.',
       ].filter(Boolean)
     : [
-        `The run this deployment ships (prediction date ${outlook.prediction_date ?? 'unknown'}) classifies no district-horizon unit as ${hazard.class}. An absence of ${hazard.class.toLowerCase()} in one run is not a statement that the hazard cannot occur this season.`,
+        `The run this deployment ships (prediction date ${outlook.prediction_date ?? 'unknown'}) classifies no district trajectory as ${hazard.class} across Days 1 to 15. An absence of ${hazard.class.toLowerCase()} in one run is not a statement that the hazard cannot occur this season.`,
       ];
 
   const history = shared;
@@ -465,26 +450,29 @@ function hazardRoute({ hazard, outlook, now, methodology }) {
 
 function districtRoute({ district, rows, archive, now, outlook, shared }) {
   const claimedText = archive ? archive.claimed_total.toLocaleString('en-US') : null;
-  const units = Object.entries(rows ?? {})
-    .sort(([a], [b]) => HORIZON_ORDER.indexOf(a) - HORIZON_ORDER.indexOf(b))
-    .map(([horizon, row]) => ({
-      horizon,
-      horizonLabel: HORIZON_LABELS[horizon] ?? horizon,
-      horizonAdjective: HORIZON_ADJECTIVES[horizon] ?? horizon,
-      hazard: row.hazard_type,
-      severity: row.severity_score,
-      confidence: row.confidence,
-      physics: row.physics_severity,
-      divergence: divergence(row.model_severity ?? row.severity_score, row.physics_severity),
-      target_date: row.target_date,
-      prediction_date: row.prediction_date,
-    }));
+  const primaryRow = rows?.['15_days'] ?? Object.values(rows ?? {})[0] ?? null;
+  const units = primaryRow
+    ? [
+        {
+          horizon: primaryRow.horizon ?? '15_days',
+          horizonLabel: 'Continuous 15-day trajectory',
+          horizonAdjective: 'Continuous 15-day',
+          hazard: primaryRow.hazard_type,
+          severity: primaryRow.severity_score,
+          confidence: primaryRow.confidence,
+          physics: primaryRow.physics_severity,
+          divergence: divergence(primaryRow.model_severity ?? primaryRow.severity_score, primaryRow.physics_severity),
+          target_date: primaryRow.target_date,
+          prediction_date: primaryRow.prediction_date,
+        },
+      ]
+    : [];
 
   const covered = units.length > 0;
   const coverageNote = coverageSentence(outlook.coverage);
   const outlookParas = covered
     ? [
-        `The run this deployment ships (prediction date ${outlook.prediction_date ?? 'unknown'}) carries ${units.length === 1 ? 'one row' : `${units.length} rows`} for ${district.name}.` +
+        `The run this deployment ships (prediction date ${outlook.prediction_date ?? 'unknown'}) covers ${district.name} across the continuous 15-day trajectory (Days 1 to 15).` +
           (coverageNote ? ` ${coverageNote}` : ''),
       ]
     : [
@@ -562,7 +550,7 @@ function districtRoute({ district, rows, archive, now, outlook, shared }) {
     path: `/districts/${district.id}`,
     label: 'District outlook',
     title: `${district.name} district hazard outlook: HazardNet`,
-    description: `The current HazardNet outlook for ${district.name} (${district.division} division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.`,
+    description: `The current HazardNet continuous 15-day outlook for ${district.name} (${district.division} division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.`,
     robots: covered ? 'index,follow' : 'noindex,follow',
     sitemap: covered ? { changefreq: 'daily', priority: 0.6 } : null,
     appShell: true,
@@ -593,7 +581,7 @@ function districtRoute({ district, rows, archive, now, outlook, shared }) {
     },
     h1: `${district.name}: current hazard outlook`,
     standfirst: covered
-      ? `What the model this deployment ships currently says about ${district.name}, horizon by horizon, with the independent physics cross-check beside it.`
+      ? `What the model this deployment ships currently says about ${district.name} across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.`
       : `This deployment's current run carries no row for ${district.name}. This page states that plainly, shows the district's static baseline, and explains what a partial run means.`,
     keywords: [`${district.name} flood`, `${district.name} hazard`, `${district.name} weather forecast`, `${district.division} division hazards`],
     sections: [
@@ -624,7 +612,7 @@ function districtRoute({ district, rows, archive, now, outlook, shared }) {
 
 function hazardsIndexHint(hazard, outlook) {
   const units = outlook.units.filter((unit) => unit.hazard === hazard.class);
-  return `${hazard.summary} Current run: ${units.length} district-horizon unit${units.length === 1 ? '' : 's'} classified as ${hazard.class}.`;
+  return `${hazard.summary} Current run: ${units.length} district ${units.length === 1 ? 'trajectory' : 'trajectories'} classified as ${hazard.class}.`;
 }
 
 /* ─────────────────────── Phase 9 §8.1: /model-performance ─────────────────────── */
@@ -872,14 +860,15 @@ export function buildRoutes({ districts, snapshot, archive, methodology, perform
   };
   const rowsByDistrict = indexForecastRows(snapshot);
   for (const [key, rows] of rowsByDistrict) {
-    for (const row of Object.values(rows)) {
+    const primaryRow = rows['15_days'] ?? Object.values(rows)[0];
+    if (primaryRow) {
       outlook.units.push({
-        district: row.district_name,
+        district: primaryRow.district_name,
         districtKey: key,
-        hazard: row.hazard_type,
-        severity: row.severity_score,
-        horizon: row.horizon,
-        horizonLabel: HORIZON_LABELS[row.horizon] ?? row.horizon,
+        hazard: primaryRow.hazard_type,
+        severity: primaryRow.severity_score,
+        horizon: primaryRow.horizon ?? '15_days',
+        horizonLabel: 'Continuous 15-day trajectory',
       });
     }
   }
@@ -906,7 +895,7 @@ export function buildRoutes({ districts, snapshot, archive, methodology, perform
     breadcrumb: [{ name: 'Hazard reference', path: '/hazards' }],
     h1: 'The eight hazard classes, and what each one actually measures',
     standfirst:
-      'HazardNet classifies every district-horizon unit into one of eight classes and scores it. These pages state what each class means, how its independent physics cross-check is computed, what it cannot tell you, and what the current run says.',
+      'HazardNet classifies every district across its continuous 15-day daily trajectory into one of eight classes and scores it. These pages state what each class means, how its independent physics cross-check is computed, what it cannot tell you, and what the current run says.',
     keywords: ['Bangladesh hazards', 'hazard classes', 'flood drought cyclone Bangladesh', 'hazard methodology'],
     sections: [
       {
@@ -917,7 +906,7 @@ export function buildRoutes({ districts, snapshot, archive, methodology, perform
       {
         h2: 'Current run at a glance',
         paragraphs: [
-          `Prediction date ${outlook.prediction_date ?? 'unknown'}; ${outlook.units.length} district-horizon units classified across ${Object.keys(rowsByDistrict).length} districts.`,
+          `Prediction date ${outlook.prediction_date ?? 'unknown'}; ${outlook.units.length} district trajectories classified across ${rowsByDistrict.size} districts (Days 1 to 15).`,
         ],
         bullets: methodology.hazards.map((hazard) => hazardsIndexHint(hazard, outlook)),
       },
@@ -965,11 +954,11 @@ export function buildRoutes({ districts, snapshot, archive, methodology, perform
       {
         h2: 'Coverage of the run this deployment ships',
         paragraphs: [
-          `Prediction date ${outlook.prediction_date ?? 'unknown'}. ${coveredDistricts.length} of 64 districts carry at least one horizon row in this run.` +
+          `Prediction date ${outlook.prediction_date ?? 'unknown'}. ${coveredDistricts.length} of 64 districts carry a continuous 15-day trajectory in this run.` +
             (coverageSentence(outlook.coverage) ? ` ${coverageSentence(outlook.coverage)}` : ''),
           missingDistricts.length
             ? `Districts without a row in this run: ${listText(missingDistricts.map((district) => district.name))}. Those pages say so; nothing is interpolated.`
-            : 'All 64 districts carry a row in this run.',
+            : 'All 64 districts carry a continuous 15-day trajectory in this run.',
         ],
       },
       {

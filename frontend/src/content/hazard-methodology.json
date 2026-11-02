@@ -14,7 +14,7 @@
         "note": "Both terms are required and must be different quantities. The pipeline this project inherited passed the horizon total twice, which made a wet fortnight indistinguishable from a three-day burst.",
         "expr": "0.5*clip(P_total/300) + 0.5*clip(P_peak/100)"
       },
-      "model": "The classifier labels the district-horizon unit from the same meteorological drivers (rainfall, temperature, wind, humidity, radiation, evapotranspiration). Its class and its severity index are separate outputs: the class says which hazard the drivers most resemble, the severity says how strong the resemblance is.",
+      "model": "The classifier labels each district forecast trajectory from the same meteorological drivers (rainfall, temperature, wind, humidity, radiation, evapotranspiration). Its class and its severity index are separate outputs: the class says which hazard the drivers most resemble, the severity says how strong the resemblance is.",
       "confidence": "The published confidence is the model's own softmax over the eight classes and is reported as `uncalibrated_model_softmax`. It is not a probability of flooding and it is not derived from the physics cross-check.",
       "limits": [
         "No hydrology: river levels, upstream release, embankment state and soil moisture are not inputs, so a high score means 'this much rain on this district', not 'this river will breach'.",
@@ -79,7 +79,7 @@
       "slug": "drought",
       "class": "Drought",
       "season": "November\u2013April (dry season), most acute in the Barind and the south-west",
-      "summary": "Heat load against the rainfall the horizon is expected to bring.",
+      "summary": "Heat load against the rainfall expected across the 15-day forecast window.",
       "physics": {
         "form": "0.6 \u00b7 clip((T_max \u2212 25) / 20) + 0.4 \u00b7 clip((200 \u2212 P_total) / 200)",
         "drivers": [

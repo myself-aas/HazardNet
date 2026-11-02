@@ -25,11 +25,12 @@ import { runAlertEngine } from '../backend/alerts/service.js';
 
 const DEFAULT_SNAPSHOT = 'frontend/public/data/forecasts-latest.json';
 
-/** Flatten a snapshot's horizons block into row records, keeping the horizon label. */
-export function rowsFromSnapshot(snapshot) {
+/** Flatten a snapshot's horizons block into row records, optionally filtered to one horizon. */
+export function rowsFromSnapshot(snapshot, horizonFilter = null) {
   const rows = [];
   if (!snapshot || typeof snapshot !== 'object') return rows;
   for (const [horizon, horizonRows] of Object.entries(snapshot.horizons || {})) {
+    if (horizonFilter && horizon !== horizonFilter) continue;
     if (Array.isArray(horizonRows)) {
       for (const row of horizonRows) rows.push({ ...row, horizon: row.horizon || horizon });
     }
@@ -82,7 +83,14 @@ export function memoryStore() {
  * final states are inspectable), `snapshot_schema`/`prediction_date`/provenance, and a
  * human sentence about what the honesty gate did (`provenance_note`).
  */
-export async function rehearseAlertEngine({ snapshot, snapshotPath, now = new Date(), out, env } = {}) {
+export async function rehearseAlertEngine({
+  snapshot,
+  snapshotPath,
+  horizon = null,
+  now = new Date(),
+  out,
+  env,
+} = {}) {
   const root = process.cwd();
   let snap = snapshot;
   if (!snap && snapshotPath) {
@@ -91,7 +99,7 @@ export async function rehearseAlertEngine({ snapshot, snapshotPath, now = new Da
       snap = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
     }
   }
-  const rows = rowsFromSnapshot(snap);
+  const rows = rowsFromSnapshot(snap, horizon);
   const store = memoryStore();
 
   const report = await runAlertEngine({
@@ -144,10 +152,11 @@ if (isMain) {
     return idx !== -1 && idx + 1 < args.length ? args[idx + 1] : null;
   };
   const snapshotPath = getArg('--snapshot') || DEFAULT_SNAPSHOT;
+  const horizon = getArg('--horizon');
   const outPath = getArg('--out') || '/tmp/alert-run.json';
   const quiet = args.includes('--quiet');
 
-  rehearseAlertEngine({ snapshotPath, out: outPath })
+  rehearseAlertEngine({ snapshotPath, horizon, out: outPath })
     .then((report) => {
       if (!quiet) {
         console.log(

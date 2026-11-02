@@ -132,18 +132,7 @@ export const AdvisoriesPage: React.FC = () => {
     );
   };
 
-  const kaggleHorizon: ForecastHorizon = searchParams.get('horizon') === '7_days' ? '7_days' : '15_days';
-  const setKaggleHorizon = (nextHorizon: ForecastHorizon) => {
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev);
-        if (nextHorizon === '15_days') next.delete('horizon');
-        else next.set('horizon', nextHorizon);
-        return next;
-      },
-      { replace: true },
-    );
-  };
+  const kaggleHorizon: ForecastHorizon = '15_days';
   const [dailyDistrictResult, setDailyDistrictResult] = useState<DistrictDailyResult>({
     status: 'unavailable',
     source: 'none',
@@ -443,36 +432,9 @@ export const AdvisoriesPage: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <div
-              className="inline-flex rounded-full border border-carbon-20 bg-carbon-05 p-1"
-              role="group"
-              aria-label="Forecast horizon"
-            >
-              <button
-                type="button"
-                onClick={() => setKaggleHorizon('15_days')}
-                aria-pressed={kaggleHorizon === '15_days'}
-                className={`ap-focusable min-h-[44px] px-4 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
-                  kaggleHorizon === '15_days'
-                    ? 'bg-white text-carbon-90 border border-carbon-20'
-                    : 'text-carbon-70 hover:text-carbon-90'
-                }`}
-              >
-                Continuous 15 days
-              </button>
-              <button
-                type="button"
-                onClick={() => setKaggleHorizon('7_days')}
-                aria-pressed={kaggleHorizon === '7_days'}
-                className={`ap-focusable min-h-[44px] px-4 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
-                  kaggleHorizon === '7_days'
-                    ? 'bg-white text-carbon-90 border border-carbon-20'
-                    : 'text-carbon-70 hover:text-carbon-90'
-                }`}
-              >
-                Days 1–7 subset
-              </button>
-            </div>
+            <span className="inline-flex min-h-[44px] items-center rounded-full border border-carbon-20 bg-carbon-05 px-4 text-xs font-semibold text-carbon-90">
+              Continuous 15-day trajectory (Days 1–15)
+            </span>
             <Link
               to={`/forecast/district/${selectedDistrictMeta.id}`}
               className="ap-focusable min-h-[44px] inline-flex items-center px-2 text-xs font-semibold text-ap-link underline underline-offset-4"

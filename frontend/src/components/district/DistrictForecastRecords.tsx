@@ -49,16 +49,15 @@ export const DistrictForecastRecords: React.FC = () => {
     setExpandedHistoricalEventId,
   } = useDistrictBrief();
 
-  // One binding for both branches: the phone cards and the table must never read
-  // different horizons.
-  const activeRows = activeTableHorizon === '7_days' ? districtForecasts7D : districtForecasts15D;
+  // Always bind to the unified continuous 15-day trajectory rows.
+  const activeRows = districtForecasts15D.length > 0 ? districtForecasts15D : districtForecasts7D;
   const maxActiveScore = activeRows.length > 0 ? Math.max(...activeRows.map((r) => r.severity_score)) : 0;
   const isPeakRow = (row: (typeof activeRows)[number]) =>
     row.is_peak_day ?? (maxActiveScore > 0 && row.severity_score === maxActiveScore);
 
   return (
     <>
-      {/* USER-FRIENDLY TABLE: PIPELINE CSV FORECAST OUTPUT (7 & 15 DAYS) */}
+      {/* USER-FRIENDLY TABLE: CONTINUOUS 15-DAY PIPELINE CSV FORECAST OUTPUT */}
       <section className="bg-white border border-carbon-20 rounded-xl p-4 sm:p-6 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-carbon-20 pb-4">
           <div>
@@ -69,30 +68,11 @@ export const DistrictForecastRecords: React.FC = () => {
               Forecast Timeline: {data.districtName}
             </h2>
           </div>
-          {/* Horizon toggles plus Download CSV */}
+          {/* Continuous 15-Day badge plus Download CSV */}
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => setActiveTableHorizon('15_days')}
-              aria-pressed={activeTableHorizon === '15_days'}
-              className={`min-h-[44px] px-4 py-2 text-sm font-semibold rounded-full cursor-pointer touch-manipulation transition-colors ${
-                activeTableHorizon === '15_days'
-                  ? 'bg-primary text-ap-action-fg'
-                  : 'bg-carbon-10 hover:bg-carbon-20 text-carbon-80'
-              }`}
-            >
-              Continuous 15-Day ({districtForecasts15D.length})
-            </button>
-            <button
-              onClick={() => setActiveTableHorizon('7_days')}
-              aria-pressed={activeTableHorizon === '7_days'}
-              className={`min-h-[44px] px-4 py-2 text-sm font-semibold rounded-full cursor-pointer touch-manipulation transition-colors ${
-                activeTableHorizon === '7_days'
-                  ? 'bg-primary text-ap-action-fg'
-                  : 'bg-carbon-10 hover:bg-carbon-20 text-carbon-80'
-              }`}
-            >
-              Days 1–7 Subset ({districtForecasts7D.length})
-            </button>
+            <span className="inline-flex min-h-[44px] items-center px-4 py-2 text-sm font-semibold rounded-full bg-carbon-10 text-carbon-90">
+              Continuous 15-Day ({activeRows.length})
+            </span>
             <button
               onClick={handleDownloadTableCsv}
               title="Download continuous 15-day hazard forecast records as CSV"
@@ -109,8 +89,8 @@ export const DistrictForecastRecords: React.FC = () => {
             distribution. These are the columns the daily advisory CSV emits that the table
             below used to drop on the floor. */}
         <AdvisorySignalCard
-          rows={activeTableHorizon === '7_days' ? districtForecasts7D : districtForecasts15D}
-          horizon={activeTableHorizon}
+          rows={activeRows}
+          horizon="15_days"
           districtName={data.districtName}
         />
 
@@ -120,7 +100,7 @@ export const DistrictForecastRecords: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="text-xs font-mono font-bold text-carbon-70 uppercase tracking-wider flex items-center gap-1.5">
                 <TrendingUp className="w-4 h-4 text-amber-700" />
-                <span>Hazard Progression Trend ({activeTableHorizon === '7_days' ? 'Days 1–7 Subset' : 'Continuous 15-Day'})</span>
+                <span>Hazard Progression Trend (Continuous 15-Day)</span>
               </div>
               <div className="text-xs font-mono text-carbon-60">Severity Index (%) vs Target Date</div>
             </div>

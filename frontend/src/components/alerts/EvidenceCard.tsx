@@ -83,7 +83,7 @@ export const EvidenceCard: React.FC<EvidenceCardProps> = ({ alert, disclaimer, c
             srPrefix={t('alerts.levelLabel')}
           />
           <span className="text-xs font-semibold text-carbon-70">
-            {alert.division || '—'} · {alert.horizon?.replace('_', ' ') || '—'}
+            {alert.division || '—'} · {alert.horizon === '15_days' ? t('alerts.horizon.trajectory') : alert.horizon?.replace('_', ' ') || '—'}
           </span>
           {alert.requires_human_review && (
             <span className="rounded-control border border-carbon-20 bg-carbon-05 px-2 py-1 text-xs font-semibold text-carbon-90">

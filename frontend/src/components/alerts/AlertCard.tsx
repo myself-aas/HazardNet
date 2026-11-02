@@ -74,7 +74,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ alert, onOpen, className =
             {alert.division ? <span className="font-medium text-carbon-60 whitespace-nowrap"> · {alert.division}</span> : null}
           </h3>
           <p className="text-xs font-semibold text-carbon-70 mt-1">
-            {hazardLabel(alert.hazard_type)} · {alert.horizon?.replace('_', ' ') || '—'}
+            {hazardLabel(alert.hazard_type)} · {alert.horizon === '15_days' ? t('alerts.horizon.trajectory') : alert.horizon?.replace('_', ' ') || '—'}
           </p>
         </div>
         {onOpen && (

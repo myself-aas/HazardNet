@@ -258,6 +258,7 @@ describe('version-pinned Kaggle daily public fetch (synthetic HTTP only)', () =>
       assert.equal(res.alertsOutPath, join(tmpRoot, 'frontend/public/data/alerts-latest.json'));
       const alertsSnap = JSON.parse(readFileSync(res.alertsOutPath, 'utf8'));
       assert.equal(alertsSnap.schema, 'hazardnet-alerts/v1');
+      assert.equal(alertsSnap.assessed, 64);
       assert.match(alertsSnap.disclaimer, /not an official warning service/i);
       assert(
         alertsSnap.alerts.every(

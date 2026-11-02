@@ -1,6 +1,6 @@
 {
   "schema": "hazardnet-generated-routes/v1",
-  "generated_at": "2026-11-02T17:01:44.524Z",
+  "generated_at": "2026-11-02T17:44:54.599Z",
   "generated_by": "scripts/build_content_engine.mjs",
   "origin": "https://www.hazardnet.live",
   "inputs": {
@@ -9,7 +9,7 @@
     "forecast_snapshot": {
       "path": "frontend/public/data/forecasts-latest.json",
       "prediction_date": "2026-10-24",
-      "generated_at": "2026-11-02T14:47:16.902Z"
+      "generated_at": "2026-11-02T17:38:37.906Z"
     },
     "event_archive": null,
     "model_performance": {
@@ -50,7 +50,7 @@
         }
       ],
       "h1": "The eight hazard classes, and what each one actually measures",
-      "standfirst": "HazardNet classifies every district-horizon unit into one of eight classes and scores it. These pages state what each class means, how its independent physics cross-check is computed, what it cannot tell you, and what the current run says.",
+      "standfirst": "HazardNet classifies every district across its continuous 15-day daily trajectory into one of eight classes and scores it. These pages state what each class means, how its independent physics cross-check is computed, what it cannot tell you, and what the current run says.",
       "keywords": [
         "Bangladesh hazards",
         "hazard classes",
@@ -101,17 +101,17 @@
         {
           "h2": "Current run at a glance",
           "paragraphs": [
-            "Prediction date 2026-10-24; 128 district-horizon units classified across 0 districts."
+            "Prediction date 2026-10-24; 64 district trajectories classified across 64 districts (Days 1 to 15)."
           ],
           "bullets": [
-            "Riverine and monsoon flooding, scored from how much rain falls and how hard it falls. Current run: 0 district-horizon units classified as Flood.",
-            "Short-duration, high-intensity flooding: the burst case of the rainfall proxy. Current run: 86 district-horizon units classified as Flash Flood.",
-            "Wind-driven coastal hazard: sustained wind above 50 km/h, with the rain it carries. Current run: 26 district-horizon units classified as Tropical Cyclone.",
-            "Heat load against the rainfall the horizon is expected to bring. Current run: 0 district-horizon units classified as Drought.",
-            "Exceedance above 30 °C, plus persistence. Current run: 0 district-horizon units classified as Heat Wave.",
-            "How far the minimum falls below 16 °C, plus persistence. Current run: 0 district-horizon units classified as Cold Wave.",
-            "Vegetation and burn risk from heat, wind and drying. Current run: 16 district-horizon units classified as Fire.",
-            "Squall wind plus a convective downpour. Current run: 0 district-horizon units classified as Severe Local Storm."
+            "Riverine and monsoon flooding, scored from how much rain falls and how hard it falls. Current run: 0 district trajectories classified as Flood.",
+            "Short-duration, high-intensity flooding: the burst case of the rainfall proxy. Current run: 43 district trajectories classified as Flash Flood.",
+            "Wind-driven coastal hazard: sustained wind above 50 km/h, with the rain it carries. Current run: 13 district trajectories classified as Tropical Cyclone.",
+            "Heat load against the rainfall expected across the 15-day forecast window. Current run: 0 district trajectories classified as Drought.",
+            "Exceedance above 30 °C, plus persistence. Current run: 0 district trajectories classified as Heat Wave.",
+            "How far the minimum falls below 16 °C, plus persistence. Current run: 0 district trajectories classified as Cold Wave.",
+            "Vegetation and burn risk from heat, wind and drying. Current run: 8 district trajectories classified as Fire.",
+            "Squall wind plus a convective downpour. Current run: 0 district trajectories classified as Severe Local Storm."
           ]
         },
         {
@@ -424,7 +424,7 @@
         {
           "h2": "How the model arrives at this class",
           "paragraphs": [
-            "The classifier labels the district-horizon unit from the same meteorological drivers (rainfall, temperature, wind, humidity, radiation, evapotranspiration). Its class and its severity index are separate outputs: the class says which hazard the drivers most resemble, the severity says how strong the resemblance is.",
+            "The classifier labels each district forecast trajectory from the same meteorological drivers (rainfall, temperature, wind, humidity, radiation, evapotranspiration). Its class and its severity index are separate outputs: the class says which hazard the drivers most resemble, the severity says how strong the resemblance is.",
             "The published confidence is the model's own softmax over the eight classes and is reported as `uncalibrated_model_softmax`. It is not a probability of flooding and it is not derived from the physics cross-check.",
             "Advisory levels follow the published alert policy and the escalation boundaries of the responsible authorities; nothing here overrides them."
           ]
@@ -443,7 +443,7 @@
         {
           "h2": "What the current run says about Flood",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) classifies no district-horizon unit as Flood. An absence of flood in one run is not a statement that the hazard cannot occur this season."
+            "The run this deployment ships (prediction date 2026-10-24) classifies no district trajectory as Flood across Days 1 to 15. An absence of flood in one run is not a statement that the hazard cannot occur this season."
           ],
           "links": [
             {
@@ -549,9 +549,9 @@
         {
           "h2": "What the current run says about Flash Flood",
           "paragraphs": [
-            "In the run this deployment ships (prediction date 2026-10-24), 86 district-horizon units are classified as Flash Flood: 43 at 7 days · 43 at 15 days.",
-            "Highest model severity: Chandpur (0.71, 7 days), Chandpur (0.71, 15 days), Bogra (0.70, 7 days), Bogra (0.70, 15 days), Cumilla (0.69, 7 days).",
-            "These are classifications from the current run, not a forecast of impact. The model version behind them is not stamped yet, and PRODUCT_SPEC §1.6 keeps publication closed above the WATCH level until one exists."
+            "In the run this deployment ships (prediction date 2026-10-24), 43 district trajectories are classified as Flash Flood across the continuous 15-day window (Days 1 to 15).",
+            "Highest model severity: Chandpur (0.71, Days 1 to 15), Bogra (0.70, Days 1 to 15), Cumilla (0.69, Days 1 to 15), Mymensingh (0.68, Days 1 to 15), Gaibandha (0.68, Days 1 to 15).",
+            "These are classifications from the current run, not a forecast of impact. Advisory levels follow the published escalation gate alongside official Bangladesh authorities."
           ],
           "links": [
             {
@@ -657,9 +657,9 @@
         {
           "h2": "What the current run says about Tropical Cyclone",
           "paragraphs": [
-            "In the run this deployment ships (prediction date 2026-10-24), 26 district-horizon units are classified as Tropical Cyclone: 13 at 7 days · 13 at 15 days.",
-            "Highest model severity: Khagrachhari (0.58, 7 days), Khagrachhari (0.58, 15 days), Noakhali (0.52, 7 days), Noakhali (0.52, 15 days), Bandarban (0.23, 7 days).",
-            "These are classifications from the current run, not a forecast of impact. The model version behind them is not stamped yet, and PRODUCT_SPEC §1.6 keeps publication closed above the WATCH level until one exists."
+            "In the run this deployment ships (prediction date 2026-10-24), 13 district trajectories are classified as Tropical Cyclone across the continuous 15-day window (Days 1 to 15).",
+            "Highest model severity: Khagrachhari (0.58, Days 1 to 15), Noakhali (0.52, Days 1 to 15), Bandarban (0.23, Days 1 to 15), Kurigram (0.23, Days 1 to 15), Jhalokati (0.23, Days 1 to 15).",
+            "These are classifications from the current run, not a forecast of impact. Advisory levels follow the published escalation gate alongside official Bangladesh authorities."
           ],
           "links": [
             {
@@ -716,7 +716,7 @@
       "path": "/hazards/drought",
       "label": "Hazard methodology",
       "title": "Drought in Bangladesh: how HazardNet classifies and scores it",
-      "description": "Heat load against the rainfall the horizon is expected to bring. What the model labels, how the physics cross-check is computed (0.6 · clip((T_max − 25) / 20) + 0.4 · clip((200 − P_total) / 200)), what the score cannot tell you, and what the current run says for Bangladesh's districts.",
+      "description": "Heat load against the rainfall expected across the 15-day forecast window. What the model labels, how the physics cross-check is computed (0.6 · clip((T_max − 25) / 20) + 0.4 · clip((200 − P_total) / 200)), what the score cannot tell you, and what the current run says for Bangladesh's districts.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "monthly",
@@ -735,7 +735,7 @@
         }
       ],
       "h1": "Drought: how HazardNet classifies and scores it",
-      "standfirst": "Heat load against the rainfall the horizon is expected to bring.",
+      "standfirst": "Heat load against the rainfall expected across the 15-day forecast window.",
       "keywords": [
         "Drought Bangladesh",
         "Drought forecast",
@@ -765,7 +765,7 @@
         {
           "h2": "What the current run says about Drought",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) classifies no district-horizon unit as Drought. An absence of drought in one run is not a statement that the hazard cannot occur this season."
+            "The run this deployment ships (prediction date 2026-10-24) classifies no district trajectory as Drought across Days 1 to 15. An absence of drought in one run is not a statement that the hazard cannot occur this season."
           ],
           "links": [
             {
@@ -871,7 +871,7 @@
         {
           "h2": "What the current run says about Heat Wave",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) classifies no district-horizon unit as Heat Wave. An absence of heat wave in one run is not a statement that the hazard cannot occur this season."
+            "The run this deployment ships (prediction date 2026-10-24) classifies no district trajectory as Heat Wave across Days 1 to 15. An absence of heat wave in one run is not a statement that the hazard cannot occur this season."
           ],
           "links": [
             {
@@ -977,7 +977,7 @@
         {
           "h2": "What the current run says about Cold Wave",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) classifies no district-horizon unit as Cold Wave. An absence of cold wave in one run is not a statement that the hazard cannot occur this season."
+            "The run this deployment ships (prediction date 2026-10-24) classifies no district trajectory as Cold Wave across Days 1 to 15. An absence of cold wave in one run is not a statement that the hazard cannot occur this season."
           ],
           "links": [
             {
@@ -1082,9 +1082,9 @@
         {
           "h2": "What the current run says about Fire",
           "paragraphs": [
-            "In the run this deployment ships (prediction date 2026-10-24), 16 district-horizon units are classified as Fire: 8 at 7 days · 8 at 15 days.",
-            "Highest model severity: Barguna (0.65, 7 days), Barguna (0.65, 15 days), Sirajganj (0.64, 7 days), Sirajganj (0.64, 15 days), Moulvibazar (0.60, 15 days).",
-            "These are classifications from the current run, not a forecast of impact. The model version behind them is not stamped yet, and PRODUCT_SPEC §1.6 keeps publication closed above the WATCH level until one exists."
+            "In the run this deployment ships (prediction date 2026-10-24), 8 district trajectories are classified as Fire across the continuous 15-day window (Days 1 to 15).",
+            "Highest model severity: Barguna (0.65, Days 1 to 15), Sirajganj (0.64, Days 1 to 15), Moulvibazar (0.60, Days 1 to 15), Netrokona (0.60, Days 1 to 15), Sylhet (0.49, Days 1 to 15).",
+            "These are classifications from the current run, not a forecast of impact. Advisory levels follow the published escalation gate alongside official Bangladesh authorities."
           ],
           "links": [
             {
@@ -1190,7 +1190,7 @@
         {
           "h2": "What the current run says about Severe Local Storm",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) classifies no district-horizon unit as Severe Local Storm. An absence of severe local storm in one run is not a statement that the hazard cannot occur this season."
+            "The run this deployment ships (prediction date 2026-10-24) classifies no district trajectory as Severe Local Storm across Days 1 to 15. An absence of severe local storm in one run is not a statement that the hazard cannot occur this season."
           ],
           "links": [
             {
@@ -1272,8 +1272,8 @@
         {
           "h2": "Coverage of the run this deployment ships",
           "paragraphs": [
-            "Prediction date 2026-10-24. 64 of 64 districts carry at least one horizon row in this run. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other.",
-            "All 64 districts carry a row in this run."
+            "Prediction date 2026-10-24. 64 of 64 districts carry a continuous 15-day trajectory in this run. Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete).",
+            "All 64 districts carry a continuous 15-day trajectory in this run."
           ]
         },
         {
@@ -1326,7 +1326,7 @@
       "path": "/districts/kurigram",
       "label": "District outlook",
       "title": "Kurigram district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Kurigram (Rangpur division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Kurigram (Rangpur division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -1360,7 +1360,7 @@
         }
       },
       "h1": "Kurigram: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Kurigram, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Kurigram across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Kurigram flood",
         "Kurigram hazard",
@@ -1371,11 +1371,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Kurigram. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Kurigram across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Tropical Cyclone, severity 0.23, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.02.",
-            "15-day outlook (target date 2026-11-08): Tropical Cyclone, severity 0.23, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.02."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Tropical Cyclone, severity 0.23, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.02."
           ]
         },
         {
@@ -1433,7 +1432,7 @@
       "path": "/districts/rangpur",
       "label": "District outlook",
       "title": "Rangpur district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Rangpur (Rangpur division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Rangpur (Rangpur division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -1467,7 +1466,7 @@
         }
       },
       "h1": "Rangpur: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Rangpur, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Rangpur across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Rangpur flood",
         "Rangpur hazard",
@@ -1478,11 +1477,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Rangpur. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Rangpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.51, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.15.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.51, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.15."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.51, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.15."
           ]
         },
         {
@@ -1540,7 +1538,7 @@
       "path": "/districts/gaibandha",
       "label": "District outlook",
       "title": "Gaibandha district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Gaibandha (Rangpur division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Gaibandha (Rangpur division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -1574,7 +1572,7 @@
         }
       },
       "h1": "Gaibandha: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Gaibandha, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Gaibandha across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Gaibandha flood",
         "Gaibandha hazard",
@@ -1585,11 +1583,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Gaibandha. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Gaibandha across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.68, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.32: the two tracks disagree here, which is expected and shown rather than smoothed over.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.68, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.32: the two tracks disagree here, which is expected and shown rather than smoothed over."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.68, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.32: the two tracks disagree here, which is expected and shown rather than smoothed over."
           ]
         },
         {
@@ -1647,7 +1644,7 @@
       "path": "/districts/nilphamari",
       "label": "District outlook",
       "title": "Nilphamari district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Nilphamari (Rangpur division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Nilphamari (Rangpur division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -1681,7 +1678,7 @@
         }
       },
       "h1": "Nilphamari: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Nilphamari, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Nilphamari across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Nilphamari flood",
         "Nilphamari hazard",
@@ -1692,11 +1689,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Nilphamari. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Nilphamari across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.44, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.08.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.44, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.08."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.44, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.08."
           ]
         },
         {
@@ -1754,7 +1750,7 @@
       "path": "/districts/dinajpur",
       "label": "District outlook",
       "title": "Dinajpur district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Dinajpur (Rangpur division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Dinajpur (Rangpur division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -1788,7 +1784,7 @@
         }
       },
       "h1": "Dinajpur: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Dinajpur, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Dinajpur across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Dinajpur flood",
         "Dinajpur hazard",
@@ -1799,11 +1795,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Dinajpur. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Dinajpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.67, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.30: the two tracks disagree here, which is expected and shown rather than smoothed over.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.67, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.30: the two tracks disagree here, which is expected and shown rather than smoothed over."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.67, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.30: the two tracks disagree here, which is expected and shown rather than smoothed over."
           ]
         },
         {
@@ -1861,7 +1856,7 @@
       "path": "/districts/panchagarh",
       "label": "District outlook",
       "title": "Panchagarh district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Panchagarh (Rangpur division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Panchagarh (Rangpur division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -1895,7 +1890,7 @@
         }
       },
       "h1": "Panchagarh: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Panchagarh, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Panchagarh across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Panchagarh flood",
         "Panchagarh hazard",
@@ -1906,11 +1901,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Panchagarh. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Panchagarh across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.52, confidence Probable (0.70–0.85); physics cross-check 0.40, divergence 0.17.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.52, confidence Probable (0.70–0.85); physics cross-check 0.40, divergence 0.17."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.52, confidence Probable (0.70–0.85); physics cross-check 0.40, divergence 0.17."
           ]
         },
         {
@@ -1968,7 +1962,7 @@
       "path": "/districts/thakurgaon",
       "label": "District outlook",
       "title": "Thakurgaon district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Thakurgaon (Rangpur division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Thakurgaon (Rangpur division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -2002,7 +1996,7 @@
         }
       },
       "h1": "Thakurgaon: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Thakurgaon, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Thakurgaon across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Thakurgaon flood",
         "Thakurgaon hazard",
@@ -2013,11 +2007,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Thakurgaon. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Thakurgaon across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.45, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.10.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.45, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.10."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.45, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.10."
           ]
         },
         {
@@ -2075,7 +2068,7 @@
       "path": "/districts/lalmonirhat",
       "label": "District outlook",
       "title": "Lalmonirhat district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Lalmonirhat (Rangpur division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Lalmonirhat (Rangpur division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -2109,7 +2102,7 @@
         }
       },
       "h1": "Lalmonirhat: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Lalmonirhat, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Lalmonirhat across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Lalmonirhat flood",
         "Lalmonirhat hazard",
@@ -2120,11 +2113,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Lalmonirhat. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Lalmonirhat across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Tropical Cyclone, severity 0.22, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.03.",
-            "15-day outlook (target date 2026-11-08): Tropical Cyclone, severity 0.22, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.03."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Tropical Cyclone, severity 0.22, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.03."
           ]
         },
         {
@@ -2182,7 +2174,7 @@
       "path": "/districts/rajshahi",
       "label": "District outlook",
       "title": "Rajshahi district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Rajshahi (Rajshahi division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Rajshahi (Rajshahi division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -2216,7 +2208,7 @@
         }
       },
       "h1": "Rajshahi: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Rajshahi, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Rajshahi across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Rajshahi flood",
         "Rajshahi hazard",
@@ -2227,11 +2219,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Rajshahi. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Rajshahi across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.47, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.12.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.47, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.12."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.47, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.12."
           ]
         },
         {
@@ -2289,7 +2280,7 @@
       "path": "/districts/bogra",
       "label": "District outlook",
       "title": "Bogra district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Bogra (Rajshahi division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Bogra (Rajshahi division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -2323,7 +2314,7 @@
         }
       },
       "h1": "Bogra: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Bogra, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Bogra across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Bogra flood",
         "Bogra hazard",
@@ -2334,11 +2325,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Bogra. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Bogra across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.70, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.33: the two tracks disagree here, which is expected and shown rather than smoothed over.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.70, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.33: the two tracks disagree here, which is expected and shown rather than smoothed over."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.70, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.33: the two tracks disagree here, which is expected and shown rather than smoothed over."
           ]
         },
         {
@@ -2396,7 +2386,7 @@
       "path": "/districts/sirajganj",
       "label": "District outlook",
       "title": "Sirajganj district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Sirajganj (Rajshahi division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Sirajganj (Rajshahi division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -2430,7 +2420,7 @@
         }
       },
       "h1": "Sirajganj: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Sirajganj, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Sirajganj across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Sirajganj flood",
         "Sirajganj hazard",
@@ -2441,11 +2431,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Sirajganj. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Sirajganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Fire, severity 0.64, confidence Uncertain (< 0.70); physics cross-check 0.73, divergence 0.21.",
-            "15-day outlook (target date 2026-11-08): Fire, severity 0.64, confidence Uncertain (< 0.70); physics cross-check 0.73, divergence 0.21."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Fire, severity 0.64, confidence Uncertain (< 0.70); physics cross-check 0.73, divergence 0.21."
           ]
         },
         {
@@ -2503,7 +2492,7 @@
       "path": "/districts/pabna",
       "label": "District outlook",
       "title": "Pabna district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Pabna (Rajshahi division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Pabna (Rajshahi division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -2537,7 +2526,7 @@
         }
       },
       "h1": "Pabna: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Pabna, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Pabna across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Pabna flood",
         "Pabna hazard",
@@ -2548,11 +2537,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Pabna. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Pabna across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.46, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.10.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.46, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.10."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.46, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.10."
           ]
         },
         {
@@ -2610,7 +2598,7 @@
       "path": "/districts/naogaon",
       "label": "District outlook",
       "title": "Naogaon district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Naogaon (Rajshahi division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Naogaon (Rajshahi division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -2644,7 +2632,7 @@
         }
       },
       "h1": "Naogaon: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Naogaon, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Naogaon across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Naogaon flood",
         "Naogaon hazard",
@@ -2655,11 +2643,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Naogaon. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Naogaon across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Tropical Cyclone, severity 0.22, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.03.",
-            "15-day outlook (target date 2026-11-08): Tropical Cyclone, severity 0.22, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.03."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Tropical Cyclone, severity 0.22, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.03."
           ]
         },
         {
@@ -2717,7 +2704,7 @@
       "path": "/districts/natore",
       "label": "District outlook",
       "title": "Natore district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Natore (Rajshahi division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Natore (Rajshahi division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -2751,7 +2738,7 @@
         }
       },
       "h1": "Natore: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Natore, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Natore across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Natore flood",
         "Natore hazard",
@@ -2762,11 +2749,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Natore. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Natore across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Tropical Cyclone, severity 0.20, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.05.",
-            "15-day outlook (target date 2026-11-08): Tropical Cyclone, severity 0.20, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.05."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Tropical Cyclone, severity 0.20, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.05."
           ]
         },
         {
@@ -2824,7 +2810,7 @@
       "path": "/districts/chapainawabganj",
       "label": "District outlook",
       "title": "Chapainawabganj district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Chapainawabganj (Rajshahi division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Chapainawabganj (Rajshahi division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -2858,7 +2844,7 @@
         }
       },
       "h1": "Chapainawabganj: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Chapainawabganj, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Chapainawabganj across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Chapainawabganj flood",
         "Chapainawabganj hazard",
@@ -2869,11 +2855,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Chapainawabganj. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Chapainawabganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.50, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.16.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.50, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.16."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.50, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.16."
           ]
         },
         {
@@ -2931,7 +2916,7 @@
       "path": "/districts/joypurhat",
       "label": "District outlook",
       "title": "Joypurhat district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Joypurhat (Rajshahi division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Joypurhat (Rajshahi division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -2965,7 +2950,7 @@
         }
       },
       "h1": "Joypurhat: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Joypurhat, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Joypurhat across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Joypurhat flood",
         "Joypurhat hazard",
@@ -2976,11 +2961,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Joypurhat. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Joypurhat across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.46, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.11.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.46, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.11."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.46, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.11."
           ]
         },
         {
@@ -3038,7 +3022,7 @@
       "path": "/districts/mymensingh",
       "label": "District outlook",
       "title": "Mymensingh district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Mymensingh (Mymensingh division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Mymensingh (Mymensingh division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -3072,7 +3056,7 @@
         }
       },
       "h1": "Mymensingh: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Mymensingh, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Mymensingh across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Mymensingh flood",
         "Mymensingh hazard",
@@ -3083,11 +3067,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Mymensingh. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Mymensingh across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.68, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.31: the two tracks disagree here, which is expected and shown rather than smoothed over.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.68, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.31: the two tracks disagree here, which is expected and shown rather than smoothed over."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.68, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.31: the two tracks disagree here, which is expected and shown rather than smoothed over."
           ]
         },
         {
@@ -3145,7 +3128,7 @@
       "path": "/districts/netrokona",
       "label": "District outlook",
       "title": "Netrokona district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Netrokona (Mymensingh division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Netrokona (Mymensingh division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -3179,7 +3162,7 @@
         }
       },
       "h1": "Netrokona: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Netrokona, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Netrokona across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Netrokona flood",
         "Netrokona hazard",
@@ -3190,11 +3173,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Netrokona. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Netrokona across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Fire, severity 0.59, confidence Uncertain (< 0.70); physics cross-check 0.65, divergence 0.15.",
-            "15-day outlook (target date 2026-11-08): Fire, severity 0.60, confidence Uncertain (< 0.70); physics cross-check 0.67, divergence 0.17."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Fire, severity 0.60, confidence Uncertain (< 0.70); physics cross-check 0.67, divergence 0.17."
           ]
         },
         {
@@ -3252,7 +3234,7 @@
       "path": "/districts/jamalpur",
       "label": "District outlook",
       "title": "Jamalpur district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Jamalpur (Mymensingh division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Jamalpur (Mymensingh division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -3286,7 +3268,7 @@
         }
       },
       "h1": "Jamalpur: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Jamalpur, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Jamalpur across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Jamalpur flood",
         "Jamalpur hazard",
@@ -3297,11 +3279,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Jamalpur. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Jamalpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.66, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.29.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.66, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.29."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.66, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.29."
           ]
         },
         {
@@ -3359,7 +3340,7 @@
       "path": "/districts/sherpur",
       "label": "District outlook",
       "title": "Sherpur district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Sherpur (Mymensingh division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Sherpur (Mymensingh division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -3393,7 +3374,7 @@
         }
       },
       "h1": "Sherpur: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Sherpur, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Sherpur across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Sherpur flood",
         "Sherpur hazard",
@@ -3404,11 +3385,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Sherpur. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Sherpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.52, confidence Probable (0.70–0.85); physics cross-check 0.40, divergence 0.17.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.52, confidence Probable (0.70–0.85); physics cross-check 0.40, divergence 0.17."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.52, confidence Probable (0.70–0.85); physics cross-check 0.40, divergence 0.17."
           ]
         },
         {
@@ -3466,7 +3446,7 @@
       "path": "/districts/sylhet",
       "label": "District outlook",
       "title": "Sylhet district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Sylhet (Sylhet division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Sylhet (Sylhet division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -3500,7 +3480,7 @@
         }
       },
       "h1": "Sylhet: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Sylhet, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Sylhet across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Sylhet flood",
         "Sylhet hazard",
@@ -3511,11 +3491,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Sylhet. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Sylhet across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Fire, severity 0.49, confidence Probable (0.70–0.85); physics cross-check 0.65, divergence 0.23.",
-            "15-day outlook (target date 2026-11-08): Fire, severity 0.49, confidence Probable (0.70–0.85); physics cross-check 0.65, divergence 0.23."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Fire, severity 0.49, confidence Probable (0.70–0.85); physics cross-check 0.65, divergence 0.23."
           ]
         },
         {
@@ -3573,7 +3552,7 @@
       "path": "/districts/sunamganj",
       "label": "District outlook",
       "title": "Sunamganj district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Sunamganj (Sylhet division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Sunamganj (Sylhet division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -3607,7 +3586,7 @@
         }
       },
       "h1": "Sunamganj: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Sunamganj, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Sunamganj across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Sunamganj flood",
         "Sunamganj hazard",
@@ -3618,11 +3597,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Sunamganj. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Sunamganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Fire, severity 0.45, confidence Probable (0.70–0.85); physics cross-check 0.71, divergence 0.34: the two tracks disagree here, which is expected and shown rather than smoothed over.",
-            "15-day outlook (target date 2026-11-08): Fire, severity 0.45, confidence Probable (0.70–0.85); physics cross-check 0.71, divergence 0.34: the two tracks disagree here, which is expected and shown rather than smoothed over."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Fire, severity 0.45, confidence Probable (0.70–0.85); physics cross-check 0.71, divergence 0.34: the two tracks disagree here, which is expected and shown rather than smoothed over."
           ]
         },
         {
@@ -3680,7 +3658,7 @@
       "path": "/districts/habiganj",
       "label": "District outlook",
       "title": "Habiganj district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Habiganj (Sylhet division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Habiganj (Sylhet division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -3714,7 +3692,7 @@
         }
       },
       "h1": "Habiganj: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Habiganj, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Habiganj across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Habiganj flood",
         "Habiganj hazard",
@@ -3725,11 +3703,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Habiganj. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Habiganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.48, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.14.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.48, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.14."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.48, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.14."
           ]
         },
         {
@@ -3787,7 +3764,7 @@
       "path": "/districts/moulvibazar",
       "label": "District outlook",
       "title": "Moulvibazar district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Moulvibazar (Sylhet division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Moulvibazar (Sylhet division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -3821,7 +3798,7 @@
         }
       },
       "h1": "Moulvibazar: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Moulvibazar, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Moulvibazar across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Moulvibazar flood",
         "Moulvibazar hazard",
@@ -3832,11 +3809,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Moulvibazar. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Moulvibazar across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Fire, severity 0.59, confidence Uncertain (< 0.70); physics cross-check 0.70, divergence 0.18.",
-            "15-day outlook (target date 2026-11-08): Fire, severity 0.60, confidence Uncertain (< 0.70); physics cross-check 0.74, divergence 0.22."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Fire, severity 0.60, confidence Uncertain (< 0.70); physics cross-check 0.74, divergence 0.22."
           ]
         },
         {
@@ -3894,7 +3870,7 @@
       "path": "/districts/dhaka",
       "label": "District outlook",
       "title": "Dhaka district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Dhaka (Dhaka division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Dhaka (Dhaka division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -3928,7 +3904,7 @@
         }
       },
       "h1": "Dhaka: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Dhaka, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Dhaka across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Dhaka flood",
         "Dhaka hazard",
@@ -3939,11 +3915,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Dhaka. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Dhaka across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.68, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.32: the two tracks disagree here, which is expected and shown rather than smoothed over.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.68, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.32: the two tracks disagree here, which is expected and shown rather than smoothed over."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.68, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.32: the two tracks disagree here, which is expected and shown rather than smoothed over."
           ]
         },
         {
@@ -4001,7 +3976,7 @@
       "path": "/districts/gazipur",
       "label": "District outlook",
       "title": "Gazipur district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Gazipur (Dhaka division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Gazipur (Dhaka division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -4035,7 +4010,7 @@
         }
       },
       "h1": "Gazipur: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Gazipur, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Gazipur across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Gazipur flood",
         "Gazipur hazard",
@@ -4046,11 +4021,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Gazipur. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Gazipur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.60, confidence Probable (0.70–0.85); physics cross-check 0.40, divergence 0.23.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.60, confidence Probable (0.70–0.85); physics cross-check 0.40, divergence 0.23."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.60, confidence Probable (0.70–0.85); physics cross-check 0.40, divergence 0.23."
           ]
         },
         {
@@ -4108,7 +4082,7 @@
       "path": "/districts/narayanganj",
       "label": "District outlook",
       "title": "Narayanganj district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Narayanganj (Dhaka division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Narayanganj (Dhaka division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -4142,7 +4116,7 @@
         }
       },
       "h1": "Narayanganj: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Narayanganj, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Narayanganj across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Narayanganj flood",
         "Narayanganj hazard",
@@ -4153,11 +4127,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Narayanganj. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Narayanganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.45, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.10.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.45, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.10."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.45, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.10."
           ]
         },
         {
@@ -4215,7 +4188,7 @@
       "path": "/districts/tangail",
       "label": "District outlook",
       "title": "Tangail district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Tangail (Dhaka division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Tangail (Dhaka division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -4249,7 +4222,7 @@
         }
       },
       "h1": "Tangail: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Tangail, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Tangail across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Tangail flood",
         "Tangail hazard",
@@ -4260,11 +4233,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Tangail. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Tangail across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.43, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.06.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.43, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.06."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.43, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.06."
           ]
         },
         {
@@ -4322,7 +4294,7 @@
       "path": "/districts/kishoreganj",
       "label": "District outlook",
       "title": "Kishoreganj district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Kishoreganj (Dhaka division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Kishoreganj (Dhaka division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -4356,7 +4328,7 @@
         }
       },
       "h1": "Kishoreganj: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Kishoreganj, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Kishoreganj across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Kishoreganj flood",
         "Kishoreganj hazard",
@@ -4367,11 +4339,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Kishoreganj. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Kishoreganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Fire, severity 0.29, confidence Certain (≥ 0.85); physics cross-check 0.78, divergence 0.51: the two tracks disagree here, which is expected and shown rather than smoothed over.",
-            "15-day outlook (target date 2026-11-08): Fire, severity 0.29, confidence Certain (≥ 0.85); physics cross-check 0.78, divergence 0.51: the two tracks disagree here, which is expected and shown rather than smoothed over."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Fire, severity 0.29, confidence Certain (≥ 0.85); physics cross-check 0.78, divergence 0.51: the two tracks disagree here, which is expected and shown rather than smoothed over."
           ]
         },
         {
@@ -4429,7 +4400,7 @@
       "path": "/districts/manikganj",
       "label": "District outlook",
       "title": "Manikganj district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Manikganj (Dhaka division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Manikganj (Dhaka division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -4463,7 +4434,7 @@
         }
       },
       "h1": "Manikganj: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Manikganj, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Manikganj across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Manikganj flood",
         "Manikganj hazard",
@@ -4474,11 +4445,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Manikganj. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Manikganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Tropical Cyclone, severity 0.23, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.02.",
-            "15-day outlook (target date 2026-11-08): Tropical Cyclone, severity 0.23, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.02."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Tropical Cyclone, severity 0.23, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.02."
           ]
         },
         {
@@ -4536,7 +4506,7 @@
       "path": "/districts/munshiganj",
       "label": "District outlook",
       "title": "Munshiganj district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Munshiganj (Dhaka division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Munshiganj (Dhaka division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -4570,7 +4540,7 @@
         }
       },
       "h1": "Munshiganj: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Munshiganj, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Munshiganj across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Munshiganj flood",
         "Munshiganj hazard",
@@ -4581,11 +4551,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Munshiganj. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Munshiganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.63, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.26.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.63, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.26."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.63, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.26."
           ]
         },
         {
@@ -4643,7 +4612,7 @@
       "path": "/districts/narsingdi",
       "label": "District outlook",
       "title": "Narsingdi district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Narsingdi (Dhaka division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Narsingdi (Dhaka division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -4677,7 +4646,7 @@
         }
       },
       "h1": "Narsingdi: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Narsingdi, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Narsingdi across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Narsingdi flood",
         "Narsingdi hazard",
@@ -4688,11 +4657,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Narsingdi. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Narsingdi across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.44, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.08.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.44, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.08."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.44, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.08."
           ]
         },
         {
@@ -4750,7 +4718,7 @@
       "path": "/districts/faridpur",
       "label": "District outlook",
       "title": "Faridpur district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Faridpur (Dhaka division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Faridpur (Dhaka division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -4784,7 +4752,7 @@
         }
       },
       "h1": "Faridpur: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Faridpur, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Faridpur across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Faridpur flood",
         "Faridpur hazard",
@@ -4795,11 +4763,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Faridpur. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Faridpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.66, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.29.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.66, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.29."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.66, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.29."
           ]
         },
         {
@@ -4857,7 +4824,7 @@
       "path": "/districts/gopalganj",
       "label": "District outlook",
       "title": "Gopalganj district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Gopalganj (Dhaka division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Gopalganj (Dhaka division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -4891,7 +4858,7 @@
         }
       },
       "h1": "Gopalganj: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Gopalganj, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Gopalganj across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Gopalganj flood",
         "Gopalganj hazard",
@@ -4902,11 +4869,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Gopalganj. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Gopalganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.45, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.10.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.45, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.10."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.45, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.10."
           ]
         },
         {
@@ -4964,7 +4930,7 @@
       "path": "/districts/madaripur",
       "label": "District outlook",
       "title": "Madaripur district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Madaripur (Dhaka division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Madaripur (Dhaka division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -4998,7 +4964,7 @@
         }
       },
       "h1": "Madaripur: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Madaripur, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Madaripur across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Madaripur flood",
         "Madaripur hazard",
@@ -5009,11 +4975,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Madaripur. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Madaripur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.63, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.27.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.63, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.27."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.63, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.27."
           ]
         },
         {
@@ -5071,7 +5036,7 @@
       "path": "/districts/rajbari",
       "label": "District outlook",
       "title": "Rajbari district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Rajbari (Dhaka division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Rajbari (Dhaka division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -5105,7 +5070,7 @@
         }
       },
       "h1": "Rajbari: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Rajbari, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Rajbari across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Rajbari flood",
         "Rajbari hazard",
@@ -5116,11 +5081,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Rajbari. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Rajbari across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.44, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.08.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.44, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.08."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.44, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.08."
           ]
         },
         {
@@ -5178,7 +5142,7 @@
       "path": "/districts/shariatpur",
       "label": "District outlook",
       "title": "Shariatpur district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Shariatpur (Dhaka division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Shariatpur (Dhaka division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -5212,7 +5176,7 @@
         }
       },
       "h1": "Shariatpur: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Shariatpur, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Shariatpur across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Shariatpur flood",
         "Shariatpur hazard",
@@ -5223,11 +5187,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Shariatpur. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Shariatpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Tropical Cyclone, severity 0.20, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.06.",
-            "15-day outlook (target date 2026-11-08): Tropical Cyclone, severity 0.20, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.06."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Tropical Cyclone, severity 0.20, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.06."
           ]
         },
         {
@@ -5285,7 +5248,7 @@
       "path": "/districts/khulna",
       "label": "District outlook",
       "title": "Khulna district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Khulna (Khulna division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Khulna (Khulna division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -5319,7 +5282,7 @@
         }
       },
       "h1": "Khulna: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Khulna, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Khulna across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Khulna flood",
         "Khulna hazard",
@@ -5330,11 +5293,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Khulna. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Khulna across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Tropical Cyclone, severity 0.15, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.10.",
-            "15-day outlook (target date 2026-11-08): Tropical Cyclone, severity 0.15, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.10."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Tropical Cyclone, severity 0.15, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.10."
           ]
         },
         {
@@ -5392,7 +5354,7 @@
       "path": "/districts/satkhira",
       "label": "District outlook",
       "title": "Satkhira district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Satkhira (Khulna division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Satkhira (Khulna division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -5426,7 +5388,7 @@
         }
       },
       "h1": "Satkhira: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Satkhira, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Satkhira across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Satkhira flood",
         "Satkhira hazard",
@@ -5437,11 +5399,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Satkhira. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Satkhira across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.45, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.09.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.45, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.09."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.45, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.09."
           ]
         },
         {
@@ -5499,7 +5460,7 @@
       "path": "/districts/bagerhat",
       "label": "District outlook",
       "title": "Bagerhat district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Bagerhat (Khulna division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Bagerhat (Khulna division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -5533,7 +5494,7 @@
         }
       },
       "h1": "Bagerhat: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Bagerhat, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Bagerhat across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Bagerhat flood",
         "Bagerhat hazard",
@@ -5544,11 +5505,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Bagerhat. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Bagerhat across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.67, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.32: the two tracks disagree here, which is expected and shown rather than smoothed over.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.67, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.32: the two tracks disagree here, which is expected and shown rather than smoothed over."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.67, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.32: the two tracks disagree here, which is expected and shown rather than smoothed over."
           ]
         },
         {
@@ -5606,7 +5566,7 @@
       "path": "/districts/jessore",
       "label": "District outlook",
       "title": "Jashore district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Jashore (Khulna division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Jashore (Khulna division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -5640,7 +5600,7 @@
         }
       },
       "h1": "Jashore: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Jashore, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Jashore across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Jashore flood",
         "Jashore hazard",
@@ -5651,11 +5611,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Jashore. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Jashore across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.46, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.11.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.46, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.11."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.46, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.11."
           ]
         },
         {
@@ -5713,7 +5672,7 @@
       "path": "/districts/jhenaidah",
       "label": "District outlook",
       "title": "Jhenaidah district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Jhenaidah (Khulna division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Jhenaidah (Khulna division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -5747,7 +5706,7 @@
         }
       },
       "h1": "Jhenaidah: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Jhenaidah, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Jhenaidah across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Jhenaidah flood",
         "Jhenaidah hazard",
@@ -5758,11 +5717,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Jhenaidah. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Jhenaidah across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.59, confidence Probable (0.70–0.85); physics cross-check 0.40, divergence 0.22.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.59, confidence Probable (0.70–0.85); physics cross-check 0.40, divergence 0.22."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.59, confidence Probable (0.70–0.85); physics cross-check 0.40, divergence 0.22."
           ]
         },
         {
@@ -5820,7 +5778,7 @@
       "path": "/districts/magura",
       "label": "District outlook",
       "title": "Magura district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Magura (Khulna division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Magura (Khulna division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -5854,7 +5812,7 @@
         }
       },
       "h1": "Magura: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Magura, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Magura across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Magura flood",
         "Magura hazard",
@@ -5865,11 +5823,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Magura. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Magura across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.62, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.26.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.62, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.26."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.62, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.26."
           ]
         },
         {
@@ -5927,7 +5884,7 @@
       "path": "/districts/narail",
       "label": "District outlook",
       "title": "Narail district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Narail (Khulna division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Narail (Khulna division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -5961,7 +5918,7 @@
         }
       },
       "h1": "Narail: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Narail, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Narail across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Narail flood",
         "Narail hazard",
@@ -5972,11 +5929,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Narail. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Narail across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Fire, severity 0.22, confidence Certain (≥ 0.85); physics cross-check 0.72, divergence 0.50: the two tracks disagree here, which is expected and shown rather than smoothed over.",
-            "15-day outlook (target date 2026-11-08): Fire, severity 0.22, confidence Certain (≥ 0.85); physics cross-check 0.72, divergence 0.50: the two tracks disagree here, which is expected and shown rather than smoothed over."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Fire, severity 0.22, confidence Certain (≥ 0.85); physics cross-check 0.72, divergence 0.50: the two tracks disagree here, which is expected and shown rather than smoothed over."
           ]
         },
         {
@@ -6034,7 +5990,7 @@
       "path": "/districts/chuadanga",
       "label": "District outlook",
       "title": "Chuadanga district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Chuadanga (Khulna division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Chuadanga (Khulna division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -6068,7 +6024,7 @@
         }
       },
       "h1": "Chuadanga: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Chuadanga, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Chuadanga across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Chuadanga flood",
         "Chuadanga hazard",
@@ -6079,11 +6035,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Chuadanga. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Chuadanga across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.65, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.28.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.65, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.28."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.65, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.28."
           ]
         },
         {
@@ -6141,7 +6096,7 @@
       "path": "/districts/kushtia",
       "label": "District outlook",
       "title": "Kushtia district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Kushtia (Khulna division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Kushtia (Khulna division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -6175,7 +6130,7 @@
         }
       },
       "h1": "Kushtia: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Kushtia, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Kushtia across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Kushtia flood",
         "Kushtia hazard",
@@ -6186,11 +6141,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Kushtia. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Kushtia across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.65, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.27.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.65, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.27."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.65, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.27."
           ]
         },
         {
@@ -6248,7 +6202,7 @@
       "path": "/districts/meherpur",
       "label": "District outlook",
       "title": "Meherpur district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Meherpur (Khulna division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Meherpur (Khulna division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -6282,7 +6236,7 @@
         }
       },
       "h1": "Meherpur: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Meherpur, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Meherpur across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Meherpur flood",
         "Meherpur hazard",
@@ -6293,11 +6247,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Meherpur. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Meherpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Tropical Cyclone, severity 0.22, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.03.",
-            "15-day outlook (target date 2026-11-08): Tropical Cyclone, severity 0.22, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.03."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Tropical Cyclone, severity 0.22, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.03."
           ]
         },
         {
@@ -6355,7 +6308,7 @@
       "path": "/districts/barisal",
       "label": "District outlook",
       "title": "Barisal district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Barisal (Barisal division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Barisal (Barisal division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -6389,7 +6342,7 @@
         }
       },
       "h1": "Barisal: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Barisal, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Barisal across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Barisal flood",
         "Barisal hazard",
@@ -6400,11 +6353,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Barisal. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Barisal across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.44, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.08.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.44, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.08."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.44, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.08."
           ]
         },
         {
@@ -6462,7 +6414,7 @@
       "path": "/districts/bhola",
       "label": "District outlook",
       "title": "Bhola district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Bhola (Barisal division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Bhola (Barisal division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -6496,7 +6448,7 @@
         }
       },
       "h1": "Bhola: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Bhola, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Bhola across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Bhola flood",
         "Bhola hazard",
@@ -6507,11 +6459,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Bhola. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Bhola across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.44, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.08.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.44, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.08."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.44, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.08."
           ]
         },
         {
@@ -6569,7 +6520,7 @@
       "path": "/districts/jhalokati",
       "label": "District outlook",
       "title": "Jhalokati district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Jhalokati (Barisal division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Jhalokati (Barisal division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -6603,7 +6554,7 @@
         }
       },
       "h1": "Jhalokati: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Jhalokati, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Jhalokati across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Jhalokati flood",
         "Jhalokati hazard",
@@ -6614,11 +6565,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Jhalokati. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Jhalokati across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Tropical Cyclone, severity 0.23, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.02.",
-            "15-day outlook (target date 2026-11-08): Tropical Cyclone, severity 0.23, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.02."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Tropical Cyclone, severity 0.23, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.02."
           ]
         },
         {
@@ -6676,7 +6626,7 @@
       "path": "/districts/patuakhali",
       "label": "District outlook",
       "title": "Patuakhali district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Patuakhali (Barisal division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Patuakhali (Barisal division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -6710,7 +6660,7 @@
         }
       },
       "h1": "Patuakhali: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Patuakhali, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Patuakhali across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Patuakhali flood",
         "Patuakhali hazard",
@@ -6721,11 +6671,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Patuakhali. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Patuakhali across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.46, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.10.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.46, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.10."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.46, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.10."
           ]
         },
         {
@@ -6783,7 +6732,7 @@
       "path": "/districts/pirojpur",
       "label": "District outlook",
       "title": "Pirojpur district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Pirojpur (Barisal division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Pirojpur (Barisal division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -6817,7 +6766,7 @@
         }
       },
       "h1": "Pirojpur: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Pirojpur, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Pirojpur across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Pirojpur flood",
         "Pirojpur hazard",
@@ -6828,11 +6777,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Pirojpur. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Pirojpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.43, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.06.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.43, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.06."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.43, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.06."
           ]
         },
         {
@@ -6890,7 +6838,7 @@
       "path": "/districts/barguna",
       "label": "District outlook",
       "title": "Barguna district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Barguna (Barisal division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Barguna (Barisal division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -6924,7 +6872,7 @@
         }
       },
       "h1": "Barguna: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Barguna, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Barguna across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Barguna flood",
         "Barguna hazard",
@@ -6935,11 +6883,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Barguna. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Barguna across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Fire, severity 0.65, confidence Uncertain (< 0.70); physics cross-check 0.68, divergence 0.04.",
-            "15-day outlook (target date 2026-11-08): Fire, severity 0.65, confidence Uncertain (< 0.70); physics cross-check 0.68, divergence 0.04."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Fire, severity 0.65, confidence Uncertain (< 0.70); physics cross-check 0.68, divergence 0.04."
           ]
         },
         {
@@ -6997,7 +6944,7 @@
       "path": "/districts/chattogram",
       "label": "District outlook",
       "title": "Chattogram district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Chattogram (Chattogram division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Chattogram (Chattogram division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -7031,7 +6978,7 @@
         }
       },
       "h1": "Chattogram: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Chattogram, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Chattogram across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Chattogram flood",
         "Chattogram hazard",
@@ -7042,11 +6989,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Chattogram. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Chattogram across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.54, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.28.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.54, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.28."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.54, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.28."
           ]
         },
         {
@@ -7104,7 +7050,7 @@
       "path": "/districts/coxsbazar",
       "label": "District outlook",
       "title": "Cox's Bazar district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Cox's Bazar (Chattogram division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Cox's Bazar (Chattogram division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -7138,7 +7084,7 @@
         }
       },
       "h1": "Cox's Bazar: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Cox's Bazar, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Cox's Bazar across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Cox's Bazar flood",
         "Cox's Bazar hazard",
@@ -7149,11 +7095,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Cox's Bazar. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Cox's Bazar across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.66, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.29.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.66, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.29."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.66, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.29."
           ]
         },
         {
@@ -7211,7 +7156,7 @@
       "path": "/districts/cumilla",
       "label": "District outlook",
       "title": "Cumilla district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Cumilla (Chattogram division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Cumilla (Chattogram division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -7245,7 +7190,7 @@
         }
       },
       "h1": "Cumilla: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Cumilla, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Cumilla across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Cumilla flood",
         "Cumilla hazard",
@@ -7256,11 +7201,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Cumilla. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Cumilla across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.69, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.33: the two tracks disagree here, which is expected and shown rather than smoothed over.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.69, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.33: the two tracks disagree here, which is expected and shown rather than smoothed over."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.69, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.33: the two tracks disagree here, which is expected and shown rather than smoothed over."
           ]
         },
         {
@@ -7318,7 +7262,7 @@
       "path": "/districts/feni",
       "label": "District outlook",
       "title": "Feni district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Feni (Chattogram division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Feni (Chattogram division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -7352,7 +7296,7 @@
         }
       },
       "h1": "Feni: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Feni, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Feni across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Feni flood",
         "Feni hazard",
@@ -7363,11 +7307,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Feni. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Feni across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.54, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.27.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.54, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.27."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.54, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.27."
           ]
         },
         {
@@ -7425,7 +7368,7 @@
       "path": "/districts/noakhali",
       "label": "District outlook",
       "title": "Noakhali district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Noakhali (Chattogram division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Noakhali (Chattogram division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -7459,7 +7402,7 @@
         }
       },
       "h1": "Noakhali: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Noakhali, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Noakhali across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Noakhali flood",
         "Noakhali hazard",
@@ -7470,11 +7413,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Noakhali. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Noakhali across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Tropical Cyclone, severity 0.52, confidence Uncertain (< 0.70); physics cross-check 0.25, divergence 0.27.",
-            "15-day outlook (target date 2026-11-08): Tropical Cyclone, severity 0.52, confidence Uncertain (< 0.70); physics cross-check 0.25, divergence 0.27."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Tropical Cyclone, severity 0.52, confidence Uncertain (< 0.70); physics cross-check 0.25, divergence 0.27."
           ]
         },
         {
@@ -7532,7 +7474,7 @@
       "path": "/districts/lakshmipur",
       "label": "District outlook",
       "title": "Lakshmipur district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Lakshmipur (Chattogram division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Lakshmipur (Chattogram division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -7566,7 +7508,7 @@
         }
       },
       "h1": "Lakshmipur: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Lakshmipur, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Lakshmipur across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Lakshmipur flood",
         "Lakshmipur hazard",
@@ -7577,11 +7519,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Lakshmipur. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Lakshmipur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.68, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.32: the two tracks disagree here, which is expected and shown rather than smoothed over.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.68, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.32: the two tracks disagree here, which is expected and shown rather than smoothed over."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.68, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.32: the two tracks disagree here, which is expected and shown rather than smoothed over."
           ]
         },
         {
@@ -7639,7 +7580,7 @@
       "path": "/districts/chandpur",
       "label": "District outlook",
       "title": "Chandpur district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Chandpur (Chattogram division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Chandpur (Chattogram division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -7673,7 +7614,7 @@
         }
       },
       "h1": "Chandpur: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Chandpur, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Chandpur across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Chandpur flood",
         "Chandpur hazard",
@@ -7684,11 +7625,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Chandpur. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Chandpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.71, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.34: the two tracks disagree here, which is expected and shown rather than smoothed over.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.71, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.34: the two tracks disagree here, which is expected and shown rather than smoothed over."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.71, confidence Certain (≥ 0.85); physics cross-check 0.40, divergence 0.34: the two tracks disagree here, which is expected and shown rather than smoothed over."
           ]
         },
         {
@@ -7746,7 +7686,7 @@
       "path": "/districts/brahmanbaria",
       "label": "District outlook",
       "title": "Brahmanbaria district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Brahmanbaria (Chattogram division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Brahmanbaria (Chattogram division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -7780,7 +7720,7 @@
         }
       },
       "h1": "Brahmanbaria: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Brahmanbaria, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Brahmanbaria across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Brahmanbaria flood",
         "Brahmanbaria hazard",
@@ -7791,11 +7731,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Brahmanbaria. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Brahmanbaria across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Flash Flood, severity 0.47, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.13.",
-            "15-day outlook (target date 2026-11-08): Flash Flood, severity 0.47, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.13."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Flash Flood, severity 0.47, confidence Uncertain (< 0.70); physics cross-check 0.40, divergence 0.13."
           ]
         },
         {
@@ -7853,7 +7792,7 @@
       "path": "/districts/khagrachhari",
       "label": "District outlook",
       "title": "Khagrachhari district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Khagrachhari (Chattogram division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Khagrachhari (Chattogram division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -7887,7 +7826,7 @@
         }
       },
       "h1": "Khagrachhari: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Khagrachhari, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Khagrachhari across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Khagrachhari flood",
         "Khagrachhari hazard",
@@ -7898,11 +7837,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Khagrachhari. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Khagrachhari across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Tropical Cyclone, severity 0.58, confidence Uncertain (< 0.70); physics cross-check 0.25, divergence 0.33: the two tracks disagree here, which is expected and shown rather than smoothed over.",
-            "15-day outlook (target date 2026-11-08): Tropical Cyclone, severity 0.58, confidence Uncertain (< 0.70); physics cross-check 0.25, divergence 0.33: the two tracks disagree here, which is expected and shown rather than smoothed over."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Tropical Cyclone, severity 0.58, confidence Uncertain (< 0.70); physics cross-check 0.25, divergence 0.33: the two tracks disagree here, which is expected and shown rather than smoothed over."
           ]
         },
         {
@@ -7960,7 +7898,7 @@
       "path": "/districts/rangamati",
       "label": "District outlook",
       "title": "Rangamati district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Rangamati (Chattogram division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Rangamati (Chattogram division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -7994,7 +7932,7 @@
         }
       },
       "h1": "Rangamati: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Rangamati, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Rangamati across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Rangamati flood",
         "Rangamati hazard",
@@ -8005,11 +7943,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Rangamati. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Rangamati across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Tropical Cyclone, severity 0.17, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.08.",
-            "15-day outlook (target date 2026-11-08): Tropical Cyclone, severity 0.17, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.08."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Tropical Cyclone, severity 0.17, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.08."
           ]
         },
         {
@@ -8067,7 +8004,7 @@
       "path": "/districts/bandarban",
       "label": "District outlook",
       "title": "Bandarban district hazard outlook: HazardNet",
-      "description": "The current HazardNet outlook for Bandarban (Chattogram division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.",
+      "description": "The current HazardNet continuous 15-day outlook for Bandarban (Chattogram division): hazard class, severity index, confidence and the independent physics cross-check across Days 1 to 15, the district's static baseline, and what the model cannot tell you.",
       "robots": "index,follow",
       "sitemap": {
         "changefreq": "daily",
@@ -8101,7 +8038,7 @@
         }
       },
       "h1": "Bandarban: current hazard outlook",
-      "standfirst": "What the model this deployment ships currently says about Bandarban, horizon by horizon, with the independent physics cross-check beside it.",
+      "standfirst": "What the model this deployment ships currently says about Bandarban across all 15 consecutive forecast days (Days 1 to 15), with peak severe dates and the independent physics cross-check beside it.",
       "keywords": [
         "Bandarban flood",
         "Bandarban hazard",
@@ -8112,11 +8049,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-10-24) carries 2 rows for Bandarban. Coverage of that run: produced 64 units at the 7-day horizon and 64 units at the 15-day horizon, covering 64 of 64 districts (coverage status: complete). A district can appear at one horizon and not the other."
+            "The run this deployment ships (prediction date 2026-10-24) covers Bandarban across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "7-day outlook (target date 2026-10-31): Tropical Cyclone, severity 0.23, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.02.",
-            "15-day outlook (target date 2026-11-08): Tropical Cyclone, severity 0.23, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.02."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-08): Tropical Cyclone, severity 0.23, confidence Certain (≥ 0.85); physics cross-check 0.25, divergence 0.02."
           ]
         },
         {

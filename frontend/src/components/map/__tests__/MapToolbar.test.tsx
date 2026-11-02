@@ -57,14 +57,10 @@ describe('MapToolbar', () => {
     expect(screen.getByText('Stored 64/64')).toBeInTheDocument();
   });
 
-  it('leads with Continuous 15 Days as the primary horizon control ahead of Days 1–7 Subset', () => {
+  it('displays Continuous 15 Days trajectory without legacy 7-day subset toggle buttons', () => {
     render(<MapToolbar {...base} />);
-    const group = screen.getByRole('group', { name: 'Forecast horizon' });
-    const buttons = Array.from(group.querySelectorAll('button'));
-    expect(buttons.map((b) => b.textContent)).toEqual(['Continuous 15 Days', 'Days 1–7 Subset']);
-    expect(buttons[0]).toHaveAttribute('aria-pressed', 'true');
-    fireEvent.click(buttons[1]);
-    expect(base.onForecastHorizonChange).toHaveBeenCalledWith('7_days');
+    expect(screen.getByText('Continuous 15 Days')).toBeInTheDocument();
+    expect(screen.queryByText(/Days 1–7 Subset/i)).not.toBeInTheDocument();
   });
 
   it('offers no basemap switcher — the map ships one ground', () => {

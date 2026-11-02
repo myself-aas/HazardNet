@@ -770,8 +770,7 @@ function renderStatusPanel(artifact) {
   const coverageHtml = coverage
     ? '<h3>Coverage of the current run</h3><p>' +
       `${coverage.districts_covered ?? 'unknown'} of ${coverage.districts_expected ?? 'unknown'} districts ` +
-      `have a row for at least one horizon, from ${coverage.produced_units ?? 'unknown'} produced ` +
-      `district/horizon units — coverage status <strong>${escapeHtml(String(coverage.status ?? 'unreported'))}</strong>.</p>`
+      `covered across the continuous 15-day trajectory (Days 1–15) — coverage status <strong>${escapeHtml(String(coverage.status ?? 'unreported'))}</strong>.</p>`
     : '';
 
   const model = artifact.model ?? {};

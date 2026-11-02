@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { getDistrictById } from '../../data/bangladeshDistricts';
 import { useI18n } from '../../hooks/useI18n';
 import { useKaggleAdvisories } from '../../hooks/useKaggleAdvisories';
@@ -23,17 +23,8 @@ const EMPTY_DAILY: DistrictDailyResult = {
  */
 export const DistrictLiveSnapshotSlot: React.FC<{ districtId: string }> = ({ districtId }) => {
   const district = getDistrictById(districtId);
-  const [searchParams, setSearchParams] = useSearchParams();
   const { formatDate, formatNumber } = useI18n();
-  const horizon: '7_days' | '15_days' = searchParams.get('horizon') === '7_days' ? '7_days' : '15_days';
-  const setHorizon = (nextHorizon: '7_days' | '15_days') => {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      if (nextHorizon === '15_days') next.delete('horizon');
-      else next.set('horizon', nextHorizon);
-      return next;
-    }, { replace: true });
-  };
+  const horizon: '15_days' = '15_days';
   const { data: snapshot, isLoading: loading } = useKaggleAdvisories(horizon);
   const [dailyResult, setDailyResult] = useState<DistrictDailyResult>(EMPTY_DAILY);
 
@@ -77,36 +68,9 @@ export const DistrictLiveSnapshotSlot: React.FC<{ districtId: string }> = ({ dis
           </p>
         </div>
 
-        <div
-          className="inline-flex shrink-0 self-start rounded-full border border-[var(--ap-separator-opaque)] bg-[var(--ap-canvas)] p-1"
-          role="group"
-          aria-label="Forecast horizon"
-        >
-          <button
-            type="button"
-            onClick={() => setHorizon('15_days')}
-            aria-pressed={horizon === '15_days'}
-            className={`ap-focusable min-h-[44px] px-4 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
-              horizon === '15_days'
-                ? 'bg-[var(--ap-bg-grouped)] text-[var(--ap-label)] border border-[var(--ap-separator-opaque)]'
-                : 'text-[var(--ap-label-secondary)] hover:text-[var(--ap-label)]'
-            }`}
-          >
-            Continuous 15 days
-          </button>
-          <button
-            type="button"
-            onClick={() => setHorizon('7_days')}
-            aria-pressed={horizon === '7_days'}
-            className={`ap-focusable min-h-[44px] px-4 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
-              horizon === '7_days'
-                ? 'bg-[var(--ap-bg-grouped)] text-[var(--ap-label)] border border-[var(--ap-separator-opaque)]'
-                : 'text-[var(--ap-label-secondary)] hover:text-[var(--ap-label)]'
-            }`}
-          >
-            Days 1–7 subset
-          </button>
-        </div>
+        <span className="inline-flex min-h-[44px] shrink-0 self-start items-center rounded-full border border-[var(--ap-separator-opaque)] bg-[var(--ap-canvas)] px-4 text-xs font-semibold text-[var(--ap-label)]">
+          Continuous 15-day trajectory (Days 1–15)
+        </span>
       </div>
 
       {loading && !row ? (
@@ -198,12 +162,6 @@ export const DistrictLiveSnapshotSlot: React.FC<{ districtId: string }> = ({ dis
           className="ap-focusable inline-flex min-h-[44px] items-center font-semibold text-[var(--ap-link)] underline underline-offset-4"
         >
           Open 15-day daily outlook: {district.name}
-        </Link>
-        <Link
-          to={`/forecast/district/${district.id}?view=published-records`}
-          className="ap-focusable inline-flex min-h-[44px] items-center font-medium text-[var(--ap-link)] underline underline-offset-4"
-        >
-          View legacy summary records
         </Link>
       </div>
     </section>

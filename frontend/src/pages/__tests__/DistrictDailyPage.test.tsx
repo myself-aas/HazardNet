@@ -92,14 +92,16 @@ it('renders all 15 continuous days by default with severity index, peak severe d
   expect(screen.getAllByText('Check field drainage and keep an exit route clear.')).toHaveLength(15);
   expect(screen.queryByText(/model score|fusion reason/i)).toBeNull();
 
-  // Optional 7-day narrowing and re-expansion back to 15 days
-  const toggleTo7 = screen.getByRole('button', { name: /Show first 7 days/i });
-  expect(toggleTo7.getAttribute('aria-expanded')).toBe('true');
-  fireEvent.click(toggleTo7);
-  expect(screen.getAllByRole('article')).toHaveLength(7);
-  const toggleTo15 = screen.getByRole('button', { name: /Show all available days/i });
-  expect(toggleTo15.getAttribute('aria-expanded')).toBe('false');
-  fireEvent.click(toggleTo15);
+  // Interactive Day 1–15 / Peak Severe Days picker filters timeline and restores all 15 days
+  const trajectoryPicker = screen.getByTestId('trajectory-day-picker') as HTMLSelectElement;
+  expect(trajectoryPicker.value).toBe('all');
+  const dayFilterSelect = document.getElementById('daily-day-filter') as HTMLSelectElement;
+  expect(dayFilterSelect.value).toBe('all');
+  fireEvent.change(dayFilterSelect, { target: { value: 'peak' } });
+  expect(screen.getAllByRole('article')).toHaveLength(1);
+  fireEvent.change(dayFilterSelect, { target: { value: '5' } });
+  expect(screen.getAllByRole('article')).toHaveLength(1);
+  fireEvent.change(dayFilterSelect, { target: { value: 'all' } });
   expect(screen.getAllByRole('article')).toHaveLength(15);
 
   fireEvent.click(within(screen.getAllByRole('article')[1]).getByText('Why this outlook?'));

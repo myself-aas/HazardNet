@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useId, useMemo, useState } from 'react';
 import { AlertLevelBadge, ADVISORY_TIER_COLOURS } from '../alerts/AlertLevelBadge';
 import { HazardGlyph } from '../apple/HazardGlyph';
 import { useI18n } from '../../hooks/useI18n';
@@ -26,12 +26,20 @@ export const Continuous15DayTrajectory: React.FC<Continuous15DayTrajectoryProps>
   interactiveAnchors = false,
 }) => {
   const { language, t, formatDate, formatNumber } = useI18n();
+  const filterSelectId = useId();
+  const [selectedDayFilter, setSelectedDayFilter] = useState<string>('all');
   const summary = useMemo(() => summarizeContinuous15Days(advisories), [advisories]);
 
   if (summary.days.length === 0) return null;
 
   const fmt2 = (val: number) => formatNumber(val, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const { days, peakRows, peakDateSet, primaryPeak } = summary;
+  const filteredDays =
+    selectedDayFilter === 'all'
+      ? days
+      : selectedDayFilter === 'peak'
+        ? peakRows
+        : days.filter((row) => String(row.forecastDay) === selectedDayFilter);
 
   const jumpToDate = (targetDate: string) => {
     if (!interactiveAnchors || typeof document === 'undefined') return;
@@ -115,14 +123,38 @@ export const Continuous15DayTrajectory: React.FC<Continuous15DayTrajectoryProps>
         </div>
       )}
 
-      {/* Header for 15-Day Continuous Strip */}
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
+      {/* Header + Optional Day 1–15 Picker for 15-Day Continuous Strip */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="text-base font-semibold text-[var(--ap-label)]">
             {t('daily.continuous15Heading')} ({formatNumber(days.length)})
           </h3>
           <p className="text-xs text-[var(--ap-label-secondary)]">{t('daily.continuous15Sub')}</p>
         </div>
+        <label
+          htmlFor={filterSelectId}
+          className="inline-flex items-center gap-2 text-xs font-semibold text-[var(--ap-label-secondary)]"
+        >
+          <span>{t('daily.filterLabel')}</span>
+          <select
+            id={filterSelectId}
+            data-testid="trajectory-day-picker"
+            value={selectedDayFilter}
+            onChange={(e) => setSelectedDayFilter(e.target.value)}
+            className="ap-focusable min-h-[44px] rounded-lg border border-[var(--ap-separator-opaque)] bg-[var(--ap-canvas)] px-3 py-1.5 text-xs font-semibold text-[var(--ap-label)]"
+          >
+            <option value="all">{t('daily.filterAll')}</option>
+            {peakRows.length > 0 && <option value="peak">{t('daily.filterPeak')}</option>}
+            {days.map((row) => (
+              <option key={row.advisoryId} value={String(row.forecastDay)}>
+                {t('daily.filterDay', {
+                  day: formatNumber(row.forecastDay),
+                  date: formatDate(row.targetDate),
+                })}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
 
       {/* 15-Day Continuous Grid: 2 cols on narrow phones, 5 cols × 3 rows on >=640px */}
@@ -130,7 +162,7 @@ export const Continuous15DayTrajectory: React.FC<Continuous15DayTrajectoryProps>
         aria-label={t('daily.continuous15Heading')}
         className="grid grid-cols-2 sm:grid-cols-5 gap-2"
       >
-        {days.map((row) => {
+        {filteredDays.map((row) => {
           const isPeak = peakDateSet.has(row.targetDate);
           const sevIndex = severityIndexOf(row.severityScore);
           const tierColour = ADVISORY_TIER_COLOURS[row.tier] ?? ADVISORY_TIER_COLOURS.NORMAL;
