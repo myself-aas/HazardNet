@@ -111,6 +111,19 @@ const ENVIRONMENTAL_URLS: Array<{ pattern: RegExp; why: string; statuses?: numbe
   { pattern: /firebase|firebaseio|googleapis|googletagmanager/i, why: 'third-party hosts blocked in sandbox' },
   { pattern: /cartocdn|arcgis(online)?\.com|tile\.map-data|opentopomap/i, why: 'basemap tiles blocked; service worker serves its offline tile' },
   { pattern: /ipapi\.co/i, why: 'IP-geolocation fallback host rate-limits shared CI egress', statuses: [403, 429] },
+  {
+    // A daily public run is not yet approved. A 503 here must render the
+    // unavailable state, not a made-up forecast (forecast-ux.spec.ts pins it).
+    // After approval, use the separate --require release gate and live probe.
+    pattern: /\/api\/v1\/advisories(?:\/(?:latest|timeline|peak|summary))?(?:\?|$)/i,
+    why: 'no approved daily run; farmer outlook must say unavailable',
+    statuses: [503],
+  },
+  {
+    pattern: /\/data\/daily-advisories-v1\.json(?:\?|$)/i,
+    why: 'optional public daily asset is absent until an approved, attested publication',
+    statuses: [404],
+  },
   { pattern: /\/api\/v1\/(weather|alerts)/i, why: 'upstream weather/alert feeds unreachable without egress' },
   {
     // The forecast API is not served by the environment this suite runs in. The
@@ -187,7 +200,7 @@ const ALL_ROUTES: Array<[string, string]> = [
   ['/home/overview', 'Home overview'],
   ['/forecast/overview', 'Forecast overview'],
   ['/forecast/my-districts', 'My districts'],
-  ['/forecast/district/dhaka', 'District detail'],
+  ['/forecast/district/dhaka', 'Daily district outlook'],
   ['/forecast/compare', 'Compare districts'],
   ['/forecast/settings', 'Forecast settings'],
   ['/settings', 'Settings'],
@@ -312,7 +325,10 @@ test.describe('Forecast data source — the ADR 0008 fallback chain', () => {
   // fallback stays green, so these tests prove each forecast surface resolved
   // its rows from one of the two documented sources: the live API, or the
   // committed snapshot the deployment ships with.
-  const FORECAST_ROUTES = ['/live', '/forecast/overview', '/forecast/district/dhaka'];
+  // The default district route is a separate daily run that may intentionally
+  // be unavailable. Keep the legacy published-records view under this older
+  // ADR 0008 API/snapshot assertion, rather than treating daily 503 as a source.
+  const FORECAST_ROUTES = ['/live', '/forecast/overview', '/forecast/district/dhaka?view=published-records'];
 
   for (const route of FORECAST_ROUTES) {
     test(`${route} resolves forecast data from the API or the committed snapshot`, async ({ page }) => {

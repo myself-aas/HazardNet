@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import DistrictForecastCard, { DistrictWithRisk } from '../DistrictForecastCard'
+import { setLanguage } from '../../../lib/i18n'
 
 jest.mock('../../ui/expand-map', () => ({
   LocationMap: () => <div data-testid="location-map-tile" />,
@@ -20,17 +21,20 @@ const district: DistrictWithRisk = {
 } as DistrictWithRisk
 
 const onClose = jest.fn()
-const onOpenAnalytics = jest.fn()
+const onOpenDailyOutlook = jest.fn()
 
 const mount = () =>
   render(
     <MemoryRouter>
-      <DistrictForecastCard district={district} onClose={onClose} onOpenAnalytics={onOpenAnalytics} />
+      <DistrictForecastCard district={district} onClose={onClose} onOpenDailyOutlook={onOpenDailyOutlook} />
     </MemoryRouter>,
   )
 
 describe('DistrictForecastCard (HDS selected panel)', () => {
-  beforeEach(() => jest.clearAllMocks())
+  beforeEach(() => {
+    jest.clearAllMocks()
+    setLanguage('en')
+  })
 
   it('renders the district forecast with hazard, severity and compact facts', () => {
     mount()
@@ -70,10 +74,10 @@ describe('DistrictForecastCard (HDS selected panel)', () => {
     expect(meter).toHaveAttribute('aria-valuenow', '88')
   })
 
-  it('opens detailed analytics with the district id', () => {
+  it('opens the farmer daily outlook with the district id, without claiming a modelled hazard', () => {
     mount()
-    fireEvent.click(screen.getByRole('button', { name: /view detailed disaster analytics/i }))
-    expect(onOpenAnalytics).toHaveBeenCalledWith('kurigram')
+    fireEvent.click(screen.getByRole('button', { name: /open the day-by-day district outlook/i }))
+    expect(onOpenDailyOutlook).toHaveBeenCalledWith('kurigram')
   })
 
   it('closes via the close button', () => {

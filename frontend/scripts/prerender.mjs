@@ -939,6 +939,26 @@ for (const route of generated.routes) {
   prerendered.push(`${route.path}${/^noindex/.test(route.robots ?? '') ? ' (noindex)' : ''}`);
 }
 
+// The farmer-first URL is an app route, separate from the older generated
+// /districts/:id reference pages. Give all 64 known district deep links a real
+// 200/noindex HTML shell with the authority boundary in the first viewport.
+// No run-specific risk is prerendered: until a validated public daily artifact is
+// deployed, the SPA must honestly say the day-by-day outlook is unavailable.
+for (const districtPage of generated.routes.filter((route) => /^\/districts\/[a-z0-9-]+$/.test(route.path))) {
+  const slug = districtPage.path.split('/').pop();
+  const districtName = String(districtPage.h1 ?? slug).split(':')[0].trim();
+  const route = {
+    path: `/forecast/district/${slug}`,
+    title: `${districtName} district outlook: HazardNet`,
+    description: 'District day-by-day outlook, only when a validated public run is available.',
+    h1: `${districtName} district outlook`,
+    standfirst: 'HazardNet is an ongoing research project under development. When published, district/day advisories come from its daily model run; HazardNet is not an official warning service. Check BMD and FFWC; in emergencies call 999. No daily outlook appears without approved data.',
+    robots: 'noindex,follow', sections: [], sitemap: null,
+  };
+  writeRoute(route, buildHtml(route));
+  prerendered.push(`${route.path} (noindex)`);
+}
+
 const blogArticles = loadBlogIndex();
 for (const article of blogArticles) {
   const clean = `blogs/${String(article.slug).replace(/^\/+|\/+$/g, '')}`;

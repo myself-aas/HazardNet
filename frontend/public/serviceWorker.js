@@ -40,10 +40,21 @@ const CACHE_NAME = 'hazardnet-offline-v3';
 // cached copy is only ever served as a *labelled* fallback. The `X-HazardNet-Stale` marker
 // is what lets the client relabel the data as "offline copy" instead of "live".
 const ALERTS_CACHE_NAME = 'hazardnet-alerts-v1';
+// Only approved public daily snapshots are stored here; no private CSV or officer API.
+const DAILY_PUBLIC_CACHE_NAME = 'hazardnet-daily-public-v1';
+const DAILY_PUBLIC_CACHE_LIMIT = 80;
 const ALERTS_NETWORK_TIMEOUT_MS = 5000;
 
 function isAlertsRequest(url) {
   return url.pathname.startsWith('/api/v1/alerts') || url.pathname === '/data/alerts-latest.json';
+}
+
+function isDailyPublicRequest(url) {
+  return url.origin === self.location.origin && (
+    url.pathname === '/api/v1/advisories'
+    || /^\/api\/v1\/advisories\/(?:latest|timeline|peak|summary)$/.test(url.pathname)
+    || url.pathname === '/data/daily-advisories-v1.json'
+  );
 }
 
 // May this response be written to Cache Storage? (Phase 6, SEC-09)
@@ -55,6 +66,61 @@ function isAlertsRequest(url) {
 // would leave privileged data on a shared device and replay it to a later unprivileged read
 // of the same URL), and a response the server marked `no-store`/`private` or tied to a
 // session with `Set-Cookie`.
+// The worker cannot trust a 200 from a misconfigured host. Only the public
+// envelope and whitelisted row keys may enter the offline daily cache.
+function isApprovedDailyPayload(value) {
+  if (!value || typeof value !== 'object' || value.schema !== 'hazardnet-daily-advisories/v1'
+    || !value.run || typeof value.run !== 'object'
+    || !value.coverage || typeof value.coverage !== 'object'
+    || !Array.isArray(value.advisories) || value.advisories.length > 960) return false;
+  const top = ['schema', 'run', 'coverage', 'advisories', 'scope', 'status', 'asOf', 'selectedDate', 'count'];
+  const runKeys = ['id', 'generatedAt', 'dataCutoff', 'expiresAt', 'modelVersion', 'inputSha256'];
+  const rowKeys = ['advisoryId', 'districtId', 'district', 'division', 'forecastDay', 'targetDate',
+    'hazard', 'tier', 'reasonCode', 'actionIds', 'peak', 'qualityNotes', 'weather'];
+  const hazards = ['Cold Wave', 'Drought', 'Fire', 'Flash Flood', 'Flood', 'Heat Wave',
+    'Severe Local Storm', 'Tropical Cyclone'];
+  const actions = ['cover_seedlings', 'shelter_animals', 'save_irrigation', 'mulch_soil',
+    'avoid_burning', 'clear_dry_debris', 'check_drains', 'keep_feed_dry', 'work_cool_hours',
+    'shade_animals', 'avoid_open_fields', 'secure_loose_items', 'store_drinking_water',
+    'check_official_updates', 'continue_safely'];
+  if (value.scope !== undefined && value.scope !== 'timeline') return false;
+  const utc = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/;
+  const cutoff = Date.parse(value.run.dataCutoff);
+  if (Object.keys(value).some((key) => !top.includes(key))
+    || Object.keys(value.run).some((key) => !runKeys.includes(key))
+    || runKeys.some((key) => typeof value.run[key] !== 'string' || !value.run[key])
+    || !/^[a-zA-Z0-9._-]{1,100}$/.test(value.run.id)
+    || !/^[a-f0-9]{64}$/.test(value.run.inputSha256)
+    || !['generatedAt', 'dataCutoff', 'expiresAt'].every((key) => utc.test(value.run[key]))
+    || !Number.isFinite(cutoff) || Date.parse(value.run.generatedAt) < cutoff
+    || Date.parse(value.run.expiresAt) !== cutoff + 36 * 3_600_000
+    || Object.keys(value.coverage).some((key) => !['districts', 'forecastDays', 'publishedRows'].includes(key))
+    || value.coverage.forecastDays !== 15
+    || !Number.isInteger(value.coverage.districts) || value.coverage.districts < 1 || value.coverage.districts > 64
+    || !Number.isInteger(value.coverage.publishedRows)
+    || value.coverage.publishedRows < 0 || value.coverage.publishedRows > 960
+    || value.advisories.length !== (value.scope ? value.count : value.coverage.publishedRows)) return false;
+  return value.advisories.every((row) => row && typeof row === 'object'
+    && Object.keys(row).every((key) => rowKeys.includes(key))
+    && typeof row.advisoryId === 'string' && /^\d{1,2}-\d{4}-\d{2}-\d{2}-[a-z-]+$/.test(row.advisoryId)
+    && Number.isInteger(row.districtId) && row.districtId > 0 && row.districtId <= 64
+    && typeof row.district === 'string' && row.district.length > 0 && row.district.length < 100
+    && typeof row.division === 'string' && row.division.length > 0 && row.division.length < 100
+    && Number.isInteger(row.forecastDay) && row.forecastDay > 0 && row.forecastDay <= 15
+    && /^\d{4}-\d{2}-\d{2}$/.test(row.targetDate)
+    && (row.tier === 'WATCH' || row.tier === 'NORMAL')
+    && row.reasonCode === (row.tier === 'WATCH' ? 'district_outlook' : 'no_major_risk')
+    && ['unique', 'tied', 'unknown', 'none'].includes(row.peak)
+    && hazards.includes(row.hazard)
+    && Array.isArray(row.actionIds) && row.actionIds.length >= 2 && row.actionIds.length <= 4
+    && row.actionIds.every((id) => actions.includes(id))
+    && Array.isArray(row.qualityNotes)
+    && row.qualityNotes.every((note) => ['official_update_unverified', 'limited_forecast_detail'].includes(note))
+    && row.weather && typeof row.weather === 'object'
+    && Object.keys(row.weather).every((key) => ['precipitationMm', 'temperatureMaxC', 'windKmh'].includes(key))
+    && Object.values(row.weather).every((n) => typeof n === 'number' && Number.isFinite(n)));
+}
+
 function isCacheableResponse(request, response) {
   if (!request || !response) return false;
   if (request.method && request.method !== 'GET') return false;
@@ -81,11 +147,16 @@ function fetchWithTimeout(request, timeoutMs) {
   return pending.finally(() => clearTimeout(timer));
 }
 
-async function alertsNetworkFirst(request) {
-  const cache = await caches.open(ALERTS_CACHE_NAME);
+async function alertsNetworkFirst(request, cacheName = ALERTS_CACHE_NAME) {
+  const cache = await caches.open(cacheName);
   try {
     const response = await fetchWithTimeout(request, ALERTS_NETWORK_TIMEOUT_MS);
-    if (isCacheableResponse(request, response)) {
+    let approved = isCacheableResponse(request, response);
+    if (approved && cacheName === DAILY_PUBLIC_CACHE_NAME) {
+      try { approved = isApprovedDailyPayload(await response.clone().json()); }
+      catch (_) { approved = false; }
+    }
+    if (approved) {
       const headers = new Headers(response.headers);
       headers.set('X-HazardNet-Cached-At', new Date().toISOString());
       await cache.put(request, new Response(await response.clone().blob(), {
@@ -93,13 +164,20 @@ async function alertsNetworkFirst(request) {
         statusText: response.statusText,
         headers,
       }));
+      if (cacheName === DAILY_PUBLIC_CACHE_NAME && typeof cache.keys === 'function') {
+        const keys = await cache.keys();
+        await Promise.all(keys.slice(0, Math.max(0, keys.length - DAILY_PUBLIC_CACHE_LIMIT))
+          .map((key) => cache.delete(key)));
+      }
     }
     return response;
   } catch (e) {
     const cached = await cache.match(request);
     if (!cached) {
       return new Response(
-        JSON.stringify({ error: 'offline and no cached alert payload on this device' }),
+        JSON.stringify({ error: cacheName === DAILY_PUBLIC_CACHE_NAME
+          ? 'offline and no published daily outlook is stored on this device'
+          : 'offline and no cached alert payload on this device' }),
         { status: 504, headers: { 'Content-Type': 'application/json' } },
       );
     }
@@ -121,7 +199,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => Promise.all(
       keys
-        .filter((key) => key !== CACHE_NAME && key !== ALERTS_CACHE_NAME)
+        .filter((key) => key !== CACHE_NAME && key !== ALERTS_CACHE_NAME && key !== DAILY_PUBLIC_CACHE_NAME)
         .map((key) => caches.delete(key))
     )).then(() => self.clients.claim())
   );
@@ -244,11 +322,25 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Never cache an advisory-like path on another origin. Only this deployment's
+  // approved public asset belongs in the daily cache.
+  if (url.origin !== self.location.origin
+    && (url.pathname.startsWith('/api/v1/advisories') || url.pathname === '/data/daily-advisories-v1.json')) return;
+
   // Alert payloads: network-first, labelled cache fallback (never a silent stale read).
   if (isAlertsRequest(url)) {
     event.respondWith(alertsNetworkFirst(request));
     return;
   }
+  // A separate bounded cache for strictly public day-by-day results. The offline
+  // marker overrides any 'fresh' status captured in an old API response.
+  if (isDailyPublicRequest(url) && request.method === 'GET') {
+    event.respondWith(alertsNetworkFirst(request, DAILY_PUBLIC_CACHE_NAME));
+    return;
+  }
+  // A future officer/review endpoint under this prefix must NEVER fall through
+  // to the generic static-asset cache (which can replay responses to a new user).
+  if (url.pathname.startsWith('/api/v1/advisories')) return;
 
   // For API responses, try network first
   if (request.url.includes('/api/predict') || request.url.includes('/api/push')) {

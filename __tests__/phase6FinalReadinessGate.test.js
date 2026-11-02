@@ -74,9 +74,14 @@ describe('Phase 6 — Final Production Readiness Gate & Full Reproduction Contra
       path.join(ROOT, 'e2e/critical-paths.spec.ts'),
       'utf8'
     );
+    // The default district route now owns the daily outlook. Its unavailable
+    // state must remain a valid mobile forecast surface; the modelled-hazard
+    // assertion belongs to the explicit older published-records view.
     expect(criticalPaths).toContain(
-      "await expect(page.locator('main').getByText(/forecast|hazard/i).first()).toBeVisible();"
+      "await expect(page.locator('main').getByText(/outlook|forecast/i).first()).toBeVisible();"
     );
+    expect(criticalPaths).toContain('/forecast/district/dhaka?view=published-records');
+    expect(criticalPaths).toContain('open the day-by-day district outlook');
 
     const smoke = fs.readFileSync(path.join(ROOT, 'e2e/smoke.spec.ts'), 'utf8');
     expect(smoke).toContain('b.x >= 0 && b.x + b.width <= 375');

@@ -1,6 +1,6 @@
 {
   "schema": "hazardnet-cache-write-register/v1",
-  "updated": "2026-10-27",
+  "updated": "2026-11-01",
   "what_this_is": "Every write site found by `git grep -nE \"cache(\\.put|\\.set|\\.write)|CACHE\\.put|KV\\.put|expires\" functions/ serverless/ backend/`, plus the other in-memory Map writes in those trees. A site is either GUARDED (pre-write + post-read value assertion through backend/utils/cacheContract.js) or DISPOSITIONED with a dated reason why it is not a read-through value cache. `__tests__/cacheContract.test.js` fails if a new matched write site appears without one of those two entries.",
   "writeSites": [
     { "file": "backend/utils/openMeteo.js", "snippet": "cache.set(cacheKey(coord.lat, coord.lng)", "status": "guarded", "guard": "assertComplete", "detail": "Batch path: the write is preceded by `const guard = cache.set(...)` and a 502 is thrown on failure. Reads go through cache.get's post-read guard." },
@@ -18,6 +18,9 @@
     { "file": "backend/security/httpHeaders.js", "snippet": "target.set(name, value)", "status": "dispositioned", "date": "2026-10-27", "reason": "Headers object mutation while building the canonical policy. Not a cache." },
     { "file": "backend/server.js", "snippet": "const expires = now + 86400", "status": "dispositioned", "date": "2026-10-27", "reason": "HTTP Message Signature `expires` timestamp. Matched by the grep's `expires` alternative but is a signature validity window, not a cached value." },
     { "file": "backend/server.js", "snippet": "expires=${expires}`;", "status": "dispositioned", "date": "2026-10-27", "reason": "The signature input string embeds the `expires` value from the line above. Matched by the grep's `expires` alternative; it is part of one HTTP signature header, not a second write site." },
+    { "file": "backend/utils/publicDailyFirestore.js", "snippet": "transaction.set(runRef, {", "status": "dispositioned", "date": "2026-11-01", "reason": "Admin Firestore transaction, not a read-through cache. The complete public-only snapshot passes the strict release check before writing immutable run metadata." },
+    { "file": "backend/utils/publicDailyFirestore.js", "snippet": "transaction.set(ref, data)", "status": "dispositioned", "date": "2026-11-01", "reason": "Admin Firestore transaction, not a cache. All 64 district partitions contain only allowlisted public rows validated before the atomic write and again on read-back." },
+    { "file": "backend/utils/publicDailyFirestore.js", "snippet": "transaction.set(headRef, {", "status": "dispositioned", "date": "2026-11-01", "reason": "Admin Firestore publication pointer, not a cache. The pointer is written atomically with all public partitions after validation, so a reader cannot observe a partial run." },
     { "file": "serverless/dispatch.js", "snippet": "new Map(Object.entries(routes))", "status": "dispositioned", "date": "2026-10-27", "reason": "Immutable route table built once at module load. No writes after construction." }
   ]
 }

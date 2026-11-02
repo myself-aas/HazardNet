@@ -13,6 +13,7 @@ import pushRoutes from './routes/push.js';
 import conversionRoutes from './routes/conversions.js';
 import weatherRoutes from './routes/weather.js';
 import kaggleRoutes from './routes/kaggle.js';
+import dailyAdvisoryRoutes from './routes/dailyAdvisories.js';
 import alertRoutes from './routes/alerts.js';
 import groundingRoutes from './routes/grounding.js';
 import { liveVoiceRouter, setupLiveVoiceWebSocket } from './routes/liveVoice.js';
@@ -709,6 +710,8 @@ app.use(['/Models', '/models', '/hazardnet_fp32.tflite', '/hazardnet_int8.tflite
 app.use('/api', apiLimiter);
 app.use('/api/v1/forecasts', forecastRoutes);
 app.use('/api/v1/kaggle', kaggleRoutes);
+// Read-only public snapshot. Publication requires a separately attested UTC run manifest.
+app.use('/api/v1/advisories', dailyAdvisoryRoutes);
 app.use('/v1/forecasts', apiLimiter, forecastRoutes);
 app.use('/api/chat', attachFirebaseAuthUser, dynamicAiLimiter, chatRoutes);
 app.use('/api/grounding', attachFirebaseAuthUser, dynamicAiLimiter, groundingRoutes);

@@ -40,7 +40,7 @@ import { resetGuardsForTests } from '../../backend/middleware/serverlessGuard.js
 const PUBLIC_SURFACE = {
   'api/[endpoint].js': ['forecasts', 'ingest', 'predict'],
   'api/chat/[action].js': ['query', 'sample-questions'],
-  'api/v1/[resource].js': ['alerts', 'kaggle', 'telemetry', 'weather'],
+  'api/v1/[resource].js': ['advisories', 'alerts', 'kaggle', 'telemetry', 'weather'],
   'api/v1/alerts/[action].js': ['evidence-card', 'policy', 'review', 'run'],
   'api/v1/forecasts/[action].js': ['bulk', 'history', 'metadata'],
   'api/v1/weather/batch.js': [],
@@ -188,6 +188,14 @@ describe('the dispatcher is transparent', () => {
     expect(routeSegment({ url: '/api/v1/alerts/policy/', query: {} }, 'action', table)).toBe('policy');
     // No path match (a direct invocation): the platform's appended parameter is the fallback.
     expect(routeSegment({ url: '', query: { action: 'known' } }, 'action', table)).toBe('known');
+  });
+
+  it('uses the filesystem resource position, not a nested path that shares a resource name', () => {
+    const table = new Map([['kaggle', 'handler'], ['advisories', 'handler']]);
+    expect(routeSegment({ url: '/api/v1/kaggle/advisories', query: { resource: 'kaggle' } },
+      'resource', table, 'api/v1/[resource].js')).toBe('kaggle');
+    expect(routeSegment({ url: '/api/v1/unknown/advisories', query: { resource: 'advisories' } },
+      'resource', table, 'api/v1/[resource].js')).toBe('unknown');
   });
 
   it('strips only its own parameter, keeping the rest byte-for-byte', () => {

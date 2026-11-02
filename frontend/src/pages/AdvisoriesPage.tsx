@@ -42,6 +42,7 @@ import {
 import { StructuredAdvisoryRenderer } from '../components/StructuredAdvisoryRenderer';
 import { PrintQrCode } from '../components/PrintQrCode';
 import { PdfExportButton } from '../components/PdfExportButton';
+import { DailyOutlookEntry } from '../components/DailyOutlookEntry';
 
 export const AdvisoriesPage: React.FC = () => {
   const { subCategory } = useParams<{ subCategory?: string }>();
@@ -305,6 +306,10 @@ export const AdvisoriesPage: React.FC = () => {
           })}
         </div>
       </div>
+
+      {/* Link to the separate public district/day contract, not to a generated
+          sector directive or a two-horizon Kaggle forecast row. */}
+      <DailyOutlookEntry />
 
       {/* 2. ACTIVE SECTOR EXECUTIVE INTELLIGENCE & MANDATE */}
       <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-6 relative overflow-hidden">

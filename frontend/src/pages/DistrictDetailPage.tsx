@@ -11,6 +11,7 @@ import { DistrictBriefProvider } from '../components/district/DistrictBriefConte
 import type { DistrictBriefContextValue, ForecastRunMetadata, PeakSeverityInfo } from '../components/district/DistrictBriefContext';
 import { DistrictBriefActions } from '../components/district/DistrictBriefActions';
 import { DistrictBriefHeader } from '../components/district/DistrictBriefHeader';
+import { DailyOutlookEntry } from '../components/DailyOutlookEntry';
 import { DistrictOutlookCard } from '../components/district/DistrictOutlookCard';
 import { DistrictForecastRecords } from '../components/district/DistrictForecastRecords';
 import { DistrictBriefBody } from '../components/district/DistrictBriefBody';
@@ -327,6 +328,9 @@ export const DistrictDetailPage: React.FC = () => {
       <div id="district-detail-container" className="w-full max-w-7xl mx-auto min-w-0 overflow-x-hidden space-y-8 font-sans pb-16">
         <DistrictBriefActions />
         <DistrictBriefHeader />
+        {/* The day-by-day public result is distinct from this older two-horizon
+            record; its own API and freshness state never overwrite the brief. */}
+        <DailyOutlookEntry districtId={district.id} />
         <DistrictOutlookCard />
         <DistrictForecastRecords />
         <DistrictBriefBody />

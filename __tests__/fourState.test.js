@@ -134,8 +134,9 @@ describe('four-state checklist', () => {
     expect({ byData, pages: Object.keys(ledger.entries).length, absent }).toEqual({
       // 2026-10-05: +1 fetch page — the run card moved from the front-door hero to /last-run,
       // which reads the freshness and alert artifacts at the page level.
-      byData: { fetch: 22, mutation: 7, static: 7 },
-      pages: 36,
+      // 2026-11-01: +1 fetch page for the public-only daily district outlook.
+      byData: { fetch: 23, mutation: 7, static: 7 },
+      pages: 37,
       absent: 0,
     });
     // No page is allowed to fall back to `absent`: the five cells that used to be open (Dashboard

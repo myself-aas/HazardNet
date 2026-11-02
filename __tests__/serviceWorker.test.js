@@ -118,6 +118,67 @@ describe('the worker that ships', () => {
   });
 });
 
+describe('public district/day advisories', () => {
+  const dailyUrl = 'https://www.hazardnet.live/api/v1/advisories?scope=timeline&district=Kurigram';
+  const approved = {
+    schema: 'hazardnet-daily-advisories/v1', scope: 'timeline',
+    run: { id: 'synthetic', generatedAt: '2026-11-01T17:00:00Z', dataCutoff: '2026-11-01T15:00:00Z',
+      expiresAt: '2026-11-03T03:00:00Z', modelVersion: 'synthetic', inputSha256: 'a'.repeat(64) },
+    coverage: { districts: 1, forecastDays: 15, publishedRows: 0 },
+    advisories: [], count: 0,
+  };
+
+  it('caches only successful public reads, then marks an offline replay', async () => {
+    const { caches, puts } = makeCaches();
+    const online = loadWorker({
+      caches, fetchImpl: async () => jsonResponse(approved, { 'Cache-Control': 'public, max-age=60' }),
+    });
+    expect((await respond(online, request({ url: dailyUrl }))).status).toBe(200);
+    expect(puts.map((entry) => entry.name)).toEqual(['hazardnet-daily-public-v1']);
+    const offline = loadWorker({ caches, fetchImpl: async () => { throw new Error('offline'); } });
+    const fallback = await respond(offline, request({ url: dailyUrl }));
+    expect(fallback.headers.get('X-HazardNet-Stale')).toBe('1');
+    expect((await fallback.json()).schema).toBe('hazardnet-daily-advisories/v1');
+  });
+
+  it('does not cache credentialed or no-store data, or an outside-origin advisory', async () => {
+    const { caches, puts } = makeCaches();
+    const handlers = loadWorker({
+      caches, fetchImpl: async () => jsonResponse({ private: true }, { 'Cache-Control': 'no-store' }),
+    });
+    await respond(handlers, request({ url: dailyUrl }));
+    await respond(handlers, request({ url: dailyUrl, headers: { authorization: 'Bearer secret' } }));
+    expect(puts).toEqual([]);
+    expect(respond(handlers, request({ url: 'https://other.example/api/v1/advisories' }))).toBeUndefined();
+  });
+
+  it('never intercepts future officer endpoints or a write to the public path', () => {
+    const { caches, puts } = makeCaches();
+    const handlers = loadWorker({ caches, fetchImpl: async () => jsonResponse(approved) });
+    expect(respond(handlers, request({ url: 'https://www.hazardnet.live/api/v1/advisories/review' }))).toBeUndefined();
+    expect(respond(handlers, request({ url: dailyUrl, method: 'POST' }))).toBeUndefined();
+    expect(puts).toEqual([]);
+  });
+
+  it('rejects a 200 response with private columns even if the host marks it public', async () => {
+    const { caches, puts } = makeCaches();
+    const handlers = loadWorker({ caches, fetchImpl: async () => jsonResponse(
+      { ...approved, privateLedger: { fusion_reason: 'secret' } },
+      { 'Cache-Control': 'public, max-age=60' },
+    ) });
+    expect((await respond(handlers, request({ url: dailyUrl }))).status).toBe(200);
+    expect(puts).toEqual([]);
+  });
+
+  it('answers 504 when offline with no stored public daily copy', async () => {
+    const { caches } = makeCaches();
+    const handlers = loadWorker({ caches, fetchImpl: async () => { throw new Error('offline'); } });
+    const result = await respond(handlers, request({ url: dailyUrl }));
+    expect(result.status).toBe(504);
+    expect((await result.json()).error).toMatch(/no published daily outlook/);
+  });
+});
+
 describe('alert payloads', () => {
   it('goes to the network first and caches the result', async () => {
     const { caches, puts } = makeCaches();

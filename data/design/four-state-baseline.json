@@ -234,6 +234,29 @@
       },
       "note": "console surface: the audit's P1-5/P2-3 reading is that dense console chrome is per-surface work (skill section 13); the district forecast read's empty and error shapes are now the page's own states (DistrictForecastPanel)"
     },
+    "pages/DistrictDailyPage.tsx": {
+      "data": "fetch",
+      "loading": {
+        "kind": "text",
+        "evidence": "t('daily.loading')"
+      },
+      "empty": {
+        "kind": "notice",
+        "evidence": "t(rows.length > 0 ? 'daily.emptyWeek' : 'daily.empty')",
+        "note": "A missing day has no invented row or false quiet outlook."
+      },
+      "error": {
+        "kind": "notice",
+        "evidence": "t('daily.unavailableWarning')",
+        "retry": true,
+        "retry_via": "The Try again button retries the public-only district read."
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "id=\"daily-days-heading\""
+      },
+      "note": "Public daily district view. Missing file, expired data and offline copy have distinct notices; none fall back to static severity."
+    },
     "pages/DistrictDetailPage.tsx": {
       "data": "fetch",
       "loading": {

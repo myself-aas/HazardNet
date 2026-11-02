@@ -38,6 +38,12 @@ const TONES = {
     active: 'bg-carbon-90 text-ap-on-inverse',
     idle: 'text-carbon-70 hover:bg-carbon-05',
   },
+  daily: {
+    wrapper: 'rounded-full border border-[var(--ap-separator-opaque)] bg-[var(--ap-bg-grouped)] p-0.5',
+    button: 'rounded-full',
+    active: 'bg-[var(--ap-bg-raised)] text-[var(--ap-label)]',
+    idle: 'text-[var(--ap-label-secondary)] hover:text-[var(--ap-label)]',
+  },
 } as const;
 
 export interface LanguageToggleProps {

@@ -90,14 +90,16 @@ test.describe('District Selection & Forecast Display', () => {
     await expect(card).toContainText(/kurigram/i);
   });
 
-  test('forecast shows required information', async ({ page }) => {
-    await page.goto(`${BASE}/forecast/district/dhaka`);
+  test('legacy published-records forecast still shows modelled hazards', async ({ page }) => {
+    // This is the old two-horizon snapshot contract. The default daily
+    // outlook intentionally has no fabricated hazard before its first run.
+    await page.goto(`${BASE}/forecast/district/dhaka?view=published-records`);
 
     await expect(page.getByRole('heading', { level: 1, name: /dhaka/i })).toBeVisible({
       timeout: 20_000,
     });
 
-    // At least one modelled hazard must be named in the brief.
+    // At least one modelled hazard must be named in this *legacy* brief.
     const hazards = ['Cold Wave', 'Drought', 'Fire', 'Flash Flood', 'Flood', 'Heat Wave'];
     let hazardVisible = false;
     for (const hazard of hazards) {
@@ -109,7 +111,7 @@ test.describe('District Selection & Forecast Display', () => {
     expect(hazardVisible, 'At least one hazard should be visible').toBe(true);
   });
 
-  test('district forecast card opens the full district brief', async ({ page }) => {
+  test('district forecast card opens the district outlook', async ({ page }) => {
     // The GIS stage is the console at `/live` (PR #29); the card it pins is part
     // of that stage, not of the editorial front door.
     //
@@ -122,8 +124,9 @@ test.describe('District Selection & Forecast Display', () => {
     await waitForAppShell(page);
 
     // The GIS stage pins a forecast card for the focused district; its primary
-    // action must deep-link into the district intelligence brief.
-    const openBrief = page.getByRole('button', { name: /view detailed disaster analytics/i });
+    // action must deep-link into the farmer-first district outlook. The older
+    // two-horizon analytics remain available from that page's explicit link.
+    const openBrief = page.getByRole('button', { name: /open the day-by-day district outlook/i });
     await expect(openBrief).toBeVisible({ timeout: 20_000 });
 
     await openBrief.click();
@@ -270,7 +273,7 @@ test.describe('Mobile Navigation', () => {
     });
 
     await expectNoHorizontalOverflow(page, '/forecast/district/dhaka @375px');
-    await expect(page.locator('main').getByText(/forecast|hazard/i).first()).toBeVisible();
+    await expect(page.locator('main').getByText(/outlook|forecast/i).first()).toBeVisible();
   });
 });
 

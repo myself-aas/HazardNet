@@ -90,7 +90,12 @@ describe('route register', () => {
       expect(source).toMatch(/expect\(/);
       // A value assertion, not just toBeDefined()/toBeTruthy().
       expect(source).toMatch(/\.to(Be|Equal|StrictEqual)\((?!\)|.*toBeDefined)/);
-      expect(route.firstLiveCall).toMatch(/2026-\d{2}-\d{2}|2026-10-2/);
+      if (route.status === 'pending-publication') {
+        expect(route.firstLiveCall).toBeNull();
+        expect(route.verification).toMatch(/Not yet called on a deployed site/);
+      } else {
+        expect(route.firstLiveCall).toMatch(/2026-\d{2}-\d{2}|2026-10-2/);
+      }
       expect(route.cutover404).toBe(true);
     }
   });
