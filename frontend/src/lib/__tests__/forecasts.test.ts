@@ -307,8 +307,8 @@ describe('parseSnapshotResponse (hourly static snapshot fallback)', () => {
 
 describe('display helpers', () => {
   it('formats horizon labels', () => {
-    expect(formatHorizonLabel('7_days')).toBe('Next 7 Days');
-    expect(formatHorizonLabel('15_days')).toBe('Next 15 Days');
+    expect(formatHorizonLabel('15_days')).toBe('Continuous 15 Days');
+    expect(formatHorizonLabel('7_days')).toBe('Days 1–7 Subset');
   });
 
   it('guards the horizon type', () => {

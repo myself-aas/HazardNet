@@ -23,11 +23,13 @@ import { Disclaimer } from '../components/alerts/Disclaimer';
 import { EvidenceCard, EvidenceCardExportButton } from '../components/alerts/EvidenceCard';
 import { LanguageToggle } from '../components/alerts/LanguageToggle';
 import { DailyOutlookEntry } from '../components/DailyOutlookEntry';
+import { Continuous15DayTrajectory } from '../components/district/Continuous15DayTrajectory';
 import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
 import { AlertLevelBadge } from '../components/alerts/AlertLevelBadge';
 import { useBandwidthMode } from '../hooks/useBandwidthMode';
 import { useI18n } from '../hooks/useI18n';
 import { type AlertRecord, type AlertsResult, freshnessOf, loadAlerts } from '../lib/alerts';
+import { loadDistrictDaily, type DistrictDailyResult } from '../lib/dailyAdvisories';
 
 export const AlertDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -37,6 +39,7 @@ export const AlertDetailPage: React.FC = () => {
   const [result, setResult] = useState<AlertsResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [reloadNonce, setReloadNonce] = useState(0);
+  const [dailyResult, setDailyResult] = useState<DistrictDailyResult | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -57,11 +60,43 @@ export const AlertDetailPage: React.FC = () => {
     };
   }, [reloadNonce]);
 
-  const alert: AlertRecord | null = useMemo(() => {
-    if (!result || !id) return null;
+  const { alert, supersededFrom } = useMemo((): { alert: AlertRecord | null; supersededFrom: string | null } => {
+    if (!result || !id) return { alert: null, supersededFrom: null };
     const wanted = decodeURIComponent(id);
-    return result.alerts.find((entry) => entry.id === wanted) || null;
+    const exact = result.alerts.find((entry) => entry.id === wanted);
+    if (exact) return { alert: exact, supersededFrom: null };
+
+    const parts = wanted.split('__');
+    if (parts.length >= 4) {
+      const districtId = Number(parts[2]);
+      const hazardSlug = parts[3];
+      if (Number.isFinite(districtId) && districtId > 0) {
+        const sameDistrictAndHazard = result.alerts.find(
+          (entry) => Number(entry.district_id) === districtId && entry.id.split('__')[3] === hazardSlug,
+        );
+        if (sameDistrictAndHazard) {
+          return { alert: sameDistrictAndHazard, supersededFrom: wanted };
+        }
+        const sameDistrict = result.alerts.find((entry) => Number(entry.district_id) === districtId);
+        if (sameDistrict) {
+          return { alert: sameDistrict, supersededFrom: wanted };
+        }
+      }
+    }
+    return { alert: null, supersededFrom: null };
   }, [result, id]);
+
+  useEffect(() => {
+    if (!alert?.district_name) {
+      setDailyResult(null);
+      return;
+    }
+    const controller = new AbortController();
+    void loadDistrictDaily(alert.district_name, { now: new Date(), signal: controller.signal }).then((next) => {
+      if (!controller.signal.aborted) setDailyResult(next);
+    });
+    return () => controller.abort();
+  }, [alert?.district_name]);
 
   const freshness = result ? freshnessOf(result) : { age_hours: null, within_slo: null };
 
@@ -105,7 +140,7 @@ export const AlertDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[900px] px-4 pb-16 pt-6">
+    <div className="mx-auto w-full max-w-[1040px] px-4 pb-16 pt-6">
       <nav aria-label={t('alerts.detail.title')} className="no-print mb-3 flex items-center justify-between gap-2">
         <Link
           to="/alerts"
@@ -146,6 +181,25 @@ export const AlertDetailPage: React.FC = () => {
         </div>
       </div>
 
+      {supersededFrom && (
+        <div
+          data-testid="superseded-alert-banner"
+          role="status"
+          className="no-print mb-3 rounded-xl border border-carbon-20 bg-carbon-05 px-4 py-3 text-xs text-carbon-80"
+        >
+          <p className="font-bold text-carbon-90">{t('alerts.detail.supersededTitle')}</p>
+          <p className="mt-1">
+            {t('alerts.detail.supersededBody')}{' '}
+            <Link
+              to={`/alerts/${encodeURIComponent(alert.id)}`}
+              className="font-mono font-semibold underline hover:text-carbon-90"
+            >
+              {alert.id}
+            </Link>
+          </p>
+        </div>
+      )}
+
       <DataSourceBanner
         className="mb-3 no-print"
         source={result?.source || 'none'}
@@ -157,6 +211,15 @@ export const AlertDetailPage: React.FC = () => {
 
       <DailyOutlookEntry districtId={ALL_64_DISTRICTS.find((district) =>
         district.name === alert.district_name)?.id} />
+
+      {dailyResult && dailyResult.advisories.length > 0 && (
+        <section className="mb-4" aria-labelledby="alert-trajectory-heading">
+          <h2 id="alert-trajectory-heading" className="mb-2 text-base font-bold text-carbon-90">
+            {t('alerts.detail.trajectoryHeading')}
+          </h2>
+          <Continuous15DayTrajectory advisories={dailyResult.advisories} />
+        </section>
+      )}
 
       <EvidenceCard alert={alert} disclaimer={alert.disclaimer} />
 

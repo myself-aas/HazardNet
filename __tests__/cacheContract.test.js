@@ -137,6 +137,34 @@ describe('openMeteo cache — the poisoned-cache regression', () => {
     expect(peekCacheEntry(KEY)).toBeUndefined();              // pre-write guard: no write
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('write guard rejected'));
   });
+
+  test('serves verified stale cache with _meta.stale=true on upstream timeout, and rejects poisoned hollow stale cache with 502', async () => {
+    const t0 = 1_700_000_000_000;
+    const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(t0);
+
+    // 1. Populate valid point at t0
+    const initial = await fetchCurrentWeather(COORD.lat, COORD.lng);
+    expect(initial.current.temperature_2m).toBe(UPSTREAM_OBJECT.current.temperature_2m);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+
+    // 2. Advance +25 min (> 15 min TTL, < 2 h stale window) and make upstream fail with TimeoutError
+    nowSpy.mockReturnValue(t0 + 25 * 60 * 1000);
+    fetchSpy.mockImplementation(async () => {
+      const err = new Error('The operation was aborted due to timeout');
+      err.name = 'TimeoutError';
+      throw err;
+    });
+
+    const staleHit = await fetchCurrentWeather(COORD.lat, COORD.lng);
+    expect(staleHit.current.temperature_2m).toBe(UPSTREAM_OBJECT.current.temperature_2m);
+    expect(staleHit._meta.stale).toBe(true);
+    expect(staleHit._meta.cached).toBe(true);
+
+    // 3. Poison cache with hollow { id, _meta } at t0 + 5 min; upstream still timing out -> must reject 502, never serve hollow point
+    clearCache();
+    seedCacheEntry(KEY, HOLLOW_POINT, t0 + 5 * 60 * 1000);
+    await expect(fetchCurrentWeather(COORD.lat, COORD.lng)).rejects.toThrow(/aborted|Open-Meteo/i);
+  });
 });
 
 describe('the other two read-through caches', () => {

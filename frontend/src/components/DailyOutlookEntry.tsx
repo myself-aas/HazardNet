@@ -1,13 +1,20 @@
 /**
- * A small, public-only bridge from the older forecast/alert surfaces to the
- * district day-by-day outlook. Never merge daily rows into map severity,
- * two-horizon records or issued alerts: each has a different release contract.
+ * Bridge card linking `/live`, `/advisories`, and `/districts/:id` to the 15-day
+ * day-by-day Kaggle district outlook, summarizing peak tier, severityScore, and weather
+ * when available while keeping research / non-official-warning disclaimers explicit.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getDistrictById } from '../data/bangladeshDistricts';
+import { AlertLevelBadge } from './alerts/AlertLevelBadge';
 import { useI18n } from '../hooks/useI18n';
-import { loadDistrictDaily, type DistrictDailyResult } from '../lib/dailyAdvisories';
+import { hazardLabel } from '../hooks/useHazardLabel';
+import {
+  loadDistrictDaily,
+  severityIndexOf,
+  summarizeContinuous15Days,
+  type DistrictDailyResult,
+} from '../lib/dailyAdvisories';
 
 const UNAVAILABLE: DistrictDailyResult = {
   status: 'unavailable', source: 'none', run: null, advisories: [], fetchedAt: null,
@@ -16,7 +23,7 @@ const UNAVAILABLE: DistrictDailyResult = {
 export function DailyOutlookEntry({ districtId }: { districtId?: string | null }) {
   const district = districtId ? getDistrictById(districtId) : null;
   const districtName = district?.name;
-  const { t, formatDate } = useI18n();
+  const { language, t, formatDate, formatNumber } = useI18n();
   const [result, setResult] = useState<DistrictDailyResult>(UNAVAILABLE);
   const [loading, setLoading] = useState(false);
 
@@ -36,6 +43,14 @@ export function DailyOutlookEntry({ districtId }: { districtId?: string | null }
     return () => controller.abort();
   }, [districtName]);
 
+  const summary15 = useMemo(() => {
+    const valid = result.advisories.filter(
+      (row) => row && typeof row.hazard === 'string' && typeof row.tier === 'string' && typeof row.targetDate === 'string',
+    );
+    return summarizeContinuous15Days(valid);
+  }, [result.advisories]);
+  const peakRow = summary15.primaryPeak;
+
   let state: string;
   if (!district) state = t('daily.nav.choose');
   else if (loading) state = t('daily.loading');
@@ -51,6 +66,36 @@ export function DailyOutlookEntry({ districtId }: { districtId?: string | null }
     <section className="screen-only border-t border-[var(--ap-separator-opaque)] py-4 text-sm text-[var(--ap-label)]"
       aria-label={t('daily.nav.open')}>
       <p aria-live={district ? 'polite' : 'off'}>{state}</p>
+      {peakRow && (
+        <div className="mt-2 flex flex-wrap items-center gap-2.5 text-xs">
+          <AlertLevelBadge level={peakRow.tier} label={t(`alerts.tier.${peakRow.tier}`)} size="sm" />
+          <span className="font-semibold text-[var(--ap-label)]">
+            {summary15.peakRows.length > 1 ? t('daily.peakBannerMultiple') : t('daily.peakBannerSingle')}:{' '}
+            {summary15.peakRows.length > 0
+              ? summary15.peakRows.map((r) => formatDate(r.targetDate)).join(' · ')
+              : formatDate(peakRow.targetDate)}{' '}
+            ({hazardLabel(peakRow.hazard, language)})
+          </span>
+          {typeof peakRow.severityScore === 'number' && Number.isFinite(peakRow.severityScore) && (
+            <>
+              <span className="tabular-nums font-semibold text-[var(--ap-label)]">
+                {t('daily.severityIndex')}: {formatNumber(severityIndexOf(peakRow.severityScore))}/100
+              </span>
+              <span className="tabular-nums text-[var(--ap-label-secondary)]">
+                {t('daily.severityScore')}: {formatNumber(Math.round(peakRow.severityScore * 100))}% ({formatNumber(peakRow.severityScore, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
+              </span>
+            </>
+          )}
+          <span className="tabular-nums text-[var(--ap-label-secondary)]">
+            {formatNumber(summary15.days.length)}-day continuous output
+          </span>
+          {peakRow.weather?.precipitationMm !== undefined && (
+            <span className="tabular-nums text-[var(--ap-label-secondary)]">
+              {t('daily.weather.precip')}: {formatNumber(peakRow.weather.precipitationMm, { minimumFractionDigits: 0, maximumFractionDigits: 1 })}{'\u00A0'}mm
+            </span>
+          )}
+        </div>
+      )}
       <p className="mt-2 text-[var(--ap-label-secondary)]">{t('daily.researchShort')}</p>
       <p className="mt-1 text-[var(--ap-label-secondary)]">{t('daily.nav.separate')}</p>
       <Link to={district ? `/forecast/district/${district.id}` : '/districts'}

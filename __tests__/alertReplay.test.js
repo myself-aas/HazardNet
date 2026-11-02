@@ -62,20 +62,20 @@ describe('rehearseAlertEngine over the committed snapshot', () => {
   });
 
   it('produces WATCH rows only — no warning may be reached without calibration accuracy', () => {
-    // Distribution measured on the committed snapshot (2026-10-24): 106 WATCH + 22
+    // Distribution measured on the committed Kaggle v42 snapshot (2026-11-01): 120 WATCH + 8
     // NO_ALERT, zero WARNING/SEVERE. If the policy bands or the data drift this fails,
     // forcing a deliberate re-baseline rather than a silent level shift.
     expect(result.rows_total).toBe(result.counts.WATCH + result.counts.NO_ALERT
       + result.counts.WARNING + result.counts.SEVERE);
     expect(result.counts.WARNING).toBe(0);
     expect(result.counts.SEVERE).toBe(0);
-    expect(result.counts.WATCH).toBe(106);
-    expect(result.counts.NO_ALERT).toBe(22);
+    expect(result.counts.WATCH).toBe(120);
+    expect(result.counts.NO_ALERT).toBe(8);
     expect(result.max_auto_publish_level).toBe('WATCH');
   });
 
   it('publishes the auto-publishable rows because the committed snapshot is stamped', () => {
-    expect(result.persisted.published).toBe(106);
+    expect(result.persisted.published).toBe(120);
     expect(result.persisted.blocked).toBe(0);
     expect(result.persisted.pending_review).toBe(0);
     for (const alert of result.published_alerts) {
@@ -92,8 +92,8 @@ describe('rehearseAlertEngine over the committed snapshot', () => {
     expect(result.alerts).toHaveLength(128);
     const published = result.alerts.filter((doc) => doc.state === 'PUBLISHED');
     const drafts = result.alerts.filter((doc) => doc.state === 'DRAFT');
-    expect(published).toHaveLength(106);
-    expect(drafts).toHaveLength(22);
+    expect(published).toHaveLength(120);
+    expect(drafts).toHaveLength(8);
     for (const doc of published) {
       expect(doc.disclaimer).toMatch(/not an official warning service/);
       expect(doc.provenance.model_version).toBe(snapshot.provenance.model_version);
@@ -156,9 +156,9 @@ describe('the run report a pipeline consumes', () => {
     const runResult = await rehearseAlertEngine({ snapshot, now: NOW });
     const built = buildSnapshot(runResult);
     expect(runResult.published_alerts).toHaveLength(runResult.persisted.published);
-    expect(built.alerts).toHaveLength(106);
+    expect(built.alerts).toHaveLength(120);
     expect(built.counts.dropped_unpublished).toBe(0);
-    expect(built.counts.WATCH).toBe(106);
+    expect(built.counts.WATCH).toBe(120);
     expect(built.assessed).toBe(128);
     expect(built.alerts.every((alert) => alert.state === 'PUBLISHED')).toBe(true);
     expect(built.alerts.every((alert) => alert.disclaimer && alert.disclaimer.length > 0)).toBe(true);
@@ -180,7 +180,7 @@ describe('the run report a pipeline consumes', () => {
 
     const gated = await rehearseAlertEngine({ snapshot: stampedOff, now: NOW });
     expect(gated.persisted.published).toBe(0);
-    expect(gated.persisted.blocked).toBe(106);
+    expect(gated.persisted.blocked).toBe(120);
     expect(Array.isArray(gated.published_alerts)).toBe(true);
     expect(gated.published_alerts).toEqual([]);
     const reasons = Object.keys(gated.persisted.blocked_reasons);
@@ -188,7 +188,7 @@ describe('the run report a pipeline consumes', () => {
     expect(reasons[0]).toMatch(/model version/i);
     expect(gated.provenance_note).toMatch(/must not|not.*invent/i);
     const drafts = gated.alerts.filter((doc) => doc.publication_blocked_reason);
-    expect(drafts).toHaveLength(106);
+    expect(drafts).toHaveLength(120);
     for (const doc of drafts) {
       expect(doc.state).toBe('DRAFT');
       expect(doc.provenance.model_version ?? null).toBeNull();

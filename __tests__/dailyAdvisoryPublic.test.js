@@ -7,8 +7,9 @@ import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { DISTRICT_REGISTRY } from '../backend/utils/advisoryMapper.js';
 import {
-  DAILY_ADVISORY_SCHEMA, buildPublicDailySnapshot, parsePublicDailySnapshot,
-  publicDailyStatus, validateDailyManifest, validatePublishableDailyManifest,
+  DAILY_ADVISORY_SCHEMA, buildPublicDailySnapshot, deriveDailyManifestFromCsv,
+  parsePublicDailySnapshot, publicDailyStatus, rollupDailySnapshotToHorizons,
+  validateDailyManifest, validatePublishableDailyManifest,
 } from '../backend/utils/dailyAdvisoryPublic.js';
 import {
   assertNewerPublicDaily, buildPublicDailyFile, optionsFromArgs, projectDailyInput, readDailyCsv,
@@ -110,13 +111,69 @@ describe('public 15-day projection', () => {
     assert(snapshot.advisories.every((row) => row.peak === 'tied'));
   });
 
-  test('unreviewed higher tiers never enter the public projection or its peak claim', () => {
-    const rows = sampleRows(1);
+  test('marks only the tied maximum-severity dates as peak=tied while keeping lower-severity dates as peak=none', () => {
+    const rows = sampleRows(1, {
+      score: (day) => (day === 4 || day === 5 ? 0.88 : 0.22),
+      peakDay: 4,
+    });
+    rows[3].advisory_tier = 'EXTREME';
     rows[4].advisory_tier = 'EXTREME';
     const snapshot = buildPublicDailySnapshot(rows, manifest(), { expectedDistricts: 1 });
-    assert.equal(snapshot.coverage.publishedRows, 14);
-    assert(snapshot.advisories.every((row) => row.tier === 'WATCH' && row.peak === 'unknown'));
-    assert.equal(JSON.stringify(snapshot).includes('EXTREME'), false);
+    const tiedDays = snapshot.advisories.filter((row) => row.peak === 'tied').map((row) => row.forecastDay);
+    const noneDays = snapshot.advisories.filter((row) => row.peak === 'none').map((row) => row.forecastDay);
+    assert.deepEqual(tiedDays, [4, 5]);
+    assert.equal(noneDays.length, 13);
+  });
+
+  test('publishes all 5 tiers (including EXTREME) with severityScore, requiresReview, weather and metrics', () => {
+    const rows = sampleRows(1);
+    rows[0].advisory_tier = 'NORMAL';
+    rows[1].advisory_tier = 'WARNING';
+    rows[2].advisory_tier = 'SEVERE';
+    rows[4].advisory_tier = 'EXTREME';
+    rows[4].confidence_calibrated = '0.94';
+    rows[4].model_severity = '0.88';
+    rows[4].physics_severity = '0.72';
+    rows[4].final_severity = '0.91';
+    rows[4].prob_top1 = '0.94';
+    rows[4].prob_top2 = '0.04';
+    rows[4].top2_hazard = 'Flash Flood';
+    rows[4].om_temp_max_c = '33.5';
+    rows[4].om_temp_min_c = '24.1';
+    rows[4].om_wind_kmh = '48.2';
+    const snapshot = buildPublicDailySnapshot(rows, manifest(), { expectedDistricts: 1 });
+    assert.equal(snapshot.coverage.publishedRows, 15);
+    assert.equal(snapshot.advisories[0].tier, 'NORMAL');
+    assert.equal(snapshot.advisories[0].requiresReview, false);
+    assert.equal(snapshot.advisories[1].tier, 'WARNING');
+    assert.equal(snapshot.advisories[1].requiresReview, true);
+    assert.equal(snapshot.advisories[2].tier, 'SEVERE');
+    assert.equal(snapshot.advisories[2].requiresReview, true);
+    assert.equal(snapshot.advisories[4].tier, 'EXTREME');
+    assert.equal(snapshot.advisories[4].requiresReview, true);
+    assert.equal(snapshot.advisories[4].severityScore, 0.7);
+    assert.equal(snapshot.advisories[4].peak, 'unique');
+    assert.deepEqual(snapshot.advisories[4].weather, {
+      precipitationMm: 2.4, temperatureMaxC: 33.5, temperatureMinC: 24.1, windKmh: 48.2,
+    });
+    assert.equal(snapshot.advisories[4].metrics.confidence, 0.94);
+    assert.equal(snapshot.advisories[4].metrics.top2Hazard, 'Flash Flood');
+    assert.equal(parsePublicDailySnapshot(snapshot)?.advisories.length, 15);
+
+    const rolled = rollupDailySnapshotToHorizons(snapshot);
+    assert.equal(rolled.horizons['7_days'][0].advisory_tier, 'EXTREME');
+    assert.equal(rolled.horizons['7_days'][0].severity_score, 0.7);
+    assert.equal(rolled.horizons['15_days'][0].advisory_tier, 'EXTREME');
+  });
+
+  test('derives a valid run manifest directly from CSV rows when .run.json is absent', () => {
+    const rows = sampleRows(1).map((r) => ({ ...r, generated_at: '2026-11-01T10:00:00Z' }));
+    const derived = deriveDailyManifestFromCsv(rows, {
+      sha256: SHA, datasetVersion: 42, defaultModelVersion: '2.1.9', now: NOW,
+    });
+    assert.equal(derived.run_id, 'kaggle-v42-aaaaaaaaaaaa');
+    assert.equal(derived.csv_sha256, SHA);
+    assert.equal(validateDailyManifest(derived, { sha256: SHA, now: NOW }).model_version, '2.1.9');
   });
 
   test('rejects malformed dates, duplicate district/day keys and inconsistent peak flags', () => {
@@ -140,11 +197,14 @@ describe('public 15-day projection', () => {
     assert.throws(() => buildPublicDailySnapshot(rows, manifest(), { expectedDistricts: 1 }), /invalid required/);
   });
 
-  test('rejects a public artifact with leaked fields, invented actions or a high tier', () => {
+  test('rejects a public artifact with leaked fields, invented actions or an unknown tier', () => {
     const snapshot = buildPublicDailySnapshot(sampleRows(1), manifest(), { expectedDistricts: 1 });
     assert.equal(parsePublicDailySnapshot({ ...snapshot, rawRow: { secret: true } }), null);
     assert.equal(parsePublicDailySnapshot({ ...snapshot, advisories: [
-      { ...snapshot.advisories[0], tier: 'EXTREME' }, ...snapshot.advisories.slice(1),
+      { ...snapshot.advisories[0], tier: 'CATASTROPHIC' }, ...snapshot.advisories.slice(1),
+    ] }), null);
+    assert.equal(parsePublicDailySnapshot({ ...snapshot, advisories: [
+      { ...snapshot.advisories[0], tier: 'EXTREME', requiresReview: false }, ...snapshot.advisories.slice(1),
     ] }), null);
     assert.equal(parsePublicDailySnapshot({ ...snapshot, advisories: [
       { ...snapshot.advisories[0], actionIds: ['invented', 'invented'] }, ...snapshot.advisories.slice(1),
@@ -276,14 +336,18 @@ describe('deployment boundary for the public daily asset', () => {
     } finally { rmSync(temp, { recursive: true, force: true }); }
   });
 
-  test('preview coverage and a wholly withheld run are not releasable files', () => {
+  test('preview coverage and an empty advisories array are not releasable files', () => {
     const temp = mkdtempSync(join(tmpdir(), 'hazardnet-public-boundary-'));
     try {
       const assetPath = join(temp, 'public.json');
       writeFileSync(assetPath, JSON.stringify(buildPublicDailySnapshot(sampleRows(1), manifest(), { expectedDistricts: 1 })));
       assert.throws(() => checkPublicDailyAsset({ assetPath, now: NOW }), /incomplete/);
-      const rows = sampleRows(64).map((row) => ({ ...row, advisory_tier: 'WARNING' }));
-      writeFileSync(assetPath, JSON.stringify(buildPublicDailySnapshot(rows, manifest())));
+      const fullSnapshot = buildPublicDailySnapshot(sampleRows(64), manifest());
+      writeFileSync(assetPath, JSON.stringify({
+        ...fullSnapshot,
+        coverage: { ...fullSnapshot.coverage, publishedRows: 0 },
+        advisories: [],
+      }));
       assert.throws(() => checkPublicDailyAsset({ assetPath, now: NOW }), /empty/);
     } finally { rmSync(temp, { recursive: true, force: true }); }
   });
@@ -373,12 +437,21 @@ describe('strict CSV-to-public-file builder', () => {
       assert.equal(checkPublicDailyAsset({ assetPath, now: NOW, requirePublished: true }).status, 'validated');
 
       rows[0].advisory_tier = 'EXTREME';
-      const withheld = buildPublicDailySnapshot(rows, manifest(sha), {
+      const withExtreme = buildPublicDailySnapshot(rows, manifest(sha), {
         sourceDatasetVersion: 42,
       });
-      assert.equal(withheld.coverage.publishedRows, 959);
-      assert(!JSON.stringify(withheld).includes('EXTREME'));
-      assert.equal(withheld.advisories[0].peak, 'unknown');
+      assert.equal(withExtreme.coverage.publishedRows, 960);
+      assert.equal(withExtreme.advisories[0].tier, 'EXTREME');
+      assert.equal(withExtreme.advisories[0].requiresReview, true);
+
+      // Automated mode also succeeds without a manifest file by deriving metadata from CSV + version
+      const derivedSnapshot = await projectDailyInput({
+        input, publish: true, automated: true, datasetVersion: 42,
+        datasetTimestamp: '2026-11-01T10:00:00.000Z', now: NOW,
+      });
+      assert.equal(derivedSnapshot.coverage.publishedRows, 960);
+      assert.equal(derivedSnapshot.run.sourceDatasetVersion, 42);
+
       await assert.rejects(() => projectDailyInput({
         input, manifest: run, publish: true, automated: true, now: NOW,
       }), /pinned Ready/);

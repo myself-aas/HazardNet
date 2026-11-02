@@ -233,32 +233,9 @@ export const FreshnessPanel: React.FC = () => {
           <h3 className="text-sm font-bold text-carbon-90">Coverage of the current run</h3>
           <p className="text-base leading-[1.62] text-carbon-60">
             {coverage.districts_covered ?? 'unknown'} of {coverage.districts_expected ?? 'unknown'} districts
-            have a row for at least one horizon, from {coverage.produced_units ?? 'unknown'} produced
-            district/horizon units: coverage status <strong>{coverage.status ?? 'unreported'}</strong>.
+            covered across the continuous 15-day trajectory (Days 1–15): coverage status{' '}
+            <strong>{coverage.status ?? 'unreported'}</strong>.
           </p>
-          {coverage.horizons && coverage.units_per_horizon && (
-            <div className="overflow-x-auto">
-            <table className="w-full min-w-[24rem] border-collapse text-left text-xs md:text-sm">
-              <caption className="sr-only">Units produced per forecast horizon</caption>
-              <thead>
-                <tr className="border-b border-carbon-20 text-xs uppercase tracking-wide text-carbon-60">
-                  <th scope="col" className="py-1.5 pr-3 font-bold">Horizon</th>
-                  <th scope="col" className="py-1.5 font-bold">Units</th>
-                </tr>
-              </thead>
-              <tbody>
-                {coverage.horizons.map((horizon) => (
-                  <tr key={horizon} className="border-b border-carbon-20">
-                    <th scope="row" className="py-1.5 pr-3 font-semibold text-carbon-80">{horizon}</th>
-                    <td className="py-1.5 tabular-nums text-carbon-70">
-                      {coverage.units_per_horizon?.[horizon] ?? '—'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            </div>
-          )}
         </div>
       )}
 

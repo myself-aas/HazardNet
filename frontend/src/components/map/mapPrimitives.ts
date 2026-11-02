@@ -77,8 +77,9 @@ export const BANGLADESH_RIVERS = [
   },
 ];
 
-/** The four advisory tiers, on four distinct steps of the severity scale. */
+/** The five advisory tiers, on five distinct steps of the severity scale. */
 export const ADVISORY_TIER_COLORS: Record<string, string> = {
+  EXTREME: APPLE_SEVERITY.extreme.text,
   SEVERE: APPLE_SEVERITY.veryHigh.text,
   WARNING: APPLE_SEVERITY.high.text,
   WATCH: APPLE_SEVERITY.moderate.text,

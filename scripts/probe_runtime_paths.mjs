@@ -25,6 +25,7 @@
  * Analytics Engine SQL query in Action 12 (owner-side, Phase 6).
  */
 const args = process.argv.slice(2);
+const DAILY_ADVISORY_SCHEMA = 'hazardnet-daily-advisories/v1';
 const argValue = (flag, fallback) => {
   const index = args.indexOf(flag);
   return index >= 0 && args[index + 1] ? args[index + 1] : fallback;
@@ -64,6 +65,44 @@ if (selfTestMode) {
       return send(200, { count: 2, points: broken
         ? [{ id: 'dhaka' }, { id: 'chattogram' }]
         : [{ id: 'dhaka', current: { temperature_2m: 31.1 } }, { id: 'chattogram', current: { temperature_2m: 27.8 } }] });
+    }
+    if (url.pathname === '/api/v1/advisories/summary' && req.method === 'GET') {
+      return send(broken ? 200 : 200, broken
+        ? { status: 'fresh' }
+        : {
+            schema: DAILY_ADVISORY_SCHEMA,
+            status: 'fresh',
+            scope: 'summary',
+            count: 64,
+            summary: { districts: 64, byTier: { EXTREME: 2, SEVERE: 6, WARNING: 14, WATCH: 28, NORMAL: 14 } },
+          });
+    }
+    if (url.pathname === '/api/v1/kaggle' && req.method === 'GET') {
+      return send(200, broken
+        ? { status: 'fresh', horizon: '7_days', rowCount: 1, data: [{}] }
+        : {
+            status: 'fresh',
+            horizon: url.searchParams.get('horizon') || '7_days',
+            rowCount: 64,
+            data: Array.from({ length: 64 }, (_, idx) => ({
+              district_id: idx + 1,
+              district_name: `District_${idx + 1}`,
+              horizon: '7_days',
+              hazard_type: 'Flood',
+              severity_score: 0.42,
+              confidence: 0.91,
+              advisory_tier: idx === 0 ? 'EXTREME' : 'WATCH',
+            })),
+          });
+    }
+    if (url.pathname === '/api/predict' && req.method === 'POST') {
+      return send(200, broken
+        ? { provenance: { district_name: 'Sylhet' }, prediction: {} }
+        : {
+            prediction: { hazard_type: 'Flash Flood', severity_score: 0.68, confidence: 0.92 },
+            provenance: { district_name: 'Sylhet', horizon: '7_days' },
+            metadata: { schema: 'hazardnet-predict-envelope/v1', fields_unavailable: [] },
+          });
     }
     return send(404, { error: 'not found' });
   });
@@ -175,6 +214,64 @@ await scenario('batch_post_two_points', '/api/v1/weather/batch', {
     ? `200 with count=2 and 2 numeric current.temperature_2m readings`
     : `expected count=2 with 2 numeric readings, got count=${body?.count} readings=${readingsIn(body)} (missing: current.temperature_2m)`,
 }));
+
+// ── Edge daily advisories, 5-tier Kaggle horizon, & stored predict ────────
+const VALID_TIERS = new Set(['EXTREME', 'SEVERE', 'WARNING', 'WATCH', 'NORMAL']);
+
+await scenario('advisories_summary_contract', '/api/v1/advisories/summary', { method: 'GET' }, ({ status, body, headers }) => {
+  const isJson = (headers?.get?.('content-type') || '').includes('application/json');
+  const publishedOk =
+    status === 200
+    && body?.schema === DAILY_ADVISORY_SCHEMA
+    && numeric(body?.summary?.districts);
+  const prePublishOk =
+    status === 503
+    && typeof body?.error === 'string'
+    && body.error.length > 0;
+  const pass = isJson && (publishedOk || prePublishOk);
+  return {
+    pass,
+    detail: pass
+      ? status === 200
+        ? `200 with schema=${DAILY_ADVISORY_SCHEMA} and summary.districts=${body.summary.districts}`
+        : `503 honest pre-publish unavailable (${body.error})`
+      : `expected JSON 200 (daily summary schema) or 503 (unavailable error), got ${status} (missing: schema/summary.districts)`,
+  };
+});
+
+await scenario('kaggle_horizon_5tier_shape', '/api/v1/kaggle?horizon=7_days', { method: 'GET' }, ({ status, body, headers }) => {
+  const isJson = (headers?.get?.('content-type') || '').includes('application/json');
+  const rows = Array.isArray(body?.data) ? body.data : [];
+  const validRows =
+    rows.length === 64
+    && rows.every((r) => numeric(r?.severity_score) && (!r.advisory_tier || VALID_TIERS.has(r.advisory_tier)));
+  const pass = isJson && status === 200 && validRows;
+  return {
+    pass,
+    detail: pass
+      ? `200 with 64 district rows and valid 5-tier advisory_tier values`
+      : `expected 200 with 64 numeric severity_score rows and 5-tier advisory_tier, got status=${status} rows=${rows.length} (missing: data[].severity_score)`,
+  };
+});
+
+await scenario('predict_district_shape', '/api/predict', {
+  method: 'POST',
+  headers: { 'content-type': 'application/json' },
+  body: JSON.stringify({ district: 'Sylhet' }),
+}, ({ status, body, headers }) => {
+  const isJson = (headers?.get?.('content-type') || '').includes('application/json');
+  const pass =
+    isJson
+    && status === 200
+    && body?.metadata?.schema === 'hazardnet-predict-envelope/v1'
+    && numeric(body?.prediction?.severity_score);
+  return {
+    pass,
+    detail: pass
+      ? `200 with hazardnet-predict-envelope/v1 and prediction.severity_score=${body.prediction.severity_score}`
+      : `expected 200 with hazardnet-predict-envelope/v1 and numeric prediction.severity_score, got ${status} (missing: prediction.severity_score)`,
+  };
+});
 
 const failed = results.filter((r) => !r.pass);
 console.log(JSON.stringify({

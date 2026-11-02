@@ -12,7 +12,7 @@ describe('TASK-004: Type Definitions & Backward Compatibility', () => {
     const coreForecastsPath = path.join(rootDir, 'packages/core/src/forecasts.ts');
     const content = fs.readFileSync(coreForecastsPath, 'utf8');
 
-    assert.ok(content.includes("export const ADVISORY_TIERS = ['SEVERE', 'WARNING', 'WATCH', 'NORMAL'] as const;"));
+    assert.ok(content.includes("export const ADVISORY_TIERS = ['EXTREME', 'SEVERE', 'WARNING', 'WATCH', 'NORMAL'] as const;"));
     assert.ok(content.includes('Cold Wave'));
     assert.ok(content.includes('Tropical Cyclone'));
     assert.ok(content.includes('advisory_tier?: AdvisoryTier | string;'));
@@ -30,7 +30,7 @@ describe('TASK-004: Type Definitions & Backward Compatibility', () => {
     const libForecastsPath = path.join(rootDir, 'frontend/src/lib/forecasts.ts');
     const content = fs.readFileSync(libForecastsPath, 'utf8');
 
-    assert.ok(content.includes("export const ADVISORY_TIERS = ['SEVERE', 'WARNING', 'WATCH', 'NORMAL'] as const;"));
+    assert.ok(content.includes("export const ADVISORY_TIERS = ['EXTREME', 'SEVERE', 'WARNING', 'WATCH', 'NORMAL'] as const;"));
     assert.ok(content.includes('advisory_tier?: AdvisoryTier | string;'));
     assert.ok(content.includes('physics_override?: boolean;'));
     assert.ok(content.includes('model_severity_raw?: number;'));

@@ -33,6 +33,7 @@ export type SupportedTierOrLevel = AlertLevel | AdvisoryTier | string;
  * operational states look identical on the map.
  */
 export const ADVISORY_TIER_COLOURS: Record<string, string> = {
+  EXTREME: APPLE_SEVERITY.extreme.text,
   SEVERE: APPLE_SEVERITY.veryHigh.text,
   WARNING: APPLE_SEVERITY.high.text,
   WATCH: APPLE_SEVERITY.moderate.text,
@@ -70,6 +71,12 @@ const LEVEL_TOKENS: Record<string, LevelTokens> = {
     solid: '#c01f1f',
     icon: 'alert_triangle',
     label: 'Severe',
+  },
+  EXTREME: {
+    pill: 'bg-rose-100 text-rose-900 border-rose-400',
+    solid: APPLE_SEVERITY.extreme.text,
+    icon: 'alert_octagon',
+    label: 'Extreme',
   },
 };
 

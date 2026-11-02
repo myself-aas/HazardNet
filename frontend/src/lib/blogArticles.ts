@@ -11,6 +11,7 @@
  */
 
 import DOMPurify from 'dompurify';
+import { APPLE_COLORS, APPLE_STATUS } from '@hazardnet/design-system';
 import { db } from '../services/firebase';
 import {
   collection,
@@ -216,7 +217,12 @@ const ALLOWED_ATTR = [
  * a colour, the rendered value is a token decision, and that decision belongs to the design
  * system. Four values, named here, is the whole of what an author may choose.
  */
-export const BLOG_TEXT_COLORS = ['#1d1d1f', '#0066cc', '#1d7a3e', '#c01f1f'] as const;
+export const BLOG_TEXT_COLORS = [
+  APPLE_COLORS.ink,
+  APPLE_COLORS.primary,
+  APPLE_STATUS.success,
+  APPLE_STATUS.danger,
+] as const;
 
 const ALLOWED_COLORS = new Set<string>(BLOG_TEXT_COLORS.map((c) => c.toLowerCase()));
 

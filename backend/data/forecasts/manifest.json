@@ -1,12 +1,14 @@
 {
-  "source": "Kaggle_Daily_Advisory (8-hazardnet-advisory)",
+  "source": "Kaggle_Daily_Advisory (hazardnet_advisories_latest.csv)",
   "data_source": "Kaggle_Daily_Advisory",
-  "generated_at": "2026-10-24T22:33:49.000Z",
-  "prediction_date": "2026-10-24",
+  "generated_at": "2026-11-01T23:07:47.343Z",
+  "prediction_date": "2026-11-01",
   "row_count": 128,
-  "csv_sha256": "9339bb14ec2e4a01002e47d625252c6d6807ae32cb8787821bdd6f49cbc11708",
-  "source_csv_sha256": "9d1e10047a18bcead10708a89ffc94d6d1aa924d2b80a2b641a5f84033eec76d",
+  "csv_sha256": "83d5b95456b75f0f370c249110af8f19d8d32cb1d96a3ba9c504e331144d4ca1",
+  "source_csv_sha256": "ae3632a70dda172c306a945c355e131cc15d0f4acf14bffa9927897909c958bf",
   "model_version": "2.1.9+model.0bb5bdaf1789",
+  "run_id": "kaggle-v42-ae3632a70dda",
+  "dataset_version": 42,
   "csv_path": "backend/data/forecasts/hazardnet_forecasts_latest.csv",
   "json_path": "backend/data/forecasts/hazardnet_forecasts_latest.json"
 }

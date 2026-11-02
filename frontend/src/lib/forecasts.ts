@@ -20,7 +20,7 @@ import type { DistrictData } from '../data/bangladeshDistricts';
 // Firestore doc shape written by POST /update / serverless/ingest.js)
 // ─────────────────────────────────────────────────────────────────────────
 
-export const ADVISORY_TIERS = ['SEVERE', 'WARNING', 'WATCH', 'NORMAL'] as const;
+export const ADVISORY_TIERS = ['EXTREME', 'SEVERE', 'WARNING', 'WATCH', 'NORMAL'] as const;
 export type AdvisoryTier = (typeof ADVISORY_TIERS)[number];
 
 export const HAZARD_CLASSES = [
@@ -106,6 +106,9 @@ export interface ForecastRow {
   confidence_raw?: number;
   confidence_calibrated?: number;
   confidence_kind?: string;
+  /** 1..15 continuous day index and peak severe date marker from the 960-row daily run. */
+  forecast_day?: number;
+  is_peak_day?: boolean;
 }
 
 /**
@@ -717,6 +720,6 @@ export const forecastAgeHours = (predictionDate: string, now: Date = new Date())
 
 /** Format a horizon for the map and individual forecast views. */
 export const formatHorizonLabel = (horizon: ForecastHorizon): string => {
-  const days = Number(horizon.replace('_days', ''));
-  return `Next ${days} Days`;
+  if (horizon === '15_days') return 'Continuous 15 Days';
+  return 'Days 1–7 Subset';
 };

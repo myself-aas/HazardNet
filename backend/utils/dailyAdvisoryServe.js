@@ -51,6 +51,7 @@ export function queryPublicDaily(snapshotValue, query = {}, now = new Date()) {
     return { code: 400, body: { error: 'Unknown division' } };
   }
 
+  const status = publicDailyStatus(snapshot, now);
   const today = dhakaDate(now);
   const availableDates = [...new Set(snapshot.advisories.map((row) => row.targetDate))].sort();
   const selectedDate = rawDate || availableDates.find((date) => date >= today) || null;
@@ -61,9 +62,19 @@ export function queryPublicDaily(snapshotValue, query = {}, now = new Date()) {
   if (scope === 'latest' || scope === 'summary') {
     advisories = selectedDate ? advisories.filter((row) => row.targetDate === selectedDate) : [];
   } else if (scope === 'peak') {
-    advisories = advisories.filter((row) => row.peak === 'unique' && row.targetDate >= today);
+    const tiedCounts = new Map();
+    for (const row of advisories) {
+      if (row.peak === 'tied') tiedCounts.set(row.districtId, (tiedCounts.get(row.districtId) || 0) + 1);
+    }
+    const minPeakDate = status === 'fresh' && availableDates.length === 15 ? availableDates[0] : today;
+    advisories = advisories.filter((row) =>
+      row.targetDate >= minPeakDate
+      && (row.peak === 'unique'
+        || (row.peak === 'tied' && row.severityScore > 0 && (tiedCounts.get(row.districtId) || 0) < 15)));
   } else {
-    const start = rawDate || today;
+    const start = rawDate || (status === 'fresh' && Number(rawDays) === 15 && availableDates.length === 15
+      ? availableDates[0]
+      : today);
     const last = new Date(Date.parse(`${start}T00:00:00Z`) + (Number(rawDays) - 1) * 86_400_000)
       .toISOString().slice(0, 10);
     advisories = advisories.filter((row) => row.targetDate >= start && row.targetDate <= last);
@@ -78,7 +89,7 @@ export function queryPublicDaily(snapshotValue, query = {}, now = new Date()) {
     code: 200,
     body: {
       schema: DAILY_ADVISORY_SCHEMA,
-      status: publicDailyStatus(snapshot, now),
+      status,
       asOf: now.toISOString(),
       run: snapshot.run,
       coverage: snapshot.coverage,

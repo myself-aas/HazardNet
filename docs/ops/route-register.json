@@ -154,6 +154,57 @@
       "verification": "Not yet called on a deployed site; await a separately attested UTC run manifest and approved snapshot, then probe a named district and the stale/unavailable cases.",
       "valueAssertion": "__tests__/dailyAdvisoryServe.test.js",
       "status": "pending-publication"
+    },
+    {
+      "path": "/api/predict",
+      "methods": [
+        "POST"
+      ],
+      "file": "functions/api/predict.ts",
+      "nodeTwins": [
+        "backend/routes/predict.js",
+        "backend/utils/storedPrediction.js"
+      ],
+      "calledByFrontend": true,
+      "cutover404": true,
+      "firstLiveCall": null,
+      "verification": "Not yet called on a deployed site; ported to Pages Functions over ASSETS (/data/daily-advisories-v1.json + /data/forecasts-latest.json); locally asserted in __tests__/routeValueAssertions.test.js.",
+      "valueAssertion": "__tests__/routeValueAssertions.test.js",
+      "status": "pending-publication"
+    },
+    {
+      "path": "/api/v1/kaggle",
+      "methods": [
+        "GET"
+      ],
+      "file": "functions/api/v1/kaggle/index.ts",
+      "nodeTwins": [
+        "serverless/v1/kaggle.js",
+        "backend/routes/kaggle.js"
+      ],
+      "calledByFrontend": true,
+      "cutover404": true,
+      "firstLiveCall": null,
+      "verification": "Not yet called on a deployed site; ported to Pages Functions over ASSETS (/data/daily-advisories-v1.json + /data/forecasts-latest.json); locally asserted in __tests__/routeValueAssertions.test.js.",
+      "valueAssertion": "__tests__/routeValueAssertions.test.js",
+      "status": "pending-publication"
+    },
+    {
+      "path": "/api/v1/kaggle/advisories",
+      "methods": [
+        "GET"
+      ],
+      "file": "functions/api/v1/kaggle/advisories.ts",
+      "nodeTwins": [
+        "serverless/v1/kaggle.js",
+        "backend/routes/kaggle.js"
+      ],
+      "calledByFrontend": true,
+      "cutover404": true,
+      "firstLiveCall": null,
+      "verification": "Not yet called on a deployed site; ported to Pages Functions over ASSETS (/data/daily-advisories-v1.json + /data/forecasts-latest.json); locally asserted in __tests__/routeValueAssertions.test.js.",
+      "valueAssertion": "__tests__/routeValueAssertions.test.js",
+      "status": "pending-publication"
     }
   ],
   "dispositions": [
@@ -167,8 +218,7 @@
         "/api/grounding/district-facilities/*",
         "/api/grounding/district-updates/*",
         "/api/grounding/maps",
-        "/api/grounding/search",
-        "/api/predict"
+        "/api/grounding/search"
       ],
       "reason": "These call Gemini/Groq/OpenRouter or Firestore through firebase-admin/multer. A Worker isolate has no process, no gRPC client and no filesystem; porting would mean a second implementation of an authenticated AI surface. The client already degrades to committed content/artifacts.",
       "verify": "curl -sS -o /dev/null -w '%{http_code}\\n' https://www.hazardnet.live/api/predict  # expect 404 while unhosted; grep frontend/src for a fallback that renders without the API"
@@ -198,16 +248,6 @@
       ],
       "reason": "eventsClient.ts falls back to frontend/public/data/climatic_hazards_summary.json, which the content pipeline builds. No Node route serves these paths either (git grep finds no router registration), so they are dispositioned as artifact reads, not latent endpoints.",
       "verify": "node scripts/build_climatic_hazards_summary.mjs --check && git grep -n 'events/summary' backend/ serverless/ api/ || true"
-    },
-    {
-      "date": "2026-10-27",
-      "ownerAction": "Action 21 — Kaggle advisory (Phase 4 disposition)",
-      "paths": [
-        "/api/v1/kaggle",
-        "/api/v1/kaggle/advisories"
-      ],
-      "reason": "backend/services/kaggleAdvisoryClient.js needs HTTP Basic credentials, node:zlib inflateRawSync and a node:fs disk cache that outlives the request. A Worker has none. useKaggleAdvisories.ts falls back to the committed advisory artifact and the UI says when the service is unavailable. PHASE 4 UPDATE 2026-10-27: still called by useKaggleAdvisories.ts, so NOT deleted. V8 incompatibility confirmed at backend/services/kaggleAdvisoryClient.js (Basic auth, inflateRawSync, node:fs cache). Named follow-up PR feat/kaggle-r2-artifact with a dated plan in docs/ops/pr/phase-4b-kaggle-r2.md.",
-      "verify": "git grep -n 'node:zlib\\|inflateRawSync\\|node:fs' backend/services/kaggleAdvisoryClient.js && git grep -n 'could not be reached' frontend/src/"
     },
     {
       "date": "2026-10-27",

@@ -124,10 +124,14 @@ test.describe('District Selection & Forecast Display', () => {
     await waitForAppShell(page);
 
     // The GIS stage pins a forecast card for the focused district; its primary
-    // action must deep-link into the farmer-first district outlook. The older
-    // two-horizon analytics remain available from that page's explicit link.
-    const openBrief = page.getByRole('button', { name: /open the day-by-day district outlook/i });
+    // action is a semantic Link deep-linking into the farmer-first district
+    // outlook. Scope to `district-forecast-card` so it is disambiguated from
+    // `DailyOutlookEntry`'s national `/districts` link on `/live`.
+    const card = page.getByTestId('district-forecast-card');
+    await expect(card).toBeVisible({ timeout: 20_000 });
+    const openBrief = card.getByRole('link', { name: /open the day-by-day district outlook/i });
     await expect(openBrief).toBeVisible({ timeout: 20_000 });
+    await expect(openBrief).toHaveAttribute('href', /\/forecast\/district\/[a-z-]+/);
 
     await openBrief.click();
     await expect(page).toHaveURL(/\/forecast\/district\/[a-z-]+/);

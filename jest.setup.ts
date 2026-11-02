@@ -37,6 +37,20 @@ if (typeof globalThis.IntersectionObserver === 'undefined') {
   });
 }
 
+// Polyfill ResizeObserver for jsdom environment (Recharts ResponsiveContainer support)
+if (typeof globalThis.ResizeObserver === 'undefined') {
+  class MockResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+  Object.defineProperty(globalThis, 'ResizeObserver', {
+    writable: true,
+    configurable: true,
+    value: MockResizeObserver,
+  });
+}
+
 // React Native __DEV__ global (used by mobile App.tsx at import time).
 (globalThis as any).__DEV__ = true;
 (globalThis as any).performance = globalThis.performance ?? { now: () => Date.now() };

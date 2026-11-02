@@ -6,7 +6,7 @@ na_heuristics:
 p0_count: 0
 p1_count: 2
 target_identity: "file:frontend/src/pages/NotFoundPage.tsx"
-target_fingerprint: "sha256:50946e887211f5af091cc06483419016cdd356465dec434dd54a1deb76221a95"
+target_fingerprint: "sha256:6441ae02198704d2b4ef06c012f489be4c9d49f04940a88ca2d2b92beb3e40e2"
 target_path: frontend/src/pages/NotFoundPage.tsx
 timestamp: 2026-10-26T03-56-30Z
 slug: frontend-src-pages-notfoundpage-tsx

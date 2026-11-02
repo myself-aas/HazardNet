@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet.heat';
 import toast from 'react-hot-toast';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { LocationMap } from './ui/expand-map';
 import { BottomSheet } from './ui/BottomSheet';
 import { ALL_64_DISTRICTS, ALL_8_DIVISIONS } from '../data/bangladeshDistricts';
@@ -140,6 +140,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const districtMarkersRef = useRef<Map<string, L.Marker>>(new Map());
   const lastTargetedDistrictRef = useRef<DistrictGeo | null>(null);
+  const prefersReducedMotion = useReducedMotion();
 
   // Header collapse state
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState<boolean>(compactHeader);
@@ -201,10 +202,9 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
     isMeasuringRef.current = isMeasuring;
   }, [isMeasuring]);
 
-  // Live forecast overlay (weekly pipeline via /api/v1/forecasts/bulk);
-  // falls back to the static district baseline when the API is unreachable,
-  // so every consumer below can treat `liveDistricts` as always-available.
-  const [forecastHorizon, setForecastHorizon] = useState<ForecastHorizon>('7_days');
+  // Live forecast overlay (daily Kaggle pipeline via /data/forecasts-latest.json + /api/v1/forecasts/bulk);
+  // defaults to the full continuous 15-day trajectory ('15_days').
+  const [forecastHorizon, setForecastHorizon] = useState<ForecastHorizon>('15_days');
   const { districts: liveDistricts, isLive, liveCount, predictionDate } = useLiveDistricts(forecastHorizon);
 
   // Selected district object
@@ -796,10 +796,11 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   }, [liveDistricts]);
 
   const statusStripCounts = useMemo(() => {
-    const counts = { SEVERE: 0, WARNING: 0, WATCH: 0, NORMAL: 0 };
+    const counts = { EXTREME: 0, SEVERE: 0, WARNING: 0, WATCH: 0, NORMAL: 0 };
     for (const d of liveDistricts) {
       const tier = (d.advisoryTier || '').toUpperCase();
-      if (tier === 'SEVERE') counts.SEVERE += 1;
+      if (tier === 'EXTREME') counts.EXTREME += 1;
+      else if (tier === 'SEVERE') counts.SEVERE += 1;
       else if (tier === 'WARNING') counts.WARNING += 1;
       else if (tier === 'WATCH') counts.WATCH += 1;
       else if (tier === 'NORMAL') counts.NORMAL += 1;
@@ -1339,7 +1340,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             >
               <DataProcessingSkeleton
                 title="PROCESSING SATELLITE TILES & HIGH-CONTRAST RASTER"
-                subtitle="Streaming high resolution terrain raster over Bangladesh..."
+                subtitle="Streaming high resolution terrain raster over Bangladesh…"
                 mode="map"
                 onDismiss={() => setIsProcessingData(false)}
               />
@@ -1404,10 +1405,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           <AnimatePresence>
             {inspectedPoint && nearestDistrictData && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
+                exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.95 }}
+                transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
                 className="absolute bottom-16 lg:bottom-auto lg:top-4 left-0 right-0 lg:left-auto lg:right-4 z-[var(--ap-z-sticky)] pointer-events-auto lg:w-[clamp(280px,28vw,340px)] lg:max-w-[calc(100%-2rem)] max-w-full w-full"
               >
                 <div className="bg-white border border-carbon-20 rounded-2xl p-4 text-carbon-80 flex flex-col gap-2">

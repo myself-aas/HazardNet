@@ -66,7 +66,7 @@ export const ORGANIZATION_SCHEMA = {
 export const DEFAULT_DATASET_SCHEMA: DatasetMeta = {
   name: 'HazardNet Multi-Hazard Forecast & Advisory Dataset for Bangladesh',
   description:
-    'Operational 7- and 15-day multi-hazard classifications, dual-track severity quantification, and agrometeorological advisories covering all 64 districts in Bangladesh.',
+    'Operational continuous 15-day daily multi-hazard classifications (Days 1–15), 0–100 severity index, peak severe dates, dual-track severity quantification, and agrometeorological advisories covering all 64 districts in Bangladesh.',
   temporalCoverage: '2000/2026',
   spatialCoverage: 'Bangladesh',
   variableMeasured: [

@@ -46,12 +46,19 @@ describe('the freshness artifact carries the gauge', () => {
     expect(['number', 'object']).toContain(typeof gauge.value); // null when unknown
   });
 
-  test('alert and probe ages are published too, with their SLOs', () => {
+  test('alert, probe, and daily-advisory ages are published too, with their SLOs', () => {
     const names = freshness.gauges.series.map((entry) => entry.name);
     expect(names).toContain('hazardnet_alert_snapshot_age_hours');
     expect(names).toContain('hazardnet_site_probe_age_hours');
+    expect(names).toContain('hazardnet_daily_advisories_age_hours');
     expect(freshness.gauges.series.find((e) => e.name === 'hazardnet_alert_snapshot_age_hours').slo_hours).toBe(48);
     expect(freshness.gauges.series.find((e) => e.name === 'hazardnet_site_probe_age_hours').slo_hours).toBe(2);
+    expect(freshness.gauges.series[3]).toMatchObject({
+      name: 'hazardnet_daily_advisories_age_hours',
+      source: 'daily_advisories.age_hours',
+      slo_hours: 36,
+      unit: 'hours',
+    });
   });
 
   test('the builder emits null (absence is the alarm) when a source age is unknown', async () => {
@@ -60,5 +67,6 @@ describe('the freshness artifact carries the gauge', () => {
     expect(gauges.series[0].value).toBe(12.5);
     expect(gauges.series[1].value).toBeNull();
     expect(gauges.series[2].value).toBeNull();
+    expect(gauges.series[3].value).toBeNull();
   });
 });

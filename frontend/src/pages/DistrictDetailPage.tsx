@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 import { ALL_64_DISTRICTS, getDistrictById } from '../data/bangladeshDistricts';
 import { fetchForecastMetadata, fetchStaticForecastSnapshot, ForecastRow, canonicalKey } from '../lib/forecasts';
+import { dailyAdvisoriesToDistrictForecastRows, loadDistrictDaily } from '../lib/dailyAdvisories';
 import { loadKaggleAdvisories } from '../hooks/useKaggleAdvisories';
 import { useWeather } from '../hooks/useWeather';
 import { fetchDistrictEvents, DistrictEventsResponse } from '../lib/eventsClient';
@@ -60,7 +61,7 @@ export const DistrictDetailPage: React.FC = () => {
   const [districtForecasts7D, setDistrictForecasts7D] = useState<ForecastRow[]>([]);
   const [districtForecasts15D, setDistrictForecasts15D] = useState<ForecastRow[]>([]);
   const [loadingForecastTable, setLoadingForecastTable] = useState<boolean>(true);
-  const [activeTableHorizon, setActiveTableHorizon] = useState<'7_days' | '15_days'>('7_days');
+  const [activeTableHorizon, setActiveTableHorizon] = useState<'7_days' | '15_days'>('15_days');
 
   useEffect(() => {
     if (!district) return;
@@ -96,17 +97,26 @@ export const DistrictDetailPage: React.FC = () => {
     }
 
     Promise.all([
+      loadDistrictDaily(district.name).catch(() => null),
       fetchHorizonRows('7_days'),
       fetchHorizonRows('15_days'),
-    ]).then(([res7, res15]) => {
+    ]).then(([dailyResult, res7, res15]) => {
       if (!isMounted) return;
-      setDistrictForecasts7D(res7.rows);
-      setDistrictForecasts15D(res15.rows);
+      const hasDailyRows = dailyResult && dailyResult.run && dailyResult.advisories.length > 0;
+      const rows7 = hasDailyRows
+        ? dailyAdvisoriesToDistrictForecastRows(dailyResult.advisories, dailyResult.run!, '7_days')
+        : res7.rows;
+      const rows15 = hasDailyRows
+        ? dailyAdvisoriesToDistrictForecastRows(dailyResult.advisories, dailyResult.run!, '15_days')
+        : res15.rows;
+
+      setDistrictForecasts7D(rows7.length > 0 ? rows7 : res7.rows);
+      setDistrictForecasts15D(rows15.length > 0 ? rows15 : res15.rows);
 
       // If Kaggle advisory data was fetched, wire real-time metadata (generatedAt/fetchedAt)
-      const liveSource = res7.source || res15.source;
-      const generatedAt = res7.generatedAt || res15.generatedAt;
-      const fetchedAt = res7.fetchedAt || res15.fetchedAt;
+      const liveSource = hasDailyRows ? 'Kaggle_Daily_Advisory' : (res7.source || res15.source);
+      const generatedAt = (hasDailyRows ? dailyResult.run!.generatedAt : null) || res7.generatedAt || res15.generatedAt;
+      const fetchedAt = (hasDailyRows ? dailyResult.fetchedAt : null) || res7.fetchedAt || res15.fetchedAt;
       if (liveSource && generatedAt) {
         setMetadata({
           predictionDate: generatedAt.slice(0, 10),
@@ -117,7 +127,9 @@ export const DistrictDetailPage: React.FC = () => {
 
       // The pipeline does not always emit both horizons for every district, so open the horizon that has rows.
       setActiveTableHorizon((current) => {
-        const rowsFor = (h: '7_days' | '15_days') => (h === '7_days' ? res7.rows : res15.rows);
+        const final7 = rows7.length > 0 ? rows7 : res7.rows;
+        const final15 = rows15.length > 0 ? rows15 : res15.rows;
+        const rowsFor = (h: '7_days' | '15_days') => (h === '7_days' ? final7 : final15);
         if (rowsFor(current).length > 0) return current;
         const other = current === '7_days' ? '15_days' : '7_days';
         return rowsFor(other).length > 0 ? other : current;
@@ -211,15 +223,18 @@ export const DistrictDetailPage: React.FC = () => {
       return;
     }
     const headers = [
-      'District ID', 'District Name', 'Horizon', 'Target Date', 'Prediction Date', 'Hazard Type',
-      'Physics Severity', 'CNN Model Severity', 'Confidence', 'Min Temp (°C)', 'Max Temp (°C)',
-      'Precipitation (mm)', 'Wind Max (km/h)',
+      'District ID', 'District Name', 'Horizon', 'Day', 'Target Date', 'Peak Severe Date', 'Prediction Date',
+      'Hazard Type', 'Severity Index (0-100)', 'Physics Severity', 'CNN Model Severity', 'Confidence',
+      'Min Temp (°C)', 'Max Temp (°C)', 'Precipitation (mm)', 'Wind Max (km/h)',
     ];
+    const maxScore = Math.max(...rowsToExport.map((r) => r.severity_score), 0);
     const csvRows = [headers.join(',')];
-    for (const r of rowsToExport) {
+    for (const [idx, r] of rowsToExport.entries()) {
+      const isPeak = r.is_peak_day ?? (maxScore > 0 && r.severity_score === maxScore);
       csvRows.push([
-        r.district_id, r.district_name, r.horizon || activeTableHorizon, r.target_date, r.prediction_date,
-        r.hazard_type, r.physics_severity ?? r.severity_score, r.model_severity ?? r.severity_score,
+        r.district_id, r.district_name, r.horizon || activeTableHorizon, r.forecast_day ?? idx + 1,
+        r.target_date, isPeak, r.prediction_date, r.hazard_type, Math.round(r.severity_score * 100),
+        r.physics_severity ?? r.severity_score, r.model_severity ?? r.severity_score,
         r.confidence, r.temperature_min, r.temperature_max, r.precipitation_mm, r.wind_max_kmh,
       ].map(csvCell).join(','));
     }
@@ -266,7 +281,9 @@ export const DistrictDetailPage: React.FC = () => {
     const element = document.getElementById(sectionId);
     if (element) {
       const y = element.getBoundingClientRect().top + window.pageYOffset - 120;
-      window.scrollTo({ top: y, behavior: 'smooth' });
+      const prefersReducedMotion =
+        typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: y, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
     }
   };
 
@@ -277,9 +294,9 @@ export const DistrictDetailPage: React.FC = () => {
         <p className="text-sm text-carbon-60">
           “{districtId}” is not one of the 64 districts HazardNet covers.
         </p>
-        <button onClick={() => navigate('/live')} className="text-sm font-semibold text-ap-link underline">
+        <Link to="/live" className="ap-focusable inline-flex min-h-[44px] items-center text-sm font-semibold text-ap-link underline">
           Back to the live map
-        </button>
+        </Link>
       </div>
     );
   }

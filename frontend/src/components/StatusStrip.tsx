@@ -12,6 +12,7 @@ import { useI18n } from '../hooks/useI18n';
 import AlertLevelBadge from './alerts/AlertLevelBadge';
 
 export interface TierCounts {
+  EXTREME?: number;
   SEVERE: number;
   WARNING: number;
   WATCH: number;
@@ -33,6 +34,7 @@ export interface StatusStripProps {
  */
 export function computeTierCounts(rows?: ForecastRow[], horizon?: string): TierCounts {
   const counts: TierCounts = {
+    EXTREME: 0,
     SEVERE: 0,
     WARNING: 0,
     WATCH: 0,
@@ -59,7 +61,9 @@ export function computeTierCounts(rows?: ForecastRow[], horizon?: string): TierC
 
   for (const row of districtMap.values()) {
     const tier = (row.advisory_tier || '').toUpperCase() as AdvisoryTier;
-    if (tier === 'SEVERE') {
+    if (tier === 'EXTREME') {
+      counts.EXTREME = (counts.EXTREME ?? 0) + 1;
+    } else if (tier === 'SEVERE') {
       counts.SEVERE += 1;
     } else if (tier === 'WARNING') {
       counts.WARNING += 1;
@@ -94,6 +98,7 @@ export const StatusStrip: React.FC<StatusStripProps> = ({
   const counts: TierCounts = useMemo(() => {
     if (explicitCounts) {
       return {
+        EXTREME: explicitCounts.EXTREME ?? 0,
         SEVERE: explicitCounts.SEVERE ?? 0,
         WARNING: explicitCounts.WARNING ?? 0,
         WATCH: explicitCounts.WATCH ?? 0,
@@ -105,51 +110,60 @@ export const StatusStrip: React.FC<StatusStripProps> = ({
 
   const labels = isBengali
     ? {
+        EXTREME: 'চরম',
         SEVERE: 'গুরুতর',
         WARNING: 'সতর্কবার্তা',
         WATCH: 'পর্যবেক্ষণ',
         NORMAL: 'স্বাভাবিক',
       }
     : {
+        EXTREME: 'EXTREME',
         SEVERE: 'SEVERE',
         WARNING: 'WARNING',
         WATCH: 'WATCH',
         NORMAL: 'NORMAL',
       };
 
-  const formattedText = `${formatNumber(counts.SEVERE)} ${labels.SEVERE} · ${formatNumber(
-    counts.WARNING
-  )} ${labels.WARNING} · ${formatNumber(counts.WATCH)} ${labels.WATCH} · ${formatNumber(
-    counts.NORMAL
-  )} ${labels.NORMAL}`;
+  const extremeCount = counts.EXTREME ?? 0;
+  const formattedText = [
+    ...(extremeCount > 0 ? [`${formatNumber(extremeCount)} ${labels.EXTREME}`] : []),
+    `${formatNumber(counts.SEVERE)} ${labels.SEVERE}`,
+    `${formatNumber(counts.WARNING)} ${labels.WARNING}`,
+    `${formatNumber(counts.WATCH)} ${labels.WATCH}`,
+    `${formatNumber(counts.NORMAL)} ${labels.NORMAL}`,
+  ].join(' · ');
 
   return (
     <div
       role="status"
       aria-live="polite"
-      className={`inline-flex flex-wrap items-center gap-2 px-3 py-1.5 rounded-xl bg-white/95 border border-carbon-20 shadow-xs backdrop-blur-md text-xs font-mono ${className}`}
+      className={`inline-flex flex-wrap items-center gap-2 px-3 py-1.5 rounded-xl bg-white/95 border border-carbon-20 shadow-xs backdrop-blur-md text-xs font-mono tabular-nums ${className}`}
       data-testid="status-strip"
     >
       {showBadges ? (
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 tabular-nums">
+          {extremeCount > 0 && (
+            <AlertLevelBadge
+              level="EXTREME"
+              label={`${formatNumber(extremeCount)} ${labels.EXTREME}`}
+              size="sm"
+            />
+          )}
           <AlertLevelBadge
             level="SEVERE"
             label={`${formatNumber(counts.SEVERE)} ${labels.SEVERE}`}
             size="sm"
           />
-          <span className="text-carbon-60" aria-hidden="true">·</span>
           <AlertLevelBadge
             level="WARNING"
             label={`${formatNumber(counts.WARNING)} ${labels.WARNING}`}
             size="sm"
           />
-          <span className="text-carbon-60" aria-hidden="true">·</span>
           <AlertLevelBadge
             level="WATCH"
             label={`${formatNumber(counts.WATCH)} ${labels.WATCH}`}
             size="sm"
           />
-          <span className="text-carbon-60" aria-hidden="true">·</span>
           <AlertLevelBadge
             level="NORMAL"
             label={`${formatNumber(counts.NORMAL)} ${labels.NORMAL}`}

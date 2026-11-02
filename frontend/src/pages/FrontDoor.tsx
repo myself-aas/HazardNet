@@ -638,7 +638,7 @@ export const FrontDoor: React.FC = () => {
           <div className="grid grid-cols-2 gap-x-4 gap-y-5 lg:grid-cols-4">
             <Figure value={formatNumber(hazards.length)} label={t('frontdoor.covers.hazards')} />
             <Figure value={formatNumber(ALL_64_DISTRICTS.length)} label={t('frontdoor.covers.districts')} />
-            <Figure value="7 & 15 days" label={t('frontdoor.covers.horizons')} tone="muted" />
+            <Figure value={t('frontdoor.covers.horizonsValue')} label={t('frontdoor.covers.horizons')} tone="muted" />
             <Figure
               value={scorecard.episodes != null ? formatNumber(scorecard.episodes) : '—'}
               label={t('frontdoor.covers.episodes')}
@@ -647,11 +647,7 @@ export const FrontDoor: React.FC = () => {
           </div>
           <p className="min-w-0 max-w-[72ch] break-words text-sm leading-[1.62] text-carbon-70">
             {t('frontdoor.covers.noteLead')}{' '}
-            <strong className="font-bold text-carbon-80">{loading ? '…' : coverageLine}</strong>
-            {coverage?.produced_units != null
-              ? ` ${t('frontdoor.covers.noteUnits', { units: formatNumber(coverage.produced_units) })}`
-              : ''}
-            .{' '}
+            <strong className="font-bold text-carbon-80">{loading ? '…' : coverageLine}</strong>.{' '}
             <Link to="/status" className="font-bold text-ap-link underline underline-offset-2">
               {t('frontdoor.covers.statusLink')}
             </Link>{' '}
@@ -695,7 +691,7 @@ export const FrontDoor: React.FC = () => {
                       <span className="text-xs text-carbon-60">{hazardLabel(alert.hazard_type)}</span>
                     </div>
                     <p className="mt-0.5 break-words font-mono text-xs leading-relaxed text-carbon-60">
-                      {alert.horizon ? `${t('frontdoor.run.horizon', { horizon: alert.horizon })} · ` : ''}
+                      {`${t('frontdoor.run.trajectory')} · `}
                       {alert.target_date ? `${t('frontdoor.run.valid', { date: alert.target_date })} · ` : ''}
                       {alert.published?.at
                         ? t('frontdoor.run.published', { at: alert.published.at })

@@ -171,7 +171,7 @@ export function readEvidence(row = {}, { agreementEpsilon = POLICY_DEFAULTS.agre
 
 /** Data cutoff = when the inputs behind the row were fetched (PRODUCT_SPEC §1.6). */
 function resolveCutoff(row, evidence, now) {
-  const explicit = row.data_cutoff
+  const explicit = (row.data_cutoff instanceof Date ? row.data_cutoff : parseDate(row.data_cutoff))
     || (row.generated_at ? parseDate(row.generated_at) : null)
     || (row.created_at ? parseDate(row.created_at) : null)
     || parseDate(row.prediction_date);

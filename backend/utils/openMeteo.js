@@ -222,8 +222,11 @@ const DAILY_VARS = [
 // directions are now guarded by `assertComplete` in `cacheContract.js`: a write without a
 // numeric reading is refused, and a read of a hollow entry is treated as a miss.
 const CACHE_TTL_MS = 15 * 60 * 1000;
+export const UPSTREAM_TIMEOUT_MS = 10_000;
+export const STALE_FALLBACK_MAX_MS = 2 * 60 * 60 * 1000;
 const cache = createVerifiedCache({
   ttlMs: CACHE_TTL_MS,
+  maxStaleMs: STALE_FALLBACK_MAX_MS,
   label: 'open-meteo',
   validate: (entry) => assertComplete(entry && entry.data),
   age: (entry, now) => now - (entry?.ts ?? 0),
@@ -244,19 +247,58 @@ export function peekCacheEntry(key) {
 }
 
 // ── Internal helpers ───────────────────────────────────────────────────────
-async function _fetchUpstream(params) {
+function _makeTimeoutSignal(timeoutMs) {
+  if (typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function') {
+    return { signal: AbortSignal.timeout(timeoutMs), cleanup: () => {} };
+  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  return { signal: controller.signal, cleanup: () => clearTimeout(timer) };
+}
+
+function _isRetryableError(err) {
+  if (!err) return false;
+  const upstreamStatus = /** @type {any} */ (err).upstreamStatus;
+  if (typeof upstreamStatus === 'number') {
+    return upstreamStatus === 429 || upstreamStatus >= 500;
+  }
+  return true; // network / timeout / AbortError
+}
+
+async function _fetchUpstream(params, { timeoutMs = UPSTREAM_TIMEOUT_MS, maxAttempts = 2, retryDelayMs = 250 } = {}) {
   const fetchImpl = await __getFetch();
   const url = `${OPEN_METEO_BASE}?${params.toString()}`;
-  const resp = await fetchImpl(url, {
-    headers: { 'User-Agent': 'HazardNet/1.0 (weather-proxy; +https://hazardnet.live)' },
-  });
-  if (!resp.ok) {
-    const body = await resp.text().catch(() => '');
-    const err = new Error(`Open-Meteo upstream HTTP ${resp.status}: ${body.slice(0, 200)}`);
-    err.status = 502;
-    throw err;
+  let lastError;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const { signal, cleanup } = _makeTimeoutSignal(timeoutMs);
+    try {
+      const resp = await fetchImpl(url, {
+        headers: { 'User-Agent': 'HazardNet/1.0 (weather-proxy; +https://hazardnet.live)' },
+        signal,
+      });
+      if (!resp.ok) {
+        const body = await resp.text().catch(() => '');
+        const err = /** @type {any} */ (new Error(`Open-Meteo upstream HTTP ${resp.status}: ${body.slice(0, 200)}`));
+        err.status = 502;
+        err.upstreamStatus = resp.status;
+        throw err;
+      }
+      return await resp.json();
+    } catch (err) {
+      lastError = err;
+      if (attempt >= maxAttempts || !_isRetryableError(err)) {
+        if (err && typeof err === 'object' && !(/** @type {any} */ (err).status)) {
+          /** @type {any} */ (err).status = 502;
+        }
+        throw err;
+      }
+      await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+    } finally {
+      cleanup();
+    }
   }
-  return resp.json();
+  throw lastError;
 }
 
 function _baseParams({ timezone, forecast_days, windSpeedUnit = 'ms' }) {
@@ -447,7 +489,35 @@ export async function fetchCurrentWeatherBatch(coords, opts = {}) {
         current: CURRENT_VARS_MINI.join(','),
         ..._baseParams({ timezone, forecast_days: 1 }),
       });
-      const raw = await _fetchUpstream(params);
+      let raw;
+      try {
+        raw = await _fetchUpstream(params);
+      } catch (upstreamErr) {
+        if (!opts.skipCache) {
+          const nowMs = Date.now();
+          const staleBatch = slice.map(({ idx, coord }) => ({
+            idx,
+            coord,
+            stale: cache.getStale(cacheKey(coord.lat, coord.lng), nowMs, STALE_FALLBACK_MAX_MS),
+          }));
+          if (staleBatch.every((item) => item.stale && item.stale.data && item.stale.data.current)) {
+            for (const { idx, coord, stale } of staleBatch) {
+              results[idx] = {
+                id: coord.id,
+                ...stale.data,
+                _meta: {
+                  ...stale.data._meta,
+                  cached: true,
+                  stale: true,
+                  stale_age_ms: Math.max(0, nowMs - stale.ts),
+                },
+              };
+            }
+            continue;
+          }
+        }
+        throw upstreamErr;
+      }
       // `%2C` in the URL → upstream answers an ARRAY of complete per-location objects.
       // The same normaliser the single-point path uses turns that into one contract;
       // there is no batch-specific shape handling below this line.
@@ -482,7 +552,8 @@ async function _fetchSingle({ lat, lng, forecast_days, timezone, skipCache,
     err.status = 400;
     throw err;
   }
-  const key = cacheKey(lat, lng);
+  const baseKey = cacheKey(lat, lng);
+  const key = wantHourly || wantDaily ? `full:${baseKey}` : baseKey;
   if (!skipCache) {
     // Post-read guard: the same assertComplete as the write path. An incomplete entry is
     // deleted and treated as a miss, so we re-fetch instead of serving it.
@@ -502,7 +573,31 @@ async function _fetchSingle({ lat, lng, forecast_days, timezone, skipCache,
   if (wantHourly) params.set('hourly', HOURLY_VARS.join(','));
   if (wantDaily) params.set('daily', DAILY_VARS.join(','));
 
-  const raw = await _fetchUpstream(params);
+  let raw;
+  try {
+    raw = await _fetchUpstream(params);
+  } catch (upstreamErr) {
+    if (!skipCache) {
+      const nowMs = Date.now();
+      const stale = cache.getStale(key, nowMs, STALE_FALLBACK_MAX_MS);
+      if (stale && stale.data) {
+        const s = stale.data;
+        const fullEnough = (!wantHourly || s.hourly) && (!wantDaily || s.daily);
+        if (fullEnough) {
+          return {
+            ...s,
+            _meta: {
+              ...s._meta,
+              cached: true,
+              stale: true,
+              stale_age_ms: Math.max(0, nowMs - stale.ts),
+            },
+          };
+        }
+      }
+    }
+    throw upstreamErr;
+  }
   // A single-coordinate query answers one OBJECT. `_normalisePoint` wraps it in the same
   // one-element contract the batch path gets, so both runtimes map the same shape.
   const normalised = _normalisePoint(raw);

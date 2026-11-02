@@ -309,6 +309,8 @@ function main() {
       ['record_build_id', 'record_build_id'],
       ['pipeline_version', 'pipeline_version'],
       ['run_id', 'run_id'],
+      ['created_at', 'created_at'],
+      ['data_cutoff', 'data_cutoff'],
       ['physics_top_hazard', 'physics_top_hazard'],
       ['physics_inputs_missing', 'physics_inputs_missing'],
     ]) {

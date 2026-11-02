@@ -3,10 +3,11 @@ info:
   title: HazardNet API
   version: "3.2.0"
   description: |
-    HazardNet publishes 7- and 15-day multi-hazard outlooks for Bangladesh's
-    64 districts: 8 hazards, dual-track severity, and the provenance to check
-    every number. This API exposes forecast records, alerts, historical data,
-    weather observations, AI advisory chat, and grounding search.
+    HazardNet publishes continuous 15-day daily multi-hazard outlooks (Days 1–15)
+    for Bangladesh's 64 districts: 8 hazards, 0–100 severity index, peak severe
+    dates, dual-track severity, and the provenance to check every number. This
+    API exposes forecast records, alerts, historical data, weather observations,
+    AI advisory chat, and grounding search.
   contact:
     name: HazardNet
     url: https://www.hazardnet.live

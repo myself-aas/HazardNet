@@ -1,6 +1,6 @@
 import React from 'react';
 import MaterialIcon from '../MaterialIcon';
-import { FORECAST_HORIZONS, formatHorizonLabel, type ForecastHorizon } from '../../lib/forecasts';
+import { formatHorizonLabel, type ForecastHorizon } from '../../lib/forecasts';
 import type { HazardLayerDef } from './mapPrimitives';
 import { triggerHaptic } from '../../lib/haptics';
 
@@ -215,21 +215,10 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
           />
         </div>
 
-        <div className="flex items-center gap-2 shrink-0 flex-wrap" role="group" aria-label="Forecast horizon">
-          {FORECAST_HORIZONS.map((horizon) => (
-            <button
-              key={horizon}
-              type="button"
-              onClick={() => {
-                triggerHaptic('light');
-                onForecastHorizonChange(horizon);
-              }}
-              aria-pressed={forecastHorizon === horizon}
-              className={chip(forecastHorizon === horizon)}
-            >
-              {formatHorizonLabel(horizon)}
-            </button>
-          ))}
+        <div className="flex items-center gap-2 shrink-0 flex-wrap" aria-label="Forecast trajectory">
+          <span className={chip(true)}>
+            {formatHorizonLabel('15_days')}
+          </span>
           <span
             className="px-2.5 min-h-[24px] inline-flex items-center rounded-full text-xs font-semibold whitespace-nowrap border border-carbon-20 bg-carbon-05 text-carbon-70"
             title={

@@ -8,6 +8,11 @@
  */
 
 import { applyCalibrationToRow } from '../alerts/calibration.js';
+import {
+  buildPublicDailySnapshot,
+  deriveDailyManifestFromCsv,
+  rollupDailySnapshotToHorizons,
+} from './dailyAdvisoryPublic.js';
 
 export const ADVISORY_CSV_COLUMNS = [
   'district',
@@ -34,7 +39,7 @@ export const ADVISORY_CSV_COLUMNS = [
   'prob_top3',
 ];
 
-export const VALID_ADVISORY_TIERS = ['SEVERE', 'WARNING', 'WATCH', 'NORMAL'];
+export const VALID_ADVISORY_TIERS = ['EXTREME', 'SEVERE', 'WARNING', 'WATCH', 'NORMAL'];
 export const VALID_HORIZONS = ['7_days', '15_days'];
 export const VALID_HAZARDS = [
   'Cold Wave',
@@ -217,16 +222,43 @@ export function mapAdvisoryRow(rawRow, rowNumber = 1, options = {}) {
 }
 
 /**
- * Maps an array of raw advisory rows, asserting that the output is exactly 128 rows
- * when 128 rows are supplied.
+ * Maps an array of raw advisory rows (either 128-row two-horizon CSV or 960-row
+ * daily 15-day CSV) into canonical `7_days` and `15_days` ForecastRow objects.
  *
  * @param {Array<Record<string, any>>} rawRows
- * @param {{ modelVersion?: string | null }} [options={}]
+ * @param {{ modelVersion?: string | null, sha256?: string, datasetTimestamp?: string }} [options={}]
  * @returns {Array<object>}
  */
 export function mapAdvisoryRows(rawRows, options = {}) {
   if (!Array.isArray(rawRows) || rawRows.length === 0) {
     throw new Error('No advisory rows to map');
+  }
+
+  const first = rawRows[0] || {};
+  if (first.forecast_day !== undefined && first.forecast_day !== '' && !first.horizon) {
+    const expectedDistricts = Math.floor(rawRows.length / 15);
+    const sha256 = typeof options.sha256 === 'string' && /^[a-f0-9]{64}$/.test(options.sha256)
+      ? options.sha256
+      : '0'.repeat(64);
+    const manifest = deriveDailyManifestFromCsv(rawRows, {
+      sha256,
+      datasetTimestamp: options.datasetTimestamp,
+      defaultModelVersion: options.modelVersion || '2.1.9+model.0bb5bdaf1789',
+      allowStale: true,
+    });
+    const snapshot = buildPublicDailySnapshot(rawRows, manifest, { expectedDistricts });
+    const rolled = rollupDailySnapshotToHorizons(snapshot);
+    const combined = [
+      ...(rolled?.horizons?.['7_days'] || []),
+      ...(rolled?.horizons?.['15_days'] || []),
+    ].map((row) => ({
+      ...row,
+      created_at: snapshot.run.generatedAt,
+    }));
+    if (options?.calibrationMap) {
+      return combined.map((row) => applyCalibrationToRow(row, options.calibrationMap));
+    }
+    return combined;
   }
 
   const mappedRows = [];
@@ -276,6 +308,7 @@ export function forecastRowsToCsv(forecastRows) {
     'prob_top3',
     'data_source',
     'model_version',
+    'created_at',
     'confidence_raw',
     'confidence_calibrated',
     'confidence_kind',

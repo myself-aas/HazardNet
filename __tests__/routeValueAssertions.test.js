@@ -213,3 +213,68 @@ describe('POST /api/v1/telemetry — both sinks, method gate', () => {
     expect((await response.json()).error).toBe('method not allowed');
   });
 });
+
+describe('POST /api/predict — stored district prediction over ASSETS', () => {
+  test('returns the stored 7_days forecast envelope for the first snapshot district', async () => {
+    const { onRequestPost } = require('../functions/api/predict.ts');
+    const expected = FORECAST_SNAPSHOT.horizons['7_days'][0];
+    const req = new Request(`${URL_BASE}/api/predict`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ districtId: expected.district_name, horizon: '7_days' }),
+    });
+    const response = await onRequestPost({ request: req, env });
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.inference.served_from).toBe('stored-forecast');
+    expect(body.provenance.district_name).toBe(expected.district_name);
+    expect(body.prediction.hazard).toBe(expected.hazard_type);
+    expect(body.prediction.severity_score).toBe(expected.severity_score);
+  });
+
+  test('returns 404 for an uncovered district and 400 for an invalid horizon', async () => {
+    const { onRequestPost } = require('../functions/api/predict.ts');
+    const missing = await onRequestPost({
+      request: new Request(`${URL_BASE}/api/predict`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ districtId: 'Atlantis', horizon: '7_days' }),
+      }),
+      env,
+    });
+    expect(missing.status).toBe(404);
+
+    const badHorizon = await onRequestPost({
+      request: new Request(`${URL_BASE}/api/predict`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ districtId: 'Dhaka', horizon: '30_days' }),
+      }),
+      env,
+    });
+    expect(badHorizon.status).toBe(400);
+  });
+});
+
+describe('GET /api/v1/kaggle and /api/v1/kaggle/advisories — Kaggle snapshot envelope', () => {
+  test('/api/v1/kaggle and /api/v1/kaggle/advisories return identical rowCount and leaf values', async () => {
+    const rootRoute = require('../functions/api/v1/kaggle/index.ts');
+    const subRoute = require('../functions/api/v1/kaggle/advisories.ts');
+    const rows = FORECAST_SNAPSHOT.horizons['7_days'];
+
+    const resA = await rootRoute.onRequestGet({ request: get('/api/v1/kaggle?horizon=7_days'), env });
+    const resB = await subRoute.onRequestGet({ request: get('/api/v1/kaggle/advisories?horizon=7_days'), env });
+    const bodyA = await resA.json();
+    const bodyB = await resB.json();
+
+    expect(resA.status).toBe(200);
+    expect(resB.status).toBe(200);
+    expect(bodyA.rowCount).toBe(rows.length);
+    expect(bodyB.rowCount).toBe(rows.length);
+    expect(bodyA.dataset).toBe('ashifahmedshuvo/hazardnet-weekly-forecasts');
+    expect(bodyA.data[0].district_name).toBe(rows[0].district_name);
+    expect(bodyB.data[0].severity_score).toBe(rows[0].severity_score);
+  });
+});
+

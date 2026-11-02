@@ -337,7 +337,7 @@ app.get('/.well-known/agent-card.json', (req, res) => {
   res.setHeader('Cache-Control', 'public, max-age=86400');
   res.status(200).json({
     name: 'HazardNet',
-    description: 'Multi-Hazard Early Warning AI agent for Bangladesh agriculture. Publishes 7- and 15-day outlooks for 8 climate hazards across 64 districts with dual-track severity scoring, independent physics cross-checks, and full provenance for every number.',
+    description: 'Multi-Hazard Early Warning AI agent for Bangladesh agriculture. Publishes continuous 15-day daily outlooks (Days 1–15) for 8 climate hazards across 64 districts with 0–100 severity index, peak severe dates, dual-track severity scoring, independent physics cross-checks, and full provenance for every number.',
     url: SITE_ORIGIN,
     version: '3.2.0',
     documentationUrl: `${SITE_ORIGIN}/docs`,
@@ -391,7 +391,7 @@ app.get('/.well-known/agent-card.json', (req, res) => {
       {
         id: 'hazard-forecast',
         name: 'Multi-Hazard Forecast',
-        description: 'Retrieve 7- and 15-day hazard outlooks for Bangladesh\'s 64 districts across 8 hazard classes with severity index, confidence bin, and physics cross-check.',
+        description: 'Retrieve continuous 15-day daily hazard outlooks (Days 1–15) for Bangladesh\'s 64 districts across 8 hazard classes with severity index, peak severe dates, confidence bin, and physics cross-check.',
         tags: ['forecast', 'hazard', 'bangladesh', 'agriculture', 'early-warning'],
         examples: [
           'What is the flood outlook for Dhaka district for the next 7 days?',

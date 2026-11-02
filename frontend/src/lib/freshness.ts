@@ -18,6 +18,7 @@
 
 export const FRESHNESS_URL = '/data/freshness.json';
 export const FRESHNESS_SCHEMA = 'hazardnet-freshness/v1';
+export const DAILY_ADVISORIES_SLO_HOURS = 36;
 
 export type FreshnessState = 'fresh' | 'stale' | 'failing' | 'missing' | 'unknown';
 

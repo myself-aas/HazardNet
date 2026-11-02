@@ -44,6 +44,7 @@ const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage').then((m) => ({ 
 // Farmer copy loads first by default; the page lazy-loads the existing public
 // two-horizon record only for ?view=published-records (never a role/permission gate).
 const DistrictDailyPage = lazy(() => import('./pages/DistrictDailyPage').then((m) => ({ default: m.DistrictDailyPage })));
+const DistrictLiveSnapshotSlot = lazy(() => import('./components/district/DistrictLiveSnapshotSlot').then((m) => ({ default: m.DistrictLiveSnapshotSlot })));
 const DivisionsPage = lazy(() => import('./pages/DivisionsPage'));
 const DivisionDetailPage = lazy(() => import('./pages/DivisionDetailPage'));
 const HazardsPage = lazy(() => import('./pages/HazardsPage'));
@@ -90,7 +91,14 @@ const RouteMetadata: React.FC<{ pathname: string }> = ({ pathname }) => {
  */
 const GeneratedContentPage: React.FC = () => {
   const { pathname } = useLocation();
-  return <ArticlePage path={pathname} />;
+  const districtMatch = pathname.match(/^\/districts\/([^/]+)\/?$/);
+  const districtSlug = districtMatch ? districtMatch[1] : null;
+  const introSlot = districtSlug ? (
+    <Suspense fallback={null}>
+      <DistrictLiveSnapshotSlot districtId={districtSlug} />
+    </Suspense>
+  ) : undefined;
+  return <ArticlePage path={pathname} introSlot={introSlot} />;
 };
 
 /**

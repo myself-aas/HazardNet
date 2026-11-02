@@ -209,3 +209,84 @@ describe('hourly catalogue — only names the upstream accepts', () => {
     }
   });
 });
+
+describe('upstream resilience — bounded timeout and transient single retry', () => {
+  test('attaches an AbortSignal, retries once on TimeoutError / HTTP 503, and succeeds on attempt 2', async () => {
+    let attempts = 0;
+    const signals = [];
+    upstreamStub(async (_url, init) => {
+      attempts += 1;
+      signals.push(init && init.signal);
+      if (attempts === 1) {
+        return new Response('Service Unavailable', { status: 503 });
+      }
+      return jsonResponse(OBJECT_FIXTURE);
+    });
+
+    const result = await fetchCurrentWeather(23.8103, 90.4125, { skipCache: true });
+    expect(attempts).toBe(2);
+    expect(signals[0]).toBeDefined();
+    expect(typeof signals[0].aborted).toBe('boolean');
+    expect(result.current.temperature_2m).toBe(OBJECT_FIXTURE.current.temperature_2m);
+  });
+
+  test('never retries non-transient HTTP 400 client/parameter errors', async () => {
+    let attempts = 0;
+    upstreamStub(async () => {
+      attempts += 1;
+      return new Response('{"error":true,"reason":"Invalid parameter"}', { status: 400 });
+    });
+
+    await expect(fetchCurrentWeather(23.8103, 90.4125, { skipCache: true })).rejects.toMatchObject({
+      status: 502,
+      message: expect.stringContaining('HTTP 400'),
+    });
+    expect(attempts).toBe(1);
+  });
+
+  test('isolates full 16-day bundle under full:lat,lng so mini refreshes never clobber stale-while-error fetchWeather fallback', async () => {
+    const t0 = 1_700_000_000_000;
+    const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(t0);
+    try {
+      let mode = 'full';
+      upstreamStub(async () => {
+        if (mode === 'full') {
+          return jsonResponse({
+            ...OBJECT_FIXTURE,
+            hourly: { time: ['2026-11-02T00:00'], temperature_2m: [26.4] },
+            daily: { time: ['2026-11-02'], precipitation_sum: [12.5] },
+          });
+        }
+        if (mode === 'mini') {
+          return jsonResponse({
+            latitude: OBJECT_FIXTURE.latitude,
+            longitude: OBJECT_FIXTURE.longitude,
+            current: OBJECT_FIXTURE.current,
+          });
+        }
+        return new Response('Upstream Timeout', { status: 504 });
+      });
+
+      const fullInitial = await fetchWeather(23.8103, 90.4125, { forecast_days: 16 });
+      expect(fullInitial.hourly).toBeDefined();
+      expect(fullInitial.daily).toBeDefined();
+
+      // 16 minutes later: mini current-only refresh succeeds with no hourly/daily blocks
+      nowSpy.mockReturnValue(t0 + 16 * 60_000);
+      mode = 'mini';
+      const mini = await fetchCurrentWeather(23.8103, 90.4125);
+      expect(mini.current.temperature_2m).toBe(OBJECT_FIXTURE.current.temperature_2m);
+      expect(mini.hourly).toBeUndefined();
+
+      // 20 minutes after t0: upstream goes down; fetchWeather must still recover full hourly+daily stale bundle
+      nowSpy.mockReturnValue(t0 + 20 * 60_000);
+      mode = 'down';
+      const staleFull = await fetchWeather(23.8103, 90.4125, { forecast_days: 16 });
+      expect(staleFull._meta.stale).toBe(true);
+      expect(staleFull.hourly).toBeDefined();
+      expect(staleFull.daily).toBeDefined();
+    } finally {
+      nowSpy.mockRestore();
+    }
+  });
+});

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import {
   ShieldAlert,
@@ -32,53 +32,139 @@ import MaterialIcon from '../components/MaterialIcon';
 import { SECTOR_ADVISORIES, SectorAdvisoryData, TechnicalStep } from '../data/sectorAdvisoriesData';
 import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
 import { useKaggleAdvisories } from '../hooks/useKaggleAdvisories';
+import { loadDistrictDaily, severityIndexOf, type DistrictDailyResult } from '../lib/dailyAdvisories';
+import { Continuous15DayTrajectory } from '../components/district/Continuous15DayTrajectory';
 import {
   advisorySignalOf,
+  advisoryTierOf,
   buildForecastIndex,
   canonicalKey,
   forecastAgeHours,
+  type ForecastHorizon,
   type ForecastRow,
 } from '../lib/forecasts';
 import { StructuredAdvisoryRenderer } from '../components/StructuredAdvisoryRenderer';
 import { PrintQrCode } from '../components/PrintQrCode';
 import { PdfExportButton } from '../components/PdfExportButton';
-import { DailyOutlookEntry } from '../components/DailyOutlookEntry';
+import { HazardGlyph } from '../components/apple/HazardGlyph';
+import { AlertLevelBadge } from '../components/alerts/AlertLevelBadge';
+import { StatusStrip } from '../components/StatusStrip';
+import { useI18n } from '../hooks/useI18n';
+
+const VALID_PHASES = ['all', 'pre-disaster', 'during-event', 'post-disaster'] as const;
+type ProtocolPhase = (typeof VALID_PHASES)[number];
 
 export const AdvisoriesPage: React.FC = () => {
   const { subCategory } = useParams<{ subCategory?: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const prefersReducedMotion = useReducedMotion();
+  const { formatDate, formatNumber } = useI18n();
+  const fmt1 = (val: number) => formatNumber(val, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const fmt2 = (val: number) => formatNumber(val, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   // Active sector resolution
   const activeSectorId = subCategory && SECTOR_ADVISORIES[subCategory] ? subCategory : 'crops';
   const sector: SectorAdvisoryData = SECTOR_ADVISORIES[activeSectorId] || SECTOR_ADVISORIES['crops'];
 
-  // Redirect /advisories to /advisories/crops for unique clean URL
+  // Redirect /advisories to /advisories/crops for unique clean URL while preserving query params
   useEffect(() => {
     if (!subCategory || !SECTOR_ADVISORIES[subCategory]) {
-      navigate('/advisories/crops', { replace: true });
+      const qs = searchParams.toString();
+      navigate(`/advisories/crops${qs ? `?${qs}` : ''}`, { replace: true });
     }
-  }, [subCategory, navigate]);
+  }, [subCategory, navigate, searchParams]);
 
-  // Phase filtering state
-  const [selectedPhase, setSelectedPhase] = useState<'all' | 'pre-disaster' | 'during-event' | 'post-disaster'>('all');
+  // Hydration-safe print timestamp
+  const [printTimestamp, setPrintTimestamp] = useState<string>('');
+  useEffect(() => {
+    const now = new Date();
+    setPrintTimestamp(
+      `${now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}, ${now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} BST (GMT+6)`,
+    );
+  }, []);
+
+  // Phase, district & horizon state synced to URL query params
+  const rawPhase = searchParams.get('phase');
+  const selectedPhase: ProtocolPhase = VALID_PHASES.includes(rawPhase as ProtocolPhase)
+    ? (rawPhase as ProtocolPhase)
+    : 'all';
+  const setSelectedPhase = (nextPhase: ProtocolPhase) => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (nextPhase === 'all') next.delete('phase');
+        else next.set('phase', nextPhase);
+        return next;
+      },
+      { replace: true },
+    );
+  };
+
   // Interactive Email Modal State
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [selectedDistrictForEmail, setSelectedDistrictForEmail] = useState<string>('Kurigram');
   const [affectedUpazilas, setAffectedUpazilas] = useState<string>('');
   const [customOfficerName, setCustomOfficerName] = useState<string>('');
   const [customOfficerPhone, setCustomOfficerPhone] = useState<string>('');
-  const [customDamageArea, setCustomDamageArea] = useState<string>('');
+  const [customDamageArea] = useState<string>('');
 
   // Gemini Live AI Advisory Generator State
   const [showAiSynthesizer, setShowAiSynthesizer] = useState(false);
-  const [aiDistrict, setAiDistrict] = useState<string>('Kurigram');
+  const districtParam = searchParams.get('district');
+  const resolvedDistrict = useMemo(() => {
+    if (!districtParam) return 'Kurigram';
+    const match = ALL_64_DISTRICTS.find(
+      (d) => d.id === districtParam.toLowerCase() || canonicalKey(d.name) === canonicalKey(districtParam),
+    );
+    return match ? match.name : 'Kurigram';
+  }, [districtParam]);
+  const aiDistrict = resolvedDistrict;
+  const setAiDistrict = (nextDistrict: string) => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (canonicalKey(nextDistrict) === 'kurigram') next.delete('district');
+        else next.set('district', nextDistrict);
+        return next;
+      },
+      { replace: true },
+    );
+  };
+
+  const kaggleHorizon: ForecastHorizon = '15_days';
+  const [dailyDistrictResult, setDailyDistrictResult] = useState<DistrictDailyResult>({
+    status: 'unavailable',
+    source: 'none',
+    run: null,
+    advisories: [],
+    fetchedAt: null,
+  });
+  useEffect(() => {
+    const controller = new AbortController();
+    loadDistrictDaily(aiDistrict, { now: new Date(), signal: controller.signal })
+      .then((res) => {
+        if (!controller.signal.aborted) setDailyDistrictResult(res);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setDailyDistrictResult({ status: 'unavailable', source: 'none', run: null, advisories: [], fetchedAt: null });
+        }
+      });
+    return () => controller.abort();
+  }, [aiDistrict]);
   // Severity, confidence and hazard come from the daily Kaggle ingest (the
-  // 7-day row for the selected district). They are never read from the static
-  // district table, and nothing is typed by hand.
-  const kaggleQuery = useKaggleAdvisories('7_days');
+  // selected horizon row for the selected district). They are never read from
+  // the static district table, and nothing is typed by hand.
+  const kaggleQuery = useKaggleAdvisories(kaggleHorizon);
   const kaggle = kaggleQuery.data;
   const forecastIndex = useMemo(() => buildForecastIndex(kaggle?.rows ?? []), [kaggle]);
   const kaggleRow: ForecastRow | null = forecastIndex.get(canonicalKey(aiDistrict)) ?? null;
+  const selectedDistrictMeta = useMemo(
+    () => ALL_64_DISTRICTS.find((d) => canonicalKey(d.name) === canonicalKey(aiDistrict)) ?? ALL_64_DISTRICTS[0],
+    [aiDistrict],
+  );
+  const kaggleTier = kaggleRow ? advisoryTierOf(kaggleRow) : null;
   const aiSeverity: number | null = kaggleRow ? advisorySignalOf(kaggleRow).final : null;
   const aiConfidence: number | null = kaggleRow && Number.isFinite(kaggleRow.confidence) ? kaggleRow.confidence : null;
   const aiHazard: string = kaggleRow?.hazard_type ?? '';
@@ -170,9 +256,9 @@ export const AdvisoriesPage: React.FC = () => {
   return (
     <motion.div
       id="advisory-bulletin-container"
-      initial={{ opacity: 0, y: 10 }}
+      initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
       className="max-w-7xl mx-auto space-y-8 pb-16"
     >
       {/* PRINT-ONLY OFFICIAL EMERGENCY BULLETIN HEADER */}
@@ -194,10 +280,7 @@ export const AdvisoriesPage: React.FC = () => {
             {/* Prominent 'Last Updated' Timestamp and Advisory Currency Validity Indicator */}
             <div className="flex flex-wrap items-center gap-2 mt-2 pt-1 border-t border-carbon-20 text-[8pt] font-mono">
               <span className="print-last-updated">
-                <strong>LAST UPDATED:</strong>{' '}
-                {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })},{' '}
-                {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} BST
-                (GMT+6)
+                <strong>LAST UPDATED:</strong> {printTimestamp || 'BST (GMT+6)'}
               </span>
               <span className="print-currency-tag">VALIDITY: 24-HOUR EARLY WARNING WINDOW</span>
             </div>
@@ -240,8 +323,9 @@ export const AdvisoriesPage: React.FC = () => {
 
           <div className="flex items-center gap-2 shrink-0">
             <button
+              type="button"
               onClick={handleCopyUrl}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-carbon-05 border border-carbon-20 text-carbon-70 text-xs font-bold hover:bg-carbon-10 hover:text-carbon-90 transition-all cursor-pointer"
+              className="ap-focusable inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-carbon-05 border border-carbon-20 text-carbon-70 text-xs font-bold hover:bg-carbon-10 hover:text-carbon-90 transition-colors cursor-pointer"
               title="Copy link to this sector"
             >
               <Share2 className="w-3.5 h-3.5" />
@@ -275,8 +359,9 @@ export const AdvisoriesPage: React.FC = () => {
             return (
               <Link
                 key={sec.id}
-                to={`/advisories/${sec.id}`}
-                className={`flex flex-col items-start p-3.5 rounded-2xl border transition-all text-left group ${
+                to={{ pathname: `/advisories/${sec.id}`, search: searchParams.toString() ? `?${searchParams.toString()}` : '' }}
+                aria-current={isActive ? 'page' : undefined}
+                className={`ap-focusable flex flex-col items-start p-3.5 rounded-2xl border transition-[border-color,background-color,box-shadow] text-left group ${
                   isActive
                     ? 'bg-carbon-90 text-ap-on-inverse border-carbon-90 shadow-md ring-2 ring-amber-400/40'
                     : 'bg-carbon-05/80 text-carbon-70 border-carbon-20/80 hover:bg-white hover:border-carbon-30 hover:shadow-xs'
@@ -307,9 +392,169 @@ export const AdvisoriesPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Link to the separate public district/day contract, not to a generated
-          sector directive or a two-horizon Kaggle forecast row. */}
-      <DailyOutlookEntry />
+      {/* Kaggle Daily District Advisory & Metrics Ledger */}
+      <section
+        aria-labelledby="kaggle-advisory-snapshot-heading"
+        className="rounded-xl border border-carbon-20 bg-white p-5 sm:p-7 space-y-5"
+      >
+        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4 border-b border-carbon-20 pb-4">
+          <div className="space-y-1 max-w-2xl">
+            <h2 id="kaggle-advisory-snapshot-heading" className="text-xl sm:text-2xl font-bold text-carbon-90 tracking-tight">
+              District forecast, weather drivers, and model metrics
+            </h2>
+            <p className="text-xs leading-relaxed text-carbon-60">
+              Research model run across {kaggle?.rows.length ?? 64} districts ({kaggle?.dataset ?? 'ashifahmedshuvo/hazardnet-weekly-forecasts'}).
+              Not an official government warning. Confirm active alerts with BMD, FFWC, and DDM; call 999 in emergencies.
+            </p>
+          </div>
+          {kaggle?.rows && kaggle.rows.length > 0 && (
+            <StatusStrip forecasts={kaggle.rows} horizon={kaggleHorizon} />
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="w-full sm:w-72 space-y-1.5">
+            <label htmlFor="advisories-district-select" className="block text-xs font-semibold text-carbon-70">
+              Select district (64)
+            </label>
+            <select
+              id="advisories-district-select"
+              value={aiDistrict}
+              onChange={(e) => setAiDistrict(e.target.value)}
+              className="ap-focusable w-full min-h-[44px] px-3 py-2 rounded-xl bg-carbon-05 border border-carbon-20 text-carbon-90 text-sm font-semibold"
+            >
+              {ALL_64_DISTRICTS.map((d) => (
+                <option key={d.id} value={d.name}>
+                  {d.name} ({d.division})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex min-h-[44px] items-center rounded-full border border-carbon-20 bg-carbon-05 px-4 text-xs font-semibold text-carbon-90">
+              Continuous 15-day trajectory (Days 1–15)
+            </span>
+            <Link
+              to={`/forecast/district/${selectedDistrictMeta.id}`}
+              className="ap-focusable min-h-[44px] inline-flex items-center px-2 text-xs font-semibold text-ap-link underline underline-offset-4"
+            >
+              <span>Open 15-day daily outlook: {selectedDistrictMeta.name}</span>
+            </Link>
+          </div>
+        </div>
+
+        {kaggleQuery.isLoading ? (
+          <p className="border-t border-carbon-20 pt-4 text-sm text-carbon-60">
+            Loading latest district forecast run…
+          </p>
+        ) : kaggleRow ? (
+          <div className="border-t border-carbon-20 pt-5 space-y-4">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="space-y-1">
+                <h3 className="flex items-center gap-2 text-lg font-bold text-carbon-90">
+                  <HazardGlyph hazard={kaggleRow.hazard_type} size={20} />
+                  <span>{kaggleRow.district_name}: {kaggleRow.hazard_type}</span>
+                </h3>
+                <p className="text-xs tabular-nums text-carbon-60">
+                  Issued <time dateTime={kaggleRow.prediction_date}>{formatDate(kaggleRow.prediction_date)}</time>,{' '}
+                  <strong className="font-semibold text-carbon-90">
+                    peak severe date <time dateTime={kaggleRow.target_date}>{formatDate(kaggleRow.target_date)}</time>
+                  </strong>
+                  {kaggleRow.model_version ? `, model v${kaggleRow.model_version}` : ''}
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                {kaggleTier && <AlertLevelBadge level={kaggleTier} label={kaggleTier} size="lg" />}
+                <div className="text-right tabular-nums">
+                  <div className="text-xs text-carbon-60">Severity index</div>
+                  <div className="text-base font-bold text-carbon-90">
+                    {formatNumber(severityIndexOf(kaggleRow.severity_score))}/100 ({fmt2(kaggleRow.severity_score)})
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {kaggleRow.requires_review && (
+              <p className="rounded-lg border border-amber-300 bg-amber-50/90 px-3.5 py-2 text-xs font-medium text-amber-950" role="note">
+                Unreviewed research output above the watch threshold ({kaggleTier}). Do not treat as an issued official warning; verify with BMD, FFWC, or DDM.
+              </p>
+            )}
+
+            <dl className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-4 border-t border-carbon-10 pt-4 text-xs">
+              <div>
+                <dt className="text-carbon-60">Rainfall</dt>
+                <dd className="mt-0.5 text-sm font-semibold text-carbon-90 tabular-nums">
+                  {kaggleRow.precipitation_mm !== undefined ? `${fmt1(kaggleRow.precipitation_mm)}\u00A0mm` : 'n/a'}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-carbon-60">Temperature range</dt>
+                <dd className="mt-0.5 text-sm font-semibold text-carbon-90 tabular-nums">
+                  {kaggleRow.temperature_min !== undefined && kaggleRow.temperature_max !== undefined
+                    ? `${fmt1(kaggleRow.temperature_min)} to ${fmt1(kaggleRow.temperature_max)}\u00A0°C`
+                    : kaggleRow.temperature_max !== undefined
+                      ? `${fmt1(kaggleRow.temperature_max)}\u00A0°C`
+                      : 'n/a'}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-carbon-60">Max wind</dt>
+                <dd className="mt-0.5 text-sm font-semibold text-carbon-90 tabular-nums">
+                  {kaggleRow.wind_max_kmh !== undefined ? `${fmt1(kaggleRow.wind_max_kmh)}\u00A0km/h` : 'n/a'}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-carbon-60">Model confidence</dt>
+                <dd className="mt-0.5 text-sm font-semibold text-carbon-90 tabular-nums">
+                  {formatNumber(Math.round(kaggleRow.confidence * 100))}%
+                </dd>
+              </div>
+              <div>
+                <dt className="text-carbon-60">Fused severity</dt>
+                <dd className="mt-0.5 text-sm font-semibold text-carbon-90 tabular-nums">
+                  {kaggleRow.final_severity !== undefined
+                    ? `${formatNumber(Math.round(kaggleRow.final_severity * 100))}%`
+                    : `${formatNumber(Math.round(kaggleRow.severity_score * 100))}%`}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-carbon-60">Model severity</dt>
+                <dd className="mt-0.5 text-sm font-semibold text-carbon-90 tabular-nums">
+                  {kaggleRow.model_severity !== undefined ? `${formatNumber(Math.round(kaggleRow.model_severity * 100))}%` : 'n/a'}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-carbon-60">Physics severity</dt>
+                <dd className="mt-0.5 text-sm font-semibold text-carbon-90 tabular-nums">
+                  {kaggleRow.physics_severity !== undefined ? `${formatNumber(Math.round(kaggleRow.physics_severity * 100))}%` : 'n/a'}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-carbon-60">Top-3 class share</dt>
+                <dd className="mt-0.5 text-sm font-semibold text-carbon-90 tabular-nums">
+                  {kaggleRow.prob_top1 !== undefined
+                    ? [kaggleRow.prob_top1, kaggleRow.prob_top2, kaggleRow.prob_top3]
+                        .filter((p): p is number => p !== undefined)
+                        .map((p) => `${formatNumber(Math.round(p * 100))}%`)
+                        .join(' / ')
+                    : 'n/a'}
+                </dd>
+              </div>
+            </dl>
+
+            {dailyDistrictResult.advisories.length > 0 && (
+              <div className="border-t border-carbon-20 pt-4">
+                <Continuous15DayTrajectory advisories={dailyDistrictResult.advisories} />
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="border-t border-carbon-20 pt-4 text-sm text-carbon-60">
+            No forecast record is currently available for {aiDistrict} in this horizon window.
+          </p>
+        )}
+      </section>
 
       {/* 2. ACTIVE SECTOR EXECUTIVE INTELLIGENCE & MANDATE */}
       <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-6 relative overflow-hidden">
@@ -351,15 +596,18 @@ export const AdvisoriesPage: React.FC = () => {
             </p>
             <div className="space-y-2 pt-1 screen-only">
               <button
+                type="button"
                 onClick={() => setIsEmailModalOpen(true)}
-                className="w-full py-2.5 px-4 rounded-full bg-amber-400 text-carbon-black font-black text-xs hover:bg-amber-300 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                className="ap-focusable w-full py-2.5 px-4 rounded-full bg-amber-400 text-carbon-black font-black text-xs hover:bg-amber-300 transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs"
               >
                 <Send className="w-3.5 h-3.5" />
                 <span>Draft Emergency Requisition</span>
               </button>
               <button
+                type="button"
                 onClick={() => setShowAiSynthesizer(!showAiSynthesizer)}
-                className={`w-full py-2 px-4 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                aria-expanded={showAiSynthesizer}
+                className={`ap-focusable w-full py-2 px-4 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer ${
                   showAiSynthesizer
                     ? 'bg-carbon-80 text-amber-300 border border-amber-400/40'
                     : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
@@ -403,11 +651,10 @@ export const AdvisoriesPage: React.FC = () => {
       <AnimatePresence>
         {showAiSynthesizer && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="overflow-hidden"
+            initial={prefersReducedMotion ? false : { opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -8 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
           >
             <div className="bg-carbon-90 text-carbon-05 rounded-3xl p-6 sm:p-8 border border-carbon-80 shadow-xl space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-carbon-80 pb-4">
@@ -429,8 +676,10 @@ export const AdvisoriesPage: React.FC = () => {
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setShowAiSynthesizer(false)}
-                  className="text-carbon-30 hover:text-white p-1 rounded-lg hover:bg-carbon-80 self-start sm:self-auto cursor-pointer"
+                  aria-label="Close AI advisory drafting panel"
+                  className="ap-focusable min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-carbon-30 hover:text-white p-1 rounded-lg hover:bg-carbon-80 self-start sm:self-auto cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -439,11 +688,15 @@ export const AdvisoriesPage: React.FC = () => {
               {/* Scenario inputs: typed by the user, not taken from a forecast run. */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-mono font-bold text-carbon-30">TARGET DISTRICT (64):</label>
+                  <label htmlFor="ai-synthesizer-district-select" className="text-xs font-mono font-bold text-carbon-30">
+                    TARGET DISTRICT (64):
+                  </label>
                   <select
+                    id="ai-synthesizer-district-select"
+                    name="aiDistrict"
                     value={aiDistrict}
                     onChange={(e) => setAiDistrict(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-carbon-80 border border-carbon-70 text-carbon-05 text-xs font-semibold focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 rounded-xl bg-carbon-80 border border-carbon-70 text-carbon-05 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
                   >
                     {ALL_64_DISTRICTS.map((d) => (
                       <option key={d.id} value={d.name}>
@@ -462,18 +715,18 @@ export const AdvisoriesPage: React.FC = () => {
                   <span className="block text-xs font-mono font-bold text-carbon-30">
                     SEVERITY (KAGGLE DAILY RECORD):
                   </span>
-                  <p className="text-xs font-mono text-carbon-05">
-                    {aiSeverity == null ? 'Not available for this district' : aiSeverity.toFixed(2)}
+                  <p className="text-xs font-mono tabular-nums text-carbon-05">
+                    {aiSeverity == null ? 'Not available for this district' : fmt2(aiSeverity)}
                   </p>
                   <p className="text-xs text-carbon-30">
                     {kaggleRow && kaggle
-                      ? `Fetched from the Kaggle Dataset API at ${kaggle.fetchedAt ?? 'an unknown time'} (UTC). Dataset generated ${kaggle.generatedAt ?? 'time not stated'}. Prediction ${kaggleRow.prediction_date}, target ${kaggleRow.target_date}.${
+                      ? `Fetched from the Kaggle Dataset API at ${kaggle.fetchedAt ?? 'an unknown time'} (UTC). Dataset generated ${kaggle.generatedAt ?? 'time not stated'}. Prediction ${formatDate(kaggleRow.prediction_date)}, target ${formatDate(kaggleRow.target_date)}.${
                           kaggle.status === 'stale'
                             ? ' Kaggle could not be reached on the last refresh. This is the last value fetched.'
                             : ''
                         }${
                           forecastAgeHours(kaggleRow.prediction_date) > 36
-                            ? ` This record is ${Math.round(forecastAgeHours(kaggleRow.prediction_date) / 24)} days old. Check the daily dataset update before you draft.`
+                            ? ` This record is ${formatNumber(Math.round(forecastAgeHours(kaggleRow.prediction_date) / 24))} days old. Check the daily dataset update before you draft.`
                             : ''
                         }`
                       : kaggleQuery.isError
@@ -481,21 +734,22 @@ export const AdvisoriesPage: React.FC = () => {
                         : kaggle?.status === 'unavailable'
                           ? 'No Kaggle value is available yet. The advisory service has not fetched the dataset, so no value is shown.'
                           : kaggleQuery.isPending
-                            ? 'Loading the latest value from the Kaggle Dataset API...'
+                            ? 'Loading the latest value from the Kaggle Dataset API…'
                             : 'No Kaggle record for this district in the latest fetch.'}
                   </p>
                 </div>
 
                 <div className="space-y-1.5 flex flex-col justify-end">
                   <button
+                    type="button"
                     onClick={handleGenerateAiAdvisory}
                     disabled={aiSeverity == null || aiConfidence == null || !aiHazard || aiLoading}
-                    className="w-full py-2.5 px-4 rounded-xl bg-primary hover:bg-ap-primary-tint text-ap-action-fg font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                    className="ap-focusable w-full py-2.5 px-4 rounded-xl bg-primary hover:bg-ap-primary-tint text-ap-action-fg font-black text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50"
                   >
                     {aiLoading ? (
                       <>
                         <div className="w-4 h-4 border-2 border-carbon-black border-t-transparent rounded-full animate-spin"></div>
-                        <span>Drafting...</span>
+                        <span>Drafting…</span>
                       </>
                     ) : (
                       <>
@@ -512,7 +766,7 @@ export const AdvisoriesPage: React.FC = () => {
                 <div className="p-6 sm:p-8 rounded-2xl bg-carbon-80/80 border border-carbon-70 text-center space-y-3 animate-pulse">
                   <div className="w-8 h-8 rounded-full border-2 border-amber-400 border-t-transparent animate-spin mx-auto"></div>
                   <p className="text-xs text-carbon-30 font-mono">
-                    Drafting from the {aiDistrict} forecast record and the {sector.code} protocol...
+                    Drafting from the {aiDistrict} forecast record and the {sector.code} protocol…
                   </p>
                 </div>
               )}
@@ -566,17 +820,23 @@ export const AdvisoriesPage: React.FC = () => {
           </div>
 
           {/* Phase Filter Tabs */}
-          <div className="flex items-center gap-1.5 bg-carbon-10 p-1.5 rounded-2xl border border-carbon-20 shrink min-w-0 self-start sm:self-auto max-w-full overflow-x-auto">
+          <div
+            role="group"
+            aria-label="Protocol phase filter"
+            className="flex items-center gap-1.5 bg-carbon-10 p-1.5 rounded-2xl border border-carbon-20 shrink min-w-0 self-start sm:self-auto max-w-full overflow-x-auto"
+          >
             {[
-              { id: 'all', label: 'All' },
-              { id: 'pre-disaster', label: 'Before' },
-              { id: 'during-event', label: 'During' },
-              { id: 'post-disaster', label: 'After' },
+              { id: 'all' as const, label: 'All' },
+              { id: 'pre-disaster' as const, label: 'Before' },
+              { id: 'during-event' as const, label: 'During' },
+              { id: 'post-disaster' as const, label: 'After' },
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setSelectedPhase(tab.id as any)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                type="button"
+                aria-pressed={selectedPhase === tab.id}
+                onClick={() => setSelectedPhase(tab.id)}
+                className={`ap-focusable px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
                   selectedPhase === tab.id
                     ? 'bg-white text-carbon-90 shadow-xs border border-carbon-20'
                     : 'text-carbon-60 hover:text-carbon-90'
@@ -608,10 +868,10 @@ export const AdvisoriesPage: React.FC = () => {
             return (
               <motion.div
                 key={idx}
-                initial={{ opacity: 0, y: 8 }}
+                initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2, delay: idx * 0.05 }}
-                className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-7 shadow-md space-y-4 hover:border-carbon-30 transition-all"
+                transition={{ duration: prefersReducedMotion ? 0 : 0.2, delay: prefersReducedMotion ? 0 : idx * 0.05 }}
+                className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-7 shadow-md space-y-4 hover:border-carbon-30 transition-colors"
               >
                 {/* Step Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-carbon-20 pb-3">
@@ -789,7 +1049,7 @@ export const AdvisoriesPage: React.FC = () => {
               href={doc.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-5 rounded-2xl bg-carbon-05 border border-carbon-20/80 hover:border-blue-400 hover:bg-blue-50/30 transition-all flex flex-col justify-between group cursor-pointer shadow-2xs space-y-3"
+              className="ap-focusable p-5 rounded-2xl bg-carbon-05 border border-carbon-20/80 hover:border-blue-400 hover:bg-blue-50/30 transition-colors flex flex-col justify-between group cursor-pointer shadow-2xs space-y-3"
             >
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -835,8 +1095,9 @@ export const AdvisoriesPage: React.FC = () => {
           </div>
 
           <button
+            type="button"
             onClick={() => setIsEmailModalOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-carbon-90 text-carbon-05 text-xs font-bold hover:bg-carbon-80 transition-all cursor-pointer shadow-xs self-start sm:self-auto"
+            className="ap-focusable inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-carbon-90 text-carbon-05 text-xs font-bold hover:bg-carbon-80 transition-colors cursor-pointer shadow-xs self-start sm:self-auto"
           >
             <Mail className="w-3.5 h-3.5 text-amber-300" />
             <span>Open Emergency Email Composer</span>
@@ -847,7 +1108,7 @@ export const AdvisoriesPage: React.FC = () => {
           {sector.emergencyContacts.map((contact, cIdx) => (
             <div
               key={cIdx}
-              className="p-5 rounded-2xl bg-carbon-05 border border-carbon-20/90 flex flex-col justify-between space-y-4 hover:shadow-xs transition-all"
+              className="p-5 rounded-2xl bg-carbon-05 border border-carbon-20/90 flex flex-col justify-between space-y-4 hover:shadow-xs transition-shadow"
             >
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -940,11 +1201,14 @@ export const AdvisoriesPage: React.FC = () => {
         {isEmailModalOpen && (
           <div className="fixed inset-0 z-[10001] flex items-center justify-center p-3 sm:p-4 bg-carbon-black/70 backdrop-blur-xs">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="email-requisition-modal-title"
+              initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              className="bg-white rounded-3xl border border-carbon-20 max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-2xl space-y-6"
+              exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.95 }}
+              transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
+              className="bg-white rounded-3xl border border-carbon-20 max-w-3xl w-full max-h-[90dvh] overflow-y-auto overscroll-contain p-6 sm:p-8 shadow-2xl space-y-6"
             >
               <div className="flex flex-wrap items-start sm:items-center justify-between gap-3 border-b border-carbon-20 pb-4">
                 <div className="flex items-start sm:items-center gap-3 min-w-0">
@@ -952,7 +1216,7 @@ export const AdvisoriesPage: React.FC = () => {
                     <Mail className="w-5 h-5" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-base sm:text-lg font-black text-carbon-90 break-words">
+                    <h3 id="email-requisition-modal-title" className="text-base sm:text-lg font-black text-carbon-90 break-words">
                       Emergency Assistance Email Requisition Generator
                     </h3>
                     <p className="text-xs text-carbon-60 font-mono break-words">
@@ -961,8 +1225,9 @@ export const AdvisoriesPage: React.FC = () => {
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setIsEmailModalOpen(false)}
-                  className="p-2 rounded-xl text-carbon-60 hover:text-carbon-70 hover:bg-carbon-10 cursor-pointer shrink-0"
+                  className="ap-focusable min-h-[44px] min-w-[44px] inline-flex items-center justify-center p-2 rounded-xl text-carbon-60 hover:text-carbon-70 hover:bg-carbon-10 cursor-pointer shrink-0"
                   aria-label="Close email requisition generator"
                 >
                   <X className="w-5 h-5" />
@@ -972,11 +1237,15 @@ export const AdvisoriesPage: React.FC = () => {
               {/* Form Controls to Customize Email */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-carbon-90">Select Affected District:</label>
+                  <label htmlFor="requisition-district-select" className="text-xs font-bold text-carbon-90">
+                    Select Affected District:
+                  </label>
                   <select
+                    id="requisition-district-select"
+                    name="affectedDistrict"
                     value={selectedDistrictForEmail}
                     onChange={(e) => setSelectedDistrictForEmail(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-carbon-20 bg-carbon-05 text-xs font-semibold text-carbon-90 focus:outline-none focus:border-carbon-90"
+                    className="w-full px-3 py-2 rounded-xl border border-carbon-20 bg-carbon-05 text-xs font-semibold text-carbon-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-carbon-90"
                   >
                     {ALL_64_DISTRICTS.map((d) => (
                       <option key={d.id} value={d.name}>
@@ -987,35 +1256,51 @@ export const AdvisoriesPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-carbon-90">Affected Upazilas / Unions:</label>
+                  <label htmlFor="requisition-upazilas-input" className="text-xs font-bold text-carbon-90">
+                    Affected Upazilas / Unions:
+                  </label>
                   <input
+                    id="requisition-upazilas-input"
+                    name="affectedUpazilas"
                     type="text"
+                    autoComplete="address-level2"
                     value={affectedUpazilas}
                     onChange={(e) => setAffectedUpazilas(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-carbon-20 bg-carbon-05 text-xs font-semibold text-carbon-90 focus:outline-none focus:border-carbon-90"
-                    placeholder="e.g. Chilmari, Ulipur, Roumari"
+                    className="w-full px-3 py-2 rounded-xl border border-carbon-20 bg-carbon-05 text-xs font-semibold text-carbon-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-carbon-90"
+                    placeholder="Chilmari, Ulipur, Roumari…"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-carbon-90">Coordinator / Officer Name & Role:</label>
+                  <label htmlFor="requisition-officer-name" className="text-xs font-bold text-carbon-90">
+                    Coordinator / Officer Name & Role:
+                  </label>
                   <input
+                    id="requisition-officer-name"
+                    name="officerName"
                     type="text"
+                    autoComplete="name"
                     value={customOfficerName}
                     onChange={(e) => setCustomOfficerName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-carbon-20 bg-carbon-05 text-xs font-semibold text-carbon-90 focus:outline-none focus:border-carbon-90"
-                    placeholder="e.g. Md. Rafiqul Islam (Upazila Coordinator)"
+                    className="w-full px-3 py-2 rounded-xl border border-carbon-20 bg-carbon-05 text-xs font-semibold text-carbon-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-carbon-90"
+                    placeholder="Md. Rafiqul Islam (Upazila Coordinator)…"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-carbon-90">Officer Phone / Hotline:</label>
+                  <label htmlFor="requisition-officer-phone" className="text-xs font-bold text-carbon-90">
+                    Officer Phone / Hotline:
+                  </label>
                   <input
-                    type="text"
+                    id="requisition-officer-phone"
+                    name="officerPhone"
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
                     value={customOfficerPhone}
                     onChange={(e) => setCustomOfficerPhone(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-carbon-20 bg-carbon-05 text-xs font-semibold text-carbon-90 focus:outline-none focus:border-carbon-90"
-                    placeholder="e.g. +8801712-345678"
+                    className="w-full px-3 py-2 rounded-xl border border-carbon-20 bg-carbon-05 text-xs font-semibold text-carbon-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-carbon-90"
+                    placeholder="+8801712-345678…"
                   />
                 </div>
               </div>
@@ -1023,14 +1308,18 @@ export const AdvisoriesPage: React.FC = () => {
               {/* Preview of Email */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-carbon-90">Structured Requisition Body Preview:</span>
+                  <label htmlFor="requisition-email-preview" className="font-bold text-carbon-90">
+                    Structured Requisition Body Preview:
+                  </label>
                   <span className="font-mono text-carbon-60">Recipients: {sector.emailTemplate.recipientDefault}</span>
                 </div>
                 <textarea
+                  id="requisition-email-preview"
+                  name="emailPreview"
                   readOnly
                   rows={10}
                   value={generatePopulatedEmail()}
-                  className="w-full p-4 rounded-2xl bg-carbon-90 text-carbon-10 font-mono text-xs leading-relaxed focus:outline-none resize-none border border-carbon-80"
+                  className="w-full p-4 rounded-2xl bg-carbon-90 text-carbon-10 font-mono text-xs leading-relaxed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 resize-none border border-carbon-80"
                 />
               </div>
 
@@ -1042,16 +1331,18 @@ export const AdvisoriesPage: React.FC = () => {
 
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                   <button
+                    type="button"
                     onClick={handleCopyEmail}
-                    className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-carbon-30 text-carbon-90 text-xs font-bold hover:bg-carbon-10 flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="ap-focusable flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-carbon-30 text-carbon-90 text-xs font-bold hover:bg-carbon-10 flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Copy className="w-4 h-4" />
                     <span>Copy Structured Email</span>
                   </button>
 
                   <button
+                    type="button"
                     onClick={handleLaunchMailClient}
-                    className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-carbon-90 text-carbon-05 text-xs font-bold hover:bg-carbon-80 flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                    className="ap-focusable flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-carbon-90 text-carbon-05 text-xs font-bold hover:bg-carbon-80 flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                   >
                     <Send className="w-4 h-4 text-amber-300" />
                     <span>Open in Email App</span>

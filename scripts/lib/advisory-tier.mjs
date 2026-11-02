@@ -1,4 +1,4 @@
-export const ADVISORY_TIERS = ['SEVERE', 'WARNING', 'WATCH', 'NORMAL'];
+export const ADVISORY_TIERS = ['EXTREME', 'SEVERE', 'WARNING', 'WATCH', 'NORMAL'];
 
 export const TIER_BANDS = {
   SEVERE: 0.85,
@@ -30,7 +30,7 @@ export function tierForSeverity(score) {
 }
 
 export function requiresReview(tier) {
-  return tier === 'SEVERE' || tier === 'WARNING';
+  return tier === 'EXTREME' || tier === 'SEVERE' || tier === 'WARNING';
 }
 
 export function tierForRow(row) {

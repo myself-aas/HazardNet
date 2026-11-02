@@ -25,6 +25,10 @@
       "status": "allowListed",
       "reason": "print sheet inside a modal; the modal body above it carries the same fields as cards."
     },
+    "components/district/Continuous15DayTrajectory.tsx": {
+      "tables": 1,
+      "status": "converted"
+    },
     "components/district/DistrictBriefBody.tsx": {
       "tables": 1,
       "status": "converted",
@@ -62,10 +66,10 @@
       "status": "converted"
     },
     "components/status/FreshnessPanel.tsx": {
-      "tables": 3,
+      "tables": 2,
       "status": "converted",
-      "remaining": 2,
-      "remainingReason": "the coverage-horizon table is two columns (Horizon, Units) and the provenance table is text that already wraps; neither scrolls at 320px, so they stay tables in both themes."
+      "remaining": 1,
+      "remainingReason": "the probe-checks table is three compact columns of text that already wraps and does not scroll sideways at 320px."
     },
     "components/WeatherPanel.tsx": {
       "tables": 1,

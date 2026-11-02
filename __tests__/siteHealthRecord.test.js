@@ -258,6 +258,38 @@ describe('probe_runtime_paths.mjs — sibling scenarios against a local mock', (
           : [point('dhaka', 31.1), point('chattogram', 27.8)];
         return send(200, { count: 2, points });
       }
+      if (url.pathname === '/api/v1/advisories/summary' && req.method === 'GET') {
+        return send(200, {
+          schema: 'hazardnet-daily-advisories/v1',
+          status: 'fresh',
+          scope: 'summary',
+          count: 64,
+          summary: { districts: 64, byTier: { EXTREME: 2, SEVERE: 6, WARNING: 14, WATCH: 28, NORMAL: 14 } },
+        });
+      }
+      if (url.pathname === '/api/v1/kaggle' && req.method === 'GET') {
+        return send(200, {
+          status: 'fresh',
+          horizon: url.searchParams.get('horizon') || '7_days',
+          rowCount: 64,
+          data: Array.from({ length: 64 }, (_, idx) => ({
+            district_id: idx + 1,
+            district_name: `District_${idx + 1}`,
+            horizon: '7_days',
+            hazard_type: 'Flood',
+            severity_score: 0.42,
+            confidence: 0.91,
+            advisory_tier: idx === 0 ? 'EXTREME' : 'WATCH',
+          })),
+        });
+      }
+      if (url.pathname === '/api/predict' && req.method === 'POST') {
+        return send(200, {
+          prediction: { hazard_type: 'Flash Flood', severity_score: 0.68, confidence: 0.92 },
+          provenance: { district_name: 'Sylhet', horizon: '7_days' },
+          metadata: { schema: 'hazardnet-predict-envelope/v1', fields_unavailable: [] },
+        });
+      }
       return send(404, { error: 'not found' });
     });
     await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
@@ -274,17 +306,18 @@ describe('probe_runtime_paths.mjs — sibling scenarios against a local mock', (
     }
   }
 
-  test('all eight sibling scenarios pass against a complete mock, with the captured leaf', async () => {
+  test('all eleven sibling scenarios pass against a complete mock, with the captured leaf', async () => {
     hollowBatch = false;
     const { code, report } = await probe();
     expect(code).toBe(0);
-    expect(report.scenarios).toBe(8);
+    expect(report.scenarios).toBe(11);
     expect(report.failed).toBe(0);
     const names = report.results.map((r) => r.name);
     expect(names).toEqual([
       'telemetry_post_204_bound_or_unbound', 'telemetry_post_invalid_400', 'telemetry_get_405',
       'weather_cache_miss', 'weather_cache_hit', 'weather_full_shape',
       'batch_get_two_points', 'batch_post_two_points',
+      'advisories_summary_contract', 'kaggle_horizon_5tier_shape', 'predict_district_shape',
     ]);
     const miss = report.results.find((r) => r.name === 'weather_cache_miss');
     const hit = report.results.find((r) => r.name === 'weather_cache_hit');
@@ -297,14 +330,14 @@ describe('probe_runtime_paths.mjs — sibling scenarios against a local mock', (
   test('the documented --self-test / --self-test=broken commands behave as written', async () => {
     const healthy = await execFileAsync(process.execPath, [runtimeProbe, '--self-test'], { cwd: root });
     const healthyReport = JSON.parse(healthy.stdout);
-    expect(healthyReport.scenarios).toBe(8);
+    expect(healthyReport.scenarios).toBe(11);
     expect(healthyReport.failed).toBe(0);
     expect(healthy.stderr).toContain('healthy mock at');
 
     const broken = await execFileAsync(process.execPath, [runtimeProbe, '--self-test=broken'], { cwd: root })
       .catch((error) => error);
     expect(broken.code).toBe(1);
-    expect(JSON.parse(broken.stdout).failed).toBe(5);
+    expect(JSON.parse(broken.stdout).failed).toBe(8);
     expect(broken.stderr).toContain('missing: current.temperature_2m');
   });
 

@@ -6,7 +6,7 @@ na_heuristics:
 p0_count: 0
 p1_count: 2
 target_identity: "file:frontend/src/pages/FrontDoor.tsx"
-target_fingerprint: "sha256:dc06f5188819a028417ab8e1952a2bf55f7f1862e6d48b6f5431ac67651a754f"
+target_fingerprint: "sha256:48dfd6fa531ef2896c1bbc1348cf3d806f32e9dc9783d496a0e182ecbe24e69f"
 target_path: frontend/src/pages/FrontDoor.tsx
 timestamp: 2026-10-26T03-37-17Z
 slug: frontend-src-pages-frontdoor-tsx

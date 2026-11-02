@@ -25,7 +25,7 @@ const CAROUSELS: Record<AuthMode, RotatingMessage[]> = {
     },
     {
       headline: 'Early warning, 15 days ahead',
-      body: 'Strategic outlooks and 7-day tactical forecasts, cross-validated with physical severity formulas.',
+      body: 'Continuous 15-day daily trajectories and peak severe dates, cross-validated with physical severity formulas.',
     },
     {
       headline: 'Built for the field',

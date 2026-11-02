@@ -25,26 +25,43 @@ import {
   type ForecastHorizon,
   type ForecastRow,
 } from '../lib/forecasts';
+import {
+  loadNationalDailySnapshot,
+  rollupDailyAdvisoriesToForecastRows,
+} from '../lib/dailyAdvisories';
 
 /**
  * Fetch + defensively parse the bulk forecast payload for one horizon.
- * Falls back to the committed snapshot when the API is unreachable,
- * and throws only when both sources fail (so TanStack Query reports an
- * error and the static baseline remains in use).
+ * Prefers the newest run across `/api/v1/forecasts/bulk`, `/data/daily-advisories-v1.json`,
+ * and `/data/forecasts-latest.json`.
  */
 export async function loadForecasts(horizon: ForecastHorizon): Promise<ForecastRow[]> {
+  let candidateRows: ForecastRow[] = [];
   try {
     const res = await fetch(`/api/v1/forecasts/bulk?horizon=${encodeURIComponent(horizon)}&fresh=${Date.now()}`, { cache: 'no-store' });
-    if (!res.ok) {
-      throw new Error(`Forecast API responded ${res.status}`);
+    if (res.ok) {
+      candidateRows = parseBulkResponse(await res.json());
     }
-    const rows = parseBulkResponse(await res.json());
-    if (rows.length > 0) return rows;
   } catch {
-    // fall through to the committed snapshot
+    // fall through to committed snapshots
   }
-  const snapshotRows = await fetchStaticForecastSnapshot(horizon);
-  if (snapshotRows.length > 0) return snapshotRows;
+  if (candidateRows.length === 0) {
+    candidateRows = await fetchStaticForecastSnapshot(horizon).catch(() => []);
+  }
+
+  const daily = await loadNationalDailySnapshot().catch(() => null);
+  if (daily && daily.run && daily.advisories.length > 0) {
+    const dailyRows = rollupDailyAdvisoriesToForecastRows(daily.advisories, daily.run, horizon);
+    if (dailyRows.length > 0) {
+      const candidateDate = candidateRows[0]?.prediction_date ?? '';
+      const dailyDate = dailyRows[0]?.prediction_date ?? '';
+      if (candidateRows.length === 0 || dailyDate >= candidateDate) {
+        return dailyRows;
+      }
+    }
+  }
+
+  if (candidateRows.length > 0) return candidateRows;
   throw new Error('Forecast API and committed snapshot are both unavailable');
 }
 

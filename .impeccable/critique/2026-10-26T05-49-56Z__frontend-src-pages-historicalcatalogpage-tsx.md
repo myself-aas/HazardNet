@@ -6,7 +6,7 @@ na_heuristics:
 p0_count: 0
 p1_count: 1
 target_identity: "file:/home/user/HazardNet/frontend/src/pages/HistoricalCatalogPage.tsx"
-target_fingerprint: "sha256:2104a396ca270fe3f448bb30dd91ab7327797fe9ce5f954232035843a15241ff"
+target_fingerprint: "sha256:1ca0b1dc8f9c2f2f4e3dd3fc9edb261ed8b04fc3b158efa2002667d591b9f54b"
 target_path: /home/user/HazardNet/frontend/src/pages/HistoricalCatalogPage.tsx
 timestamp: 2026-10-26T05-49-56Z
 slug: frontend-src-pages-historicalcatalogpage-tsx

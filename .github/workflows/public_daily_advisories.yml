@@ -1,8 +1,6 @@
 name: Publish Daily District Advisories
 
 on:
-  # Kaggle has no GitHub completion webhook. Poll its public dataset for a new
-  # Ready version; only a matching UTC notebook run file unlocks publication.
   schedule:
     - cron: '15 */3 * * *'
   workflow_dispatch: {}
@@ -16,9 +14,9 @@ permissions:
 
 jobs:
   publish:
-    if: github.ref == 'refs/heads/main'
+    if: (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout public site
         uses: actions/checkout@v7
@@ -43,7 +41,6 @@ jobs:
         id: fetch
         shell: bash
         env:
-          # Optional for a public dataset; a Kaggle 403 fails without publishing.
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
           KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
         run: |
@@ -51,19 +48,19 @@ jobs:
           umask 077
           if node scripts/fetch_kaggle_daily_public.mjs --out /tmp/hazardnet-daily-public; then
             echo 'new=true' >> "$GITHUB_OUTPUT"
-            echo 'New Ready Kaggle version with a matching UTC notebook run record.' >> "$GITHUB_STEP_SUMMARY"
+            echo 'New Ready Kaggle daily dataset version fetched and verified.' >> "$GITHUB_STEP_SUMMARY"
           else
             code=$?
             if [ "$code" -eq 2 ]; then
               echo 'new=false' >> "$GITHUB_OUTPUT"
               echo 'No new Ready dataset version; public site unchanged.' >> "$GITHUB_STEP_SUMMARY"
             else
-              echo '::error::Kaggle daily dataset or UTC run record could not be verified; the public site was not updated.'
+              echo '::error::Kaggle daily dataset could not be verified; the public site was not updated.'
               exit "$code"
             fi
           fi
 
-      - name: Build and check the public-only projection
+      - name: Build daily snapshot and synchronize website forecast artifacts
         if: steps.fetch.outputs.new == 'true'
         shell: bash
         run: |
@@ -76,58 +73,75 @@ jobs:
             --output frontend/public/data/daily-advisories-v1.json \
             --automated-publish --dataset-version "$VERSION"
           node scripts/check_public_daily_asset.mjs --require
+          SNAPSHOT_SOURCE="Kaggle_Daily_Advisory (public_daily_advisories.yml, dataset v$VERSION)" \
+            node scripts/sync_daily_to_forecasts.mjs \
+              --from-daily-json frontend/public/data/daily-advisories-v1.json
+          node scripts/capture_edge_fixtures.mjs
           npx jest --ci --runInBand --silent \
             __tests__/dailyAdvisoryPublic.test.js \
             __tests__/kaggleDailyPublic.test.js \
             frontend/src/lib/__tests__/dailyAdvisories.test.ts
           npm run build
           npm run audit:pages:strict
-          cmp frontend/public/data/daily-advisories-v1.json dist/data/daily-advisories-v1.json
-          # The original technical CSV and run JSON never enter the public site,
-          # an Actions artifact, a cache or Git. Only the whitelisted JSON is staged.
-          test ! -e dist/data/hazardnet_advisories_latest.csv
-          test ! -e dist/data/hazardnet_advisories_latest.run.json
+          cmp frontend/public/data/daily-advisories-v1.json frontend/dist/data/daily-advisories-v1.json
+          cmp frontend/public/data/forecasts-latest.json frontend/dist/data/forecasts-latest.json
+          cmp frontend/public/data/alerts-latest.json frontend/dist/data/alerts-latest.json
+          test ! -e frontend/dist/data/hazardnet_advisories_latest.csv
+          test ! -e frontend/dist/data/hazardnet_advisories_latest.run.json
 
-      - name: Commit only the public result
+      - name: Commit synchronized public snapshots
         id: commit
         if: steps.fetch.outputs.new == 'true'
         shell: bash
-        env:
-          CF_PAGES_DEPLOY_HOOK: ${{ secrets.CF_PAGES_DEPLOY_HOOK }}
         run: |
           set -euo pipefail
-          if [ -z "$CF_PAGES_DEPLOY_HOOK" ]; then
-            echo '::error::CF_PAGES_DEPLOY_HOOK is unset; no commit is made because there is no configured path to the live site.'
-            exit 1
-          fi
-          git add -- frontend/public/data/daily-advisories-v1.json
+          git add -- \
+            frontend/public/data/daily-advisories-v1.json \
+            frontend/public/data/forecasts-latest.json \
+            frontend/public/data/alerts-latest.json \
+            frontend/public/data/hazardnet_forecasts_latest.json \
+            frontend/public/data/climatic_hazards_summary.json \
+            frontend/public/data/freshness.json \
+            frontend/public/data/content-index.json \
+            frontend/src/content/generated-routes.json \
+            frontend/src/data/backendForecasts.json \
+            backend/data/forecasts/hazardnet_forecasts_latest.csv \
+            backend/data/forecasts/hazardnet_forecasts_latest.json \
+            backend/data/forecasts/manifest.json \
+            __tests__/fixtures/alertsSnapshot.js \
+            __tests__/fixtures/forecastsSnapshot.js \
+            __tests__/fixtures/telemetryBatch.js \
+            __tests__/fixtures/weatherFullObject.js
           if git diff --cached --quiet; then
             echo '::error::A new Kaggle run produced no new public result; refusing a misleading successful update.'
             exit 1
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m "chore(advisory): publish daily district outlook [skip ci]"
-          git push origin HEAD:main
+          git commit -m "chore(advisory): publish daily Kaggle advisories and forecast snapshots"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
           echo 'committed=true' >> "$GITHUB_OUTPUT"
-          echo 'Public-only advisory committed; starting the Pages deployment.' >> "$GITHUB_STEP_SUMMARY"
+          echo "Synchronized daily and forecast snapshots committed to ${GITHUB_REF_NAME}." >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Trigger Cloudflare Pages build
-        if: steps.commit.outputs.committed == 'true'
+      - name: Trigger Cloudflare Pages deploy hook if configured
+        if: steps.commit.outputs.committed == 'true' && github.ref == 'refs/heads/main'
         shell: bash
         env:
           CF_PAGES_DEPLOY_HOOK: ${{ secrets.CF_PAGES_DEPLOY_HOOK }}
         run: |
           set -euo pipefail
+          if [ -z "$CF_PAGES_DEPLOY_HOOK" ]; then
+            echo 'CF_PAGES_DEPLOY_HOOK not set; relying on Cloudflare Pages Git branch integration.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
           HTTP=$(curl -fsS -o /tmp/hazardnet-pages-hook.txt -w '%{http_code}' \
             -X POST "$CF_PAGES_DEPLOY_HOOK" -H 'Content-Type: application/json' --data '{}' \
             --retry 3 --retry-delay 10 --retry-connrefused --max-time 30) || HTTP=000
           case "$HTTP" in
             2??)
-              echo 'Cloudflare Pages accepted the build trigger; deployment success still needs a live check.' >> "$GITHUB_STEP_SUMMARY"
+              echo 'Cloudflare Pages accepted the build trigger.' >> "$GITHUB_STEP_SUMMARY"
               ;;
             *)
-              echo "::error::The public-only commit succeeded, but Pages did not accept the deployment trigger (HTTP $HTTP). Check the Pages dashboard."
-              exit 1
+              echo "::warning::Pages deploy hook answered HTTP $HTTP; check Cloudflare Pages Git deployment status."
               ;;
           esac

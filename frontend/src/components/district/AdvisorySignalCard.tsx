@@ -28,6 +28,7 @@ interface AdvisorySignalCardProps {
 const pct = (value: number): string => `${Math.round(value * 100)}%`;
 
 const TIER_STYLES: Record<string, string> = {
+  EXTREME: 'bg-rose-200 text-rose-950 border-rose-400',
   SEVERE: 'bg-red-100 text-red-800 border-red-300',
   WARNING: 'bg-amber-100 text-amber-800 border-amber-300',
   WATCH: 'bg-sky-100 text-sky-800 border-sky-300',
@@ -39,9 +40,14 @@ export const AdvisorySignalCard: React.FC<AdvisorySignalCardProps> = ({ rows, ho
 
   if (!rows || rows.length === 0) return null;
 
-  // The most recent target date wins: the card describes the advisory that is current.
+  // Highest severity row in the horizon window wins (ties break on latest target date).
   const row = rows.reduce(
-    (latest, candidate) => (candidate.target_date > latest.target_date ? candidate : latest),
+    (best, candidate) => (
+      candidate.severity_score > best.severity_score
+      || (candidate.severity_score === best.severity_score && candidate.target_date > best.target_date)
+        ? candidate
+        : best
+    ),
     rows[0],
   );
 
@@ -68,7 +74,7 @@ export const AdvisorySignalCard: React.FC<AdvisorySignalCardProps> = ({ rows, ho
             <Activity className="w-4 h-4" />
             <span>{t('advisory.signal.title')}</span>
             <span aria-hidden="true">•</span>
-            <span>{horizon === '15_days' ? '15-Day' : '7-Day'} horizon</span>
+            <span>{horizon === '15_days' ? 'Continuous 15-Day Trajectory' : '7-Day horizon'}</span>
           </div>
           <p className="mt-1 text-sm text-carbon-60">
             {districtName ? `${districtName}: ` : ''}
@@ -101,8 +107,8 @@ export const AdvisorySignalCard: React.FC<AdvisorySignalCardProps> = ({ rows, ho
             <div className="flex-1 h-2.5 bg-carbon-10 overflow-hidden">
               <div className={`h-full ${track.tone}`} style={{ width: `${Math.round((track.value ?? 0) * 100)}%` }} />
             </div>
-            <span className="w-10 shrink-0 text-right text-xs font-mono font-bold text-carbon-90">
-              {pct(track.value ?? 0)}
+            <span className="w-10 shrink-0 text-right text-xs font-mono tabular-nums font-bold text-carbon-90">
+              {`${formatNumber(Math.round((track.value ?? 0) * 100))}%`}
             </span>
           </div>
         ))}
@@ -125,7 +131,7 @@ export const AdvisorySignalCard: React.FC<AdvisorySignalCardProps> = ({ rows, ho
           </div>
           <div className="flex flex-wrap gap-x-6 gap-y-1.5">
             {signal.probabilities.map((probability) => (
-              <span key={probability.label} className="text-xs font-mono text-carbon-80">
+              <span key={probability.label} className="text-xs font-mono tabular-nums text-carbon-80">
                 {probability.label.replace('Top-', `${t('advisory.rank')} `)}
                 {' · '}
                 <strong className="text-carbon-90">
@@ -139,7 +145,7 @@ export const AdvisorySignalCard: React.FC<AdvisorySignalCardProps> = ({ rows, ho
 
       {/* Provenance — which pipeline run produced this row, and where. */}
       {(row.data_source || row.model_version || (row.latitude !== undefined && row.longitude !== undefined)) && (
-        <div className="border-t border-carbon-20 pt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-mono text-carbon-60">
+        <div className="border-t border-carbon-20 pt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-mono tabular-nums text-carbon-60">
           {row.data_source && (
             <span>
               {t('advisory.source')}: {row.data_source}
@@ -151,9 +157,10 @@ export const AdvisorySignalCard: React.FC<AdvisorySignalCardProps> = ({ rows, ho
             </span>
           )}
           {row.latitude !== undefined && row.longitude !== undefined && (
-            <span className="inline-flex items-center gap-1">
+            <span className="inline-flex items-center gap-1 tabular-nums">
               <Crosshair className="w-3 h-3" aria-hidden="true" />
-              {row.latitude.toFixed(4)}, {row.longitude.toFixed(4)}
+              {formatNumber(row.latitude, { minimumFractionDigits: 4, maximumFractionDigits: 4 })},{' '}
+              {formatNumber(row.longitude, { minimumFractionDigits: 4, maximumFractionDigits: 4 })}
             </span>
           )}
         </div>

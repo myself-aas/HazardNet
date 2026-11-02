@@ -79,12 +79,13 @@ export function assertAdvisory(entry) {
 /**
  * @param {object} options
  * @param {number} options.ttlMs lifetime of an entry; `Infinity` disables expiry
+ * @param {number} [options.maxStaleMs] optional stale-while-error retention window in ms
  * @param {(entry: any) => {ok: boolean, missing?: string[]}} options.validate value assertion
  * @param {(entry: any, now: number) => number} [options.age] age of an entry in ms
  * @param {string} [options.label] used in rejection messages
  * @param {(phase: 'read'|'write', key: string, missing: string[]) => void} [options.onReject]
  */
-export function createVerifiedCache({ ttlMs, validate, age, label = 'cache', onReject }) {
+export function createVerifiedCache({ ttlMs, maxStaleMs = 0, validate, age, label = 'cache', onReject }) {
   if (typeof validate !== 'function') throw new Error('createVerifiedCache requires a validate()');
   const store = new Map();
   const entryAge = age || ((entry, now) => now - (entry?.ts ?? 0));
@@ -95,12 +96,15 @@ export function createVerifiedCache({ ttlMs, validate, age, label = 'cache', onR
   });
 
   return {
-    /** Post-read guard. An incomplete or expired entry is a miss and is deleted. */
+    /** Post-read guard. An incomplete or past-TTL entry is a miss; hollow entries are deleted. */
     get(key, now = Date.now()) {
       if (!store.has(key)) return { hit: false, reason: 'miss' };
       const entry = store.get(key);
-      if (Number.isFinite(ttlMs) && entryAge(entry, now) >= ttlMs) {
-        store.delete(key);
+      const ageMs = entryAge(entry, now);
+      if (Number.isFinite(ttlMs) && ageMs >= ttlMs) {
+        if (!(maxStaleMs > 0 && ageMs <= maxStaleMs)) {
+          store.delete(key);
+        }
         return { hit: false, reason: 'expired' };
       }
       const check = validate(entry);
@@ -110,6 +114,26 @@ export function createVerifiedCache({ ttlMs, validate, age, label = 'cache', onR
         return { hit: false, reason: 'incomplete', missing: check.missing };
       }
       return { hit: true, entry };
+    },
+    /**
+     * Verified stale-while-error read. Returns the stored entry up to `windowMs`
+     * ONLY if `validate(entry)` passes; deletes and returns `undefined` if hollow or too old.
+     */
+    getStale(key, now = Date.now(), windowMs = maxStaleMs) {
+      if (!store.has(key)) return undefined;
+      const entry = store.get(key);
+      const ageMs = entryAge(entry, now);
+      if (!Number.isFinite(windowMs) || windowMs <= 0 || ageMs > windowMs) {
+        store.delete(key);
+        return undefined;
+      }
+      const check = validate(entry);
+      if (!check.ok) {
+        store.delete(key);
+        reject('read', key, check.missing);
+        return undefined;
+      }
+      return entry;
     },
     /** Pre-write guard. Returns the failure instead of writing when the value is hollow. */
     set(key, entry) {

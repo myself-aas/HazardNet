@@ -45,7 +45,7 @@ const TOPICS: DocTopic[] = [
     icon: 'timeline',
     kicker: '04',
     title: 'Forecasts',
-    blurb: 'The published record, the two severity tracks, the 7-day and 15-day horizons and the freshness policy.',
+    blurb: 'The published record, the two severity tracks, the continuous 15-day daily trajectory and the freshness policy.',
   },
   {
     to: '/docs/alerts-and-advisories',

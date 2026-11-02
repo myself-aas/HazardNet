@@ -59,17 +59,18 @@ describe('Admin-only mirror of approved public daily results', () => {
     const snapshot = syntheticRun(manifest(), true);
     const { db, documents } = memoryFirestore();
     expect(await mirrorApprovedDailySnapshot(snapshot, { db, expectedRunId: snapshot.run.id, now: NOW }))
-      .toEqual({ status: 'persisted', runId: snapshot.run.id, districts: 64, rows: 959 });
+      .toEqual({ status: 'persisted', runId: snapshot.run.id, districts: 64, rows: 960 });
     expect(documents.size).toBe(66);
     expect(documents.get(`${DAILY_HEAD_COLLECTION}/current`).runId).toBe(snapshot.run.id);
-    expect(documents.get(`${DAILY_RUN_COLLECTION}/${snapshot.run.id}/districts/1`).advisories).toHaveLength(14);
+    expect(documents.get(`${DAILY_RUN_COLLECTION}/${snapshot.run.id}/districts/1`).advisories).toHaveLength(15);
     expect(await readMirroredDailySnapshot(db)).toEqual(snapshot);
     const publicText = JSON.stringify([...documents.values()]);
-    for (const privateField of ['unapproved_input_note', 'unapproved_input_metric', 'WARNING', 'never in a public result']) {
+    for (const privateField of ['unapproved_input_note', 'unapproved_input_metric', 'never in a public result']) {
       expect(publicText).not.toContain(privateField);
     }
+    expect(publicText).toContain('WARNING');
     expect(await mirrorApprovedDailySnapshot(snapshot, { db, expectedRunId: snapshot.run.id, now: NOW }))
-      .toEqual({ status: 'unchanged', runId: snapshot.run.id, districts: 64, rows: 959 });
+      .toEqual({ status: 'unchanged', runId: snapshot.run.id, districts: 64, rows: 960 });
     expect(documents.size).toBe(66);
   });
 
