@@ -6,7 +6,7 @@ na_heuristics:
 p0_count: 0
 p1_count: 1
 target_identity: "file:frontend/src/pages/AnalyticsPage.tsx"
-target_fingerprint: "sha256:e46f2af0f4d9722257b885658a364f2686771dbcfd3226c9454704dfc85fb7e1"
+target_fingerprint: "sha256:ae7cf1798854d9577eadba8baed04f7bc126b0caf0669bcd1a53742635a52f48"
 target_path: frontend/src/pages/AnalyticsPage.tsx
 timestamp: 2026-10-26T03-56-29Z
 slug: frontend-src-pages-analyticspage-tsx

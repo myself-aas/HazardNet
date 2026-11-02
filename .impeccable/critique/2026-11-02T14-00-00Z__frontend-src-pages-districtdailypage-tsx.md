@@ -6,7 +6,7 @@ na_heuristics:
 p0_count: 0
 p1_count: 0
 target_identity: "file:frontend/src/pages/DistrictDailyPage.tsx"
-target_fingerprint: "sha256:3b2d245e22e461b7ce69ee1036b16ee899308491834febab93171f6be0951f70"
+target_fingerprint: "sha256:a5ee7df48db51239e7c063d15e698d0e873cb1add65f3f9dc92fcd24fc1b756f"
 target_path: frontend/src/pages/DistrictDailyPage.tsx
 timestamp: 2026-11-02T14:00:00Z
 slug: frontend-src-pages-districtdailypage-tsx
@@ -22,11 +22,11 @@ slug: frontend-src-pages-districtdailypage-tsx
 |---|---|---|---|
 | 1 | Visibility of system status | 4 | Names dataset run ID, Dhaka `asOf` timestamp, freshness badge, and research-signal disclaimer |
 | 2 | Match between system and real world | 4 | Bilingual English/Bangla district names, 5-tier severity badges (`EXTREME`–`NORMAL`), `0–100` Severity Index, and physical weather units (`mm`, `°C`, `km/h`) |
-| 3 | User control and freedom | 4 | URL-synced `#daily-district-select` across all 64 districts plus `?days=7` compact toggle and `?view=published-records` preserve deep links, Back/Forward history, and shareable states |
+| 3 | User control and freedom | 4 | URL-synced `#daily-district-select` across all 64 districts plus `#daily-day-filter` (`?day=1..15\|peak`) and `?view=published-records` preserve deep links, Back/Forward history, and shareable states |
 | 4 | Consistency and standards | 4 | Hairline editorial rhythm, `tabular-nums` alignment across severity indices/probabilities/dates, and canonical `AlertLevelBadge` semantics |
 | 5 | Error prevention | 4 | Unknown districts render a direct recovery path to `/live` and `/advisories`; absent snapshots render honest pre-publish availability copy |
 | 6 | Recognition rather than recall | 4 | Continuous 15-day trajectory (`Continuous15DayTrajectory`) highlights Peak Severe Date(s) (single peak or multi-day ties) directly alongside daily driver values and safe actions |
-| 7 | Flexibility and efficiency | 3 | Fast switching between continuous 15-day default, `?days=7` compact view, 64 districts, and `/districts/:id` multi-horizon record; keyboard arrow-key scrubbing across days could be added later |
+| 7 | Flexibility and efficiency | 3 | Fast switching between continuous 15-day default, Day 1–15 / Peak Severe Days filter, 64 districts, and `/districts/:id` continuous 15-day record; keyboard arrow-key scrubbing across days could be added later |
 | 8 | Aesthetic and minimalist design | 4 | Zero glassmorphism or decorative chrome; warm parchment/pearl Cupertino surfaces with sharp hairline dividers and calm typographic hierarchy |
 | 9 | Help users recognise and recover from errors | 4 | Fetch error and pre-publish states name the missing artifact (`/data/daily-advisories-v1.json`) and link to `/live` and `/status` |
 | 10 | Help and documentation | 3 | Inline research-signal note clarifies BMD/FFWC official authority; methodology deep-link sits one click away in the global chrome |

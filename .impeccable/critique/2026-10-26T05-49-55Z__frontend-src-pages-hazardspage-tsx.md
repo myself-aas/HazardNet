@@ -6,7 +6,7 @@ na_heuristics:
 p0_count: 0
 p1_count: 1
 target_identity: "file:/home/user/HazardNet/frontend/src/pages/HazardsPage.tsx"
-target_fingerprint: "sha256:4cdb44ee45e83dcbd8c344e44e1b04d5311a1eecdb35d502b6ac401443806509"
+target_fingerprint: "sha256:ecc90d05ae2e5f613726723bc8c7d86b6bcff74fea3eafab1129c02675a4ddc2"
 target_path: /home/user/HazardNet/frontend/src/pages/HazardsPage.tsx
 timestamp: 2026-10-26T05-49-55Z
 slug: frontend-src-pages-hazardspage-tsx

@@ -6,7 +6,7 @@ na_heuristics:
 p0_count: 0
 p1_count: 1
 target_identity: "file:/home/user/HazardNet/frontend/src/pages/DistrictDetailPage.tsx"
-target_fingerprint: "sha256:a624fb25bce4498c694ef61745c8efc5b9800966468804e1078c64d063d6f36b"
+target_fingerprint: "sha256:a8dfa60e6151da970cf7eb0b4bc2454100467aa7d1caac775315137702388f32"
 target_path: /home/user/HazardNet/frontend/src/pages/DistrictDetailPage.tsx
 timestamp: 2026-10-26T05-49-56Z
 slug: frontend-src-pages-districtdetailpage-tsx
