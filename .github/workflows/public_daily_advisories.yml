@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   publish:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -76,6 +76,7 @@ jobs:
           SNAPSHOT_SOURCE="Kaggle_Daily_Advisory (public_daily_advisories.yml, dataset v$VERSION)" \
             node scripts/sync_daily_to_forecasts.mjs \
               --from-daily-json frontend/public/data/daily-advisories-v1.json
+          node scripts/capture_edge_fixtures.mjs
           npx jest --ci --runInBand --silent \
             __tests__/dailyAdvisoryPublic.test.js \
             __tests__/kaggleDailyPublic.test.js \
@@ -106,7 +107,11 @@ jobs:
             frontend/src/data/backendForecasts.json \
             backend/data/forecasts/hazardnet_forecasts_latest.csv \
             backend/data/forecasts/hazardnet_forecasts_latest.json \
-            backend/data/forecasts/manifest.json
+            backend/data/forecasts/manifest.json \
+            __tests__/fixtures/alertsSnapshot.js \
+            __tests__/fixtures/forecastsSnapshot.js \
+            __tests__/fixtures/telemetryBatch.js \
+            __tests__/fixtures/weatherFullObject.js
           if git diff --cached --quiet; then
             echo '::error::A new Kaggle run produced no new public result; refusing a misleading successful update.'
             exit 1
@@ -114,12 +119,12 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git commit -m "chore(advisory): publish daily Kaggle advisories and forecast snapshots"
-          git push origin HEAD:main
+          git push origin "HEAD:${GITHUB_REF_NAME}"
           echo 'committed=true' >> "$GITHUB_OUTPUT"
-          echo 'Synchronized daily and two-horizon public snapshots committed to main.' >> "$GITHUB_STEP_SUMMARY"
+          echo "Synchronized daily and forecast snapshots committed to ${GITHUB_REF_NAME}." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Trigger Cloudflare Pages deploy hook if configured
-        if: steps.commit.outputs.committed == 'true'
+        if: steps.commit.outputs.committed == 'true' && github.ref == 'refs/heads/main'
         shell: bash
         env:
           CF_PAGES_DEPLOY_HOOK: ${{ secrets.CF_PAGES_DEPLOY_HOOK }}
