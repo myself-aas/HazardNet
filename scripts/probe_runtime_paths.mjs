@@ -25,6 +25,7 @@
  * Analytics Engine SQL query in Action 12 (owner-side, Phase 6).
  */
 const args = process.argv.slice(2);
+const DAILY_ADVISORY_SCHEMA = 'hazardnet-daily-advisories/v1';
 const argValue = (flag, fallback) => {
   const index = args.indexOf(flag);
   return index >= 0 && args[index + 1] ? args[index + 1] : fallback;
