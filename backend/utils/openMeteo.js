@@ -265,7 +265,7 @@ function _isRetryableError(err) {
   return true; // network / timeout / AbortError
 }
 
-async function _fetchUpstream(params, { timeoutMs = UPSTREAM_TIMEOUT_MS, maxAttempts = 2, retryDelayMs = 200 } = {}) {
+async function _fetchUpstream(params, { timeoutMs = UPSTREAM_TIMEOUT_MS, maxAttempts = 2, retryDelayMs = 250 } = {}) {
   const fetchImpl = await __getFetch();
   const url = `${OPEN_METEO_BASE}?${params.toString()}`;
   let lastError;
@@ -552,7 +552,8 @@ async function _fetchSingle({ lat, lng, forecast_days, timezone, skipCache,
     err.status = 400;
     throw err;
   }
-  const key = cacheKey(lat, lng);
+  const baseKey = cacheKey(lat, lng);
+  const key = wantHourly || wantDaily ? `full:${baseKey}` : baseKey;
   if (!skipCache) {
     // Post-read guard: the same assertComplete as the write path. An incomplete entry is
     // deleted and treated as a miss, so we re-fetch instead of serving it.
