@@ -1,10 +1,10 @@
 {
   "schema": "hazardnet-site-probe/v1",
-  "ran_at": "2026-11-01T02:56:54Z",
-  "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/41267182802",
+  "ran_at": "2026-11-02T00:00:01Z",
+  "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/41364779614",
   "site_url": "https://hazardnet.live",
   "edge_challenged": false,
-  "outcome": "pass",
+  "outcome": "fail",
   "checks": [
     {
       "id": "homepage",
@@ -38,27 +38,27 @@
     },
     {
       "id": "weather_api",
-      "outcome": "success",
-      "detail": null
+      "outcome": "failure",
+      "detail": "https://hazardnet.live/api/v1/weather?lat=23.8103&lng=90.4125&mini=1 returned HTTP 502 (missing: current.temperature_2m). A 5xx here is Open-Meteo failing (the route proxies it and answers 502); a 404 means the deployment lost functions/api/v1/weather.ts."
     },
     {
       "id": "runtime_paths",
-      "outcome": "success",
-      "detail": "8 sibling runtime paths passed"
+      "outcome": "skipped",
+      "detail": null
     },
     {
       "id": "status_page",
-      "outcome": "success",
+      "outcome": "skipped",
       "detail": null
     },
     {
       "id": "content_pages",
-      "outcome": "success",
+      "outcome": "skipped",
       "detail": null
     },
     {
       "id": "canonical_host",
-      "outcome": "success",
+      "outcome": "skipped",
       "detail": null
     }
   ]
