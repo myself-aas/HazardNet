@@ -5,7 +5,8 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import AlertDetailPage from '../AlertDetailPage';
 import { EVIDENCE_CARD_ID } from '../../components/alerts/EvidenceCard';
-import { resetLanguageForTests } from '../../lib/i18n';
+import { formatDate, resetLanguageForTests } from '../../lib/i18n';
+import type { AlertRecord } from '../../lib/alerts';
 
 expect.extend(toHaveNoViolations);
 
@@ -73,7 +74,17 @@ describe('AlertDetailPage (/alerts/:id)', () => {
   });
 
   it('renders the fresh Kaggle v42 Chandpur alert with 15-day trajectory charts, sortable table, peak severe date, and dual-track severity bars', async () => {
-    const { container } = mountAlert('2026-11-12__15_days__60__flash-flood__p2026-11-01');
+    // Mount an alert that exists in the committed snapshot so the test stays
+    // green as the daily artifact rotates, instead of hardcoding a run date
+    // that disappears the next time the snapshot is regenerated.
+    const chandpurFlashFlood = ALERTS_SNAPSHOT.alerts.find(
+      (a: AlertRecord) => Number(a.district_id) === 60 && a.hazard_type === 'Flash Flood'
+    );
+    expect(chandpurFlashFlood).toBeDefined();
+    const alertId = chandpurFlashFlood!.id;
+    const peakDate = formatDate(chandpurFlashFlood!.target_date, 'en');
+
+    const { container } = mountAlert(alertId);
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Evidence card' })).toBeInTheDocument();
     const evidence = container.querySelector(`#${EVIDENCE_CARD_ID}`) as HTMLElement;
@@ -88,10 +99,10 @@ describe('AlertDetailPage (/alerts/:id)', () => {
     const trajectory = await screen.findByTestId('continuous-15day-trajectory');
     expect(trajectory.querySelectorAll('[data-forecast-day]')).toHaveLength(15);
     expect(trajectory.querySelectorAll('[data-peak="true"]')).toHaveLength(1);
-    expect(container.textContent).toMatch(/Peak severe date:\s*12 November 2026/i);
+    expect(container.textContent).toMatch(new RegExp(`Peak severe date:\\s*${peakDate}`));
 
     const peakBanner = screen.getByTestId('peak-severe-banner');
-    expect(peakBanner.textContent).toMatch(/12 November 2026/);
+    expect(peakBanner.textContent).toMatch(peakDate);
 
     const chart = screen.getByTestId('trajectory-15day-chart');
     fireEvent.click(within(chart).getByRole('button', { name: /Confidence & thresholds/i }));
@@ -112,14 +123,21 @@ describe('AlertDetailPage (/alerts/:id)', () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
-  it('resolves a superseded bookmarked alert ID (e.g. p2026-10-24) to the district’s current trajectory alert with an update note', async () => {
-    const { container } = mountAlert('2026-11-08__15_days__60__flash-flood__p2026-10-24');
+  it('resolves a superseded bookmarked alert ID to the district’s current trajectory alert with an update note', async () => {
+    const chandpurFlashFlood = ALERTS_SNAPSHOT.alerts.find(
+      (a: AlertRecord) => Number(a.district_id) === 60 && a.hazard_type === 'Flash Flood'
+    );
+    expect(chandpurFlashFlood).toBeDefined();
+    // A bookmarked id for the same district/hazard that is deliberately absent
+    // from the snapshot, so the page must fall back to the current run.
+    const bookmarkedId = `2026-11-20__15_days__60__flash-flood__p2026-11-02`;
+    const { container } = mountAlert(bookmarkedId);
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Evidence card' })).toBeInTheDocument();
     expect(container.querySelector(`#${EVIDENCE_CARD_ID}`)?.textContent).toMatch(/Chandpur/);
     const banner = await screen.findByTestId('superseded-alert-banner');
     expect(banner.textContent).toMatch(/Showing updated forecast run/i);
-    expect(banner.textContent).toMatch(/2026-11-12__15_days__60__flash-flood__p2026-11-01/);
+    expect(banner.textContent).toMatch(chandpurFlashFlood!.id);
     expect(await screen.findByTestId('continuous-15day-trajectory')).toBeInTheDocument();
   });
 });
