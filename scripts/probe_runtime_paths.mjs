@@ -257,7 +257,7 @@ await scenario('kaggle_horizon_5tier_shape', '/api/v1/kaggle?horizon=7_days', { 
 await scenario('predict_district_shape', '/api/predict', {
   method: 'POST',
   headers: { 'content-type': 'application/json' },
-  body: JSON.stringify({ district: 'Sylhet' }),
+  body: JSON.stringify({ district_id: 'Sylhet' }),
 }, ({ status, body, headers }) => {
   const isJson = (headers?.get?.('content-type') || '').includes('application/json');
   const pass =
