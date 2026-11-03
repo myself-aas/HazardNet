@@ -1,6 +1,6 @@
 {
   "schema": "hazardnet-content-index/v1",
-  "generated_at": "2026-11-02T18:34:25.297Z",
+  "generated_at": "2026-11-03T00:55:27.135Z",
   "generated_by": "scripts/build_content_engine.mjs",
   "origin": "https://www.hazardnet.live",
   "inputs": {
@@ -8,8 +8,8 @@
     "district_table": "frontend/src/data/bangladeshDistricts.ts",
     "forecast_snapshot": {
       "path": "frontend/public/data/forecasts-latest.json",
-      "prediction_date": "2026-11-01",
-      "generated_at": "2026-11-02T18:34:25.076Z"
+      "prediction_date": "2026-11-02",
+      "generated_at": "2026-11-03T00:55:26.924Z"
     },
     "event_archive": null,
     "model_performance": {
