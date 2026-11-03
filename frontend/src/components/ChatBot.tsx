@@ -3,7 +3,7 @@ import { useDialogBehavior } from '../hooks/useDialogBehavior';
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { LiveVoiceAdvisor } from './LiveVoiceAdvisor';
-import { ExternalLink, Loader2, MapPin, MessageSquare, Mic, Search, Send, X } from 'lucide-react';
+import { ArrowUp, ExternalLink, Loader2, MapPin, MessageSquare, Mic, Search, Send, X } from 'lucide-react';
 
 interface GroundingFacility {
   title: string;
@@ -179,15 +179,20 @@ export default function ChatBot() {
                 setIsOpen(true);
                 requestLocation();
               }}
-              initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+              // One authored motion moment for this surface: a single entrance rise on load,
+              // from an already-visible default under reduced motion. Strong ease-out, once.
+              initial={reduceMotion ? false : { opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 8 }}
-              transition={{ duration: reduceMotion ? 0 : 0.18, ease: 'easeOut' }}
-              className="flex h-14 w-14 items-center justify-center rounded-full border border-white/30 bg-primary text-ap-action-fg shadow-lg transition-colors hover:bg-primary-strong focus:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary focus-visible:ring-offset-2"
+              exit={{ opacity: 0, y: 24 }}
+              transition={{ duration: reduceMotion ? 0 : 0.8, ease: [0.25, 1, 0.5, 1] }}
+              whileTap={{ scale: 0.96 }}
+              whileTapTransition={{ duration: 0.12, ease: [0.25, 1, 0.5, 1] }}
+              className="inline-flex h-11 items-center gap-2 px-3 py-1.5 rounded-full bg-ap-action text-ap-action-fg text-sm font-semibold transition-colors hover:bg-primary-strong focus:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary focus-visible:ring-offset-2"
               aria-label="Open AI Advisor chat"
               aria-haspopup="dialog"
             >
-              <MessageSquare className="h-6 w-6" aria-hidden="true" />
+              <span>Ask a question...</span>
+              <ArrowUp className="h-5 w-5" aria-hidden="true" />
             </motion.button>
           </div>
         )}
