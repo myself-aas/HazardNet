@@ -6,6 +6,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import AlertDetailPage from '../AlertDetailPage';
 import { EVIDENCE_CARD_ID } from '../../components/alerts/EvidenceCard';
 import { formatDate, resetLanguageForTests } from '../../lib/i18n';
+import type { AlertRecord } from '../../lib/alerts';
 
 expect.extend(toHaveNoViolations);
 
@@ -77,7 +78,7 @@ describe('AlertDetailPage (/alerts/:id)', () => {
     // green as the daily artifact rotates, instead of hardcoding a run date
     // that disappears the next time the snapshot is regenerated.
     const chandpurFlashFlood = ALERTS_SNAPSHOT.alerts.find(
-      (a) => Number(a.district_id) === 60 && a.hazard_type === 'Flash Flood'
+      (a: AlertRecord) => Number(a.district_id) === 60 && a.hazard_type === 'Flash Flood'
     );
     expect(chandpurFlashFlood).toBeDefined();
     const alertId = chandpurFlashFlood!.id;
@@ -124,7 +125,7 @@ describe('AlertDetailPage (/alerts/:id)', () => {
 
   it('resolves a superseded bookmarked alert ID to the district’s current trajectory alert with an update note', async () => {
     const chandpurFlashFlood = ALERTS_SNAPSHOT.alerts.find(
-      (a) => Number(a.district_id) === 60 && a.hazard_type === 'Flash Flood'
+      (a: AlertRecord) => Number(a.district_id) === 60 && a.hazard_type === 'Flash Flood'
     );
     expect(chandpurFlashFlood).toBeDefined();
     // A bookmarked id for the same district/hazard that is deliberately absent

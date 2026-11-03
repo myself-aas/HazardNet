@@ -3,7 +3,7 @@ import { useDialogBehavior } from '../hooks/useDialogBehavior';
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { LiveVoiceAdvisor } from './LiveVoiceAdvisor';
-import { ArrowUp, ExternalLink, Loader2, MapPin, MessageSquare, Mic, Search, Send, X } from 'lucide-react';
+import { ExternalLink, Loader2, MapPin, MessageSquare, Mic, Search, Send, X } from 'lucide-react';
 
 interface GroundingFacility {
   title: string;
@@ -170,31 +170,60 @@ export default function ChatBot() {
     <>
       <AnimatePresence>
         {!isOpen && (
-          <div className="fixed bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] right-[max(1rem,env(safe-area-inset-right,0px))] z-[var(--ap-z-overlay)] flex items-center sm:right-[max(1.5rem,env(safe-area-inset-right,0px))]">
-            <motion.button
-              key="ai-advisor-fab"
-              id="launch-ai-advisor-fab"
-              type="button"
-              onClick={() => {
+          <motion.div
+            key="ai-advisor-bar"
+            id="launch-ai-advisor-fab"
+            // Full-width bottom chat bar: covers the responsive viewport with padding,
+            // and exposes a textarea for chatting instead of a hidden-behind-hover label.
+            // One authored motion moment for this surface: a single entrance rise on load,
+            // from an already-visible default under reduced motion. Strong ease-out, once.
+            initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 24 }}
+            transition={{ duration: reduceMotion ? 0 : 0.8, ease: [0.25, 1, 0.5, 1] }}
+            className="fixed inset-x-0 bottom-0 z-[var(--ap-z-overlay)] pt-3 px-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))]"
+            role="region"
+            aria-label="Open AI Advisor chat"
+            aria-haspopup="dialog"
+          >
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (!input.trim() || loading) return;
+                sendMessage(input);
                 setIsOpen(true);
                 requestLocation();
               }}
-              // One authored motion moment for this surface: a single entrance rise on load,
-              // from an already-visible default under reduced motion. Strong ease-out, once.
-              initial={reduceMotion ? false : { opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 24 }}
-              transition={{ duration: reduceMotion ? 0 : 0.8, ease: [0.25, 1, 0.5, 1] }}
-              whileTap={{ scale: 0.96 }}
-              whileTapTransition={{ duration: 0.12, ease: [0.25, 1, 0.5, 1] }}
-              className="inline-flex h-11 items-center gap-2 px-3 py-1.5 rounded-full bg-ap-action text-ap-action-fg text-sm font-semibold transition-colors hover:bg-primary-strong focus:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary focus-visible:ring-offset-2"
-              aria-label="Open AI Advisor chat"
-              aria-haspopup="dialog"
+              className="flex items-end gap-2"
             >
-              <span>Ask a question...</span>
-              <ArrowUp className="h-5 w-5" aria-hidden="true" />
-            </motion.button>
-          </div>
+              <textarea
+                id="chat-bar-input"
+                value={input}
+                onChange={(event) => setInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    if (!input.trim() || loading) return;
+                    sendMessage(input);
+                    setIsOpen(true);
+                    requestLocation();
+                  }
+                }}
+                placeholder="Ask a question…"
+                enterKeyHint="send"
+                className="flex-1 min-h-[44px] rounded-full border border-carbon-20 bg-ap-canvas px-4 py-2.5 text-base text-ap-label placeholder:text-carbon-60 focus:border-ap-primary focus:outline-none focus:ring-2 focus:ring-ap-primary resize-none"
+                rows={1}
+              />
+              <button
+                type="submit"
+                disabled={!input.trim() || loading}
+                className="flex shrink-0 h-11 w-11 items-center justify-center rounded-full bg-ap-action text-ap-action-fg transition-colors hover:bg-primary-strong focus:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary focus-visible:ring-offset-2 disabled:opacity-40"
+                aria-label="Send message"
+              >
+                <Send className="h-5 w-5" aria-hidden="true" />
+              </button>
+            </form>
+          </motion.div>
         )}
       </AnimatePresence>
 
