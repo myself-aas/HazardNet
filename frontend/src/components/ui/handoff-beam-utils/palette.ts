@@ -9,6 +9,6 @@ export interface BjorkPaletteTokens {
 }
 
 export const BJORK_PALETTE: Record<BjorkTone, BjorkPaletteTokens> = {
-  dark: { accent: "#0a0a0a", text: "#ffffff" },
-  light: { accent: "#ffffff", text: "#0a0a0a" },
+  dark: { accent: "#000000", text: "#ffffff" },
+  light: { accent: "#ffffff", text: "#000000" },
 };

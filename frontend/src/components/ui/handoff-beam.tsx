@@ -169,8 +169,8 @@ function resolvePalette(
   if (dark) {
     return {
       key: "ember:dark",
-      core: ["#ec5c13", "#ff7a2e", "#ffd1a1", "#ff8a3d"],
-      edge: ["#ec5c13", "#ff5ea8", "#ff8a3d", "#ffb36b"],
+      core: ["#ff9500", "#ff9f0a", "#ff8a5b", "#ca3a2f"],
+      edge: ["#ff9500", "#b1488e", "#ca3a2f", "#a75b2f"],
       glow: 1,
       gain: 1,
     };
@@ -178,8 +178,8 @@ function resolvePalette(
   return {
     // Saturated, deeper ember: on a cream surface a pale glow washes out (light saturation stays above 0.35).
     key: "ember:light",
-    core: ["#dc4a0c", "#e0601c", "#ec7d2e", "#d4541a"],
-    edge: ["#dc4a0c", "#d63c86", "#d4541a", "#e8862f"],
+    core: ["#b3400f", "#a75b2f", "#8a5a00", "#ca3a2f"],
+    edge: ["#b3400f", "#b1488e", "#ca3a2f", "#ff9500"],
     glow: 0.6,
     gain: 1.7,
   };
