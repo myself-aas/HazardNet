@@ -15,6 +15,7 @@
 import { searchRAG, routeSkills, GOVT_OFFICE_DIRECTORY } from '../services/localKnowledge.js';
 import { generateAdvisoryWithFallback } from './ai_fallback_engine.js';
 import { detectGroundingIntent, executeMapsGrounding, executeSearchGrounding } from './gemini_grounding.js';
+import { defaultEnv } from './runtimeEnv.js';
 
 export { GOVT_OFFICE_DIRECTORY };
 
@@ -167,13 +168,17 @@ function getDistrictContacts(baseline) {
  * POST /api/chat/query  (Express route + Node function both call this)
  *
  * @param {{query: string, district?: string, conversationHistory?: Array}} input
+ * @param {Record<string, unknown>} [env] runtime environment — `process.env` on Node
+ *   (the default, so the Express route and the `serverless/*` twins are unchanged)
+ *   and `context.env` on the Pages Function (`functions/api/chat/query.ts`), which
+ *   has no `process` global.
  * @returns {Promise<object>} JSON body identical to the historical contract:
  *   { query, answer, retrieved_sources, district_baseline, district_contacts,
  *     govt_directory, suggested_followups, provider_source, cached }
  * @throws {Error} message is safe to surface; validation errors carry
  *   `statusCode` (400) so transports can map them to HTTP codes.
  */
-export async function handleChatQuery(input) {
+export async function handleChatQuery(input, env = defaultEnv()) {
   const { query, district, conversationHistory = [], groundingMode = 'auto', userCoordinates } = input || {};
 
   if (!query || typeof query !== 'string' || query.trim() === '') {
@@ -214,13 +219,14 @@ export async function handleChatQuery(input) {
   const intent = detectGroundingIntent(sanitizedQuery, groundingMode);
 
   // If Maps Grounding is explicitly selected or auto-detected and GEMINI_API_KEY is present
-  if (intent === 'maps' && process.env.GEMINI_API_KEY) {
+  if (intent === 'maps' && env.GEMINI_API_KEY) {
     try {
       const mapsRes = await executeMapsGrounding({
         query: sanitizedQuery,
         district: sanitizedDistrict || ragResult.districtBaseline?.district || ragResult.districtBaseline?.name,
         userCoordinates,
-        contextText
+        contextText,
+        env
       });
 
       if (mapsRes && mapsRes.answer) {
@@ -255,12 +261,13 @@ export async function handleChatQuery(input) {
   }
 
   // If Search Grounding is explicitly selected or auto-detected and GEMINI_API_KEY is present
-  if (intent === 'search' && process.env.GEMINI_API_KEY) {
+  if (intent === 'search' && env.GEMINI_API_KEY) {
     try {
       const searchRes = await executeSearchGrounding({
         query: sanitizedQuery,
         district: sanitizedDistrict || ragResult.districtBaseline?.district || ragResult.districtBaseline?.name,
-        contextText
+        contextText,
+        env
       });
 
       if (searchRes && searchRes.answer) {
@@ -366,7 +373,7 @@ fences, no surrounding prose:
 
   let aiResponse;
   try {
-    aiResponse = await generateAdvisoryWithFallback(aiParams, effectiveSystemPrompt, fullUserPrompt);
+    aiResponse = await generateAdvisoryWithFallback(aiParams, effectiveSystemPrompt, fullUserPrompt, env);
   } catch (e) {
     console.warn('[Chat Service] AI engine fallback error:', e.message);
   }

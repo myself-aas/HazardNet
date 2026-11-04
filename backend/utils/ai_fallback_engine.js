@@ -16,7 +16,8 @@
  * (the AI Advisor chat, the advisory panel) can show which engine answered.
  */
 
-import { createHash } from 'node:crypto';
+import { sha256Hex } from './portableHash.js';
+import { defaultEnv } from './runtimeEnv.js';
 import { assertAdvisory, createVerifiedCache } from './cacheContract.js';
 
 // In-Memory Cache for Advisory Requests (10-minute TTL).
@@ -139,28 +140,55 @@ function parseCleanJson(text) {
 }
 
 /**
+ * Gemini REST call — the raw `:generateContent` endpoint over `fetch`.
+ *
+ * The SDK (`@google/genai`) is a Node package; a Worker isolate cannot load it, and
+ * this module is bundled into `functions/api/chat/query.ts` on the edge. The REST
+ * surface is identical for what the cascade needs (JSON-mode text out), and `fetch`
+ * exists in Node 20 and Workers alike, so one implementation serves both runtimes.
+ *
+ * @returns {Promise<string>} the candidate's concatenated text parts
+ */
+async function callGeminiRest(modelName, prompt, systemInstruction, apiKey) {
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+      signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        systemInstruction: { parts: [{ text: systemInstruction }] },
+        generationConfig: { responseMimeType: 'application/json' },
+      }),
+    }
+  );
+
+  if (!res.ok) {
+    const errorText = await res.text().catch(() => '');
+    throw new Error(`Gemini (${modelName}) status ${res.status}: ${errorText.slice(0, 200)}`);
+  }
+
+  const data = await res.json();
+  const parts = data?.candidates?.[0]?.content?.parts || [];
+  return parts.map((p) => p?.text || '').join('');
+}
+
+/**
  * TIER 1: Primary Gemini API Call
  */
-async function callGeminiPrimary(prompt, systemInstruction) {
-  if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY not configured');
+async function callGeminiPrimary(prompt, systemInstruction, env) {
+  const apiKey = env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error('GEMINI_API_KEY not configured');
   if (!isProviderHealthy('gemini_primary')) throw new Error('gemini_primary breaker TRIPPED');
 
-  const { GoogleGenAI } = await import('@google/genai');
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   const geminiModels = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-flash-latest'];
   
   let lastErr;
   for (const modelName of geminiModels) {
     try {
-      const response = await ai.models.generateContent({
-        model: modelName,
-        contents: prompt,
-        config: {
-          systemInstruction: systemInstruction,
-          responseMimeType: 'application/json',
-        }
-      });
-      const parsed = parseCleanJson(response.text);
+      const text = await callGeminiRest(modelName, prompt, systemInstruction, apiKey);
+      const parsed = parseCleanJson(text);
       recordProviderSuccess('gemini_primary');
       return parsed;
     } catch (err) {
@@ -178,27 +206,18 @@ async function callGeminiPrimary(prompt, systemInstruction) {
 /**
  * TIER 2: Backup Gemini Call with Alternative Model / Secondary Key
  */
-async function callGeminiSecondary(prompt, systemInstruction) {
-  const apiKey = process.env.GEMINI_API_KEY_BACKUP;
+async function callGeminiSecondary(prompt, systemInstruction, env) {
+  const apiKey = env.GEMINI_API_KEY_BACKUP;
   if (!apiKey) throw new Error('GEMINI_API_KEY_BACKUP not configured');
   if (!isProviderHealthy('gemini_secondary')) throw new Error('gemini_secondary breaker TRIPPED');
 
-  const { GoogleGenAI } = await import('@google/genai');
-  const ai = new GoogleGenAI({ apiKey });
   const backupModels = ['gemini-2.0-flash', 'gemini-flash-latest'];
 
   let lastErr;
   for (const modelName of backupModels) {
     try {
-      const response = await ai.models.generateContent({
-        model: modelName,
-        contents: prompt,
-        config: {
-          systemInstruction: systemInstruction,
-          responseMimeType: 'application/json',
-        }
-      });
-      const parsed = parseCleanJson(response.text);
+      const text = await callGeminiRest(modelName, prompt, systemInstruction, apiKey);
+      const parsed = parseCleanJson(text);
       recordProviderSuccess('gemini_secondary');
       return parsed;
     } catch (err) {
@@ -216,8 +235,8 @@ async function callGeminiSecondary(prompt, systemInstruction) {
 /**
  * TIER 3: OpenRouter API Call (Free Models)
  */
-async function callOpenRouter(prompt, systemInstruction) {
-  const apiKey = process.env.OPENROUTER_API_KEY;
+async function callOpenRouter(prompt, systemInstruction, env) {
+  const apiKey = env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error('OPENROUTER_API_KEY not configured');
   if (!isProviderHealthy('openrouter')) throw new Error('openrouter breaker TRIPPED');
 
@@ -276,8 +295,8 @@ async function callOpenRouter(prompt, systemInstruction) {
 /**
  * TIER 4: Groq API Call (High Throughput Free Tier)
  */
-async function callGroq(prompt, systemInstruction) {
-  const apiKey = process.env.GROQ_API_KEY;
+async function callGroq(prompt, systemInstruction, env) {
+  const apiKey = env.GROQ_API_KEY;
   if (!apiKey) throw new Error('GROQ_API_KEY not configured');
   if (!isProviderHealthy('groq')) throw new Error('groq breaker TRIPPED');
 
@@ -324,8 +343,8 @@ async function callGroq(prompt, systemInstruction) {
 /**
  * TIER 5: HuggingFace Inference API
  */
-async function callHuggingFace(prompt, systemInstruction) {
-  const apiKey = process.env.HUGGINGFACE_API_KEY;
+async function callHuggingFace(prompt, systemInstruction, env) {
+  const apiKey = env.HUGGINGFACE_API_KEY;
   if (!apiKey) throw new Error('HUGGINGFACE_API_KEY not configured');
   if (!isProviderHealthy('huggingface')) throw new Error('huggingface breaker TRIPPED');
 
@@ -451,7 +470,12 @@ function generateDeterministicHeuristicAdvisory(params) {
 /**
  * Main Orchestration Handler with Multi-Provider Cascade Execution & Caching
  */
-async function generateAdvisoryWithFallback(params, systemInstruction, prompt) {
+/**
+ * `env` is the runtime environment: `process.env` on Node (the default, so the
+ * Express route and the `serverless/*` twins keep working unchanged) and
+ * `context.env` on a Pages Function, passed in by `functions/api/chat/query.ts`.
+ */
+async function generateAdvisoryWithFallback(params, systemInstruction, prompt, env = defaultEnv()) {
   engineStats.totalRequests += 1;
 
   // 1. Construct unique cache key. The PROMPT is part of the key: it embeds
@@ -460,10 +484,8 @@ async function generateAdvisoryWithFallback(params, systemInstruction, prompt) {
   //    answer. Before 2026-09-17 the key was district:hazard:severity only —
   //    with hazard fixed per caller, every chat turn in a district returned
   //    the first question's answer for 10 minutes.
-  const promptHash = createHash('sha256')
-    .update(`${systemInstruction}\n${prompt}`)
-    .digest('hex')
-    .slice(0, 16);
+  // sha256Hex is the portable (Node + Worker) digest — see portableHash.js.
+  const promptHash = sha256Hex(`${systemInstruction}\n${prompt}`).slice(0, 16);
   const cacheKey = `${params.district_name || 'dist'}:${params.hazard_type || 'haz'}:${Math.round((params.severity_score || 0) * 10)}:${promptHash}`;
   // Post-read guard: `get` re-runs assertAdvisory and deletes a hollow entry, so a bad
   // generation is a miss that re-runs the cascade rather than a cached answer.
@@ -476,11 +498,11 @@ async function generateAdvisoryWithFallback(params, systemInstruction, prompt) {
 
   // Define multi-tier fallback cascade array
   const cascadeProviders = [
-    { key: 'gemini_primary', fn: () => callGeminiPrimary(prompt, systemInstruction) },
-    { key: 'gemini_secondary', fn: () => callGeminiSecondary(prompt, systemInstruction) },
-    { key: 'openrouter', fn: () => callOpenRouter(prompt, systemInstruction) },
-    { key: 'groq', fn: () => callGroq(prompt, systemInstruction) },
-    { key: 'huggingface', fn: () => callHuggingFace(prompt, systemInstruction) },
+    { key: 'gemini_primary', fn: () => callGeminiPrimary(prompt, systemInstruction, env) },
+    { key: 'gemini_secondary', fn: () => callGeminiSecondary(prompt, systemInstruction, env) },
+    { key: 'openrouter', fn: () => callOpenRouter(prompt, systemInstruction, env) },
+    { key: 'groq', fn: () => callGroq(prompt, systemInstruction, env) },
+    { key: 'huggingface', fn: () => callHuggingFace(prompt, systemInstruction, env) },
   ];
 
   for (const provider of cascadeProviders) {
