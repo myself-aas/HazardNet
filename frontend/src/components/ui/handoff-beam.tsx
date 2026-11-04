@@ -680,7 +680,7 @@ export function HandoffBeam({
         className="pointer-events-none absolute inset-x-0 bottom-0 block"
         style={{ width: "100%", height: reachEff }}
       />
-      <LiveRegion message={labels[phase]} />
+      <LiveRegion>{labels[phase]}</LiveRegion>
     </div>
   );
 }
