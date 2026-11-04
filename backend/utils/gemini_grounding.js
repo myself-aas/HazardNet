@@ -12,34 +12,51 @@
  */
 
 import { getDistrictCoordinates } from './districtCoordinates.js';
+import { defaultEnv } from './runtimeEnv.js';
 
 const GROUNDING_MODEL = 'gemini-3.5-flash';
 
-/**
- * Lazy initialization of GoogleGenAI client
- */
-async function getGenAI() {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return null;
+const GROUNDING_TIMEOUT_MS = 12_000;
 
-  if (typeof globalThis.ReadableStream === 'undefined') {
-    try {
-      const { ReadableStream } = await import('node:stream/web');
-      globalThis.ReadableStream = ReadableStream;
-    } catch {
-      // Ignore if unavailable
+/**
+ * Gemini REST call for grounding — the raw `:generateContent` endpoint over `fetch`.
+ *
+ * The `@google/genai` SDK is a Node package and cannot be bundled into a Worker
+ * isolate; the REST surface returns the same `candidates[].groundingMetadata` /
+ * `groundingChunks` the parsing below reads. `fetch` exists in Node 20 and Workers
+ * alike, so one implementation serves the Express route, the Node function twin and
+ * the Pages Function (`functions/api/chat/query.ts`).
+ *
+ * @returns {Promise<{text: string, candidates: unknown[]}>} shaped like the SDK
+ *          response this module was written against (`response.text`,
+ *          `response.candidates[0].groundingMetadata`)
+ */
+async function callGeminiGrounding(prompt, apiKey, tools, toolConfig) {
+  const body = {
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    tools,
+  };
+  if (toolConfig) body.toolConfig = toolConfig;
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GROUNDING_MODEL)}:generateContent`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+      signal: AbortSignal.timeout(GROUNDING_TIMEOUT_MS),
+      body: JSON.stringify(body),
     }
+  );
+
+  if (!res.ok) {
+    const errorText = await res.text().catch(() => '');
+    throw new Error(`Gemini grounding status ${res.status}: ${errorText.slice(0, 160)}`);
   }
 
-  const { GoogleGenAI } = await import('@google/genai');
-  return new GoogleGenAI({
-    apiKey,
-    httpOptions: {
-      headers: {
-        'User-Agent': 'aistudio-build'
-      }
-    }
-  });
+  const data = await res.json();
+  const candidate = data?.candidates?.[0] || {};
+  const text = (candidate?.content?.parts || []).map((p) => p?.text || '').join('');
+  return { text, candidates: data?.candidates || [] };
 }
 
 /**
@@ -81,7 +98,7 @@ export function detectGroundingIntent(query = '', requestedMode = 'auto') {
 /**
  * Execute Maps Grounding using gemini-3.5-flash with googleMaps tool
  */
-export async function executeMapsGrounding({ query, district, userCoordinates, contextText = '' }) {
+export async function executeMapsGrounding({ query, district, userCoordinates, contextText = '', env = defaultEnv() }) {
   const coords = userCoordinates?.latitude && userCoordinates?.longitude
     ? { latitude: Number(userCoordinates.latitude), longitude: Number(userCoordinates.longitude) }
     : getDistrictCoordinates(district || 'Dhaka');
@@ -97,21 +114,14 @@ ${contextText.slice(0, 1500)}
 Using Google Maps data, locate the nearest agricultural offices (DAE Upazila Agriculture Office), veterinary hospitals/clinics (DLS Upazila Livestock Office), flood shelters, cyclone shelters, or relief distribution centers relevant to the user's query in or near ${resolvedDistrict}, Bangladesh.
 Provide clear markdown instructions with the exact location names, addresses, landmarks, and emergency contact procedures.`;
 
-  const ai = await getGenAI();
-  if (ai) {
+  const apiKey = env.GEMINI_API_KEY;
+  if (apiKey) {
     try {
-      const response = await ai.models.generateContent({
-        model: GROUNDING_MODEL,
-        contents: prompt,
-        config: {
-          tools: [{ googleMaps: {} }],
-          toolConfig: {
-            retrievalConfig: {
-              latLng: {
-                latitude: coords.latitude,
-                longitude: coords.longitude
-              }
-            }
+      const response = await callGeminiGrounding(prompt, apiKey, [{ googleMaps: {} }], {
+        retrievalConfig: {
+          latLng: {
+            latitude: coords.latitude,
+            longitude: coords.longitude
           }
         }
       });
@@ -187,7 +197,7 @@ Provide clear markdown instructions with the exact location names, addresses, la
 /**
  * Execute Search Grounding using gemini-3.5-flash with googleSearch tool
  */
-export async function executeSearchGrounding({ query, district, contextText = '' }) {
+export async function executeSearchGrounding({ query, district, contextText = '', env = defaultEnv() }) {
   const prompt = `You are HazardNet Real-Time Agricultural & Disaster Assistant for Bangladesh.
 User Query: "${query}"
 Context District: ${district || 'Bangladesh'}
@@ -197,16 +207,10 @@ ${contextText.slice(0, 1500)}
 Using Google Search data, provide the latest, up-to-date information regarding weather conditions, flood or cyclone alerts from BMD (Bangladesh Meteorological Department), FFWC (Flood Forecasting and Warning Centre), or agricultural directives from DAE.
 Structure your answer clearly with markdown bullet points, dates, danger signal levels, and recommended safety precautions.`;
 
-  const ai = await getGenAI();
-  if (ai) {
+  const apiKey = env.GEMINI_API_KEY;
+  if (apiKey) {
     try {
-      const response = await ai.models.generateContent({
-        model: GROUNDING_MODEL,
-        contents: prompt,
-        config: {
-          tools: [{ googleSearch: {} }]
-        }
-      });
+      const response = await callGeminiGrounding(prompt, apiKey, [{ googleSearch: {} }]);
 
       const text = response.text || '';
       const candidate = response.candidates?.[0];

@@ -1,13 +1,47 @@
 {
   "schema": "hazardnet-route-register/v1",
-  "updated": "2026-11-01",
+  "updated": "2026-11-04",
   "what_this_is": "Phase 1's route table and disposition list. `__tests__/routeReachability.test.js` fails if a route called from frontend/src is neither a file under functions/api/ nor listed here with a dated disposition. A dated disposition is a decision, not a TODO: it names the runtime property that keeps the route unhosted and the command that would disprove it.",
   "cutover": {
     "date": "2026-10-26",
-    "fact": "Cloudflare Pages served static assets only; every /api/** path answered 404 from _redirects/404.html until the first Pages Functions port. All seven edge routes below were 404'd during cutover, so their bugs were latent until a live call.",
+    "fact": "Cloudflare Pages served static assets only; every /api/** path answered 404 from _redirects/404.html until the first Pages Functions port. The edge routes below were 404'd (GET) or 405'd (non-GET — the asset server's answer to an unmatched path) during cutover, so their bugs were latent until a live call.",
     "evidence": "docs/ops/owner-actions.md Action 21; docs/ops/deployment.md §6-7; git log -p -- frontend/public/_redirects has no /api line (the file has one commit, 70a052a)."
   },
   "edgeRoutes": [
+    {
+      "path": "/api/chat/query",
+      "methods": [
+        "POST"
+      ],
+      "file": "functions/api/chat/query.ts",
+      "nodeTwins": [
+        "serverless/chat/query.js",
+        "backend/routes/chat.js"
+      ],
+      "calledByFrontend": true,
+      "cutover404": true,
+      "firstLiveCall": null,
+      "verification": "Not yet called on a deployed site; locally asserted in __tests__/pagesChat.test.js. Until this port (2026-11-04) the POST matched no Function and the Pages asset server answered 405 — the AI Advisor widget's reported \"The AI service is unreachable (HTTP 405)\".",
+      "valueAssertion": "__tests__/pagesChat.test.js",
+      "status": "pending-publication"
+    },
+    {
+      "path": "/api/chat/sample-questions",
+      "methods": [
+        "GET"
+      ],
+      "file": "functions/api/chat/sample-questions.ts",
+      "nodeTwins": [
+        "serverless/chat/sample-questions.js",
+        "backend/routes/chat.js"
+      ],
+      "calledByFrontend": true,
+      "cutover404": true,
+      "firstLiveCall": null,
+      "verification": "Not yet called on a deployed site; locally asserted in __tests__/pagesChat.test.js. Until this port (2026-11-04) the GET fell through to the static 404 shell, so the widget rendered no sample chips.",
+      "valueAssertion": "__tests__/pagesChat.test.js",
+      "status": "pending-publication"
+    },
     {
       "path": "/api/v1/forecasts/bulk",
       "methods": [
@@ -213,8 +247,6 @@
       "ownerAction": "Action 21 — Node-only, store/AI-backed writes",
       "paths": [
         "/api/advisory",
-        "/api/chat/query",
-        "/api/chat/sample-questions",
         "/api/grounding/district-facilities/*",
         "/api/grounding/district-updates/*",
         "/api/grounding/maps",

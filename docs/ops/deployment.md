@@ -109,7 +109,7 @@ Two consequences worth knowing before you touch this:
   that exhausts the Function allowance still serves the static site (and the client's snapshot
   fallback) instead of an error page.
 
-Everything else under `/api/**` still answers 404 — see §7 for what that means and Action 21
+Everything else under `/api/**` still answers 404 for GET and 405 for other methods — see §7 for what that means and Action 21
 for the queue.
 
 ## 4. Deploying
@@ -253,10 +253,11 @@ single reason there is one canonical origin rather than two.
 - **Data:** a bad `/data/*` snapshot is fixed by reverting the commit that wrote it, not by
   rolling back the site.
 
-## 7. The API: seven routes on the edge, three that stay Node-only
+## 7. The API: fourteen routes on the edge, the rest Node-only
 
 From 2026-10-26 the API has a host for its **read** surface; from 2026-10-27 it also proxies the
-weather lookups and accepts the analytics beacon. Everything listed here is a Pages Function:
+weather lookups and accepts the analytics beacon; from 2026-11-04 it also serves the AI Advisor chat.
+Everything listed here is a Pages Function:
 
 | Route | Served by | Data | `Cache-Control` |
 |---|---|---|---|
@@ -267,7 +268,9 @@ weather lookups and accepts the analytics beacon. Everything listed here is a Pa
 | `GET /api/v1/weather` | `functions/api/v1/weather.ts` | Open-Meteo, proxied — the Function holds no data | `public, max-age=900` |
 | `GET`, `POST /api/v1/weather/batch` | `functions/api/v1/weather/batch.ts` | the same, for 1–N points | `public, max-age=900` |
 | `POST /api/v1/telemetry` | `functions/api/v1/telemetry.ts` | one Analytics Engine data point per event | `no-store` |
-| everything else under `/api/**` | nothing — **404** | — | — |
+| `POST /api/chat/query` | `functions/api/chat/query.ts` | the shared RAG chat service; provider keys from the Pages env vars, deterministic offline tier when unset | `no-store` |
+| `GET /api/chat/sample-questions` | `functions/api/chat/sample-questions.ts` | the static list exported from `backend/utils/chatService.js` | `public, max-age=300` |
+| everything else under `/api/**` | nothing — **404** for GET, **405** for other methods (the asset server rejects non-GET to an unmatched path) | — | — |
 
 The `.ts` paths drop the `functions/` prefix and, where a route ends in `index.ts`, the
 `index` too: `functions/api/v1/alerts/index.ts` answers `/api/v1/alerts`. That split mirrors
@@ -312,6 +315,19 @@ read a file, and each difference is the reason it can exist at the edge at all:
   Cloudflare's docs say the binding is inactive until a redeploy and cannot be used locally.
   Verify with `SELECT blob1, blob2, double1 FROM hazardnet_telemetry WHERE index1 = '<session id>'`
   through the read-only SQL API; `SHOW TABLES` must list the dataset after the first write.
+
+- **`/api/chat/*` is the AI Advisor, ported 2026-11-04 after the widget's POST started answering
+  405** — no `functions/api/chat/**` existed, `_routes.json`'s `/api/*` matched no Function, and the
+  static asset server rejects every non-GET to an unmatched path (the sample-questions GET 404'd the
+  same way, so the widget rendered no chips). The shared `handleChatQuery` / `SAMPLE_QUESTIONS` are
+  imported unchanged — which first required making the chat import graph Worker-safe: portable
+  SHA-256 (`backend/utils/portableHash.js`) instead of `node:crypto`, Gemini over REST `fetch`
+  instead of the `@google/genai` SDK, and secrets from `context.env` via
+  `backend/utils/runtimeEnv.js` instead of `process.env`. The body is bounded at 64 KiB before
+  parsing and the ai bucket (20/min) is metered per client, mirroring `serverlessGuard.js`. With no
+  provider keys in the Pages env vars the cascade ends on the deterministic offline tier, so the
+  widget answers instead of erroring. Covered by `__tests__/pagesChat.test.js`; the register rows are
+  `pending-publication` until probed live.
 
 `site-health.yml` probes the weather routes on every run (`weather_api`): one point and a batch,
 each required to carry a numeric `current.temperature_2m`, because a 200 carrying only ids and
