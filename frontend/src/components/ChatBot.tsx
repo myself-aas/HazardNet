@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { LiveVoiceAdvisor } from './LiveVoiceAdvisor';
 import { ExternalLink, Loader2, MapPin, MessageSquare, Mic, Search, Send, X } from 'lucide-react';
+import { HandoffBeam, createSimulatedVoice, type BeamPhase } from '@/components/ui/handoff-beam';
 
 interface GroundingFacility {
   title: string;
@@ -62,6 +63,12 @@ export default function ChatBot() {
   const [sampleQuestions, setSampleQuestions] = useState<any[]>([]);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Handoff Beam: animates a light beam along the bottom edge of the message input
+  // to reflect assistant activity. Tied to the loading state so it only animates
+  // while the AI Advisor is thinking.
+  const voiceLevel = createSimulatedVoice(11);
+  const beamPhase: BeamPhase = loading ? 'thinking' : 'idle';
 
   useEffect(() => {
     if (isOpen && sampleQuestions.length === 0) {
@@ -503,36 +510,45 @@ export default function ChatBot() {
                     )}
                   </div>
 
-                  <form
-                    onSubmit={(event) => {
-                      event.preventDefault();
-                      if (!loading) sendMessage(input);
-                    }}
+                  <HandoffBeam
+                    phase={beamPhase}
+                    level={loading ? voiceLevel : undefined}
+                    palette={['#0071e3', '#2997ff', '#52adff']}
+                    radius={12}
+                    reach={16}
+                    className="w-full"
                   >
-                    <label htmlFor="chat-message-input" className="sr-only">Message the AI Advisor</label>
-                    <div className="relative">
-                      <textarea
-                        id="chat-message-input"
-                        value={input}
-                        onChange={(event) => setInput(event.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder="Ask about hazards, farming, or local services…"
-                        aria-describedby="chat-input-help"
-                        enterKeyHint="send"
-                        className="max-h-32 min-h-[48px] w-full resize-y rounded-xl border border-carbon-20 bg-carbon-05 py-3 pl-3.5 pr-14 text-base leading-relaxed text-carbon-90 dark:text-white placeholder:text-carbon-60 dark:placeholder:text-carbon-50 focus:border-ap-primary focus:outline-none focus:ring-2 focus:ring-ap-primary/20"
-                        rows={1}
-                      />
-                      <button
-                        type="submit"
-                        disabled={!input.trim() || loading}
-                        className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg bg-primary text-ap-action-fg transition-colors hover:bg-primary-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"
-                        aria-label="Send message"
-                        title="Send message"
-                      >
-                        <Send className="h-5 w-5" aria-hidden="true" />
-                      </button>
-                    </div>
-                  </form>
+                    <form
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        if (!loading) sendMessage(input);
+                      }}
+                    >
+                      <label htmlFor="chat-message-input" className="sr-only">Message the AI Advisor</label>
+                      <div className="relative">
+                        <textarea
+                          id="chat-message-input"
+                          value={input}
+                          onChange={(event) => setInput(event.target.value)}
+                          onKeyDown={handleKeyDown}
+                          placeholder="Ask about hazards, farming, or local services…"
+                          aria-describedby="chat-input-help"
+                          enterKeyHint="send"
+                          className="max-h-32 min-h-[48px] w-full resize-y rounded-xl border border-carbon-20 bg-carbon-05 py-3 pl-3.5 pr-14 text-base leading-relaxed text-carbon-90 dark:text-white placeholder:text-carbon-60 dark:placeholder:text-carbon-50 focus:border-ap-primary focus:outline-none focus:ring-2 focus:ring-ap-primary/20"
+                          rows={1}
+                        />
+                        <button
+                          type="submit"
+                          disabled={!input.trim() || loading}
+                          className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg bg-primary text-ap-action-fg transition-colors hover:bg-primary-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"
+                          aria-label="Send message"
+                          title="Send message"
+                        >
+                          <Send className="h-5 w-5" aria-hidden="true" />
+                        </button>
+                      </div>
+                    </form>
+                  </HandoffBeam>
                   <p id="chat-input-help" className="mt-1.5 px-1 text-xs text-carbon-60">
                     Enter to send · Shift+Enter for a new line
                   </p>
