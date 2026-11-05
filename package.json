@@ -66,6 +66,7 @@
     "design:help": "impeccable help",
     "check:env": "node scripts/validate_env.mjs",
     "check:claims": "node scripts/verify_claims.mjs",
+    "publish:dns-aid": "node scripts/publish-dns-aid.mjs",
     "test:phases": "node --test __tests__/advisoryPipeline.test.js __tests__/phaseBFrontend.test.js __tests__/phaseCBackend.test.js __tests__/phaseDHardening.test.js __tests__/phaseEHistorical.test.js",
     "check:fonts": "node scripts/check-font-payload.mjs",
     "icons:build": "node scripts/generate-icon-glyphs.mjs",

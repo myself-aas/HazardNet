@@ -185,8 +185,9 @@ export function markdownNegotiation() {
     // Token count header (spec recommends this)
     res.setHeader('x-markdown-tokens', String(estimateTokens(content)));
 
-    // Cache control: markdown is generated at build time, safe to cache
-    res.setHeader('Cache-Control', 'public, max-age=3600');
+    // Negotiated responses must not be shared by an edge cache without an
+    // explicit Cache Rule that varies on Accept.
+    res.setHeader('Cache-Control', 'no-store');
 
     // Send the markdown content
     if (req.method === 'HEAD') {
