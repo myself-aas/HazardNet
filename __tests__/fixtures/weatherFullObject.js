@@ -1,5 +1,5 @@
 /* Provenance — required by __tests__/testQuality.test.js; do not remove.
- * # Captured from https://api.open-meteo.com/v1/forecast?latitude=23.8103&longitude=90.4125&current=temperature_2m,relative_humidity_2m,apparent_temperature&hourly=temperature_2m,relative_humidity_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=Asia%2FDhaka&forecast_days=2&wind_speed_unit=ms&temperature_unit=celsius&precipitation_unit=mm&timeformat=iso8601&past_days=0 on 2026-11-04 by `node scripts/capture_edge_fixtures.mjs`.
+ * # Captured from https://api.open-meteo.com/v1/forecast?latitude=23.8103&longitude=90.4125&current=temperature_2m,relative_humidity_2m,apparent_temperature&hourly=temperature_2m,relative_humidity_2m&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=Asia%2FDhaka&forecast_days=2&wind_speed_unit=ms&temperature_unit=celsius&precipitation_unit=mm&timeformat=iso8601&past_days=0 on 2026-11-05 by `node scripts/capture_edge_fixtures.mjs`.
  * # Shape: object — single coordinate with current + hourly + daily arrays (the full forecast shape).
  * # To refresh: node scripts/capture_edge_fixtures.mjs --live (needs outbound access to api.open-meteo.com).
  *
