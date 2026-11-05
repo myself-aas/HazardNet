@@ -57,6 +57,10 @@ export const SECURITY_HEADERS = Object.freeze([
   ['Permissions-Policy', 'camera=(), microphone=(), geolocation=(self), payment=(), usb=()'],
   ['Cross-Origin-Opener-Policy', 'same-origin-allow-popups'],
   ['Content-Security-Policy', CSP],
+  [
+    'Link',
+    '<https://www.hazardnet.live/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json", <https://www.hazardnet.live/api/openapi.yaml>; rel="service-desc"; type="application/yaml", <https://www.hazardnet.live/docs/data-and-api>; rel="service-doc"; type="text/html", <https://www.hazardnet.live/.well-known/oauth-protected-resource>; rel="describedby"; type="application/json"',
+  ],
 ]);
 
 /** The list as a plain map, for parity assertions and for anything that cannot use `Headers`. */

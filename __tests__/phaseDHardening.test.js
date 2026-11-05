@@ -98,12 +98,12 @@ describe('TASK-013: SEO Foundations + Structured Data (TRD §7.8)', () => {
 
     const sitemapContent = fs.readFileSync(sitemapPath, 'utf8');
     assert.ok(sitemapContent.includes('<loc>https://www.hazardnet.live/archive</loc>'), 'Sitemap must include /archive');
-    assert.ok(sitemapContent.includes('<loc>https://www.hazardnet.live/district/kurigram</loc>'), 'Sitemap must include /district/kurigram');
-    assert.ok(sitemapContent.includes('<loc>https://www.hazardnet.live/district/sunamganj</loc>'), 'Sitemap must include /district/sunamganj');
-    assert.ok(sitemapContent.includes('<loc>https://www.hazardnet.live/district/dhaka</loc>'), 'Sitemap must include /district/dhaka');
-    assert.ok(sitemapContent.includes('<loc>https://www.hazardnet.live/district/bandarban</loc>'), 'Sitemap must include /district/bandarban');
+    assert.ok(sitemapContent.includes('<loc>https://www.hazardnet.live/districts/kurigram</loc>'), 'Sitemap must include /districts/kurigram');
+    assert.ok(sitemapContent.includes('<loc>https://www.hazardnet.live/districts/sunamganj</loc>'), 'Sitemap must include /districts/sunamganj');
+    assert.ok(sitemapContent.includes('<loc>https://www.hazardnet.live/districts/dhaka</loc>'), 'Sitemap must include /districts/dhaka');
+    assert.ok(sitemapContent.includes('<loc>https://www.hazardnet.live/districts/bandarban</loc>'), 'Sitemap must include /districts/bandarban');
 
-    const districtCount = (sitemapContent.match(/<loc>https:\/\/www\.hazardnet\.live\/district\/[a-z0-9_-]+<\/loc>/g) || []).length;
+    const districtCount = (sitemapContent.match(/<loc>https:\/\/www\.hazardnet\.live\/districts\/[a-z0-9_-]+<\/loc>/g) || []).length;
     assert.equal(districtCount, 64, `Sitemap must contain exactly 64 district permalinks, found ${districtCount}`);
   });
 

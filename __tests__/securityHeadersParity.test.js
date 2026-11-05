@@ -147,6 +147,18 @@ describe('security header parity', () => {
     expect(scriptSrc).not.toMatch(/https?:\s/);
   });
 
+  it('publishes registered discovery relations in the Link header', () => {
+    const link = cloudflareHeaders.Link;
+    expect(link).toContain('rel="api-catalog"');
+    expect(link).toContain('rel="service-desc"');
+    expect(link).toContain('rel="service-doc"');
+    expect(link).toContain('rel="describedby"');
+    expect(link).toContain('https://www.hazardnet.live/.well-known/api-catalog');
+    expect(link).toContain('https://www.hazardnet.live/api/openapi.yaml');
+    expect(link).toContain('https://www.hazardnet.live/docs/data-and-api');
+    expect(link).toContain('https://www.hazardnet.live/.well-known/oauth-protected-resource');
+  });
+
   /* The Firebase Hosting block was removed on 2026-10-26 (see the file comment). Pinned as a
      fact so nobody restores a second static-host policy by accident: with one deployment there
      is one place headers can be declared, and this suite is what keeps it honest. */
@@ -204,9 +216,9 @@ describe('security header parity', () => {
   describe('Function routes are scoped to the API', () => {
     const routes = readJson('frontend/public/_routes.json');
 
-    it('invokes Functions for /api/* and nothing else', () => {
+    it('invokes the Markdown/document Function while preserving API routes', () => {
       expect(routes.version).toBe(1);
-      expect(routes.include).toEqual(['/api/*']);
+      expect(routes.include).toEqual(['/*']);
       for (const rule of routes.include) {
         expect(rule).not.toMatch(/^\/(data|assets|Models)\//);
       }
@@ -215,7 +227,6 @@ describe('security header parity', () => {
     it('never excludes the whole site (which would disable the Functions)', () => {
       for (const rule of routes.exclude) {
         expect(rule).not.toBe('/*');
-        expect(rule).not.toBe('/api/*');
       }
     });
 
@@ -252,7 +263,7 @@ describe('security header parity', () => {
       // `allow` header and body cap rather than Pages' default 405. Widened 2026-10-27 after
       // it rejected two legitimate routes; the assertion's purpose is unchanged, since a
       // helper module would export neither.
-      expect(file.replace(/^functions\//, '')).toMatch(/^api\//);
+      expect(file.replace(/^functions\//, '')).toMatch(/^(\[\[path\]\]\.ts|api\/)/);
       expect(readText(file)).toMatch(/export (async )?function onRequest([A-Z][a-z]*)?\b/);
     }
   });

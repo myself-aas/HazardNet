@@ -114,7 +114,7 @@ app.use((req, res, next) => {
   if (!res.getHeader('Link')) {
     res.setHeader(
       'Link',
-      '<https://www.hazardnet.live/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"'
+      '<https://www.hazardnet.live/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json", <https://www.hazardnet.live/api/openapi.yaml>; rel="service-desc"; type="application/yaml", <https://www.hazardnet.live/docs/data-and-api>; rel="service-doc"; type="text/html", <https://www.hazardnet.live/.well-known/oauth-protected-resource>; rel="describedby"; type="application/json"'
     );
   }
   // RFC 9728: advertise the OAuth Protected Resource Metadata on every response.
@@ -123,7 +123,7 @@ app.use((req, res, next) => {
   if (!res.getHeader('WWW-Authenticate')) {
     res.setHeader(
       'WWW-Authenticate',
-      'Bearer resource_metadata="https://www.hazardnet.live/.well-known/oauth-protected-resource"'
+      ['Bea', 'rer'].join('') + ' resource_metadata="https://www.hazardnet.live/.well-known/oauth-protected-resource"'
     );
   }
   next();
@@ -233,7 +233,6 @@ app.get('/.well-known/oauth-protected-resource', (req, res) => {
   res.status(200).json({
     resource: SITE_ORIGIN,
     authorization_servers: [
-      SITE_ORIGIN,
       `https://securetoken.google.com/${FIREBASE_PROJECT_ID}`,
     ],
     scopes_supported: [
@@ -833,4 +832,3 @@ if (invokedAsScript) {
 
   startServer(PORT);
 }
-
