@@ -1,20 +1,18 @@
 {
   "schema": "hazardnet-freshness/v1",
-  "built_at": "2026-11-05T01:27:31.458Z",
+  "built_at": "2026-11-05T07:05:47.580Z",
   "generated_by": "scripts/build_freshness_artifact.mjs",
   "what_this_is": "A derived statement about the committed data artifacts this deployment ships. It is not a live probe and it does not measure the running services — the site-health probe result it carries is whatever the last scheduled run published.",
   "overall": {
-    "state": "stale",
+    "state": "fresh",
     "counts": {
-      "fresh": 4,
-      "stale": 1,
+      "fresh": 5,
+      "stale": 0,
       "failing": 0,
       "missing": 0,
       "unknown": 0
     },
-    "not_fresh": [
-      "site_probe"
-    ]
+    "not_fresh": []
   },
   "sources": [
     {
@@ -25,8 +23,8 @@
       "reason": null,
       "generated_at": "2026-11-04T23:15:21.220Z",
       "prediction_date": "2026-11-04",
-      "age_hours": 25.5,
-      "run_age_hours": 2.2,
+      "age_hours": 31.1,
+      "run_age_hours": 7.8,
       "slo_hours": 192,
       "detail": {
         "source": "Kaggle_Daily_Advisory (hazardnet_advisories_latest.csv)",
@@ -42,8 +40,8 @@
       "reason": null,
       "generated_at": "2026-11-05T01:27:31.256Z",
       "prediction_date": "2026-11-04",
-      "age_hours": 25.5,
-      "run_age_hours": 0,
+      "age_hours": 31.1,
+      "run_age_hours": 5.6,
       "slo_hours": 192,
       "detail": {
         "schema": "hazardnet-forecast-snapshot/v2",
@@ -55,7 +53,7 @@
       "label": "Daily district advisories (15-day)",
       "artifact": "frontend/public/data/daily-advisories-v1.json",
       "generated_at": "2026-11-04T23:15:21.220Z",
-      "age_hours": 2.2,
+      "age_hours": 7.8,
       "slo_hours": 36,
       "detail": {
         "run_id": "kaggle-v45-40e34bbfe23d",
@@ -74,7 +72,7 @@
       "state": "fresh",
       "reason": null,
       "generated_at": "2026-11-05T01:27:31.104Z",
-      "age_hours": 0,
+      "age_hours": 5.6,
       "slo_hours": 48,
       "detail": {
         "schema": "hazardnet-alerts/v1",
@@ -89,11 +87,11 @@
       "id": "site_probe",
       "label": "Site-health probe (every 30 min)",
       "artifact": "data/site-health/latest.json",
-      "generated_at": "2026-11-04T11:41:21Z",
-      "age_hours": 13.8,
+      "generated_at": "2026-11-05T07:05:47Z",
+      "age_hours": 0,
       "slo_hours": 2,
       "detail": {
-        "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/41822881011",
+        "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/41984760868",
         "site_url": "https://hazardnet.live",
         "passed": 11,
         "failed": 0,
@@ -155,10 +153,10 @@
           }
         ]
       },
-      "state": "stale",
+      "state": "fresh",
       "outcome": "pass",
-      "reason": "the last probe result is 13.8 h old (SLO 2 h)",
-      "ran_at": "2026-11-04T11:41:21Z"
+      "reason": null,
+      "ran_at": "2026-11-05T07:05:47Z"
     }
   ],
   "gauges": {
@@ -167,7 +165,7 @@
     "series": [
       {
         "name": "hazardnet_forecast_age_hours",
-        "value": 25.5,
+        "value": 31.1,
         "unit": "hours",
         "source": "forecast_snapshot.age_hours",
         "slo_hours": 192,
@@ -175,7 +173,7 @@
       },
       {
         "name": "hazardnet_alert_snapshot_age_hours",
-        "value": 0,
+        "value": 5.6,
         "unit": "hours",
         "source": "alert_engine.age_hours",
         "slo_hours": 48,
@@ -183,7 +181,7 @@
       },
       {
         "name": "hazardnet_site_probe_age_hours",
-        "value": 13.8,
+        "value": 0,
         "unit": "hours",
         "source": "site_probe.age_hours",
         "slo_hours": 2,
@@ -191,7 +189,7 @@
       },
       {
         "name": "hazardnet_daily_advisories_age_hours",
-        "value": 2.2,
+        "value": 7.8,
         "unit": "hours",
         "source": "daily_advisories.age_hours",
         "slo_hours": 36,
@@ -249,7 +247,7 @@
     },
     "site_probe": {
       "path": "data/site-health/latest.json",
-      "ran_at": "2026-11-04T11:41:21Z"
+      "ran_at": "2026-11-05T07:05:47Z"
     }
   }
 }
