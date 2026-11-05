@@ -157,6 +157,7 @@ describe('security header parity', () => {
     expect(link).toContain('https://www.hazardnet.live/api/openapi.yaml');
     expect(link).toContain('https://www.hazardnet.live/docs/data-and-api');
     expect(link).toContain('https://www.hazardnet.live/.well-known/oauth-protected-resource');
+    expect(link).toContain('https://www.hazardnet.live/.well-known/mcp/server-card.json');
   });
 
   /* The Firebase Hosting block was removed on 2026-10-26 (see the file comment). Pinned as a
@@ -213,7 +214,7 @@ describe('security header parity', () => {
      10 ms CPU ceiling in front of every image. `exclude` takes priority over `include`, so a
      `exclude: ["/*"]` would disable the Functions entirely; that inversion is the mistake to
      avoid, and it is asserted rather than left to a comment. */
-  describe('Function routes are scoped to the API', () => {
+  describe('Function routes include documents, API and MCP', () => {
     const routes = readJson('frontend/public/_routes.json');
 
     it('invokes the Markdown/document Function while preserving API routes', () => {
@@ -222,6 +223,13 @@ describe('security header parity', () => {
       for (const rule of routes.include) {
         expect(rule).not.toMatch(/^\/(data|assets|Models)\//);
       }
+    });
+
+    it('keeps /mcp reachable while excluding static asset directories', () => {
+      expect(routes.exclude).not.toContain('/mcp');
+      expect(routes.exclude).not.toContain('/mcp/*');
+      expect(routes.exclude).toContain('/assets/*');
+      expect(routes.exclude).toContain('/data/*');
     });
 
     it('never excludes the whole site (which would disable the Functions)', () => {
@@ -263,7 +271,7 @@ describe('security header parity', () => {
       // `allow` header and body cap rather than Pages' default 405. Widened 2026-10-27 after
       // it rejected two legitimate routes; the assertion's purpose is unchanged, since a
       // helper module would export neither.
-      expect(file.replace(/^functions\//, '')).toMatch(/^(\[\[path\]\]\.ts|api\/)/);
+      expect(file.replace(/^functions\//, '')).toMatch(/^(\[\[path\]\]\.ts|mcp\.ts|api\/)/);
       expect(readText(file)).toMatch(/export (async )?function onRequest([A-Z][a-z]*)?\b/);
     }
   });

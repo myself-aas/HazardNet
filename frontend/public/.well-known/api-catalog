@@ -64,23 +64,17 @@
       ]
     },
     {
-      "anchor": "https://www.hazardnet.live/api/v1/historical",
+      "anchor": "https://www.hazardnet.live/mcp",
       "service-desc": [
         {
-          "href": "https://www.hazardnet.live/api/openapi.yaml",
-          "type": "application/yaml"
+          "href": "https://www.hazardnet.live/.well-known/mcp/server-card.json",
+          "type": "application/mcp-server-card+json"
         }
       ],
       "service-doc": [
         {
-          "href": "https://www.hazardnet.live/docs/archive",
+          "href": "https://www.hazardnet.live/docs/data-and-api",
           "type": "text/html"
-        }
-      ],
-      "status": [
-        {
-          "href": "https://www.hazardnet.live/health",
-          "type": "application/json"
         }
       ]
     },

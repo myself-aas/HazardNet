@@ -13,7 +13,8 @@ This document is the source of truth for "where does the site come from". If a c
 workflow or a doc disagrees with it, this document wins — and the disagreement is a bug.
 
 Last rewritten: **2026-10-26**, the day both hostnames moved to Pages, the Vercel
-configuration was deleted and the Firebase Hosting block was retired.
+configuration was deleted and the Firebase Hosting block was retired. WebMCP routing and
+owner activation were added on **2026-11-05**; see `docs/ops/webmcp.md`.
 
 Two columns of truth run through it:
 
@@ -74,7 +75,7 @@ without the policy:
 |---|---|---|
 | `_headers` | the full security policy (CSP, HSTS, `nosniff`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, COOP) plus the cache rules for `/assets/*`, `/serviceWorker.js` and `/data/*` | `__tests__/securityHeadersParity.test.js` — parsed, exact values, one line per header, ≤ 2,000 chars per line, ≤ 100 lines |
 | `_redirects` | `/documentation → /docs 301` and **nothing else** | same suite, plus `__tests__/securityTxt.test.js` |
-| `_routes.json` | which requests are Function invocations: `/api/*`, and nothing else | same suite — include is exactly `/api/*`, `exclude` never contains `/*`, ≤ 100 rules of ≤ 100 chars |
+| `_routes.json` | which requests are Function invocations: documents, `/api/*` and `/mcp`; static asset directories are excluded | same suite — include contains `/*`, `/mcp` is not excluded, ≤ 100 rules of ≤ 100 chars |
 | `404.html` | the noindex shell the prerenderer emits | `__tests__/seoFoundations.test.js` |
 
 **Deliberately absent: `/* /index.html 200`.** The prerenderer writes a real HTML file per
@@ -90,18 +91,17 @@ defence-in-depth and are the opposite: `/data/*.json` is the site's primary read
 that exists. Absent an asset, the request already lands on `404.html`. The invariant is
 asserted in the test suite instead of encoded as a rule.
 
-**`functions/`, and the one file that keeps it from swallowing the site.** Two read-only
-endpoints live on the edge from 2026-10-26 (`functions/api/v1/forecasts/{bulk,metadata}.ts`,
-Action 21). The moment a `functions/` directory exists, Pages invokes a Function for **every**
-request unless `_routes.json` says otherwise — which would put a 10 ms CPU ceiling and a
-100k/day meter in front of every image, font and data file, and take the "unlimited static
-requests" tier away. So `_routes.json` includes `/api/*` and nothing else, `exclude` is empty
-(`exclude` takes priority over `include`, so `exclude: ["/*"]` would disable the Functions
-entirely — the opposite of what it looks like), and the parity suite asserts both facts.
+**`functions/`, and the file that keeps static assets unmetered.** Pages invokes Functions
+for routes matched by `_routes.json`. The current file includes `/*` so prerendered documents
+can negotiate Markdown and `/api/*` plus `/mcp` reach their handlers; it excludes `/assets/*`,
+`/data/*`, font/image extensions and other static paths. Exclusion takes priority over
+inclusion. The parity suite asserts that `/mcp` stays reachable and static directories stay
+excluded. Adding a new Function without checking this file is how a route becomes a latent
+404/405; `docs/ops/route-register.json` records the non-API agent route separately.
 
 Two consequences worth knowing before you touch this:
 
-- **`_headers` does not apply to Function responses.** The seven headers on `/api/*` come from
+- **`_headers` does not apply to Function responses.** The canonical headers on `/api/*` and `/mcp` come from
   `functions/_middleware.ts`, which imports `backend/security/httpHeaders.js` — the same export
   the parity test compares against `_headers`. Never add a header to one without the other; the
   suite fails if you do.
@@ -109,8 +109,9 @@ Two consequences worth knowing before you touch this:
   that exhausts the Function allowance still serves the static site (and the client's snapshot
   fallback) instead of an error page.
 
-Everything else under `/api/**` still answers 404 for GET and 405 for other methods — see §7 for what that means and Action 21
-for the queue.
+Unported `/api/**` paths still answer 404/405 from the asset fallback; the route register,
+not this dated sentence, is the current list. `/mcp` is implemented but pending publication
+and owner activation under Action 25.
 
 ## 4. Deploying
 

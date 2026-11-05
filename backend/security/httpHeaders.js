@@ -59,7 +59,7 @@ export const SECURITY_HEADERS = Object.freeze([
   ['Content-Security-Policy', CSP],
   [
     'Link',
-    '<https://www.hazardnet.live/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json", <https://www.hazardnet.live/api/openapi.yaml>; rel="service-desc"; type="application/yaml", <https://www.hazardnet.live/docs/data-and-api>; rel="service-doc"; type="text/html", <https://www.hazardnet.live/.well-known/oauth-protected-resource>; rel="describedby"; type="application/json"',
+    '<https://www.hazardnet.live/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json", <https://www.hazardnet.live/api/openapi.yaml>; rel="service-desc"; type="application/yaml", <https://www.hazardnet.live/docs/data-and-api>; rel="service-doc"; type="text/html", <https://www.hazardnet.live/.well-known/oauth-protected-resource>; rel="describedby"; type="application/json", <https://www.hazardnet.live/.well-known/mcp/server-card.json>; rel="describedby"; type="application/mcp-server-card+json"',
   ],
 ]);
 

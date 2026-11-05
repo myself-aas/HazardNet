@@ -356,6 +356,16 @@ remains the notebook's, not the pipeline's.
 | **Closed by** | — |
 | **Why it is a separate PR** | It needs an R2 binding (dashboard) and a workflow secret, i.e. an owner step plus a code step. Bundling it into the deletion PR would leave a browser caller with no route at all for the length of the review. |
 
+## Action 25 · Activate and verify WebMCP on the canonical zone (opened 2026-11-05)
+
+| | |
+|---|---|
+| **Status** | Open — code and local tests are in this branch; no production deployment or dashboard activation has been performed. |
+| **Why** | Cloudflare's managed WebMCP bridge is a zone-level developer-preview toggle. The repository supplies `/mcp` and the native browser fallback, but cannot flip the console setting or prove the injected bridge is live. |
+| **Do** | After the normal Pages deploy, open **Agent Readiness > WebMCP** for `hazardnet.live`, enable **Site MCP Server** (`mcp-server-client`) with same-origin `/mcp`, and follow `docs/ops/webmcp.md`. Keep the existing free-tier architecture; no second host or paid counter. |
+| **Verify** | The canonical HTML contains `/.webmcp/bridge.js`; `tools/list` returns the eight descriptors; a Dhaka tool call returns real published values with the safety boundary; BrowserRun discovers and calls the tools. Record the deployment ID and observed result before closing. |
+| **Closed by** | — |
+
 ## § Cost constraints
 
 **Effective 2026-10-26. Free tier only.** No paid dependency — a service, a plan upgrade, a second

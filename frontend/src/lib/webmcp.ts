@@ -1,354 +1,244 @@
 /**
- * WebMCP — Expose HazardNet tools to AI agents via the browser.
+ * WebMCP: discover HazardNet's same-origin MCP tools and register browser proxies.
  *
- * Registers tools with the WebMCP API (document.modelContext.registerTool)
- * so browser agents can interact with HazardNet's key actions: searching
- * districts, retrieving forecasts, viewing alerts, and navigating pages.
+ * Follows https://blog.cloudflare.com/webmcp/: tools/list supplies descriptors;
+ * execute sends tools/call to /mcp with the visitor's same-origin session.
+ * Cloudflare's managed Site MCP Server pack can replace these proxies without
+ * duplicate registration. Two browser-only tools add district search and navigation.
  *
- * Spec: https://webmachinelearning.github.io/webmcp/
- * Chrome blog: https://developer.chrome.com/blog/webmcp-epp
+ * Unsupported browsers do no network work and retain the normal human interface.
+ * This module has no import-time side effects; main.tsx owns its lifecycle.
  */
+import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
 
-interface ModelContextTool {
+interface McpDescriptor {
   name: string;
   title?: string;
   description: string;
   inputSchema: Record<string, unknown>;
-  execute: (input: Record<string, unknown>, options?: { signal?: AbortSignal }) => Promise<unknown>;
+  annotations?: Record<string, unknown>;
 }
-
+interface McpResult {
+  content: Array<{ type: string; text?: string }>;
+  structuredContent?: Record<string, unknown>;
+  isError?: boolean;
+}
+interface ModelContextTool extends McpDescriptor {
+  execute: (input: Record<string, unknown>, options: { signal: AbortSignal }) => Promise<unknown>;
+}
 interface ModelContextLike {
-  registerTool: (tool: ModelContextTool, options?: { signal?: AbortSignal }) => Promise<unknown>;
+  registerTool: (tool: ModelContextTool, options?: { signal?: AbortSignal }) => unknown;
+  getTools?: () => unknown;
+}
+interface ManagedBridge {
+  hasSitePack: boolean;
 }
 
-/**
- * Get the ModelContext API, preferring document.modelContext over navigator.modelContext.
- */
-function getModelContext(): ModelContextLike | null {
-  // Prefer the spec-compliant location
-  const docCtx = (document as unknown as { modelContext?: ModelContextLike }).modelContext;
-  if (docCtx && typeof docCtx.registerTool === 'function') {
-    return docCtx;
-  }
-  // Fall back to the older Chrome build location
-  const navCtx = (navigator as unknown as { modelContext?: ModelContextLike }).modelContext;
-  if (navCtx && typeof navCtx.registerTool === 'function') {
-    return navCtx;
-  }
-  return null;
+const SAFETY_NOTICE =
+  'HazardNet is not an official warning service. Follow BMD, FFWC and local administration. In an emergency call 999. An empty result is not an all-clear.';
+let activeCleanup: (() => void) | null = null;
+let requestNumber = 0;
+
+export function getModelContext(): ModelContextLike | null {
+  if (typeof document === 'undefined') return null;
+  const contexts = [
+    (document as Document & { modelContext?: ModelContextLike }).modelContext,
+    (navigator as Navigator & { modelContext?: ModelContextLike }).modelContext,
+  ];
+  return contexts.find((context) => context && typeof context.registerTool === 'function') ?? null;
 }
 
-/**
- * Fetch JSON from the HazardNet API with error handling.
- */
-async function fetchApi(path: string): Promise<unknown> {
-  const res = await fetch(path, { headers: { Accept: 'application/json' } });
-  if (!res.ok) {
-    throw new Error(`API request failed: ${res.status} ${res.statusText}`);
-  }
-  return res.json();
+/** The edge inserts this tag before the application module executes. */
+export function managedBridge(): ManagedBridge | null {
+  const script = document.querySelector('script[src="/.webmcp/bridge.js"], script[src$="/.webmcp/bridge.js"]');
+  if (!script) return null;
+  const packs = (script.getAttribute('data-packs') || '').split(',').map((pack) => pack.trim());
+  const endpoint = script.getAttribute('data-mcp-url') || '/mcp';
+  let sameEndpoint = false;
+  try {
+    const url = new URL(endpoint, window.location.origin);
+    sameEndpoint = url.origin === window.location.origin && url.pathname === '/mcp';
+  } catch { /* An invalid managed endpoint is not a reason to break the page. */ }
+  return { hasSitePack: packs.includes('mcp-server-client') && sameEndpoint };
 }
 
-/**
- * Register all HazardNet tools with the WebMCP API.
- */
-export function registerWebMCPTools(): void {
-  const ctx = getModelContext();
-  if (!ctx) {
-    // WebMCP not supported in this browser — that's fine, tools just won't be available
-    if (typeof console !== 'undefined' && console.debug) {
-      console.debug('[webmcp] Model Context API not available in this browser');
-    }
-    return;
+async function jsonRequest(path: string, init: RequestInit, signal: AbortSignal): Promise<unknown> {
+  const response = await fetch(path, { ...init, credentials: 'same-origin', signal });
+  if (!response.ok) throw new Error(`HazardNet request failed (HTTP ${response.status}).`);
+  if (!response.headers.get('content-type')?.toLowerCase().includes('application/json')) {
+    throw new Error('HazardNet returned a non-JSON response.');
   }
+  return response.json();
+}
 
-  // AbortController for unregistering all tools on page unload
-  const ac = new AbortController();
+async function rpc(method: string, params: Record<string, unknown>, signal: AbortSignal): Promise<unknown> {
+  const body = await jsonRequest('/mcp', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'MCP-Protocol-Version': '2025-11-25' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: ++requestNumber, method, params }),
+  }, signal) as { result?: unknown; error?: { message?: string } };
+  if (body.error) throw new Error(body.error.message || 'The MCP request failed.');
+  if (!body.result || typeof body.result !== 'object') throw new Error('The MCP endpoint returned no result.');
+  return body.result;
+}
 
-  // Clean up tools when the page is unloaded
-  window.addEventListener('pagehide', () => ac.abort(), { once: true });
+function executionSignal(session: AbortController, caller?: AbortSignal): { signal: AbortSignal; dispose: () => void } {
+  const controller = new AbortController();
+  const abort = () => controller.abort();
+  const timeout = window.setTimeout(abort, 20_000);
+  session.signal.addEventListener('abort', abort, { once: true });
+  caller?.addEventListener('abort', abort, { once: true });
+  if (session.signal.aborted || caller?.aborted) abort();
+  return { signal: controller.signal, dispose: () => {
+    window.clearTimeout(timeout);
+    session.signal.removeEventListener('abort', abort);
+    caller?.removeEventListener('abort', abort);
+  } };
+}
 
-  // ──────────────────────────────────────────────────────────────────────
-  // Tool 1: search-district
-  // Search for a Bangladesh district by name and navigate to its page.
-  // ──────────────────────────────────────────────────────────────────────
-  ctx.registerTool(
+function proxyTool(descriptor: McpDescriptor, session: AbortController): ModelContextTool {
+  return {
+    ...descriptor,
+    // The managed pack uses MCP hints; native WebMCP has its own hint dictionary.
+    annotations: { readOnlyHint: true, untrustedContentHint: true, consequentialHint: false },
+    execute: async (input, options) => {
+      const execution = executionSignal(session, options?.signal);
+      try {
+        const result = await rpc('tools/call', { name: descriptor.name, arguments: input }, execution.signal) as McpResult;
+        if (!Array.isArray(result.content)) throw new Error('The MCP endpoint returned an invalid tool result.');
+        // Pass CallToolResult through, including isError. Do not disguise a
+        // failed read as a successful empty forecast.
+        return result;
+      } finally { execution.dispose(); }
+    },
+  };
+}
+
+/** Only URLs published in this origin's sitemap are navigation destinations. */
+export async function resolveSitePath(input: string, signal: AbortSignal): Promise<URL> {
+  if (typeof input !== 'string' || !input.trim() || input.length > 2048
+    || input.includes('\\') || Array.from(input).some((char) => char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127)
+    || input.startsWith('//')) {
+    throw new Error('Provide a relative HazardNet page path, not an external URL.');
+  }
+  const target = new URL(input.startsWith('/') ? input : `/${input}`, window.location.origin);
+  if (target.origin !== window.location.origin || target.username || target.password) {
+    throw new Error('Navigation is restricted to this HazardNet origin.');
+  }
+  const response = await fetch('/sitemap.xml', { credentials: 'same-origin', signal });
+  if (!response.ok) throw new Error('The public page list is unavailable; navigation was not attempted.');
+  const xml = new DOMParser().parseFromString(await response.text(), 'application/xml');
+  if (xml.querySelector('parsererror')) throw new Error('The public page list could not be read.');
+  const normalize = (path: string) => path.replace(/\/+$/, '') || '/';
+  const allowed = Array.from(xml.querySelectorAll('url > loc')).some((node) => {
+    try {
+      const url = new URL(node.textContent || '');
+      return url.origin === target.origin && normalize(url.pathname) === normalize(target.pathname);
+    } catch { return false; }
+  });
+  if (!allowed) throw new Error('This path is not in HazardNet’s public page list.');
+  return target;
+}
+
+/** Small seam for jsdom, whose Location.assign is non-configurable. */
+export const webmcpNavigation = {
+  navigate(href: string): void { window.location.href = href; },
+};
+
+function browserTools(session: AbortController): ModelContextTool[] {
+  return [
     {
-      name: 'search-district',
-      title: 'Search District',
-      description:
-        'Search for a district in Bangladesh by name and navigate to its hazard outlook page. ' +
-        'Returns the district name, division, and a link to its detailed forecast page.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          query: {
-            type: 'string',
-            description: 'District name or partial name to search for (e.g., "Dhaka", "Chittagong")',
-          },
-        },
-        required: ['query'],
-      },
-      execute: async (input) => {
-        const q = String(input.query || '').toLowerCase().trim();
-        if (!q) return { error: 'Please provide a district name to search for.' };
-
+      name: 'search-district', title: 'Search districts',
+      description: 'Find Bangladesh districts by canonical name or alias. Returns up to five matches and their page paths without navigating. Use navigate-to-page to open a selected result.',
+      inputSchema: { type: 'object', properties: { query: { type: 'string', minLength: 1, maxLength: 100 } }, required: ['query'], additionalProperties: false },
+      annotations: { readOnlyHint: true, untrustedContentHint: true, consequentialHint: false },
+      execute: async (input, options) => {
+        if (typeof input.query !== 'string' || !input.query.trim() || input.query.length > 100) throw new Error('Provide a district name of at most 100 characters.');
+        const execution = executionSignal(session, options?.signal);
+        const query = input.query.toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (!query) throw new Error('Provide a district name in Latin script.');
+        const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const aliases: Record<string, string> = { chittagong: 'chattogram', comilla: 'cumilla', barisal: 'barishal', jessore: 'jashore', bogura: 'bogra', nawabganj: 'chapainawabganj' };
+        const districtKey = aliases[normalize(input.query)] || normalize(input.query);
+        const exact = ALL_64_DISTRICTS.find((place) => normalize(place.name) === districtKey);
         try {
-          // Fetch the districts list from the content index
-          const data = (await fetchApi('/data/content-index.json')) as {
+          const index = await jsonRequest('/data/content-index.json', { headers: { Accept: 'application/json' } }, execution.signal) as {
             routes?: Array<{ path: string; title: string }>;
           };
-          const districts = (data.routes || []).filter(
-            (r) => r.path.startsWith('/districts/') && r.path !== '/districts'
-          );
-
-          // Fuzzy match against district names in the path
-          const matches = districts
-            .filter((r) => {
-              const name = r.path.replace('/districts/', '').replace(/-/g, ' ');
-              return name.includes(q) || r.title.toLowerCase().includes(q);
-            })
-            .slice(0, 5);
-
-          if (matches.length === 0) {
-            return {
-              found: false,
-              message: `No districts matching "${input.query}" were found. Try a different spelling.`,
-            };
-          }
-
-          // Navigate to the first match
-          const first = matches[0];
-          window.location.href = first.path;
-
-          return {
-            found: true,
-            district: first.title,
-            path: first.path,
-            url: `https://www.hazardnet.live${first.path}`,
-            message: `Navigating to ${first.title}.`,
-            otherMatches: matches.slice(1).map((m) => ({ name: m.title, path: m.path })),
-          };
-        } catch (err) {
-          return { error: `Failed to search districts: ${(err as Error).message}` };
-        }
+          const matches = (index.routes || []).filter((route) => /^\/districts\/[^/]+$/.test(route.path))
+            .filter((route) => exact ? route.title.startsWith(`${exact.name} district`)
+              : route.path.slice('/districts/'.length).includes(query) || route.title.toLowerCase().includes(String(input.query).toLowerCase()))
+            .sort((a, b) => Number(b.title.toLowerCase().startsWith(String(input.query).toLowerCase())) - Number(a.title.toLowerCase().startsWith(String(input.query).toLowerCase())))
+            .slice(0, 5).map((route) => ({ name: route.title.replace(' district hazard outlook: HazardNet', ''), path: route.path, url: new URL(route.path, window.location.origin).href }));
+          return { content: [{ type: 'text', text: JSON.stringify({ found: matches.length > 0, matches, disclaimer: SAFETY_NOTICE }) }], isError: false };
+        } finally { execution.dispose(); }
       },
     },
-    { signal: ac.signal }
-  );
-
-  // ──────────────────────────────────────────────────────────────────────
-  // Tool 2: get-forecast
-  // Retrieve the current hazard forecast for a district.
-  // ──────────────────────────────────────────────────────────────────────
-  ctx.registerTool(
     {
-      name: 'get-forecast',
-      title: 'Get Hazard Forecast',
-      description:
-        'Get the current continuous 15-day multi-hazard forecast for a Bangladesh district. Returns hazard class, ' +
-        'severity index, peak severe dates, confidence, and physics cross-check across the 15-day trajectory.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          district: {
-            type: 'string',
-            description: 'District name (e.g., "Dhaka", "Chattogram", "Rajshahi")',
-          },
-          hazard: {
-            type: 'string',
-            description:
-              'Optional hazard filter: flood, flash-flood, tropical-cyclone, drought, heat-wave, cold-wave, fire, severe-local-storm',
-          },
-        },
-        required: ['district'],
-      },
-      execute: async (input) => {
+      name: 'navigate-to-page', title: 'Open a HazardNet page',
+      description: 'Navigate this tab to a path published in HazardNet’s sitemap. External origins, API paths and unpublished paths are rejected. Call only when the visitor asks to open a page.',
+      inputSchema: { type: 'object', properties: { path: { type: 'string', minLength: 1, maxLength: 2048, description: 'A relative public page path, e.g. /alerts or /districts/dhaka.' } }, required: ['path'], additionalProperties: false },
+      annotations: { readOnlyHint: false, untrustedContentHint: true, consequentialHint: false },
+      execute: async (input, options) => {
+        const execution = executionSignal(session, options?.signal);
         try {
-          const data = (await fetchApi('/data/forecasts-latest.json')) as Record<string, unknown>;
-          return {
-            district: input.district,
-            hazardFilter: input.hazard || null,
-            forecast: data,
-            note: 'Full forecast data returned. Filter by district name and hazard class in the response.',
-          };
-        } catch (err) {
-          return { error: `Failed to retrieve forecast: ${(err as Error).message}` };
-        }
+          const target = await resolveSitePath(String(input.path ?? ''), execution.signal);
+          execution.signal.throwIfAborted();
+          webmcpNavigation.navigate(target.href);
+          return { content: [{ type: 'text', text: JSON.stringify({ navigationStarted: true, url: target.href }) }], isError: false };
+        } finally { execution.dispose(); }
       },
     },
-    { signal: ac.signal }
-  );
-
-  // ──────────────────────────────────────────────────────────────────────
-  // Tool 3: get-alerts
-  // Retrieve current published hazard alerts.
-  // ──────────────────────────────────────────────────────────────────────
-  ctx.registerTool(
-    {
-      name: 'get-alerts',
-      title: 'Get Hazard Alerts',
-      description:
-        'Get the current published hazard alerts for Bangladesh. Returns alert levels, ' +
-        'affected districts, drivers, and review status for each active alert.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          hazard: {
-            type: 'string',
-            description: 'Optional: filter by hazard class',
-          },
-          level: {
-            type: 'string',
-            description: 'Optional: filter by alert level (WATCH, WARNING, DANGER)',
-          },
-        },
-      },
-      execute: async (input) => {
-        try {
-          const data = (await fetchApi('/data/alerts-latest.json')) as Record<string, unknown>;
-          return {
-            hazardFilter: input.hazard || null,
-            levelFilter: input.level || null,
-            alerts: data,
-            source: 'https://www.hazardnet.live/alerts',
-          };
-        } catch (err) {
-          return { error: `Failed to retrieve alerts: ${(err as Error).message}` };
-        }
-      },
-    },
-    { signal: ac.signal }
-  );
-
-  // ──────────────────────────────────────────────────────────────────────
-  // Tool 4: navigate-to-page
-  // Navigate to a specific page on the HazardNet site.
-  // ──────────────────────────────────────────────────────────────────────
-  ctx.registerTool(
-    {
-      name: 'navigate-to-page',
-      title: 'Navigate to Page',
-      description:
-        'Navigate to a specific page on the HazardNet website. Available pages include: ' +
-        '/ (home), /alerts, /hazards, /districts, /advisories, /docs, /status, /about, ' +
-        '/blogs, /contact, /use-cases, /data-sources, /model-performance, /download.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          path: {
-            type: 'string',
-            description: 'The page path to navigate to (e.g., "/alerts", "/hazards", "/districts")',
-          },
-        },
-        required: ['path'],
-      },
-      execute: async (input) => {
-        const targetPath = String(input.path || '').trim();
-        if (!targetPath) return { error: 'Please provide a page path to navigate to.' };
-
-        // Normalize the path
-        const normalized = targetPath.startsWith('/') ? targetPath : `/${targetPath}`;
-
-        // Navigate
-        window.location.href = normalized;
-
-        return {
-          navigated: true,
-          path: normalized,
-          url: `https://www.hazardnet.live${normalized}`,
-          message: `Navigating to ${normalized}`,
-        };
-      },
-    },
-    { signal: ac.signal }
-  );
-
-  // ──────────────────────────────────────────────────────────────────────
-  // Tool 5: get-site-status
-  // Get the current status of HazardNet's data sources and artifacts.
-  // ──────────────────────────────────────────────────────────────────────
-  ctx.registerTool(
-    {
-      name: 'get-site-status',
-      title: 'Get Site Status',
-      description:
-        'Get the current operational status of HazardNet data sources. Returns freshness of ' +
-        'each artifact (forecasts, alerts, weather data) and whether they are within their SLO.',
-      inputSchema: {
-        type: 'object',
-        properties: {},
-      },
-      execute: async () => {
-        try {
-          const data = (await fetchApi('/data/freshness.json')) as Record<string, unknown>;
-          return {
-            status: data,
-            source: 'https://www.hazardnet.live/status',
-          };
-        } catch (err) {
-          return { error: `Failed to retrieve status: ${(err as Error).message}` };
-        }
-      },
-    },
-    { signal: ac.signal }
-  );
-
-  // ──────────────────────────────────────────────────────────────────────
-  // Tool 6: get-hazard-info
-  // Get methodology and information about a specific hazard class.
-  // ──────────────────────────────────────────────────────────────────────
-  ctx.registerTool(
-    {
-      name: 'get-hazard-info',
-      title: 'Get Hazard Information',
-      description:
-        'Get methodology, drivers, confidence semantics, and limits for a specific hazard class. ' +
-        'Available hazards: flood, flash-flood, tropical-cyclone, drought, heat-wave, cold-wave, fire, severe-local-storm.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          hazard: {
-            type: 'string',
-            description:
-              'Hazard class: flood, flash-flood, tropical-cyclone, drought, heat-wave, cold-wave, fire, or severe-local-storm',
-            enum: [
-              'flood',
-              'flash-flood',
-              'tropical-cyclone',
-              'drought',
-              'heat-wave',
-              'cold-wave',
-              'fire',
-              'severe-local-storm',
-            ],
-          },
-        },
-        required: ['hazard'],
-      },
-      execute: async (input) => {
-        const hazard = String(input.hazard || '').trim();
-        if (!hazard) return { error: 'Please provide a hazard class.' };
-
-        // Navigate to the hazard page
-        const hazardPath = `/hazards/${hazard}`;
-        window.location.href = hazardPath;
-
-        return {
-          hazard,
-          path: hazardPath,
-          url: `https://www.hazardnet.live${hazardPath}`,
-          message: `Navigating to the ${hazard} methodology page.`,
-        };
-      },
-    },
-    { signal: ac.signal }
-  );
-
-  if (typeof console !== 'undefined' && console.debug) {
-    console.debug('[webmcp] Registered 6 tools with Model Context API');
-  }
+  ];
 }
 
-// Auto-register on module load
-registerWebMCPTools();
+/** Idempotent installation; the returned disposer also removes lifecycle listeners. */
+export function registerWebMCPTools(): () => void {
+  if (activeCleanup) return activeCleanup;
+  const context = getModelContext();
+  if (!context) return () => {};
+  let session: AbortController | null = null;
+  let disposed = false;
+
+  const register = (tool: ModelContextTool, controller: AbortController) => {
+    try {
+      // Native registration is asynchronous in the current proposal. Catch
+      // duplicate-name rejections so a managed bridge winning a race is harmless.
+      Promise.resolve(context.registerTool(tool, { signal: controller.signal })).catch(() => {});
+    } catch { /* Experimental implementations may throw synchronously. */ }
+  };
+  const start = () => {
+    if (disposed || session) return;
+    const controller = new AbortController();
+    session = controller;
+    for (const tool of browserTools(controller)) register(tool, controller);
+    if (managedBridge()?.hasSitePack) return;
+    void (async () => {
+      try {
+        const result = await rpc('tools/list', {}, controller.signal) as { tools?: McpDescriptor[] };
+        if (controller.signal.aborted || !Array.isArray(result.tools)) return;
+        // getTools is optional in older experimental builds. It also prevents
+        // duplicates when the managed tag was inserted after this module began.
+        const existing = context.getTools ? await Promise.resolve(context.getTools()) : [];
+        const names = new Set(Array.isArray(existing) ? existing.map((tool) => (tool as McpDescriptor).name) : []);
+        for (const descriptor of result.tools) {
+          if (controller.signal.aborted) break;
+          if (!names.has(descriptor.name)) register(proxyTool(descriptor, controller), controller);
+        }
+      } catch { /* Offline or unsupported: the human page and its cached data still work. */ }
+    })();
+  };
+  const hide = () => { session?.abort(); session = null; };
+  const show = (event: PageTransitionEvent) => { if (event.persisted) start(); };
+  window.addEventListener('pagehide', hide);
+  window.addEventListener('pageshow', show);
+  start();
+  activeCleanup = () => {
+    disposed = true;
+    hide();
+    window.removeEventListener('pagehide', hide);
+    window.removeEventListener('pageshow', show);
+    activeCleanup = null;
+  };
+  return activeCleanup;
+}

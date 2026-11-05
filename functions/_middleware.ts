@@ -8,10 +8,10 @@
  * this imports `backend/security/httpHeaders.js` — the same export the parity test compares
  * against `_headers` — so the two surfaces cannot disagree.
  *
- * It runs only for routes matched by `frontend/public/_routes.json`, which includes
- * `/api/*` and nothing else. That file is what keeps static requests out of the Functions
- * runtime entirely: without it, a `functions/` directory makes Pages invoke a Function for
- * every request, and the "unlimited free static requests" tier becomes metered.
+ * It runs for routes matched by `frontend/public/_routes.json`: documents, `/api/*`
+ * and `/mcp`. Static asset directories are excluded there, so images, fonts and data
+ * files stay on the unmetered static path. Function responses need this middleware
+ * because `_headers` does not apply to them.
  */
 
 import { applySecurityHeaders } from '../backend/security/httpHeaders.js';

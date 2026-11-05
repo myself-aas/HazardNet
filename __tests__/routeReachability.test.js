@@ -110,6 +110,25 @@ describe('route register', () => {
   });
 });
 
+describe('non-API agent routes', () => {
+  test('/mcp is a real Pages Function, registered and reachable through _routes.json', () => {
+    const route = register.agentRoutes.find((entry) => entry.path === '/mcp');
+    expect(route).toBeDefined();
+    expect(route.file).toBe('functions/mcp.ts');
+    expect(fs.existsSync(path.join(ROOT, route.file))).toBe(true);
+    expect(route.status).toBe('pending-publication');
+    expect(route.firstLiveCall).toBeNull();
+    expect(route.verification).toMatch(/Not yet called on a deployed site/);
+    const source = fs.readFileSync(path.join(ROOT, route.valueAssertion), 'utf8');
+    expect(source).toContain("'/mcp'");
+    expect(source).toMatch(/\.toBe\(/);
+    const routes = JSON.parse(fs.readFileSync(path.join(ROOT, 'frontend/public/_routes.json'), 'utf8'));
+    expect(routes.include).toContain('/*');
+    expect(routes.exclude).not.toContain('/mcp');
+    expect(routes.exclude).not.toContain('/mcp/*');
+  });
+});
+
 describe('reachability invariant', () => {
   test('a route called from frontend/src exists in functions/api/ or has a dated disposition', () => {
     const functionPaths = functionRoutePaths();

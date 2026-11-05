@@ -20,7 +20,7 @@
       "type": "skill-md",
       "description": "Publish an API catalog per RFC 9727 for automated API discovery.",
       "url": "/.well-known/agent-skills/api-catalog/SKILL.md",
-      "digest": "sha256:e7e9d56e83d8daf4816072425c20b712a5484780cd16048bb0dad6b371d82f6f"
+      "digest": "sha256:e606a49fe4966ad7160c5a6fc0a004b60cd22475c7e2ae15e8892d4a884b91f2"
     },
     {
       "name": "auth-md",
