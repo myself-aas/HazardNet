@@ -5,7 +5,7 @@
 #
 # WHY THIS FILE EXISTS
 #   This is the ONLY declaration read for static assets. Function responses are not
-#   covered by `_headers` (documented Cloudflare behaviour): `/api/*` and `/mcp` get their headers
+#   covered by `_headers` (documented Cloudflare behaviour): `/api/*`, `/mcp` and PRM get their headers
 #   from functions/_middleware.ts, which applies the same list from
 #   backend/security/httpHeaders.js. helmet in backend/server.js carries the policy for
 #   the self-hosted container; it is kept correct but is not read by Cloudflare Pages
@@ -40,6 +40,13 @@
   Cross-Origin-Opener-Policy: same-origin-allow-popups
   Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-QZKLQT1GBKDcqB1F1KXYUlwpbx51AmTDaGZhplnAaFU=' https://www.gstatic.com https://apis.google.com https://www.googletagmanager.com https://www.google.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://www.gstatic.com; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https: wss: https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://*.google.com https://*.gstatic.com https://*.github.com https://api.github.com https://github.com; frame-src 'self' https: https://*.firebaseapp.com https://accounts.google.com https://github.com https://*.github.com; worker-src 'self' blob:; media-src 'self' blob:; manifest-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://*.firebaseapp.com https://accounts.google.com https://github.com https://*.github.com; upgrade-insecure-requests
   Link: <https://www.hazardnet.live/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json", <https://www.hazardnet.live/api/openapi.yaml>; rel="service-desc"; type="application/yaml", <https://www.hazardnet.live/docs/data-and-api>; rel="service-doc"; type="text/html", <https://www.hazardnet.live/.well-known/oauth-protected-resource>; rel="describedby"; type="application/json", <https://www.hazardnet.live/.well-known/mcp/server-card.json>; rel="describedby"; type="application/mcp-server-card+json"
+
+# Static fallback for the RFC 9728 Pages Function (fail-open / local asset serving).
+# The Function sets these same response headers from the shared metadata module.
+/.well-known/oauth-protected-resource
+  Content-Type: application/json; charset=utf-8
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
 
 # Long-lived hashed build assets (matches the Firebase rule).
 /assets/*

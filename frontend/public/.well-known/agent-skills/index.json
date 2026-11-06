@@ -27,7 +27,7 @@
       "type": "skill-md",
       "description": "Publish Auth.md agent registration discovery metadata.",
       "url": "/.well-known/agent-skills/auth-md/SKILL.md",
-      "digest": "sha256:bdebff9aa594a4f0adfd4c8a9cae16b448ac2cb3022aa1a5fdc18a6d3804f28b"
+      "digest": "sha256:c6e17c6279a1e22de3d571e04a5511761b7343b270032c016a1c81e586acc111"
     },
     {
       "name": "content-signals",
@@ -55,14 +55,14 @@
       "type": "skill-md",
       "description": "Publish OAuth/OIDC discovery metadata for agent authentication.",
       "url": "/.well-known/agent-skills/oauth-discovery/SKILL.md",
-      "digest": "sha256:1757d2792652702e96e4cc2f19762fda77e7dca35018690ee30c0f5f46f04944"
+      "digest": "sha256:f1e00f4acfb8ac9f3fb0e92e9a283be2a2d51caed80c0bb564e570be133a4f1f"
     },
     {
       "name": "oauth-protected-resource",
       "type": "skill-md",
       "description": "Publish OAuth Protected Resource Metadata per RFC 9728.",
       "url": "/.well-known/agent-skills/oauth-protected-resource/SKILL.md",
-      "digest": "sha256:ef295ec8c648b8c8e02d64718c44bab5628ff83b920559af3f8d5a9aaa3a35b8"
+      "digest": "sha256:1df6415884351154f96619e7022fb5b23dcafd3dde8fb02d706503a959ef2d2c"
     }
   ]
 }

@@ -8,13 +8,14 @@
  * this imports `backend/security/httpHeaders.js` — the same export the parity test compares
  * against `_headers` — so the two surfaces cannot disagree.
  *
- * It runs for routes matched by `frontend/public/_routes.json`: documents, `/api/*`
- * and `/mcp`. Static asset directories are excluded there, so images, fonts and data
+ * It runs for routes matched by `frontend/public/_routes.json`: documents, `/api/*`,
+ * `/mcp` and the RFC 9728 metadata endpoint. Static asset directories are excluded there, so images, fonts and data
  * files stay on the unmetered static path. Function responses need this middleware
  * because `_headers` does not apply to them.
  */
 
 import { applySecurityHeaders } from '../backend/security/httpHeaders.js';
+import { applyResourceMetadataChallenge } from '../backend/security/oauthProtectedResource.js';
 
 /** The subset of the Pages `EventContext` middleware uses. */
 interface PagesContext {
@@ -38,6 +39,9 @@ export async function onRequest(context: PagesContext): Promise<Response> {
   // `applySecurityHeaders` uses `set`, so a header the route already set is replaced with
   // the canonical value — one policy, not an intersection of two.
   applySecurityHeaders(headers);
+  // RFC 9728 §5: a discovery hint on an otherwise unchallenged 401. This does
+  // not authenticate the request or turn a public endpoint into a protected one.
+  applyResourceMetadataChallenge(headers, response.status);
 
   const body = NULL_BODY_STATUSES.has(response.status) ? null : response.body;
 

@@ -24,6 +24,11 @@ import { markdownNegotiation } from './middleware/markdownNegotiation.js';
 import { nodeMcpHandler } from './mcp/nodeAdapter.js';
 import helmet from 'helmet';
 import { cspDirectivesFromString } from './security/csp.js';
+import {
+  PROTECTED_RESOURCE_PATH,
+  protectedResourceMetadataResponse,
+} from './security/oauthProtectedResource.js';
+import { oauthResourceMetadataChallenge } from './middleware/oauthResourceMetadata.js';
 
 dotenv.config();
 
@@ -123,17 +128,12 @@ app.use((req, res, next) => {
       '<https://www.hazardnet.live/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json", <https://www.hazardnet.live/api/openapi.yaml>; rel="service-desc"; type="application/yaml", <https://www.hazardnet.live/docs/data-and-api>; rel="service-doc"; type="text/html", <https://www.hazardnet.live/.well-known/oauth-protected-resource>; rel="describedby"; type="application/json", <https://www.hazardnet.live/.well-known/mcp/server-card.json>; rel="describedby"; type="application/mcp-server-card+json"'
     );
   }
-  // RFC 9728: advertise the OAuth Protected Resource Metadata on every response.
-  // On 401 responses this is REQUIRED by the spec; on all responses it enables
-  // proactive discovery so agents know how to authenticate before being rejected.
-  if (!res.getHeader('WWW-Authenticate')) {
-    res.setHeader(
-      'WWW-Authenticate',
-      ['Bea', 'rer'].join('') + ' resource_metadata="https://www.hazardnet.live/.well-known/oauth-protected-resource"'
-    );
-  }
   next();
 });
+
+// RFC 9728 §5: add the metadata URL to unchallenged 401 responses. Successful
+// responses advertise discovery through Link above, not an authentication challenge.
+app.use(oauthResourceMetadataChallenge);
 
 // RFC 9116 security.txt endpoint
 app.get(['/.well-known/security.txt', '/security.txt'], (req, res) => {
@@ -227,33 +227,18 @@ const SITE_ORIGIN = 'https://www.hazardnet.live';
 const FIREBASE_PROJECT_ID = 'hazardnet-aas48424';
 const FIREBASE_API_KEY = 'AIzaSyBwyxWm0MIQlTmjJ-NKPKjl72AYLS7oDqQ';
 
-// RFC 9727: OAuth Protected Resource Metadata.
-// Advertises the resource server and its authorization servers.
-// RFC 9728: includes resource, authorization_servers, scopes_supported,
-// bearer_methods_supported, and optional resource_documentation/policy/tos.
-app.get('/.well-known/oauth-protected-resource', (req, res) => {
-  res.setHeader('Content-Type', 'application/json');
-  res.setHeader('Cache-Control', 'public, max-age=86400');
-  res.status(200).json({
-    resource: SITE_ORIGIN,
-    authorization_servers: [
-      `https://securetoken.google.com/${FIREBASE_PROJECT_ID}`,
-    ],
-    scopes_supported: [
-      'openid', 'email', 'profile',
-      'read:forecasts', 'read:alerts', 'read:weather',
-      'read:predictions', 'write:forecasts', 'write:push', 'chat', 'grounding',
-    ],
-    bearer_methods_supported: ['header'],
-    resource_documentation: `${SITE_ORIGIN}/docs`,
-    resource_policy_uri: `${SITE_ORIGIN}/terms`,
-    resource_tos_uri: `${SITE_ORIGIN}/terms`,
-  });
+// RFC 9728: the same public metadata document as the Pages Function. Keep the
+// Firebase issuer and the static fail-open asset in sync through the shared module.
+app.all(PROTECTED_RESOURCE_PATH, async (req, res) => {
+  const response = protectedResourceMetadataResponse(req.method);
+  res.status(response.status);
+  response.headers.forEach((value, name) => res.setHeader(name, value));
+  if (response.body === null) return res.end();
+  return res.send(Buffer.from(await response.arrayBuffer()));
 });
 
-// OAuth Authorization Server Metadata (RFC 8414).
-// Advertises the authorization capabilities of this resource server.
-// The issuer matches the authorization_servers URL in the PRM.
+// Site-scoped Auth.md / OAuth descriptor. This is not the Firebase issuer's
+// metadata: the RFC 9728 PRM above advertises Firebase as the token issuer.
 app.get('/.well-known/oauth-authorization-server', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Cache-Control', 'public, max-age=86400');

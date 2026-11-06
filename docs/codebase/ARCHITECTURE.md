@@ -305,9 +305,10 @@ trace it), and mount the same handler in the Express router.
 `helmet({frameguard: deny, hsts 2 y + preload, contentSecurityPolicy: {reportOnly: !cspEnforce,
 directives: cspDirectivesFromString()}})` → `requestId` → `corsMiddleware()` →
 `express.json({limit:'10mb'})` → the manual header middleware (including the RFC 9727
-`Link: rel="api-catalog"` and `WWW-Authenticate: Bearer resource_metadata=…` advertised on
-**every** response) → `.well-known` endpoints → routers → `/health` → `/metrics` →
-the SPA catch-all `app.get('*')`.
+`Link: rel="api-catalog"` on every response) → the RFC 9728 final-header middleware
+(`WWW-Authenticate: Bearer resource_metadata=…` on otherwise unchallenged 401s) →
+`.well-known` endpoints → routers → `/health` → `/metrics` → the SPA catch-all
+`app.get('*')`.
 
 `cspEnforce` resolves as: `CSP_ENFORCE` if defined, else `NODE_ENV === 'production' ||
 DEPLOY_ENV === 'production'` (enforcing in production, Report-Only in development).

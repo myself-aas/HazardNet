@@ -127,6 +127,27 @@ describe('non-API agent routes', () => {
     expect(routes.exclude).not.toContain('/mcp');
     expect(routes.exclude).not.toContain('/mcp/*');
   });
+
+  test('RFC 9728 PRM is a registered Pages Function, not a static-only discovery claim', () => {
+    const pathname = '/.well-known/oauth-protected-resource';
+    const route = register.agentRoutes.find((entry) => entry.path === pathname);
+    expect(route).toBeDefined();
+    expect(route.file).toBe('functions/.well-known/oauth-protected-resource.ts');
+    expect(route.methods).toEqual(['GET', 'HEAD']);
+    expect(fs.existsSync(path.join(ROOT, route.file))).toBe(true);
+    expect(route.status).toBe('pending-publication');
+    expect(route.firstLiveCall).toBeNull();
+    expect(route.verification).toMatch(/Not yet called on a deployed site/);
+    const source = fs.readFileSync(path.join(ROOT, route.valueAssertion), 'utf8');
+    expect(source).toContain(pathname);
+    expect(source).toMatch(/\.toBe\(/);
+
+    // _routes.json wildcards span path segments; exclude wins over include.
+    const matches = (rule) => new RegExp(`^${rule.split('*').map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.*')}$`).test(pathname);
+    const routes = JSON.parse(fs.readFileSync(path.join(ROOT, 'frontend/public/_routes.json'), 'utf8'));
+    expect(routes.include.some(matches)).toBe(true);
+    expect(routes.exclude.some(matches)).toBe(false);
+  });
 });
 
 describe('reachability invariant', () => {

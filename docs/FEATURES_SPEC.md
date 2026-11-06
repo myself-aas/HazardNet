@@ -1306,7 +1306,7 @@ intervention.
 | **MCP Server Card** | `/.well-known/mcp/server-card.json` | Stateless `/mcp` JSON-RPC endpoint (8 read-only tools) |
 | **WebMCP** | Client-side (`webmcp.ts`) + `/mcp` | 8 discovered proxies + 2 browser-only tools; managed-bridge coexistence |
 | **RFC 9727** | `/.well-known/api-catalog` | API catalog (10 entries) |
-| **RFC 9728** | `/.well-known/oauth-protected-resource` | OAuth Protected Resource Metadata |
+| **RFC 9728** | `/.well-known/oauth-protected-resource` | Firebase-issuer PRM from a Pages Function, with an identical static fallback |
 | **OIDC Discovery** | `/.well-known/openid-configuration` | OpenID Connect Discovery 1.0 |
 | **RFC 8414** | `/.well-known/oauth-authorization-server` | OAuth Authorization Server Metadata |
 | **Auth.md** | `/auth.md` | Agent registration & auth methods |
@@ -1315,6 +1315,12 @@ intervention.
 | **Content Signals** | `robots.txt` | `ai-train=no`, `ai-input=no`, `search=yes` |
 | **Web Bot Auth** | `/.well-known/http-message-signatures-directory` | Ed25519 JWKS for bot request verification |
 | **Markdown for Agents** | `Accept: text/markdown` | 108 pre-generated markdown files |
+
+The RFC 9728 resource identifier is `https://www.hazardnet.live`; the only advertised
+authorization server is the existing Firebase OIDC issuer. A Pages Function serves the PRM,
+with an identical static fail-open fallback and Express twin. Otherwise unchallenged 401s carry
+the `resource_metadata` discovery hint. Cloudflare Access is not configured; the owner deferred
+that migration (Action 26). Publication does not change token, role or API-key enforcement.
 
 ### 20.3 MCP Tools (8)
 

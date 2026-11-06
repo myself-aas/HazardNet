@@ -10,8 +10,10 @@ HazardNet uses Firebase Authentication for user identity and an API key for serv
 ## Authorization Server
 
 - **Issuer:** `https://securetoken.google.com/hazardnet-aas48424`
-- **Authorization Server Metadata:** `https://www.hazardnet.live/.well-known/oauth-authorization-server`
 - **Provider:** Firebase Authentication (Google)
+- **Registration and token flow:** the Firebase steps below and the site-hosted OIDC-shaped convenience document at `https://www.hazardnet.live/.well-known/openid-configuration`
+
+The PRM lists only the Firebase issuer. `https://www.hazardnet.live/.well-known/oauth-authorization-server` is a site-scoped Auth.md/OAuth descriptor, not metadata operated by the Firebase issuer. Cloudflare Access is not configured; publishing PRM does not enable it or change token validation.
 
 ## Authentication Methods
 

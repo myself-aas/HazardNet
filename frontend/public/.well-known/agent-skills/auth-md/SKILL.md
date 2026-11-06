@@ -12,8 +12,7 @@ Publish Auth.md support for agent registration.
 - Serve `/auth.md` from the service root as Markdown with an H1 heading that contains `auth.md`
 - Prefer publishing OAuth Protected Resource Metadata at `/.well-known/oauth-protected-resource`
 - Include `resource`, `authorization_servers`, `scopes_supported`, and `bearer_methods_supported` with `header` in the PRM document
-- Publish OAuth Authorization Server metadata at `/.well-known/oauth-authorization-server`
-- Include a valid `issuer` in Authorization Server metadata and ensure it matches the issuer advertised in PRM
+- Keep PRM issuer identifiers aligned with the tokens the resource accepts; a site-scoped Auth.md descriptor is not automatically an authorization server
 - Add an `agent_auth` block with `skill`, `register_uri`, and at least one complete registration method
 
 ## Implementation
@@ -21,8 +20,8 @@ Publish Auth.md support for agent registration.
 This site publishes:
 
 - **`/auth.md`** — Auth.md document with `# auth.md` H1, auth methods (Firebase ID token, API key, anonymous), scopes, registration flow, and `agent_auth` block
-- **`/.well-known/oauth-protected-resource`** — PRM with resource, authorization_servers, scopes_supported, bearer_methods_supported
-- **`/.well-known/oauth-authorization-server`** — AS metadata with issuer matching PRM, identity types, flow metadata
+- **`/.well-known/oauth-protected-resource`** — RFC 9728 PRM naming `https://www.hazardnet.live` as the resource and the Firebase OIDC issuer as its only authorization server
+- **`/.well-known/oauth-authorization-server`** — site-scoped Auth.md / OAuth descriptor with identity types and flow metadata; it is not the Firebase issuer metadata and is not listed in the PRM
 
 ### Identity Types
 
@@ -35,7 +34,7 @@ This site publishes:
 POST https://isitagentready.com/api/scan
 Content-Type: application/json
 
-{"url": "https://YOUR-SITE.com"}
+{"url": "https://hazardnet.live"}
 ```
 
-Check that `checks.discovery.authMd.status` is `"pass"`.
+Check that `checks.discovery.authMd.status` is `"pass"`. Record the observed result after deployment.

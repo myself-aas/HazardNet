@@ -32,12 +32,6 @@ const root = process.cwd();
 const readJson = (rel) => JSON.parse(readFileSync(join(root, rel), 'utf8'));
 const readText = (rel) => readFileSync(join(root, rel), 'utf8');
 
-const headerMap = (config, source = '**') => {
-  const entry = (config.headers || []).find((h) => h.source === source);
-  if (!entry) return {};
-  return Object.fromEntries(entry.headers.map(({ key, value }) => [key, value]));
-};
-
 /**
  * Parse a Cloudflare `_headers` file into `matcher -> { header: value }`, ignoring `#`
  * comments and blank lines. Parsed rather than eyeballed because a header file Cloudflare
@@ -214,7 +208,7 @@ describe('security header parity', () => {
      10 ms CPU ceiling in front of every image. `exclude` takes priority over `include`, so a
      `exclude: ["/*"]` would disable the Functions entirely; that inversion is the mistake to
      avoid, and it is asserted rather than left to a comment. */
-  describe('Function routes include documents, API and MCP', () => {
+  describe('Function routes include documents, API, MCP and RFC 9728 PRM', () => {
     const routes = readJson('frontend/public/_routes.json');
 
     it('invokes the Markdown/document Function while preserving API routes', () => {
@@ -271,7 +265,7 @@ describe('security header parity', () => {
       // `allow` header and body cap rather than Pages' default 405. Widened 2026-10-27 after
       // it rejected two legitimate routes; the assertion's purpose is unchanged, since a
       // helper module would export neither.
-      expect(file.replace(/^functions\//, '')).toMatch(/^(\[\[path\]\]\.ts|mcp\.ts|api\/)/);
+      expect(file.replace(/^functions\//, '')).toMatch(/^(\[\[path\]\]\.ts|mcp\.ts|\.well-known\/oauth-protected-resource\.ts|api\/)/);
       expect(readText(file)).toMatch(/export (async )?function onRequest([A-Z][a-z]*)?\b/);
     }
   });

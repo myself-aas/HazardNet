@@ -366,6 +366,16 @@ remains the notebook's, not the pipeline's.
 | **Verify** | The canonical HTML contains `/.webmcp/bridge.js`; `tools/list` returns the eight descriptors; a Dhaka tool call returns real published values with the safety boundary; BrowserRun discovers and calls the tools. Record the deployment ID and observed result before closing. |
 | **Closed by** | — |
 
+## Action 26 · Deploy and verify RFC 9728 metadata; Access migration deferred (opened 2026-11-06)
+
+| | |
+|---|---|
+| **Status** | Open — the Pages Function, Express twin, static fallback and local tests are in this branch; no production deployment or external scanner pass has been observed. |
+| **Why** | The live endpoint already existed as a static Firebase-issuer document. This branch moves the canonical response onto the existing Pages Workers runtime and makes the 401 discovery hint consistent. The owner explicitly chose to keep Firebase for now; Cloudflare Access is not provisioned and no team issuer may be invented. |
+| **Do** | After the normal Pages deploy, follow `docs/ops/oauth-protected-resource.md`: verify the apex redirect and canonical JSON, then run the `isitagentready.com` POST scan. Keep runtime fail open and the static fallback identical. If Access is chosen later, provision the application first, record its real issuer, and change token validation and PRM together under a reviewed decision. |
+| **Verify** | Canonical PRM returns 200 `application/json` with `resource=https://www.hazardnet.live` and only the Firebase issuer; `checks.discovery.oauthProtectedResource.status` from the requested POST scan is `pass`. Record the deployment ID, date and observed output before closing. |
+| **Closed by** | — |
+
 ## § Cost constraints
 
 **Effective 2026-10-26. Free tier only.** No paid dependency — a service, a plan upgrade, a second

@@ -1,6 +1,6 @@
 {
   "schema": "hazardnet-route-register/v1",
-  "updated": "2026-11-05",
+  "updated": "2026-11-06",
   "what_this_is": "Phase 1's route table and disposition list. `__tests__/routeReachability.test.js` fails if a route called from frontend/src is neither a file under functions/api/ nor listed here with a dated disposition. A dated disposition is a decision, not a TODO: it names the runtime property that keeps the route unhosted and the command that would disprove it. Non-API agent endpoints are listed separately in agentRoutes so the /api cutover history stays intact.",
   "cutover": {
     "date": "2026-10-26",
@@ -254,6 +254,20 @@
       "firstLiveCall": null,
       "verification": "Not yet called on a deployed site. Protocol, real artifact values, Pages adapter and browser registration are asserted locally in __tests__/webmcpServer.test.js and frontend/src/lib/__tests__/webmcp.test.js. Owner activation and live verification: docs/ops/webmcp.md.",
       "valueAssertion": "__tests__/webmcpServer.test.js",
+      "status": "pending-publication"
+    },
+    {
+      "path": "/.well-known/oauth-protected-resource",
+      "methods": [
+        "GET",
+        "HEAD"
+      ],
+      "file": "functions/.well-known/oauth-protected-resource.ts",
+      "nodeTwin": "backend/server.js",
+      "calledByFrontend": false,
+      "firstLiveCall": null,
+      "verification": "Not yet called on a deployed site as a Pages Function. The identical static fallback was observed live with the Firebase issuer before this port; the Function, shared document, routing exclusion and 401 challenge are asserted locally in __tests__/oauthProtectedResource.test.js. Owner deployment and external scanner verification: docs/ops/oauth-protected-resource.md and Action 26.",
+      "valueAssertion": "__tests__/oauthProtectedResource.test.js",
       "status": "pending-publication"
     }
   ],
