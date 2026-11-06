@@ -21,8 +21,14 @@ import { predictLimiter, apiLimiter, alertLimiter } from './middleware/rateLimit
 import { requestId } from './middleware/requestId.js';
 import { attachFirebaseAuthUser, dynamicAiLimiter } from './middleware/firebaseAuth.js';
 import { markdownNegotiation } from './middleware/markdownNegotiation.js';
+import { nodeMcpHandler } from './mcp/nodeAdapter.js';
 import helmet from 'helmet';
 import { cspDirectivesFromString } from './security/csp.js';
+import {
+  PROTECTED_RESOURCE_PATH,
+  protectedResourceMetadataResponse,
+} from './security/oauthProtectedResource.js';
+import { oauthResourceMetadataChallenge } from './middleware/oauthResourceMetadata.js';
 
 dotenv.config();
 
@@ -100,6 +106,11 @@ app.use(requestId);
 // with FRONTEND_ORIGIN unset in a production runtime, cross-origin browser
 // requests are rejected instead of reflected.
 app.use(corsMiddleware());
+
+// Public, stateless MCP for browser agents. Mount before the 10 MiB global
+// JSON parser: /mcp owns a 16 KiB streaming cap and speaks JSON-RPC errors.
+app.all('/mcp', apiLimiter, nodeMcpHandler());
+
 app.use(express.json({ limit: '10mb' }));
 
 // Basic Security Headers Middleware
@@ -114,20 +125,15 @@ app.use((req, res, next) => {
   if (!res.getHeader('Link')) {
     res.setHeader(
       'Link',
-      '<https://www.hazardnet.live/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json", <https://www.hazardnet.live/api/openapi.yaml>; rel="service-desc"; type="application/yaml", <https://www.hazardnet.live/docs/data-and-api>; rel="service-doc"; type="text/html", <https://www.hazardnet.live/.well-known/oauth-protected-resource>; rel="describedby"; type="application/json"'
-    );
-  }
-  // RFC 9728: advertise the OAuth Protected Resource Metadata on every response.
-  // On 401 responses this is REQUIRED by the spec; on all responses it enables
-  // proactive discovery so agents know how to authenticate before being rejected.
-  if (!res.getHeader('WWW-Authenticate')) {
-    res.setHeader(
-      'WWW-Authenticate',
-      ['Bea', 'rer'].join('') + ' resource_metadata="https://www.hazardnet.live/.well-known/oauth-protected-resource"'
+      '<https://www.hazardnet.live/.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json", <https://www.hazardnet.live/api/openapi.yaml>; rel="service-desc"; type="application/yaml", <https://www.hazardnet.live/docs/data-and-api>; rel="service-doc"; type="text/html", <https://www.hazardnet.live/.well-known/oauth-protected-resource>; rel="describedby"; type="application/json", <https://www.hazardnet.live/.well-known/mcp/server-card.json>; rel="describedby"; type="application/mcp-server-card+json"'
     );
   }
   next();
 });
+
+// RFC 9728 §5: add the metadata URL to unchallenged 401 responses. Successful
+// responses advertise discovery through Link above, not an authentication challenge.
+app.use(oauthResourceMetadataChallenge);
 
 // RFC 9116 security.txt endpoint
 app.get(['/.well-known/security.txt', '/security.txt'], (req, res) => {
@@ -214,42 +220,25 @@ app.get('/.well-known/ai-catalog.json', (req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
-// RFC 9727 API catalog — machine-readable discovery of the site's APIs.
-// Served at /.well-known/api-catalog as application/linkset+json.
-// Each linkset entry carries an anchor (the API's base URL) and link
-// relations: service-desc (OpenAPI spec), service-doc (human docs),
-// and status (health endpoint).
+// RFC 9727 API catalog: serve the published linkset verbatim so Node and
+// Pages cannot advertise different endpoints. The MCP entry points at its
+// server card; REST entries keep their OpenAPI and documentation links.
 const SITE_ORIGIN = 'https://www.hazardnet.live';
 const FIREBASE_PROJECT_ID = 'hazardnet-aas48424';
 const FIREBASE_API_KEY = 'AIzaSyBwyxWm0MIQlTmjJ-NKPKjl72AYLS7oDqQ';
 
-// RFC 9727: OAuth Protected Resource Metadata.
-// Advertises the resource server and its authorization servers.
-// RFC 9728: includes resource, authorization_servers, scopes_supported,
-// bearer_methods_supported, and optional resource_documentation/policy/tos.
-app.get('/.well-known/oauth-protected-resource', (req, res) => {
-  res.setHeader('Content-Type', 'application/json');
-  res.setHeader('Cache-Control', 'public, max-age=86400');
-  res.status(200).json({
-    resource: SITE_ORIGIN,
-    authorization_servers: [
-      `https://securetoken.google.com/${FIREBASE_PROJECT_ID}`,
-    ],
-    scopes_supported: [
-      'openid', 'email', 'profile',
-      'read:forecasts', 'read:alerts', 'read:weather',
-      'read:predictions', 'write:forecasts', 'write:push', 'chat', 'grounding',
-    ],
-    bearer_methods_supported: ['header'],
-    resource_documentation: `${SITE_ORIGIN}/docs`,
-    resource_policy_uri: `${SITE_ORIGIN}/terms`,
-    resource_tos_uri: `${SITE_ORIGIN}/terms`,
-  });
+// RFC 9728: the same public metadata document as the Pages Function. Keep the
+// Firebase issuer and the static fail-open asset in sync through the shared module.
+app.all(PROTECTED_RESOURCE_PATH, async (req, res) => {
+  const response = protectedResourceMetadataResponse(req.method, `${req.protocol}://${req.get('host')}`);
+  res.status(response.status);
+  response.headers.forEach((value, name) => res.setHeader(name, value));
+  if (response.body === null) return res.end();
+  return res.send(Buffer.from(await response.arrayBuffer()));
 });
 
-// OAuth Authorization Server Metadata (RFC 8414).
-// Advertises the authorization capabilities of this resource server.
-// The issuer matches the authorization_servers URL in the PRM.
+// Site-scoped Auth.md / OAuth descriptor. This is not the Firebase issuer's
+// metadata: the RFC 9728 PRM above advertises Firebase as the token issuer.
 app.get('/.well-known/oauth-authorization-server', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Cache-Control', 'public, max-age=86400');
@@ -454,7 +443,7 @@ app.get('/.well-known/agent-skills/index.json', (req, res) => {
 
 // MCP Server Card — per SEP-1649/SEP-2127 for MCP server discovery.
 // Serves at /.well-known/mcp/server-card.json describing the server's
-// capabilities, tools, resources, and transport.
+// capabilities, tools, and transport.
 // https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2127
 app.get('/.well-known/mcp/server-card.json', (req, res) => {
   const cardPath = path.resolve(process.cwd(), 'frontend', 'public', '.well-known', 'mcp', 'server-card.json');
@@ -467,227 +456,11 @@ app.get('/.well-known/mcp/server-card.json', (req, res) => {
 });
 
 app.get('/.well-known/api-catalog', (req, res) => {
-  const catalog = {
-    linkset: [
-      {
-        anchor: `${SITE_ORIGIN}/api/v1/forecasts`,
-        'service-desc': [
-          {
-            href: `${SITE_ORIGIN}/api/openapi.yaml`,
-            type: 'application/yaml',
-          },
-        ],
-        'service-doc': [
-          {
-            href: `${SITE_ORIGIN}/docs/data-and-api`,
-            type: 'text/html',
-          },
-        ],
-        status: [
-          {
-            href: `${SITE_ORIGIN}/health`,
-            type: 'application/json',
-          },
-        ],
-      },
-      {
-        anchor: `${SITE_ORIGIN}/api/v1/alerts`,
-        'service-desc': [
-          {
-            href: `${SITE_ORIGIN}/api/openapi.yaml`,
-            type: 'application/yaml',
-          },
-        ],
-        'service-doc': [
-          {
-            href: `${SITE_ORIGIN}/docs/alerts-and-advisories`,
-            type: 'text/html',
-          },
-        ],
-        status: [
-          {
-            href: `${SITE_ORIGIN}/health`,
-            type: 'application/json',
-          },
-        ],
-      },
-      {
-        anchor: `${SITE_ORIGIN}/api/v1/weather`,
-        'service-desc': [
-          {
-            href: `${SITE_ORIGIN}/api/openapi.yaml`,
-            type: 'application/yaml',
-          },
-        ],
-        'service-doc': [
-          {
-            href: `${SITE_ORIGIN}/docs/data-and-api`,
-            type: 'text/html',
-          },
-        ],
-        status: [
-          {
-            href: `${SITE_ORIGIN}/health`,
-            type: 'application/json',
-          },
-        ],
-      },
-      {
-        anchor: `${SITE_ORIGIN}/api/v1/forecasts`,
-        'service-desc': [
-          {
-            href: `${SITE_ORIGIN}/api/openapi.yaml`,
-            type: 'application/yaml',
-          },
-        ],
-        'service-doc': [
-          {
-            href: `${SITE_ORIGIN}/docs/archive`,
-            type: 'text/html',
-          },
-        ],
-        status: [
-          {
-            href: `${SITE_ORIGIN}/health`,
-            type: 'application/json',
-          },
-        ],
-      },
-      {
-        anchor: `${SITE_ORIGIN}/api/chat`,
-        'service-desc': [
-          {
-            href: `${SITE_ORIGIN}/api/openapi.yaml`,
-            type: 'application/yaml',
-          },
-        ],
-        'service-doc': [
-          {
-            href: `${SITE_ORIGIN}/docs/data-and-api`,
-            type: 'text/html',
-          },
-        ],
-        status: [
-          {
-            href: `${SITE_ORIGIN}/health`,
-            type: 'application/json',
-          },
-        ],
-      },
-      {
-        anchor: `${SITE_ORIGIN}/api/grounding`,
-        'service-desc': [
-          {
-            href: `${SITE_ORIGIN}/api/openapi.yaml`,
-            type: 'application/yaml',
-          },
-        ],
-        'service-doc': [
-          {
-            href: `${SITE_ORIGIN}/docs/data-and-api`,
-            type: 'text/html',
-          },
-        ],
-        status: [
-          {
-            href: `${SITE_ORIGIN}/health`,
-            type: 'application/json',
-          },
-        ],
-      },
-      {
-        anchor: `${SITE_ORIGIN}/api/predict`,
-        'service-desc': [
-          {
-            href: `${SITE_ORIGIN}/api/openapi.yaml`,
-            type: 'application/yaml',
-          },
-        ],
-        'service-doc': [
-          {
-            href: `${SITE_ORIGIN}/docs/forecasts`,
-            type: 'text/html',
-          },
-        ],
-        status: [
-          {
-            href: `${SITE_ORIGIN}/health`,
-            type: 'application/json',
-          },
-        ],
-      },
-      {
-        anchor: `${SITE_ORIGIN}/api/push`,
-        'service-desc': [
-          {
-            href: `${SITE_ORIGIN}/api/openapi.yaml`,
-            type: 'application/yaml',
-          },
-        ],
-        'service-doc': [
-          {
-            href: `${SITE_ORIGIN}/docs/data-and-api`,
-            type: 'text/html',
-          },
-        ],
-        status: [
-          {
-            href: `${SITE_ORIGIN}/health`,
-            type: 'application/json',
-          },
-        ],
-      },
-      {
-        anchor: `${SITE_ORIGIN}/api/conversions`,
-        'service-desc': [
-          {
-            href: `${SITE_ORIGIN}/api/openapi.yaml`,
-            type: 'application/yaml',
-          },
-        ],
-        'service-doc': [
-          {
-            href: `${SITE_ORIGIN}/docs/data-and-api`,
-            type: 'text/html',
-          },
-        ],
-        status: [
-          {
-            href: `${SITE_ORIGIN}/health`,
-            type: 'application/json',
-          },
-        ],
-      },
-      {
-        anchor: `${SITE_ORIGIN}/api/live-voice`,
-        'service-desc': [
-          {
-            href: `${SITE_ORIGIN}/api/openapi.yaml`,
-            type: 'application/yaml',
-          },
-        ],
-        'service-doc': [
-          {
-            href: `${SITE_ORIGIN}/docs/data-and-api`,
-            type: 'text/html',
-          },
-        ],
-        status: [
-          {
-            href: `${SITE_ORIGIN}/health`,
-            type: 'application/json',
-          },
-        ],
-      },
-    ],
-  };
-
-  res.setHeader(
-    'Content-Type',
-    'application/linkset+json; profile="https://www.rfc-editor.org/info/rfc9727"'
-  );
+  const catalogPath = path.resolve(process.cwd(), 'frontend', 'public', '.well-known', 'api-catalog');
+  if (!fs.existsSync(catalogPath)) return res.status(404).json({ error: 'Not found' });
+  res.setHeader('Content-Type', 'application/linkset+json; profile="https://www.rfc-editor.org/info/rfc9727"');
   res.setHeader('Cache-Control', 'public, max-age=86400');
-  res.status(200).json(catalog);
+  res.status(200).sendFile(catalogPath);
 });
 
 // Health Check

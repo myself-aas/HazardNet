@@ -13,7 +13,10 @@ This document is the source of truth for "where does the site come from". If a c
 workflow or a doc disagrees with it, this document wins — and the disagreement is a bug.
 
 Last rewritten: **2026-10-26**, the day both hostnames moved to Pages, the Vercel
-configuration was deleted and the Firebase Hosting block was retired.
+configuration was deleted and the Firebase Hosting block was retired. WebMCP routing and
+owner activation were added on **2026-11-05**; see `docs/ops/webmcp.md`. RFC 9728 metadata
+routing and its deferred-Access decision were added on **2026-11-06**; see
+`docs/ops/oauth-protected-resource.md`.
 
 Two columns of truth run through it:
 
@@ -74,7 +77,7 @@ without the policy:
 |---|---|---|
 | `_headers` | the full security policy (CSP, HSTS, `nosniff`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, COOP) plus the cache rules for `/assets/*`, `/serviceWorker.js` and `/data/*` | `__tests__/securityHeadersParity.test.js` — parsed, exact values, one line per header, ≤ 2,000 chars per line, ≤ 100 lines |
 | `_redirects` | `/documentation → /docs 301` and **nothing else** | same suite, plus `__tests__/securityTxt.test.js` |
-| `_routes.json` | which requests are Function invocations: `/api/*`, and nothing else | same suite — include is exactly `/api/*`, `exclude` never contains `/*`, ≤ 100 rules of ≤ 100 chars |
+| `_routes.json` | which requests are Function invocations: documents, `/api/*`, `/mcp` and `/.well-known/oauth-protected-resource`; other static asset directories and published well-known files are excluded | same suite plus `__tests__/oauthProtectedResource.test.js` — include contains `/*`, PRM is not excluded, every other published well-known asset is excluded, ≤ 100 rules of ≤ 100 chars |
 | `404.html` | the noindex shell the prerenderer emits | `__tests__/seoFoundations.test.js` |
 
 **Deliberately absent: `/* /index.html 200`.** The prerenderer writes a real HTML file per
@@ -90,18 +93,18 @@ defence-in-depth and are the opposite: `/data/*.json` is the site's primary read
 that exists. Absent an asset, the request already lands on `404.html`. The invariant is
 asserted in the test suite instead of encoded as a rule.
 
-**`functions/`, and the one file that keeps it from swallowing the site.** Two read-only
-endpoints live on the edge from 2026-10-26 (`functions/api/v1/forecasts/{bulk,metadata}.ts`,
-Action 21). The moment a `functions/` directory exists, Pages invokes a Function for **every**
-request unless `_routes.json` says otherwise — which would put a 10 ms CPU ceiling and a
-100k/day meter in front of every image, font and data file, and take the "unlimited static
-requests" tier away. So `_routes.json` includes `/api/*` and nothing else, `exclude` is empty
-(`exclude` takes priority over `include`, so `exclude: ["/*"]` would disable the Functions
-entirely — the opposite of what it looks like), and the parity suite asserts both facts.
+**`functions/`, and the file that keeps static assets unmetered.** Pages invokes Functions
+for routes matched by `_routes.json`. The current file includes `/*` so prerendered documents
+can negotiate Markdown and `/api/*`, `/mcp` plus the RFC 9728 PRM reach their handlers; it
+excludes `/assets/*`, `/data/*`, font/image extensions, the other published `.well-known`
+files and other static paths. Exclusion takes priority over inclusion. The parity suite asserts
+that `/mcp` and PRM stay reachable while static directories stay excluded. Adding a new Function
+without checking this file is how a route becomes a latent 404/405; `docs/ops/route-register.json`
+records the non-API agent routes separately.
 
 Two consequences worth knowing before you touch this:
 
-- **`_headers` does not apply to Function responses.** The seven headers on `/api/*` come from
+- **`_headers` does not apply to Function responses.** The canonical headers on `/api/*`, `/mcp` and PRM come from
   `functions/_middleware.ts`, which imports `backend/security/httpHeaders.js` — the same export
   the parity test compares against `_headers`. Never add a header to one without the other; the
   suite fails if you do.
@@ -109,8 +112,11 @@ Two consequences worth knowing before you touch this:
   that exhausts the Function allowance still serves the static site (and the client's snapshot
   fallback) instead of an error page.
 
-Everything else under `/api/**` still answers 404 for GET and 405 for other methods — see §7 for what that means and Action 21
-for the queue.
+Unported `/api/**` paths still answer 404/405 from the asset fallback; the route register,
+not this dated sentence, is the current list. `/mcp` is implemented but pending publication
+and owner activation under Action 25. The RFC 9728 Pages Function is implemented but pending
+publication and external scanner verification under Action 26; its identical static fallback
+keeps the metadata available when the runtime fails open.
 
 ## 4. Deploying
 
@@ -168,9 +174,11 @@ npx wrangler pages functions build --outdir /tmp/fnbuild   # "Compiled Worker su
 ```
 
 Verified on 2026-10-26 with this tree: a single 24.6 KB bundle containing both routes, the
-middleware and the canonical header strings. No `wrangler.toml` and no login are needed for a
-build — it is esbuild plus the Pages router, and it is the only local check that exercises the
-cross-directory imports (`functions/**` → `backend/security/httpHeaders.js`,
+middleware and the canonical header strings. Re-verified on 2026-11-06 with Wrangler 4.158.0:
+the compiled router contains `/.well-known/oauth-protected-resource` alongside `/mcp` and the
+API routes. No `wrangler.toml` and no login are needed for a build — it is esbuild plus the
+Pages router, and it is the only local check that exercises the cross-directory imports
+(`functions/**` → `backend/security/httpHeaders.js`, `backend/security/oauthProtectedResource.js`,
 `backend/utils/forecast*.js`) the way the deployment does.
 
 ### Manual / fallback deploy
@@ -191,6 +199,7 @@ curl -sSI https://hazardnet.live/                    # 301 → https://www.hazar
 curl -sSI https://www.hazardnet.live/district/dhaka  # 200 text/html, prerendered body
 curl -sSI https://www.hazardnet.live/no-such-path    # 404 (not 200 + homepage)
 curl -sSI https://www.hazardnet.live/api/v1/alerts   # verify Pages Function route, not a static 404
+curl -sS -D - https://www.hazardnet.live/.well-known/oauth-protected-resource # 200 JSON PRM; Action 26
 curl -sS 'https://www.hazardnet.live/api/v1/advisories/timeline?district=Kurigram&days=7' # expect 503 until an approved daily file is deployed; not live-verified
 curl -s  https://www.hazardnet.live/data/freshness.json | head -c 400   # built_at advances
 ```

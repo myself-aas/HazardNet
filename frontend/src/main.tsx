@@ -15,10 +15,10 @@ applyBandwidthAttribute();
 // one. Off by default — see frontend/src/lib/analytics.ts.
 initAnalytics();
 
-// WebMCP: expose HazardNet tools to AI agents via the browser.
-// Runs before the first render so tools are available to browser agents
-// as soon as the page is interactive.
-registerWebMCPTools();
+// WebMCP is progressive enhancement: unsupported browsers do no extra fetches.
+// The registration is explicitly owned here (not repeated at module import).
+const disposeWebMCP = registerWebMCPTools();
+if (import.meta.hot) import.meta.hot.dispose(disposeWebMCP);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

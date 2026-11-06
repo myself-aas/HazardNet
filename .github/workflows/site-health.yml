@@ -30,6 +30,15 @@ on:
         options:
           - healthy
           - broken
+      # RFC 9728 acceptance check (docs/ops/oauth-protected-resource.md, Action 26).
+      # `scan_only` runs just the agent-readiness job: the external scanner POST is a
+      # verification of the published metadata, not a site-health measurement, and it
+      # must not publish a probe-record commit on its own.
+      scan_only:
+        description: 'Run only the agent-readiness (RFC 9728) scan against site_url; skip the probe job and its record commit.'
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: site-health-${{ github.ref }}
@@ -72,6 +81,9 @@ env:
 
 jobs:
   probe:
+    # A scan-only dispatch verifies the published RFC 9728 metadata and nothing else.
+    # Scheduled runs have no inputs, so `inputs.scan_only` is null and the probe runs.
+    if: inputs.scan_only != true
     runs-on: ubuntu-latest
     permissions:
       # `write` for exactly one step: publishing the machine-readable probe result
@@ -1114,3 +1126,88 @@ jobs:
         run: |
           echo "::error::One or more site-health probes failed. See the aggregate check above, data/site-health/latest.json and the uploaded artifact."
           exit 1
+
+  # RFC 9728 acceptance check — the scanner's verdict on the published metadata.
+  #
+  # The requirement is not "we serve a document" but
+  # `checks.discovery.oauthProtectedResource.status === "pass"` from
+  # POST https://isitagentready.com/api/scan. The build sandbox cannot reach that
+  # host, so the POST runs here, on a runner, against the deployed site.
+  #
+  # Dispatch-only and read-only: it never writes a record, never commits, and never
+  # redeploys. `scripts/scan_agent_readiness.mjs` exits 0 only for a literal `pass`;
+  # a non-pass value fails, and an unreachable scanner or missing field is
+  # INCONCLUSIVE — reported as such, never as a pass.
+  agent-readiness:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 8
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+
+      - name: Scan the published protected-resource metadata
+        id: scan
+        shell: bash
+        env:
+          DISPATCH_SITE_URL: ${{ inputs.site_url }}
+        run: |
+          set -uo pipefail
+          # The value comes from the environment, never interpolated into the shell.
+          SCAN_URL="${DISPATCH_SITE_URL:-https://hazardnet.live}"
+          echo "scanning ${SCAN_URL}"
+          # Tested in an `if` so `bash -e` cannot kill the step before the exit code
+          # is recorded — the same defect the runtime-paths step above documents.
+          if node scripts/scan_agent_readiness.mjs \
+            --url "${SCAN_URL}" \
+            --out /tmp/agent-readiness.json \
+            --summary /tmp/agent-readiness-summary.md; then
+            echo "exit_code=0" >> "$GITHUB_OUTPUT"
+          else
+            echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Summarize the scanner verdict
+        if: always()
+        shell: bash
+        run: |
+          set -uo pipefail
+          if [ -f /tmp/agent-readiness-summary.md ]; then
+            cat /tmp/agent-readiness-summary.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "### Agent readiness — no summary was produced" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload the raw scanner response
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: agent-readiness-result
+          path: |
+            /tmp/agent-readiness.json
+            /tmp/agent-readiness-summary.md
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Enforce the verdict
+        if: always()
+        shell: bash
+        env:
+          SCAN_EXIT: ${{ steps.scan.outputs.exit_code }}
+        run: |
+          set -uo pipefail
+          case "${SCAN_EXIT:-}" in
+            0) echo "::notice::checks.discovery.oauthProtectedResource.status is pass." ;;
+            1) echo "::error::The scanner did not return pass for checks.discovery.oauthProtectedResource.status. See the summary and the uploaded response."; exit 1 ;;
+            *) echo "::error::INCONCLUSIVE — the scanner did not return the check field (transport or shape failure). This is not a pass; re-run when the scanner is reachable."; exit 1 ;;
+          esac

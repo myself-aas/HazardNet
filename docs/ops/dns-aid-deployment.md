@@ -93,9 +93,9 @@ blocks it used to. What those held now lives where it is actually consumed:
 - **Discovery URLs** (OAuth protected resource, OpenID configuration, authorization
   server, `security.txt`) — these are standard well-known paths that agents fetch by
   convention, so duplicating them in the catalog added a second copy to drift.
-- **WebMCP tools** — registered at runtime from `frontend/src/lib/webmcp.ts` with no
-  separate fetchable descriptor, so that entry publishes its tool list inline via ARD's
-  `data` member rather than a `url`.
+- **WebMCP tools** — registered at runtime from `frontend/src/lib/webmcp.ts`: eight
+  proxies discovered from `/mcp` plus two browser-only tools. The ARD entry publishes that
+  capability list inline via `data`; the MCP server card is a separate fetchable entry.
 
 `__tests__/aiCatalog.test.js` pins the ARD shape and asserts that every `url` in the
 catalog resolves to a real file under `frontend/public/`, so a renamed artifact fails CI

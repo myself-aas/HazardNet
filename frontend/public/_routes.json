@@ -1,5 +1,30 @@
 {
   "version": 1,
   "include": ["/*"],
-  "exclude": ["/assets/*", "/data/*", "/Models/*", "/.well-known/*", "/*.js", "/*.css", "/*.map", "/*.svg", "/*.png", "/*.jpg", "/*.jpeg", "/*.webp", "/*.ico", "/*.woff", "/*.woff2", "/*.ttf"]
+  "exclude": [
+    "/assets/*",
+    "/data/*",
+    "/Models/*",
+    "/.well-known/agent-card.json",
+    "/.well-known/agent-skills/*",
+    "/.well-known/ai-catalog.json",
+    "/.well-known/api-catalog",
+    "/.well-known/http-message-signatures-directory",
+    "/.well-known/mcp/*",
+    "/.well-known/oauth-authorization-server",
+    "/.well-known/openid-configuration",
+    "/.well-known/security.txt",
+    "/*.js",
+    "/*.css",
+    "/*.map",
+    "/*.svg",
+    "/*.png",
+    "/*.jpg",
+    "/*.jpeg",
+    "/*.webp",
+    "/*.ico",
+    "/*.woff",
+    "/*.woff2",
+    "/*.ttf"
+  ]
 }

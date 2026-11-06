@@ -19,8 +19,8 @@ Publish an API catalog for automated discovery per [RFC 9727](https://www.rfc-ed
 This site serves the API catalog at `/.well-known/api-catalog` with:
 
 - **Content-Type:** `application/linkset+json; profile="https://www.rfc-editor.org/info/rfc9727"`
-- **10 API entries** covering forecasts, alerts, weather, historical, chat, grounding, predict, push, conversions, and live-voice
-- Each entry includes `service-desc` (linking to OpenAPI spec), `service-doc` (linking to documentation pages), and `status` (linking to `/health`)
+- **10 API entries** covering forecasts, alerts, weather, MCP, chat, grounding, predict, push, conversions, and live-voice
+- REST entries include `service-desc` (OpenAPI), `service-doc` and `status`; the `/mcp` entry describes itself with the MCP server card and has no REST health claim
 - An OpenAPI 3.1.0 specification is published at `/api/openapi.yaml`
 - A `Link` header with `rel="api-catalog"` is added to all responses for discovery
 

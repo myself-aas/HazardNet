@@ -1,27 +1,312 @@
-import { readFileSync } from 'node:fs';
+/** @jest-environment node */
+import { createHash } from 'node:crypto';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import express from 'express';
+import request from 'supertest';
+import {
+  PROTECTED_RESOURCE_PATH,
+  PROTECTED_RESOURCE_METADATA,
+  PROTECTED_RESOURCE_METADATA_URL,
+  PROTECTED_RESOURCE_CACHE_CONTROL,
+  RESOURCE_METADATA_CHALLENGE,
+  FIREBASE_AUTH_ISSUER,
+  PROTECTED_RESOURCE_HOSTS,
+  resourceOriginFor,
+  protectedResourceMetadataFor,
+  resourceMetadataChallengeFor,
+  applyResourceMetadataChallenge,
+} from '../backend/security/oauthProtectedResource.js';
+import { oauthResourceMetadataChallenge } from '../backend/middleware/oauthResourceMetadata.js';
+import { onRequest as edgeMetadata } from '../functions/.well-known/oauth-protected-resource.ts';
+import { onRequest as edgeMiddleware } from '../functions/_middleware.ts';
 
 const root = process.cwd();
 const origin = 'https://www.hazardnet.live';
+const staticPath = join(root, 'frontend/public/.well-known/oauth-protected-resource');
+const published = JSON.parse(readFileSync(staticPath, 'utf8'));
+const app = require('../backend/server').default;
+const { alertLimiter } = require('../backend/middleware/rateLimit.js');
+const previousKey = process.env.BACKEND_API_KEY;
+
+beforeAll(() => {
+  // A dummy value makes the existing alert write guard return 401 rather than
+  // its fail-closed 503. No credential is sent to Firebase or any other service.
+  process.env.BACKEND_API_KEY = 'test-oauth-resource-key';
+});
+
+afterAll(() => {
+  if (previousKey === undefined) delete process.env.BACKEND_API_KEY;
+  else process.env.BACKEND_API_KEY = previousKey;
+});
+
+beforeEach(() => {
+  for (const key of ['::ffff:127.0.0.1', '127.0.0.1', '::1']) alertLimiter.resetKey(key);
+});
+
+function edgeRequest(method = 'GET') {
+  return edgeMetadata({ request: new Request(`${origin}${PROTECTED_RESOURCE_PATH}`, { method }) });
+}
+
+function routeMatches(rule, pathname) {
+  const escaped = rule.split('*').map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  return new RegExp(`^${escaped.join('.*')}$`).test(pathname);
+}
 
 describe('OAuth Protected Resource Metadata (RFC 9728)', () => {
-  const metadata = JSON.parse(
-    readFileSync(join(root, 'frontend/public/.well-known/oauth-protected-resource'), 'utf8')
-  );
-  const server = readFileSync(join(root, 'backend/server.js'), 'utf8');
-
-  it('publishes the required resource and authorization server metadata', () => {
-    expect(metadata.resource).toBe(origin);
-    expect(metadata.authorization_servers).toEqual([
-      'https://securetoken.google.com/hazardnet-aas48424',
-    ]);
-    expect(metadata.authorization_servers).not.toContain(origin);
-    expect(metadata.scopes_supported).toEqual(expect.arrayContaining(['openid', 'read:forecasts', 'chat']));
+  it('publishes one required-resource document with the owner-selected Firebase issuer', () => {
+    expect(PROTECTED_RESOURCE_PATH).toBe('/.well-known/oauth-protected-resource');
+    expect(published).toEqual(PROTECTED_RESOURCE_METADATA);
+    expect(published.resource).toBe(origin);
+    expect(new URL(published.resource).protocol).toBe('https:');
+    expect(new URL(published.resource).search).toBe('');
+    expect(new URL(published.resource).hash).toBe('');
+    expect(published.authorization_servers).toEqual([FIREBASE_AUTH_ISSUER]);
+    expect(published.authorization_servers).not.toContain(origin);
+    expect(published.scopes_supported).toEqual(expect.arrayContaining([
+      'openid', 'read:forecasts', 'read:historical', 'chat',
+    ]));
+    expect(new Set(published.scopes_supported).size).toBe(published.scopes_supported.length);
+    expect(published.bearer_methods_supported).toEqual(['header']);
   });
 
-  it('uses the RFC 9728 resource_metadata challenge parameter', () => {
-    expect(server).toContain('Bearer');
-    expect(server).toContain('resource_metadata=');
-    expect(server).toContain('/.well-known/oauth-protected-resource');
+  it('serves JSON from the Pages Function without requiring authentication', async () => {
+    const response = await edgeRequest();
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe('application/json; charset=utf-8');
+    expect(response.headers.get('cache-control')).toBe(PROTECTED_RESOURCE_CACHE_CONTROL);
+    expect(response.headers.get('access-control-allow-origin')).toBe('*');
+    expect(response.headers.get('www-authenticate')).toBeNull();
+    expect(await response.json()).toEqual(published);
+  });
+
+  it('supports HEAD and explicitly rejects writes on the edge', async () => {
+    const head = await edgeRequest('HEAD');
+    expect(head.status).toBe(200);
+    expect(head.body).toBeNull();
+    for (const method of ['POST', 'PUT', 'DELETE', 'OPTIONS']) {
+      const response = await edgeRequest(method);
+      expect(response.status).toBe(405);
+      expect(response.headers.get('allow')).toBe('GET, HEAD');
+      expect(await response.json()).toEqual({ error: 'method not allowed' });
+    }
+  });
+
+  it('serves the same document and method contract from Express', async () => {
+    const response = await request(app).get(PROTECTED_RESOURCE_PATH);
+    expect(response.status).toBe(200);
+    expect(response.headers['content-type']).toBe('application/json; charset=utf-8');
+    expect(response.headers['cache-control']).toBe(PROTECTED_RESOURCE_CACHE_CONTROL);
+    expect(response.headers['access-control-allow-origin']).toBe('*');
+    expect(response.headers['www-authenticate']).toBeUndefined();
+    expect(response.body).toEqual(published);
+
+    const head = await request(app).head(PROTECTED_RESOURCE_PATH);
+    expect(head.status).toBe(200);
+    expect(head.text).toBeUndefined();
+    const post = await request(app).post(PROTECTED_RESOURCE_PATH).send({});
+    expect(post.status).toBe(405);
+    expect(post.headers.allow).toBe('GET, HEAD');
+    expect(post.body).toEqual({ error: 'method not allowed' });
+  });
+
+  it('keeps the extensionless static fallback typed and cache-consistent', () => {
+    const text = readFileSync(join(root, 'frontend/public/_headers'), 'utf8');
+    const rule = text.split('\n').find((line) => line === PROTECTED_RESOURCE_PATH);
+    expect(rule).toBe(PROTECTED_RESOURCE_PATH);
+    const section = text.slice(text.indexOf(`\n${rule}\n`)).split(/\n(?=\S)/).slice(0, 2).join('\n');
+    expect(section).toContain('Content-Type: application/json; charset=utf-8');
+    expect(section).toContain(`Cache-Control: ${PROTECTED_RESOURCE_CACHE_CONTROL}`);
+    expect(section).toContain('Access-Control-Allow-Origin: *');
+  });
+
+  it('invokes the Function for PRM while keeping every other published well-known asset static', () => {
+    const routes = JSON.parse(readFileSync(join(root, 'frontend/public/_routes.json'), 'utf8'));
+    expect(routes.include.some((rule) => routeMatches(rule, PROTECTED_RESOURCE_PATH))).toBe(true);
+    expect(routes.exclude.some((rule) => routeMatches(rule, PROTECTED_RESOURCE_PATH))).toBe(false);
+
+    function walk(dir, prefix = '/.well-known') {
+      return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+        const pathname = `${prefix}/${entry.name}`;
+        return entry.isDirectory() ? walk(join(dir, entry.name), pathname) : [pathname];
+      });
+    }
+    const siblings = walk(join(root, 'frontend/public/.well-known'))
+      .filter((pathname) => pathname !== PROTECTED_RESOURCE_PATH);
+    expect(siblings.length).toBeGreaterThan(10);
+    for (const pathname of siblings) {
+      expect(routes.exclude.some((rule) => routeMatches(rule, pathname))).toBe(true);
+    }
+  });
+
+  it('keeps the published skill descriptions and their SHA-256 digests current', () => {
+    const base = join(root, 'frontend/public/.well-known/agent-skills');
+    const index = JSON.parse(readFileSync(join(base, 'index.json'), 'utf8'));
+    for (const skill of index.skills) {
+      const pathname = join(root, 'frontend/public', skill.url);
+      const digest = createHash('sha256').update(readFileSync(pathname)).digest('hex');
+      expect(skill.digest).toBe(`sha256:${digest}`);
+    }
+    const skill = readFileSync(join(base, 'oauth-protected-resource/SKILL.md'), 'utf8');
+    expect(skill).toContain(FIREBASE_AUTH_ISSUER);
+    expect(skill).toContain('401');
+    expect(skill).not.toContain('every HTTP response includes');
+  });
+});
+
+describe('RFC 9728 resource_metadata discovery challenge', () => {
+  it('adds the canonical metadata URL only to an unchallenged Web 401', () => {
+    for (const status of [200, 400, 403, 404, 503]) {
+      const headers = applyResourceMetadataChallenge(new Headers(), status);
+      expect(headers.get('WWW-Authenticate')).toBeNull();
+    }
+    const headers = applyResourceMetadataChallenge(new Headers(), 401);
+    expect(headers.get('WWW-Authenticate')).toBe(RESOURCE_METADATA_CHALLENGE);
+    expect(headers.get('WWW-Authenticate')).toBe(`Bearer resource_metadata="${PROTECTED_RESOURCE_METADATA_URL}"`);
+    const existing = new Headers({ 'WWW-Authenticate': 'Bearer realm="review", error="invalid_token"' });
+    expect(applyResourceMetadataChallenge(existing, 401).get('WWW-Authenticate'))
+      .toBe('Bearer realm="review", error="invalid_token"');
+  });
+
+  it('applies the challenge through the real Pages middleware without changing the body', async () => {
+    const response = await edgeMiddleware({
+      request: new Request(`${origin}/api/v1/alerts/review`),
+      next: async () => Response.json({ error: 'sign in' }, { status: 401 }),
+    });
+    expect(response.status).toBe(401);
+    expect(response.headers.get('www-authenticate')).toBe(RESOURCE_METADATA_CHALLENGE);
+    expect(response.headers.get('x-content-type-options')).toBe('nosniff');
+    expect(await response.json()).toEqual({ error: 'sign in' });
+  });
+
+  it('does not replace a route-specific Pages challenge or challenge a public response', async () => {
+    const challenge = 'Bearer realm="review", error="invalid_token"';
+    const unauthorized = await edgeMiddleware({
+      request: new Request(`${origin}/api/v1/alerts/review`),
+      next: async () => new Response(null, { status: 401, headers: { 'WWW-Authenticate': challenge } }),
+    });
+    expect(unauthorized.headers.get('www-authenticate')).toBe(challenge);
+    expect(unauthorized.body).toBeNull();
+    const ok = await edgeMiddleware({
+      request: new Request(`${origin}${PROTECTED_RESOURCE_PATH}`),
+      next: async () => edgeRequest(),
+    });
+    expect(ok.status).toBe(200);
+    expect(ok.headers.get('www-authenticate')).toBeNull();
+    expect(await ok.json()).toEqual(published);
+  });
+
+  it('adds the hint at Express final-header time and preserves explicit challenges', async () => {
+    const challenge = 'Bearer realm="review", error="invalid_token"';
+    const sample = express();
+    sample.use(oauthResourceMetadataChallenge);
+    sample.get('/unauthorized', (_req, res) => res.status(401).json({ error: 'sign in' }));
+    sample.get('/forbidden', (_req, res) => res.sendStatus(403));
+    sample.get('/custom', (_req, res) => res.set('WWW-Authenticate', challenge).sendStatus(401));
+    sample.get('/raw', (_req, res) => {
+      res.writeHead(401, { 'WWW-Authenticate': 'Basic realm="operations"' });
+      res.end();
+    });
+
+    const unauthorized = await request(sample).get('/unauthorized');
+    expect(unauthorized.status).toBe(401);
+    expect(unauthorized.headers['www-authenticate']).toBe(RESOURCE_METADATA_CHALLENGE);
+    const forbidden = await request(sample).get('/forbidden');
+    expect(forbidden.status).toBe(403);
+    expect(forbidden.headers['www-authenticate']).toBeUndefined();
+    expect((await request(sample).get('/custom')).headers['www-authenticate']).toBe(challenge);
+    expect((await request(sample).get('/raw')).headers['www-authenticate']).toBe('Basic realm="operations"');
+  });
+
+  it('works on a real existing Express 401 without changing its authorization decision', async () => {
+    const response = await request(app).get('/api/v1/alerts/transports');
+    expect(response.status).toBe(401);
+    expect(response.body.error).toBe('Unauthorized: Missing API key');
+    expect(response.headers['www-authenticate']).toBe(RESOURCE_METADATA_CHALLENGE);
+    const publicResponse = await request(app).get('/api/v1/alerts/policy');
+    expect(publicResponse.status).toBe(200);
+    expect(publicResponse.headers['www-authenticate']).toBeUndefined();
+  });
+});
+
+/**
+ * Regression for the observed production failure. The 2026-11-05 isitagentready.com scan of
+ * `https://hazardnet.live` fetched this path, received 200 with parseable JSON, and still
+ * concluded "No OAuth Protected Resource Metadata found": its audit step read
+ * `JSON missing or invalid "resource" field, or resource mismatch`. The document named
+ * `https://www.hazardnet.live` while the scan target was the apex. RFC 9728 §3.2 requires
+ * the returned `resource` to match the identifier the client used, so the document is
+ * host-aware and the apex answers for the apex.
+ */
+describe('RFC 9728 §3.2 resource identity matches the requested host', () => {
+  const apex = 'https://hazardnet.live';
+
+  it('resolves both published hostnames to themselves and nothing else', () => {
+    expect(PROTECTED_RESOURCE_HOSTS).toEqual(['hazardnet.live', 'www.hazardnet.live']);
+    expect(resourceOriginFor(`${apex}${PROTECTED_RESOURCE_PATH}`)).toBe(apex);
+    expect(resourceOriginFor(`${origin}${PROTECTED_RESOURCE_PATH}`)).toBe(origin);
+    expect(resourceOriginFor(`https://WWW.HazardNet.Live${PROTECTED_RESOURCE_PATH}`)).toBe(origin);
+    // A dev port is not part of the published identity.
+    expect(resourceOriginFor(`https://hazardnet.live:8443${PROTECTED_RESOURCE_PATH}`)).toBe(apex);
+  });
+
+  it('never mints a resource identifier for an unrecognised Host', () => {
+    for (const url of [
+      'https://attacker.example/.well-known/oauth-protected-resource',
+      'https://hazardnet.live.attacker.example/x',
+      'https://evilhazardnet.live/x',
+      'http://127.0.0.1:3002/x',
+      'http://localhost:3000/x',
+      'https://abc123.hazardnet.pages.dev/x',
+      'not a url',
+      undefined,
+    ]) {
+      expect(resourceOriginFor(url)).toBe(origin);
+    }
+  });
+
+  it('serves the apex resource from the Pages Function when the apex is requested', async () => {
+    const response = await edgeMetadata({ request: new Request(`${apex}${PROTECTED_RESOURCE_PATH}`) });
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.resource).toBe(apex);
+    expect(body.authorization_servers).toEqual([FIREBASE_AUTH_ISSUER]);
+    expect(body.scopes_supported).toEqual(published.scopes_supported);
+    // Only the resource identifier moves; the published docs stay canonical.
+    expect(body.resource_documentation).toBe(published.resource_documentation);
+  });
+
+  it('serves the canonical resource on www and on an unknown preview host', async () => {
+    for (const host of [origin, 'https://abc123.hazardnet.pages.dev']) {
+      const response = await edgeMetadata({ request: new Request(`${host}${PROTECTED_RESOURCE_PATH}`) });
+      expect(await response.json()).toEqual(published);
+    }
+  });
+
+  it('matches the requested host through the real Express app', async () => {
+    const apexResponse = await request(app).get(PROTECTED_RESOURCE_PATH).set('Host', 'hazardnet.live');
+    expect(apexResponse.status).toBe(200);
+    expect(apexResponse.body.resource).toBe(apex);
+    const wwwResponse = await request(app).get(PROTECTED_RESOURCE_PATH).set('Host', 'www.hazardnet.live');
+    expect(wwwResponse.body.resource).toBe(origin);
+    const spoofed = await request(app).get(PROTECTED_RESOURCE_PATH).set('Host', 'attacker.example');
+    expect(spoofed.body.resource).toBe(origin);
+  });
+
+  it('points the 401 challenge at the metadata of the host that answered', async () => {
+    const headers = applyResourceMetadataChallenge(new Headers(), 401, `${apex}/api/v1/alerts/review`);
+    expect(headers.get('WWW-Authenticate')).toBe(resourceMetadataChallengeFor(apex));
+    expect(headers.get('WWW-Authenticate')).toBe(`Bearer resource_metadata="${apex}${PROTECTED_RESOURCE_PATH}"`);
+
+    const response = await edgeMiddleware({
+      request: new Request(`${apex}/api/v1/alerts/review`),
+      next: async () => Response.json({ error: 'sign in' }, { status: 401 }),
+    });
+    expect(response.headers.get('www-authenticate')).toBe(resourceMetadataChallengeFor(apex));
+  });
+
+  it('keeps the static fail-open fallback identical to the canonical document', () => {
+    expect(published).toEqual(protectedResourceMetadataFor(origin));
+    expect(published).toEqual(PROTECTED_RESOURCE_METADATA);
   });
 });

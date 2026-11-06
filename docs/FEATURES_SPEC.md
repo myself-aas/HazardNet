@@ -1239,12 +1239,17 @@ Reviewed: 2026-09-17.
 
 ### 19.1 Deployment Target
 
-Cloudflare Pages serves the site **statically** — there is no API on the public host, and
-`/api/**` answers 404 (`docs/ops/deployment.md`). The Node-function surface (`api/**`, 6
-entry points over 20 handlers) is kept for a future host and shares every handler with the
-Express backend.
+Cloudflare Pages serves prerendered documents and static assets, with same-origin Pages
+Functions for the ported public reads under `/api/*` and the shared `/mcp` endpoint.
+`docs/ops/route-register.json` is the current route/disposition list; unported Node-only
+writes and private-research APIs are not hosted. `/mcp` and the WebMCP client are implemented
+in this branch but pending deployment and the owner's Cloudflare activation (Action 25).
 
 ### 19.2 API Endpoints
+
+The table below is the legacy Node/backend endpoint inventory, not a claim that every path
+is hosted. The current Pages surface and dated dispositions live in
+`docs/ops/route-register.json`; `/mcp` is the new agent endpoint described in §20.
 
 | Endpoint | Method | Purpose | Auth |
 |----------|--------|---------|------|
@@ -1298,10 +1303,10 @@ intervention.
 | Protocol | Endpoint | Purpose |
 |----------|----------|---------|
 | **A2A Agent Card** | `/.well-known/agent-card.json` | Agent-to-agent discovery (6 skills) |
-| **MCP Server Card** | `/.well-known/mcp/server-card.json` | Model Context Protocol (8 tools) |
-| **WebMCP** | Client-side (`webmcp.ts`) | Browser agent tool registration (6 tools) |
+| **MCP Server Card** | `/.well-known/mcp/server-card.json` | Stateless `/mcp` JSON-RPC endpoint (8 read-only tools) |
+| **WebMCP** | Client-side (`webmcp.ts`) + `/mcp` | 8 discovered proxies + 2 browser-only tools; managed-bridge coexistence |
 | **RFC 9727** | `/.well-known/api-catalog` | API catalog (10 entries) |
-| **RFC 9728** | `/.well-known/oauth-protected-resource` | OAuth Protected Resource Metadata |
+| **RFC 9728** | `/.well-known/oauth-protected-resource` | Firebase-issuer PRM from a Pages Function, with an identical static fallback |
 | **OIDC Discovery** | `/.well-known/openid-configuration` | OpenID Connect Discovery 1.0 |
 | **RFC 8414** | `/.well-known/oauth-authorization-server` | OAuth Authorization Server Metadata |
 | **Auth.md** | `/auth.md` | Agent registration & auth methods |
@@ -1311,29 +1316,43 @@ intervention.
 | **Web Bot Auth** | `/.well-known/http-message-signatures-directory` | Ed25519 JWKS for bot request verification |
 | **Markdown for Agents** | `Accept: text/markdown` | 108 pre-generated markdown files |
 
+The RFC 9728 resource identifier is `https://www.hazardnet.live`; the only advertised
+authorization server is the existing Firebase OIDC issuer. A Pages Function serves the PRM,
+with an identical static fail-open fallback and Express twin. Otherwise unchallenged 401s carry
+the `resource_metadata` discovery hint. Cloudflare Access is not configured; the owner deferred
+that migration (Action 26). Publication does not change token, role or API-key enforcement.
+
 ### 20.3 MCP Tools (8)
 
 | Tool | Description |
 |------|-------------|
-| `get_hazard_forecast` | District/hazard/horizon lookup |
-| `list_forecasts` | Complete forecast snapshot |
-| `get_weather` | Open-Meteo observations by lat/lon |
-| `list_alerts` | Published hazard alerts |
-| `get_historical_events` | Historical hazard catalog |
-| `chat_advisory` | Conversational AI advisory |
-| `convert_units` | Hazard unit conversions |
-| `get_district_info` | District metadata |
+| `get_hazard_forecast` | Published daily district rows, filtered by hazard/horizon, with run provenance |
+| `list_forecasts` | Deployed district-horizon snapshot records with filters and pagination |
+| `get_weather` | Open-Meteo observations for caller-supplied coordinates |
+| `list_alerts` | PUBLISHED alerts only, through the shared redacted public projection |
+| `get_historical_events` | Compact historical catalogue search, not current forecasts |
+| `get_district_info` | Canonical district identity, division, pcode and reference centroid |
+| `get_site_status` | Freshness artifact and its limits, not a live health probe |
+| `get_hazard_info` | Public hazard Markdown explainer, never research-private methodology |
 
-### 20.4 WebMCP Tools (6, Browser-Side)
+The endpoint accepts POST JSON-RPC (`initialize`, `ping`, `tools/list`, `tools/call` and
+notifications), advertises MCP 2025 revisions only, caps bodies at 16 KiB and returns JSON
+without sessions or SSE. Schema, district and calendar-date violations return `-32602`;
+data failures return `CallToolResult.isError` with the safety notice. Every hazard result
+carries the BMD/FFWC/999 boundary and the confidence limitation.
+
+### 20.4 WebMCP Tools (10 browser capabilities)
+
+The native client registers proxies for all eight MCP tools above plus:
 
 | Tool | Description |
 |------|-------------|
-| `search-district` | Search districts by name, navigate to outlook |
-| `get-forecast` | Retrieve multi-hazard forecast for a district |
-| `get-alerts` | Get current published hazard alerts |
-| `navigate-to-page` | Navigate to any page on the site |
-| `get-site-status` | Data source freshness and operational status |
-| `get-hazard-info` | Methodology for a specific hazard class |
+| `search-district` | Return matching district names and page paths without navigating |
+| `navigate-to-page` | Open a same-origin path only when it appears in the public sitemap |
+
+Unsupported browsers do no extra network work. When Cloudflare's managed
+`mcp-server-client` bridge owns `/mcp`, the native client avoids duplicate proxy registration.
+Activation is an owner dashboard step, not a deployed claim; see `docs/ops/webmcp.md`.
 
 ### 20.5 Content Usage Policy
 

@@ -9,10 +9,10 @@
   "entries": [
     {
       "identifier": "urn:air:hazardnet.live:agent:hazardnet",
-      "displayName": "HazardNet Multi-Hazard Early Warning Agent (A2A)",
+      "displayName": "HazardNet public hazard outlook agent (A2A)",
       "type": "application/a2a-agent-card+json",
       "url": "https://www.hazardnet.live/.well-known/agent-card.json",
-      "description": "Agent-to-Agent card for Bangladesh multi-hazard early warning: flash flood, tropical cyclone, drought, cold wave, fire and severe local storm outlooks, live alerts, weather observations and the historical event catalogue.",
+      "description": "Agent-to-Agent card for published Bangladesh agricultural hazard outlooks, alerts, weather observations and the historical event catalogue. HazardNet is not an official warning service.",
       "tags": [
         "bangladesh",
         "multi-hazard",
@@ -39,8 +39,8 @@
       "updatedAt": "2026-10-10T00:00:00Z",
       "metadata": {
         "protocol": "a2a",
-        "endpoint": "https://www.hazardnet.live/mcp",
-        "transport": "streamable-http",
+        "endpoint": "https://www.hazardnet.live/api",
+        "transport": "http+json",
         "authentication": "bearer, api-key, anonymous",
         "dnsAid": "_a2a._agents.hazardnet.live"
       }
@@ -50,7 +50,7 @@
       "displayName": "HazardNet MCP Server",
       "type": "application/mcp-server-card+json",
       "url": "https://www.hazardnet.live/.well-known/mcp/server-card.json",
-      "description": "Model Context Protocol server card exposing eight hazard tools for forecasts, live alerts, current weather, the historical event catalogue, district profiles, advisory chat and unit conversion.",
+      "description": "Stateless, same-origin MCP server exposing eight public read-only hazard tools. Supports the Cloudflare Site MCP Server WebMCP pack and native browser registration. No credentials or write capabilities required.",
       "tags": [
         "mcp",
         "bangladesh",
@@ -65,39 +65,49 @@
         "get_weather",
         "list_alerts",
         "get_historical_events",
-        "chat_advisory",
-        "convert_units",
-        "get_district_info"
+        "get_district_info",
+        "get_site_status",
+        "get_hazard_info"
       ],
       "representativeQueries": [
-        "get the hazard forecast for Habiganj district",
-        "what alerts are currently active in Bangladesh",
-        "what is the weather right now in Cox's Bazar",
-        "convert 250 millimetres of rainfall to inches"
+        "Get the published daily outlook for Dhaka with its run date.",
+        "List published flood alerts and their evidence.",
+        "Read the freshness record and its limitations.",
+        "Find historical flood events in Sunamganj."
       ],
       "version": "3.2.0",
-      "updatedAt": "2026-10-10T00:00:00Z",
+      "updatedAt": "2026-11-05T00:00:00.000Z",
       "metadata": {
         "protocol": "mcp",
         "endpoint": "https://www.hazardnet.live/mcp",
         "transport": "streamable-http",
-        "authentication": "bearer, api-key, anonymous",
-        "dnsAid": "_mcp._agents.hazardnet.live"
+        "authentication": "none",
+        "dnsAid": "_mcp._agents.hazardnet.live",
+        "stateless": true
       }
     },
     {
       "identifier": "urn:air:hazardnet.live:tools:webmcp",
       "displayName": "HazardNet WebMCP browser tools",
       "type": "application/json",
-      "description": "Browser-side tools registered at runtime through document.modelContext.registerTool() on https://www.hazardnet.live. Published inline as `data` rather than by `url` because WebMCP tools live in the page's JavaScript and have no separate fetchable descriptor; the DNS-AID record _webmcp._agents.hazardnet.live still advertises the transport.",
-      "tags": ["webmcp", "browser-tools", "in-page", "bangladesh"],
+      "description": "Ten browser tools on HazardNet: eight proxies discovered from the same-origin /mcp endpoint plus district search and sitemap-validated navigation. Native registration is a no-op without WebMCP support; Cloudflare’s managed Site MCP Server bridge is detected to avoid duplicate proxy tools.",
+      "tags": [
+        "webmcp",
+        "browser-tools",
+        "in-page",
+        "bangladesh"
+      ],
       "capabilities": [
+        "get_hazard_forecast",
+        "list_forecasts",
+        "get_weather",
+        "list_alerts",
+        "get_historical_events",
+        "get_district_info",
+        "get_site_status",
+        "get_hazard_info",
         "search-district",
-        "get-forecast",
-        "get-alerts",
-        "navigate-to-page",
-        "get-site-status",
-        "get-hazard-info"
+        "navigate-to-page"
       ],
       "representativeQueries": [
         "search for a district on this page",
@@ -105,24 +115,401 @@
         "take me to the live alerts page"
       ],
       "version": "3.2.0",
-      "updatedAt": "2026-10-10T00:00:00Z",
+      "updatedAt": "2026-11-05T00:00:00.000Z",
       "metadata": {
         "protocol": "webmcp",
         "endpoint": "https://www.hazardnet.live",
         "transport": "browser-javascript",
         "authentication": "none",
         "dnsAid": "_webmcp._agents.hazardnet.live",
-        "sourceModule": "frontend/src/lib/webmcp.ts"
+        "sourceModule": "frontend/src/lib/webmcp.ts",
+        "mcpEndpoint": "https://www.hazardnet.live/mcp",
+        "managedBridge": "/.webmcp/bridge.js",
+        "managedPack": "mcp-server-client"
       },
       "data": {
         "registration": "document.modelContext.registerTool()",
+        "mcpUrl": "/mcp",
         "tools": [
-          { "name": "search-district", "title": "Search District" },
-          { "name": "get-forecast", "title": "Get Hazard Forecast" },
-          { "name": "get-alerts", "title": "Get Hazard Alerts" },
-          { "name": "navigate-to-page", "title": "Navigate to Page" },
-          { "name": "get-site-status", "title": "Get Site Status" },
-          { "name": "get-hazard-info", "title": "Get Hazard Information" }
+          {
+            "name": "get_hazard_forecast",
+            "title": "Get district outlook",
+            "description": "Read the deployed daily district outlook, optionally filtered by hazard and horizon. Returns dated advisory rows and run provenance, not an official warning. A missing hazard row does not mean no risk.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "district": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100,
+                  "description": "Bangladesh district name or established alias, e.g. Dhaka, Chattogram or Chittagong."
+                },
+                "hazard": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100,
+                  "description": "Published hazard class.",
+                  "enum": [
+                    "flood",
+                    "flash-flood",
+                    "tropical-cyclone",
+                    "drought",
+                    "heat-wave",
+                    "cold-wave",
+                    "fire",
+                    "severe-local-storm"
+                  ]
+                },
+                "horizon": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100,
+                  "description": "Forecast horizon; defaults to 15_days.",
+                  "enum": [
+                    "7_days",
+                    "15_days"
+                  ]
+                }
+              },
+              "required": [
+                "district"
+              ],
+              "additionalProperties": false
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          },
+          {
+            "name": "list_forecasts",
+            "title": "List published horizon forecasts",
+            "description": "List the latest deployed district-horizon forecast records. Filter by district, hazard or horizon. Only the deployed prediction date is available; this is not a historical forecast archive.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "district": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100,
+                  "description": "Optional district name or alias."
+                },
+                "hazard": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100,
+                  "description": "Published hazard class.",
+                  "enum": [
+                    "flood",
+                    "flash-flood",
+                    "tropical-cyclone",
+                    "drought",
+                    "heat-wave",
+                    "cold-wave",
+                    "fire",
+                    "severe-local-storm"
+                  ]
+                },
+                "horizon": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100,
+                  "description": "Forecast horizon; defaults to 15_days.",
+                  "enum": [
+                    "7_days",
+                    "15_days"
+                  ]
+                },
+                "prediction_date": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100,
+                  "description": "Optional YYYY-MM-DD; must match the deployed snapshot date.",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 64,
+                  "default": 20,
+                  "description": "Maximum records in this page (1–64)."
+                },
+                "offset": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100000,
+                  "default": 0,
+                  "description": "Number of matching records to skip."
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          },
+          {
+            "name": "get_weather",
+            "title": "Get current weather",
+            "description": "Read current weather observations for caller-supplied latitude and longitude through the existing Open-Meteo proxy. Never reads device geolocation. Weather observations are not a hazard warning.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "latitude": {
+                  "type": "number",
+                  "minimum": -90,
+                  "maximum": 90,
+                  "description": "Latitude in decimal degrees."
+                },
+                "longitude": {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180,
+                  "description": "Longitude in decimal degrees."
+                }
+              },
+              "required": [
+                "latitude",
+                "longitude"
+              ],
+              "additionalProperties": false
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": true
+            }
+          },
+          {
+            "name": "list_alerts",
+            "title": "List published alerts",
+            "description": "Read PUBLISHED alerts only, with real hazard, level, district and horizon filters. Includes evidence, freshness and provenance. Does not publish alerts, expose drafts, or contact anyone.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "district": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100,
+                  "description": "Optional district name or alias."
+                },
+                "hazard": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100,
+                  "description": "Published hazard class.",
+                  "enum": [
+                    "flood",
+                    "flash-flood",
+                    "tropical-cyclone",
+                    "drought",
+                    "heat-wave",
+                    "cold-wave",
+                    "fire",
+                    "severe-local-storm"
+                  ]
+                },
+                "level": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100,
+                  "description": "Published alert level.",
+                  "enum": [
+                    "WATCH",
+                    "WARNING",
+                    "SEVERE"
+                  ]
+                },
+                "horizon": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100,
+                  "description": "Forecast horizon; defaults to 15_days.",
+                  "enum": [
+                    "7_days",
+                    "15_days"
+                  ]
+                },
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100,
+                  "default": 20,
+                  "description": "Maximum records in this page (1–100)."
+                },
+                "offset": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100000,
+                  "default": 0,
+                  "description": "Number of matching records to skip."
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          },
+          {
+            "name": "get_historical_events",
+            "title": "Search historical events",
+            "description": "Search the deployed historical hazard catalogue by district, hazard and year. Returns compact event records and pagination counts. Historical events are not current forecasts.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "district": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100,
+                  "description": "Optional district name or alias."
+                },
+                "hazard": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100,
+                  "description": "Catalogued hazard class; the archive also includes earthquakes.",
+                  "enum": [
+                    "flood",
+                    "flash-flood",
+                    "tropical-cyclone",
+                    "drought",
+                    "heat-wave",
+                    "cold-wave",
+                    "fire",
+                    "severe-local-storm",
+                    "earthquake"
+                  ]
+                },
+                "year": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9999,
+                  "description": "Optional event year."
+                },
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 50,
+                  "default": 20,
+                  "description": "Maximum records in this page (1–50)."
+                },
+                "offset": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100000,
+                  "default": 0,
+                  "description": "Number of matching records to skip."
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          },
+          {
+            "name": "get_district_info",
+            "title": "Get district identity",
+            "description": "Resolve a Bangladesh district name or alias to its canonical identity, division, pcode and reference centroid. Does not invent crop, elevation or baseline-risk facts.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "district": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100,
+                  "description": "Bangladesh district name or established alias, e.g. Dhaka, Chattogram or Chittagong."
+                }
+              },
+              "required": [
+                "district"
+              ],
+              "additionalProperties": false
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          },
+          {
+            "name": "get_site_status",
+            "title": "Read artifact freshness",
+            "description": "Read the deployed freshness artifact: source ages, coverage and stated limits. This is a build-time statement about artifacts, not a live service-health probe.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {},
+              "required": [],
+              "additionalProperties": false
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          },
+          {
+            "name": "get_hazard_info",
+            "title": "Read public hazard explainer",
+            "description": "Read the public markdown explainer for one hazard. Returns published explanations and limitations, never model files or research-private methodology.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "hazard": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100,
+                  "description": "Published hazard class.",
+                  "enum": [
+                    "flood",
+                    "flash-flood",
+                    "tropical-cyclone",
+                    "drought",
+                    "heat-wave",
+                    "cold-wave",
+                    "fire",
+                    "severe-local-storm"
+                  ]
+                }
+              },
+              "required": [
+                "hazard"
+              ],
+              "additionalProperties": false
+            },
+            "annotations": {
+              "readOnlyHint": true,
+              "destructiveHint": false,
+              "idempotentHint": true,
+              "openWorldHint": false
+            }
+          },
+          {
+            "name": "search-district",
+            "title": "Search districts"
+          },
+          {
+            "name": "navigate-to-page",
+            "title": "Open a HazardNet page"
+          }
         ]
       }
     },
@@ -132,8 +519,15 @@
       "type": "application/linkset+json",
       "url": "https://www.hazardnet.live/.well-known/api-catalog",
       "description": "RFC 9727 linkset catalog for the HazardNet REST API, carrying service-desc (OpenAPI), service-doc and status link relations for each API base URL.",
-      "tags": ["rfc9727", "api-catalog", "rest", "discovery"],
-      "capabilities": ["api-discovery"],
+      "tags": [
+        "rfc9727",
+        "api-catalog",
+        "rest",
+        "discovery"
+      ],
+      "capabilities": [
+        "api-discovery"
+      ],
       "representativeQueries": [
         "where is the HazardNet API documentation",
         "what is the health status endpoint for the HazardNet API"
@@ -154,8 +548,15 @@
       "type": "application/vnd.oai.openapi",
       "url": "https://www.hazardnet.live/api/openapi.yaml",
       "description": "OpenAPI description of the HazardNet REST API: forecast, alert, weather and historical-catalogue endpoints.",
-      "tags": ["openapi", "rest", "api", "swagger"],
-      "capabilities": ["api-schema"],
+      "tags": [
+        "openapi",
+        "rest",
+        "api",
+        "swagger"
+      ],
+      "capabilities": [
+        "api-schema"
+      ],
       "representativeQueries": [
         "what endpoints does the HazardNet API expose",
         "how do I call the hazard forecast endpoint"
@@ -172,8 +573,15 @@
       "type": "application/json",
       "url": "https://www.hazardnet.live/.well-known/agent-skills/index.json",
       "description": "Cloudflare Agent Skills Discovery v0.2.0 index of the SKILL.md documents this site publishes, each with a sha256 digest, covering A2A cards, MCP, RFC 9727 API catalogs, auth.md, OAuth discovery, DNS-AID and content signals.",
-      "tags": ["agent-skills", "skill-md", "discovery", "index"],
-      "capabilities": ["skill-discovery"],
+      "tags": [
+        "agent-skills",
+        "skill-md",
+        "discovery",
+        "index"
+      ],
+      "capabilities": [
+        "skill-discovery"
+      ],
       "representativeQueries": [
         "what agent skills does hazardnet.live publish",
         "how do I publish an A2A agent card"
@@ -190,8 +598,15 @@
       "type": "text/markdown",
       "url": "https://www.hazardnet.live/auth.md",
       "description": "Agent registration and authentication metadata for the HazardNet APIs: how to obtain credentials and which endpoints accept anonymous access. Plain text/markdown, not the agent-skills profile.",
-      "tags": ["auth", "authentication", "agent-registration", "markdown"],
-      "capabilities": ["auth-guidance"],
+      "tags": [
+        "auth",
+        "authentication",
+        "agent-registration",
+        "markdown"
+      ],
+      "capabilities": [
+        "auth-guidance"
+      ],
       "representativeQueries": [
         "how do I authenticate against the HazardNet API",
         "which HazardNet endpoints allow anonymous access"

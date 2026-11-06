@@ -1,13 +1,13 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/mcp-server-card/v1.json",
   "version": "1.0",
-  "protocolVersion": "2025-06-18",
+  "protocolVersion": "2025-11-25",
   "serverInfo": {
     "name": "hazardnet",
-    "title": "HazardNet Multi-Hazard Early Warning",
+    "title": "HazardNet public hazard outlooks",
     "version": "3.2.0"
   },
-  "description": "Multi-Hazard Early Warning AI server for Bangladesh agriculture. Provides tools for retrieving continuous 15-day daily hazard outlooks (Days 1–15) across 8 climate hazards (flood, flash flood, tropical cyclone, drought, heat wave, cold wave, fire, severe local storm) for 64 districts, weather observations, published alerts, historical hazard data, AI advisory chat, and unit conversions.",
+  "description": "Public, read-only hazard tools for Bangladesh agriculture: published district outlooks, alerts, weather observations, historical events, district identities, artifact freshness and public hazard explainers. Every hazard result carries the BMD/FFWC/999 boundary. No account, review action, alert publication or model download is exposed.",
   "iconUrl": "https://www.hazardnet.live/hazardnet-mark.svg",
   "documentationUrl": "https://www.hazardnet.live/docs",
   "transport": {
@@ -17,159 +17,384 @@
   "capabilities": {
     "tools": {
       "listChanged": false
-    },
-    "resources": {
-      "subscribe": false,
-      "listChanged": false
-    },
-    "prompts": {}
+    }
   },
   "authentication": {
     "required": false,
-    "schemes": ["bearer"]
+    "schemes": []
   },
   "tools": [
     {
       "name": "get_hazard_forecast",
-      "description": "Retrieve continuous 15-day daily hazard outlooks (Days 1–15) for Bangladesh's 64 districts across 8 hazard classes. Returns hazard class, severity index (0-1 normalized, 0-100 index), peak severe dates, confidence bin, and independent physics cross-check with full provenance.",
+      "title": "Get district outlook",
+      "description": "Read the deployed daily district outlook, optionally filtered by hazard and horizon. Returns dated advisory rows and run provenance, not an official warning. A missing hazard row does not mean no risk.",
       "inputSchema": {
         "type": "object",
         "properties": {
           "district": {
             "type": "string",
-            "description": "District name (e.g., 'Dhaka', 'Chattogram', 'Rajshahi')"
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Bangladesh district name or established alias, e.g. Dhaka, Chattogram or Chittagong."
           },
           "hazard": {
             "type": "string",
-            "description": "Hazard class (flood, flash-flood, tropical-cyclone, drought, heat-wave, cold-wave, fire, severe-local-storm)",
-            "enum": ["flood", "flash-flood", "tropical-cyclone", "drought", "heat-wave", "cold-wave", "fire", "severe-local-storm"]
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Published hazard class.",
+            "enum": [
+              "flood",
+              "flash-flood",
+              "tropical-cyclone",
+              "drought",
+              "heat-wave",
+              "cold-wave",
+              "fire",
+              "severe-local-storm"
+            ]
           },
           "horizon": {
             "type": "string",
-            "description": "Forecast horizon",
-            "enum": ["7_days", "15_days"]
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Forecast horizon; defaults to 15_days.",
+            "enum": [
+              "7_days",
+              "15_days"
+            ]
           }
-        }
+        },
+        "required": [
+          "district"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
       }
     },
     {
       "name": "list_forecasts",
-      "description": "List all forecast records for a given prediction date. Returns the complete forecast snapshot with hazard class, severity, confidence, and physics cross-check for every district-horizon unit.",
+      "title": "List published horizon forecasts",
+      "description": "List the latest deployed district-horizon forecast records. Filter by district, hazard or horizon. Only the deployed prediction date is available; this is not a historical forecast archive.",
       "inputSchema": {
         "type": "object",
         "properties": {
+          "district": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Optional district name or alias."
+          },
+          "hazard": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Published hazard class.",
+            "enum": [
+              "flood",
+              "flash-flood",
+              "tropical-cyclone",
+              "drought",
+              "heat-wave",
+              "cold-wave",
+              "fire",
+              "severe-local-storm"
+            ]
+          },
+          "horizon": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Forecast horizon; defaults to 15_days.",
+            "enum": [
+              "7_days",
+              "15_days"
+            ]
+          },
           "prediction_date": {
             "type": "string",
-            "description": "Prediction date in YYYY-MM-DD format (defaults to latest)"
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Optional YYYY-MM-DD; must match the deployed snapshot date.",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 64,
+            "default": 20,
+            "description": "Maximum records in this page (1–64)."
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000,
+            "default": 0,
+            "description": "Number of matching records to skip."
           }
-        }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
       }
     },
     {
       "name": "get_weather",
-      "description": "Fetch current weather observations for a location in Bangladesh from Open-Meteo. Returns temperature, precipitation, wind, humidity, radiation, and evapotranspiration.",
+      "title": "Get current weather",
+      "description": "Read current weather observations for caller-supplied latitude and longitude through the existing Open-Meteo proxy. Never reads device geolocation. Weather observations are not a hazard warning.",
       "inputSchema": {
         "type": "object",
         "properties": {
           "latitude": {
             "type": "number",
-            "description": "Latitude (e.g., 23.8103 for Dhaka)"
+            "minimum": -90,
+            "maximum": 90,
+            "description": "Latitude in decimal degrees."
           },
           "longitude": {
             "type": "number",
-            "description": "Longitude (e.g., 90.4125 for Dhaka)"
+            "minimum": -180,
+            "maximum": 180,
+            "description": "Longitude in decimal degrees."
           }
         },
-        "required": ["latitude", "longitude"]
+        "required": [
+          "latitude",
+          "longitude"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
       }
     },
     {
       "name": "list_alerts",
-      "description": "List published hazard alerts with evidence, drivers, policy version, and review status. Published alerts are public and carry full provenance.",
+      "title": "List published alerts",
+      "description": "Read PUBLISHED alerts only, with real hazard, level, district and horizon filters. Includes evidence, freshness and provenance. Does not publish alerts, expose drafts, or contact anyone.",
       "inputSchema": {
         "type": "object",
         "properties": {
+          "district": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Optional district name or alias."
+          },
           "hazard": {
             "type": "string",
-            "description": "Filter by hazard class (optional)"
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Published hazard class.",
+            "enum": [
+              "flood",
+              "flash-flood",
+              "tropical-cyclone",
+              "drought",
+              "heat-wave",
+              "cold-wave",
+              "fire",
+              "severe-local-storm"
+            ]
           },
           "level": {
             "type": "string",
-            "description": "Filter by alert level (optional)"
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Published alert level.",
+            "enum": [
+              "WATCH",
+              "WARNING",
+              "SEVERE"
+            ]
+          },
+          "horizon": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Forecast horizon; defaults to 15_days.",
+            "enum": [
+              "7_days",
+              "15_days"
+            ]
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 20,
+            "description": "Maximum records in this page (1–100)."
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000,
+            "default": 0,
+            "description": "Number of matching records to skip."
           }
-        }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
       }
     },
     {
       "name": "get_historical_events",
-      "description": "Query the historical climatic hazard catalog for Bangladesh. Returns past events across all eight hazard classes with episode data.",
+      "title": "Search historical events",
+      "description": "Search the deployed historical hazard catalogue by district, hazard and year. Returns compact event records and pagination counts. Historical events are not current forecasts.",
       "inputSchema": {
         "type": "object",
         "properties": {
           "district": {
             "type": "string",
-            "description": "District name to filter by (optional)"
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Optional district name or alias."
           },
           "hazard": {
             "type": "string",
-            "description": "Hazard class to filter by (optional)"
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Catalogued hazard class; the archive also includes earthquakes.",
+            "enum": [
+              "flood",
+              "flash-flood",
+              "tropical-cyclone",
+              "drought",
+              "heat-wave",
+              "cold-wave",
+              "fire",
+              "severe-local-storm",
+              "earthquake"
+            ]
           },
           "year": {
             "type": "integer",
-            "description": "Year to filter by (optional)"
-          }
-        }
-      }
-    },
-    {
-      "name": "chat_advisory",
-      "description": "Conversational AI advisory for Bangladesh hazard assessment. Ask natural-language questions about hazards, forecasts, districts, and severity. Returns grounded responses with references to committed artifacts.",
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string",
-            "description": "Natural language question about Bangladesh hazards"
+            "minimum": 1,
+            "maximum": 9999,
+            "description": "Optional event year."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "default": 20,
+            "description": "Maximum records in this page (1–50)."
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000,
+            "default": 0,
+            "description": "Number of matching records to skip."
           }
         },
-        "required": ["message"]
-      }
-    },
-    {
-      "name": "convert_units",
-      "description": "Convert between measurement units relevant to hazard assessment: temperature (Celsius/Fahrenheit/Kelvin), precipitation (mm/inches), wind speed (km/h/mph/knots/m/s), and pressure (hPa/inHg/mmHg).",
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "value": {
-            "type": "number",
-            "description": "Numeric value to convert"
-          },
-          "from_unit": {
-            "type": "string",
-            "description": "Source unit (e.g., 'celsius', 'mm', 'km/h', 'hPa')"
-          },
-          "to_unit": {
-            "type": "string",
-            "description": "Target unit (e.g., 'fahrenheit', 'inches', 'mph', 'inHg')"
-          }
-        },
-        "required": ["value", "from_unit", "to_unit"]
+        "required": [],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
       }
     },
     {
       "name": "get_district_info",
-      "description": "Get information about a Bangladesh district including its division, elevation, main crops, baseline hazard risk, and static baseline severity.",
+      "title": "Get district identity",
+      "description": "Resolve a Bangladesh district name or alias to its canonical identity, division, pcode and reference centroid. Does not invent crop, elevation or baseline-risk facts.",
       "inputSchema": {
         "type": "object",
         "properties": {
           "district": {
             "type": "string",
-            "description": "District name"
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Bangladesh district name or established alias, e.g. Dhaka, Chattogram or Chittagong."
           }
         },
-        "required": ["district"]
+        "required": [
+          "district"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get_site_status",
+      "title": "Read artifact freshness",
+      "description": "Read the deployed freshness artifact: source ages, coverage and stated limits. This is a build-time statement about artifacts, not a live service-health probe.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get_hazard_info",
+      "title": "Read public hazard explainer",
+      "description": "Read the public markdown explainer for one hazard. Returns published explanations and limitations, never model files or research-private methodology.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "hazard": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Published hazard class.",
+            "enum": [
+              "flood",
+              "flash-flood",
+              "tropical-cyclone",
+              "drought",
+              "heat-wave",
+              "cold-wave",
+              "fire",
+              "severe-local-storm"
+            ]
+          }
+        },
+        "required": [
+          "hazard"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
       }
     }
-  ]
+  ],
+  "instructions": "Read published Bangladesh hazard outlooks with their dates, provenance and limits. Confidence is an uncalibrated model softmax, not a probability of harm. An empty result is not an all-clear. HazardNet is not an official warning service. Follow BMD, FFWC and local administration; in an emergency call 999."
 }
