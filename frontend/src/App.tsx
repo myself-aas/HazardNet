@@ -53,6 +53,8 @@ const AlertsPage = lazy(() => import('./pages/AlertsPage').then((m) => ({ defaul
 const AlertDetailPage = lazy(() => import('./pages/AlertDetailPage').then((m) => ({ default: m.AlertDetailPage })));
 const StatusPage = lazy(() => import('./pages/StatusPage').then((m) => ({ default: m.StatusPage })));
 const LastRunPage = lazy(() => import('./pages/LastRunPage').then((m) => ({ default: m.LastRunPage })));
+const ReportsPage = lazy(() => import('./pages/ReportsPage').then((m) => ({ default: m.ReportsPage })));
+const ReportsArchivePage = lazy(() => import('./pages/ReportsArchivePage').then((m) => ({ default: m.ReportsArchivePage })));
 const UserDashboardPage = lazy(() => import('./pages/UserDashboardPage'));
 const UserProfilePage = lazy(() => import('./pages/UserProfilePage'));
 const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'));
@@ -221,6 +223,12 @@ const AppRoutes: React.FC<{ location: ReturnType<typeof useLocation> }> = ({ loc
               {/* The run card the front door's hero links to: the last forecast run read from
                   the committed artifacts, relocated here from the hero on 2026-10-05. */}
               <Route path="/last-run" element={<LastRunPage />} />
+              {/* Daily reports & archive, published by public_daily_advisories.yml from the
+                  Kaggle dataset: /reports shows the latest, /reports/:date a specific day,
+                  /reports/archive the full history. */}
+              <Route path="/reports" element={<ReportsPage />} />
+              <Route path="/reports/archive" element={<ReportsArchivePage />} />
+              <Route path="/reports/:date" element={<ReportsPage />} />
               {/* Phase 8 content engine: hazard-by-hazard methodology, a page per district built
                   from the run this deployment serves, and (when an event archive is loaded)
                   annual retrospectives. All three are prerendered statically at build time. */}

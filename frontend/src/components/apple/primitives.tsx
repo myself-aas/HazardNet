@@ -334,6 +334,12 @@ export interface PillTabsProps {
   onChange: (id: string) => void;
   /** Accessible name for the tablist. Required — this is a labelled region. */
   ariaLabel: string;
+  /**
+   * Optional id prefix. When set, each tab gets `id="<prefix>-tab-<id>"` and
+   * `aria-controls="<prefix>-panel-<id>"`, so the panel can point back with
+   * `aria-labelledby` and the tablist is a complete WAI-ARIA tabs pattern.
+   */
+  idPrefix?: string;
   className?: string;
 }
 
@@ -343,7 +349,7 @@ export interface PillTabsProps {
  *
  * Spec §Segmented Controls: a pill track with one elevated thumb that slides to the selected segment.
  */
-export function PillTabs({ tabs, value, onChange, ariaLabel, className }: PillTabsProps) {
+export function PillTabs({ tabs, value, onChange, ariaLabel, idPrefix, className }: PillTabsProps) {
   const activeIndex = Math.max(
     0,
     tabs.findIndex((t) => t.id === value),

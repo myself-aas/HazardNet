@@ -28,6 +28,7 @@ const API_BASE = 'https://www.kaggle.com';
 const MAX_ARCHIVE_BYTES = 15 * 1024 * 1024;
 const MAX_CSV_BYTES = 10 * 1024 * 1024;
 const MAX_RUN_BYTES = 64 * 1024;
+const MAX_AUDIT_BYTES = 512 * 1024;
 
 function canonicalModelVersion() {
   try {
@@ -218,6 +219,10 @@ export async function fetchReadyDailyDataset({
   }
   writeFileSync(resolve(dir, CSV_NAME), csvBody, { flag: 'wx', mode: 0o600 });
   writeFileSync(resolve(dir, RUN_NAME), runJsonBytes, { flag: 'wx', mode: 0o600 });
+  if (rawAuditBody !== null) {
+    const auditBody = decodeKaggleFile(rawAuditBody, AUDIT_NAME, MAX_AUDIT_BYTES);
+    writeFileSync(resolve(dir, AUDIT_NAME), auditBody, { flag: 'wx', mode: 0o600 });
+  }
   writeFileSync(resolve(dir, 'dataset-version.txt'), `${version}\n`, { flag: 'wx', mode: 0o600 });
   return { status: 'fetched', version, runId: verified.run_id };
 }

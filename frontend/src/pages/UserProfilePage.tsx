@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -57,12 +57,50 @@ const PERSONA_LABELS: Record<string, string> = {
   commercial_agribusiness: 'Commercial agro-business',
 };
 
+interface ProfileTab {
+  id: string;
+  label: string;
+  icon: string;
+}
+
+const PROFILE_TABS: ProfileTab[] = [
+  { id: 'edit', label: 'Edit profile', icon: 'edit' },
+  { id: 'outlook', label: 'District outlook', icon: 'location_on' },
+  { id: 'account', label: 'Account & session', icon: 'manage_accounts' },
+  { id: 'connected', label: 'Connected accounts', icon: 'link' },
+  { id: 'sync', label: 'Sync status', icon: 'sync' },
+  { id: 'public', label: 'Public page', icon: 'public' },
+];
+
+/** Initial tab from `?tab=<id>` when it names a real tab, else the editor. */
+function initialTab(): string {
+  if (typeof window === 'undefined') return 'edit';
+  const requested = new URLSearchParams(window.location.search).get('tab');
+  return PROFILE_TABS.some((t) => t.id === requested) ? (requested as string) : 'edit';
+}
+
 export const UserProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const { user, userProfile, loading, signOut, sendPasswordResetEmail } = useAuth();
   const { formatDate } = useI18n();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isSendingReset, setIsSendingReset] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>(initialTab);
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  /** WAI-ARIA tabs pattern: Left/Right (and Home/End) move between tabs. */
+  const handleTabKeyDown = (event: React.KeyboardEvent, index: number) => {
+    const last = PROFILE_TABS.length - 1;
+    let next: number | null = null;
+    if (event.key === 'ArrowRight') next = index === last ? 0 : index + 1;
+    else if (event.key === 'ArrowLeft') next = index === 0 ? last : index - 1;
+    else if (event.key === 'Home') next = 0;
+    else if (event.key === 'End') next = last;
+    if (next === null) return;
+    event.preventDefault();
+    setActiveTab(PROFILE_TABS[next].id);
+    tabRefs.current[next]?.focus();
+  };
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -155,7 +193,7 @@ export const UserProfilePage: React.FC = () => {
               </div>
             )}
             <div className="min-w-0">
-              <h1 className="text-ap-lead font-bold leading-tight tracking-tight text-carbon-90">
+              <h1 className="text-2xl font-bold leading-tight tracking-tight text-carbon-90 sm:text-3xl">
                 {displayName || 'User Profile'}
               </h1>
               <p className="truncate text-sm text-carbon-60">{user.email}</p>
@@ -176,10 +214,57 @@ export const UserProfilePage: React.FC = () => {
           </div>
         </header>
 
-        <ProfileDetails saveErrorMessage="Failed to save profile changes." />
+        {/* ── x.com-style horizontal tab bar, sticky under the page header ────── */}
+        <div
+          role="tablist"
+          aria-label="Profile sections"
+          className="sticky top-0 z-10 -mx-ap-lg flex gap-1 overflow-x-auto border-b border-carbon-20 bg-white/95 px-ap-lg backdrop-blur-md"
+        >
+          {PROFILE_TABS.map((tab, index) => {
+            const active = tab.id === activeTab;
+            return (
+              <button
+                key={tab.id}
+                ref={(el) => { tabRefs.current[index] = el; }}
+                type="button"
+                role="tab"
+                id={`profile-tab-${tab.id}`}
+                aria-selected={active}
+                aria-controls={`profile-panel-${tab.id}`}
+                tabIndex={active ? 0 : -1}
+                onClick={() => setActiveTab(tab.id)}
+                onKeyDown={(event) => handleTabKeyDown(event, index)}
+                className={`relative flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-3 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-ap-link ${
+                  active ? 'font-bold text-carbon-90' : 'font-medium text-carbon-60 hover:bg-carbon-05 hover:text-carbon-80'
+                }`}
+              >
+                <MaterialIcon name={tab.icon} size={16} className={active ? 'text-ap-link' : 'text-carbon-60'} />
+                {tab.label}
+                {active && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-2 -bottom-px h-[3px] rounded-full bg-ap-link"
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ── Tab panels: one section visible at a time ──────────────────────── */}
+        <div
+          role="tabpanel"
+          id={`profile-panel-${activeTab}`}
+          aria-labelledby={`profile-tab-${activeTab}`}
+          className="pt-6"
+        >
+        {activeTab === 'edit' && (
+          <ProfileDetails saveErrorMessage="Failed to save profile changes." />
+        )}
 
         {/* ── District outlook: severity is data here, and it is the only place on this
                page that spends a severity hue. ───────────────────────────────────── */}
+        {activeTab === 'outlook' && (
         <Panel
           title="District outlook"
           description={
@@ -235,8 +320,10 @@ export const UserProfilePage: React.FC = () => {
             </Link>
           </div>
         </Panel>
+        )}
 
         {/* ── Session and recovery: one sign-out control on the whole page. ─── */}
+        {activeTab === 'account' && (
         <Panel title="Account and session" description="The identity this browser is signed in with.">
           <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
@@ -263,17 +350,22 @@ export const UserProfilePage: React.FC = () => {
             </Button>
           </div>
         </Panel>
+        )}
 
+        {activeTab === 'connected' && (
         <Panel title="Connected accounts" description="Sign in with one click using any linked provider.">
           <IdentityConnections />
         </Panel>
+        )}
 
+        {activeTab === 'sync' && (
         <Panel title="Realtime sync" description="Whether this browser is holding a live realtime connection.">
           <FirebaseRealtimeStatus />
         </Panel>
+        )}
 
         {/* ── Your public card, exactly as a visitor resolves it ─────────────── */}
-        {publicUsername && (
+        {activeTab === 'public' && publicUsername && (
           <section className="space-y-3">
             <h2 className="text-lg font-bold tracking-tight text-carbon-90">Your public page</h2>
             <p className="max-w-prose text-sm leading-[1.62] text-carbon-70">
@@ -305,6 +397,7 @@ export const UserProfilePage: React.FC = () => {
             />
           </section>
         )}
+        </div>
       </div>
     </Container>
   );

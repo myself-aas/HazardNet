@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { UserProfilePage } from '../UserProfilePage'
 import { useAuth } from '../../context/AuthContext'
@@ -80,8 +80,9 @@ describe('UserProfilePage — dedicated /profile URL', () => {
     renderPage()
 
     expect(screen.getByTestId('user-profile-page')).toBeInTheDocument()
-    // Both the page header (h1) and the public card (h2) name the account.
+    // The page header (h1) names the account; the public card lives behind its tab.
     expect(screen.getByRole('heading', { level: 1, name: /ashif/i })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('tab', { name: /public page/i }))
     expect(screen.getAllByRole('heading', { name: /ashif/i }).length).toBeGreaterThan(1)
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: /public page/i })).toHaveAttribute(
@@ -194,8 +195,9 @@ describe('UserProfilePage — design-system conformance', () => {
 
   it('offers one sign-out and one way back to the dashboard', () => {
     renderPage()
-    // There were two of each: one inside the security panel and one in the
-    // action footer, one panel link and one footer button.
+    // The sign-out control lives in the Account & session tab; there is exactly
+    // one of each across the whole page.
+    fireEvent.click(screen.getByRole('tab', { name: /account & session/i }))
     expect(screen.getAllByRole('button', { name: /sign out/i })).toHaveLength(1)
     expect(screen.getAllByRole('link', { name: /^dashboard$/i })).toHaveLength(1)
   })

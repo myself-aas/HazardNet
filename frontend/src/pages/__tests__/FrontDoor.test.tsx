@@ -22,7 +22,7 @@ import { axe, toHaveNoViolations } from 'jest-axe';
 
 import { FrontDoor } from '../FrontDoor';
 import siteRoutes from '../../content/site-routes.json';
-import { resetLanguageForTests } from '../../lib/i18n';
+import { resetLanguageForTests, toBengaliNumerals } from '../../lib/i18n';
 
 /**
  * The blog lives in Firestore; the front door reads it through the same module the blog page
@@ -67,6 +67,11 @@ const artifact = (name: string): unknown =>
 const FRESHNESS = artifact('freshness.json');
 const ALERTS = artifact('alerts-latest.json');
 const PERFORMANCE = artifact('model-performance.json');
+
+// The published count is read from the same artifact the page reads, so the test cannot drift
+// from the deployment's data again.
+const ALERT_COUNTS = (ALERTS as { counts: Record<string, number> }).counts;
+const PUBLISHED_ALERTS = (ALERT_COUNTS.WATCH || 0) + (ALERT_COUNTS.WARNING || 0) + (ALERT_COUNTS.SEVERE || 0);
 
 /**
  * URL-keyed fetch stub. `loadAlerts` tries the live API first and falls back to the committed
@@ -140,10 +145,10 @@ describe('the front door', () => {
     renderPage();
 
     const strip = await screen.findByTestId('front-door-status-strip');
-    // The alert artifact this deployment ships publishes 61 WATCH advisories across the 64
+    // The alert artifact this deployment ships publishes its WATCH+ advisories across the 64
     // continuous 15-day district trajectories (1 card per district, no duplicate horizons).
     expect(await within(strip).findByText(/Advisories are active/)).toBeInTheDocument();
-    expect(within(strip).getByText(/61 district advisories are published at WATCH or above/)).toBeInTheDocument();
+    expect(within(strip).getByText(new RegExp(`${PUBLISHED_ALERTS} district advisories are published at WATCH or above`))).toBeInTheDocument();
 
     // The run card moved to /last-run on 2026-10-05: the hero reaches it as a hyperlink,
     // and the card itself is no longer part of this page.
@@ -321,8 +326,8 @@ describe('the front door', () => {
     // the alert artifact over fetch and renders its "reading" state until that resolves.
     const strip = screen.getByTestId('front-door-status-strip');
     expect(await within(strip).findByText(/সতর্কবার্তা সক্রিয়/)).toBeInTheDocument();
-    // Bengali verdict body with Bengali digits — the artifact's 61 published district advisories.
-    expect(within(strip).getByText(/৬১টি জেলার সতর্কবার্তা/)).toBeInTheDocument();
+    // Bengali verdict body with Bengali digits, counted from the same artifact.
+    expect(within(strip).getByText(new RegExp(toBengaliNumerals(PUBLISHED_ALERTS) + "\u099F\u09BF \u099C\u09C7\u09B2\u09BE\u09B0 \u09B8\u09A4\u09B0\u09CD\u0995\u09AC\u09BE\u09B0\u09CD\u09A4\u09BE"))).toBeInTheDocument();
   });
 
   it('falls back to English field by field when the Bengali block is incomplete', () => {

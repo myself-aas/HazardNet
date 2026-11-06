@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 import {
   BJORK_PALETTE,
+  cssVar,
   type BjorkTone,
 } from "@/components/ui/handoff-beam-utils/palette";
 
@@ -169,8 +170,8 @@ function resolvePalette(
   if (dark) {
     return {
       key: "ember:dark",
-      core: ["#ff9500", "#ff9f0a", "#ff8a5b", "#ca3a2f"],
-      edge: ["#ff9500", "#b1488e", "#ca3a2f", "#a75b2f"],
+      core: [cssVar("--color-orange-500"), cssVar("--color-orange-400"), cssVar("--color-amber-500"), cssVar("--color-red-600")],
+      edge: [cssVar("--color-orange-500"), cssVar("--color-pink-600"), cssVar("--color-red-600"), cssVar("--color-amber-600")],
       glow: 1,
       gain: 1,
     };
@@ -178,8 +179,8 @@ function resolvePalette(
   return {
     // Saturated, deeper ember: on a cream surface a pale glow washes out (light saturation stays above 0.35).
     key: "ember:light",
-    core: ["#b3400f", "#a75b2f", "#8a5a00", "#ca3a2f"],
-    edge: ["#b3400f", "#b1488e", "#ca3a2f", "#ff9500"],
+    core: [cssVar("--color-red-600"), cssVar("--color-amber-600"), cssVar("--color-amber-600"), cssVar("--color-red-600")],
+    edge: [cssVar("--color-red-600"), cssVar("--color-pink-600"), cssVar("--color-red-600"), cssVar("--color-orange-500")],
     glow: 0.6,
     gain: 1.7,
   };
@@ -622,7 +623,7 @@ export function HandoffBeam({
     const glow = L.palette.glow;
 
     // Mask in white: a faint haze under the curve, two soft glow ribbons and a hairline core.
-    ctx.fillStyle = "#fff";
+    ctx.fillStyle = cssVar("--ap-bg-raised", "white");
     for (let layer = 1; layer <= 3; layer++) {
       const f = layer / 3;
       ctx.globalAlpha = 0.045 * glow;

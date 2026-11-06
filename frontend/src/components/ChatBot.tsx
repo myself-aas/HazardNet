@@ -5,6 +5,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { LiveVoiceAdvisor } from './LiveVoiceAdvisor';
 import { ExternalLink, Loader2, MapPin, MessageSquare, Mic, Search, Send, X } from 'lucide-react';
 import { HandoffBeam, createSimulatedVoice, type BeamPhase } from '@/components/ui/handoff-beam';
+import { cssVar } from '@/components/ui/handoff-beam-utils/palette';
 
 interface GroundingFacility {
   title: string;
@@ -513,7 +514,7 @@ export default function ChatBot() {
                   <HandoffBeam
                     phase={beamPhase}
                     level={loading ? voiceLevel : undefined}
-                    palette={['#0071e3', '#2997ff', '#52adff']}
+                    palette={[cssVar('--color-blue-600'), cssVar('--color-blue-400'), cssVar('--color-blue-300')]}
                     radius={12}
                     reach={16}
                     className="w-full"

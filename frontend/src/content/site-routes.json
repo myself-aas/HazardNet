@@ -22,6 +22,36 @@
  },
  "routes": [
   {
+   "path": "/reports",
+   "label": "Daily reports",
+   "title": "HazardNet: daily reports published from the latest Kaggle dataset run",
+   "description": "The daily report page, rebuilt automatically by the CI/CD pipeline from the newest verified Kaggle advisory dataset: tier and hazard distribution, severity by division, the highest-severity advisories, and the full step-by-step method, with interactive charts and tables.",
+   "robots": "index,follow",
+   "sitemap": {
+    "changefreq": "daily",
+    "priority": 0.7
+   },
+   "appShell": true,
+   "updated": "2026-11-06",
+   "h1": "Daily report",
+   "standfirst": "Published automatically from the latest verified Kaggle dataset run."
+  },
+  {
+   "path": "/reports/archive",
+   "label": "Report archive",
+   "title": "HazardNet: archive of daily reports",
+   "description": "Every daily report the CI/CD pipeline has published from verified Kaggle dataset runs, newest first, with each run's coverage and highest-severity advisory.",
+   "robots": "index,follow",
+   "sitemap": {
+    "changefreq": "daily",
+    "priority": 0.6
+   },
+   "appShell": true,
+   "updated": "2026-11-06",
+   "h1": "Daily report archive",
+   "standfirst": "One report per verified dataset run."
+  },
+  {
    "path": "/",
    "label": "Overview",
    "title": "HazardNet: multi-hazard early warning for Bangladesh agriculture",

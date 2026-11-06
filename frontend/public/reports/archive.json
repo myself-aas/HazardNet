@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "entries": [
+    {
+      "date": "2026-11-05",
+      "file": "2026-11-05.md",
+      "runId": "kaggle-v46-a03b9ccce324",
+      "generatedAt": "2026-11-05T23:04:56.750Z",
+      "datasetVersion": 46,
+      "modelVersion": "2.1.9+model.0bb5bdaf1789",
+      "rows": 960,
+      "districts": 64,
+      "forecastDays": 15,
+      "tiers": {
+        "WATCH": 960
+      },
+      "topAdvisory": {
+        "district": "Kurigram",
+        "hazard": "Tropical Cyclone",
+        "tier": "WATCH",
+        "severityScore": 0.3
+      }
+    }
+  ]
+}
