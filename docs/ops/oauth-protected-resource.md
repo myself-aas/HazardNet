@@ -12,11 +12,20 @@ The owner chose on **2026-11-06** to keep the existing Firebase OIDC issuer:
 https://securetoken.google.com/hazardnet-aas48424
 ```
 
-The website origin is the protected resource, not an authorization server. Cloudflare Access
-is **not** configured by this change. No Access team domain or issuer is guessed. Moving to
-Access later is an owner architecture decision: provision the Access application, record its
-real issuer, and change token validation and PRM together. Changing only the metadata would
-advertise tokens the resource does not accept.
+**Access is explicitly out of scope.** The originating requirement named Cloudflare Access as
+the authorization server. Asked for the real team domain and application AUD, the owner
+answered **"No cloudflare, only firebase"** (2026-11-06). That is a recorded waiver of the
+Access line, not an omission: Firebase is the single advertised issuer.
+
+The website origin is the protected resource, not an authorization server. No Access team
+domain or issuer is guessed, because RFC 9728 requires `authorization_servers` to name issuers
+that exist and whose tokens this resource actually accepts. Publishing an Access issuer while
+Firebase verifies the tokens would advertise credentials the resource rejects.
+
+Revisiting Access later is an owner architecture decision with two coupled parts: provision
+the Access application (and decide which hostnames/paths it protects — Access in front of the
+whole hostname would put the public hazard outlook behind a login), then change token
+validation and this document together.
 
 ## What ships
 
@@ -92,7 +101,23 @@ curl -sS -D - http://127.0.0.1:3002/.well-known/oauth-protected-resource
 
 ## Owner verification after deployment — Action 26
 
-From a network that can reach both hosts:
+The scan is automated in the existing **Site Health Probe** workflow (`.github/workflows/site-health.yml`,
+`agent-readiness` job). It is dispatch-only and read-only: it POSTs the scan, prints
+`checks.discovery.oauthProtectedResource.status`, uploads the raw response, and fails the run
+unless that value is literally `pass`. An unreachable scanner or a missing field is reported
+as **inconclusive**, never as a pass.
+
+```bash
+# Scan only — skips the probe job, so no probe-record commit is published.
+gh workflow run site-health.yml --ref <branch> -f scan_only=true
+gh run watch
+```
+
+`scripts/scan_agent_readiness.mjs` is the same check for any machine that can reach the
+scanner (`node scripts/scan_agent_readiness.mjs --url https://hazardnet.live`), and
+`--from-file <response.json>` re-reads a saved response without a network call.
+
+Manual equivalent, from a network that can reach both hosts:
 
 ```bash
 curl -sS -D - https://hazardnet.live/.well-known/oauth-protected-resource
@@ -114,7 +139,11 @@ static document remains available if the Function allowance is exhausted.
 
 ## Verification record (2026-11-06, branch-local)
 
-- `npx jest --ci --runInBand --silent`: **216 suites, 2327 tests passed**.
+- `npx jest --ci --runInBand --silent`: **217 suites, 2338 tests passed** (includes
+  `__tests__/agentReadinessScan.test.js`, which spawns the scan script against a real local
+  HTTP server and asserts the POST method, content type, body and every exit path).
+- `node scripts/check-workflows.mjs`: passed — `site-health.yml` parses with 2 jobs and no
+  `secrets` context in any `if:`. `bash scripts/check-secrets.sh`: passed.
 - `npm run lint` (TypeScript): passed.
 - `npm run lint:eslint`: passed the repository gate (0 errors, 581 warnings; budget 685).
   The changed/new edge files and their suites were also linted with `--max-warnings 0`.
@@ -136,8 +165,16 @@ static document remains available if the Function allowance is exhausted.
   `check:residue` still reports the pre-existing undefined-token residue. No unrelated UI
   token debt was changed by this work.
 
-The external `POST https://isitagentready.com/api/scan` attempt could not connect from this
-sandbox (`SSL_ERROR_SYSCALL`); direct `curl` probes to the public hosts were also blocked.
-Therefore no external scanner pass or deployed Function response is claimed. The previously
+The external `POST https://isitagentready.com/api/scan` cannot be reached from the build
+sandbox (`SSL_ERROR_SYSCALL`); a GET to the same path answers
+`{"error":"Method not allowed. Use POST."}`, which confirms the host but is not a scan.
+The POST therefore runs on a GitHub runner via the `agent-readiness` job. Its verdict is
+recorded below when the run lands — until then no scanner pass is claimed. The previously
 observed live document was the static Firebase-issuer metadata, not evidence that this new
 Function is deployed. Owner Action 26 remains open.
+
+### Scanner run record
+
+| Date (UTC) | Run | Scanned URL | `checks.discovery.oauthProtectedResource.status` | Outcome |
+|---|---|---|---|---|
+| _pending_ | _dispatched from this branch_ | `https://hazardnet.live` | _not yet observed_ | inconclusive until the run reports |
