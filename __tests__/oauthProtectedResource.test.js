@@ -11,6 +11,10 @@ import {
   PROTECTED_RESOURCE_CACHE_CONTROL,
   RESOURCE_METADATA_CHALLENGE,
   FIREBASE_AUTH_ISSUER,
+  PROTECTED_RESOURCE_HOSTS,
+  resourceOriginFor,
+  protectedResourceMetadataFor,
+  resourceMetadataChallengeFor,
   applyResourceMetadataChallenge,
 } from '../backend/security/oauthProtectedResource.js';
 import { oauthResourceMetadataChallenge } from '../backend/middleware/oauthResourceMetadata.js';
@@ -222,5 +226,87 @@ describe('RFC 9728 resource_metadata discovery challenge', () => {
     const publicResponse = await request(app).get('/api/v1/alerts/policy');
     expect(publicResponse.status).toBe(200);
     expect(publicResponse.headers['www-authenticate']).toBeUndefined();
+  });
+});
+
+/**
+ * Regression for the observed production failure. The 2026-11-05 isitagentready.com scan of
+ * `https://hazardnet.live` fetched this path, received 200 with parseable JSON, and still
+ * concluded "No OAuth Protected Resource Metadata found": its audit step read
+ * `JSON missing or invalid "resource" field, or resource mismatch`. The document named
+ * `https://www.hazardnet.live` while the scan target was the apex. RFC 9728 §3.2 requires
+ * the returned `resource` to match the identifier the client used, so the document is
+ * host-aware and the apex answers for the apex.
+ */
+describe('RFC 9728 §3.2 resource identity matches the requested host', () => {
+  const apex = 'https://hazardnet.live';
+
+  it('resolves both published hostnames to themselves and nothing else', () => {
+    expect(PROTECTED_RESOURCE_HOSTS).toEqual(['hazardnet.live', 'www.hazardnet.live']);
+    expect(resourceOriginFor(`${apex}${PROTECTED_RESOURCE_PATH}`)).toBe(apex);
+    expect(resourceOriginFor(`${origin}${PROTECTED_RESOURCE_PATH}`)).toBe(origin);
+    expect(resourceOriginFor(`https://WWW.HazardNet.Live${PROTECTED_RESOURCE_PATH}`)).toBe(origin);
+    // A dev port is not part of the published identity.
+    expect(resourceOriginFor(`https://hazardnet.live:8443${PROTECTED_RESOURCE_PATH}`)).toBe(apex);
+  });
+
+  it('never mints a resource identifier for an unrecognised Host', () => {
+    for (const url of [
+      'https://attacker.example/.well-known/oauth-protected-resource',
+      'https://hazardnet.live.attacker.example/x',
+      'https://evilhazardnet.live/x',
+      'http://127.0.0.1:3002/x',
+      'http://localhost:3000/x',
+      'https://abc123.hazardnet.pages.dev/x',
+      'not a url',
+      undefined,
+    ]) {
+      expect(resourceOriginFor(url)).toBe(origin);
+    }
+  });
+
+  it('serves the apex resource from the Pages Function when the apex is requested', async () => {
+    const response = await edgeMetadata({ request: new Request(`${apex}${PROTECTED_RESOURCE_PATH}`) });
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.resource).toBe(apex);
+    expect(body.authorization_servers).toEqual([FIREBASE_AUTH_ISSUER]);
+    expect(body.scopes_supported).toEqual(published.scopes_supported);
+    // Only the resource identifier moves; the published docs stay canonical.
+    expect(body.resource_documentation).toBe(published.resource_documentation);
+  });
+
+  it('serves the canonical resource on www and on an unknown preview host', async () => {
+    for (const host of [origin, 'https://abc123.hazardnet.pages.dev']) {
+      const response = await edgeMetadata({ request: new Request(`${host}${PROTECTED_RESOURCE_PATH}`) });
+      expect(await response.json()).toEqual(published);
+    }
+  });
+
+  it('matches the requested host through the real Express app', async () => {
+    const apexResponse = await request(app).get(PROTECTED_RESOURCE_PATH).set('Host', 'hazardnet.live');
+    expect(apexResponse.status).toBe(200);
+    expect(apexResponse.body.resource).toBe(apex);
+    const wwwResponse = await request(app).get(PROTECTED_RESOURCE_PATH).set('Host', 'www.hazardnet.live');
+    expect(wwwResponse.body.resource).toBe(origin);
+    const spoofed = await request(app).get(PROTECTED_RESOURCE_PATH).set('Host', 'attacker.example');
+    expect(spoofed.body.resource).toBe(origin);
+  });
+
+  it('points the 401 challenge at the metadata of the host that answered', async () => {
+    const headers = applyResourceMetadataChallenge(new Headers(), 401, `${apex}/api/v1/alerts/review`);
+    expect(headers.get('WWW-Authenticate')).toBe(resourceMetadataChallengeFor(apex));
+    expect(headers.get('WWW-Authenticate')).toBe(`Bearer resource_metadata="${apex}${PROTECTED_RESOURCE_PATH}"`);
+
+    const response = await edgeMiddleware({
+      request: new Request(`${apex}/api/v1/alerts/review`),
+      next: async () => Response.json({ error: 'sign in' }, { status: 401 }),
+    });
+    expect(response.headers.get('www-authenticate')).toBe(resourceMetadataChallengeFor(apex));
+  });
+
+  it('keeps the static fail-open fallback identical to the canonical document', () => {
+    expect(published).toEqual(protectedResourceMetadataFor(origin));
+    expect(published).toEqual(PROTECTED_RESOURCE_METADATA);
   });
 });

@@ -1,8 +1,14 @@
 # OAuth Protected Resource Metadata (RFC 9728)
 
-**Status: implemented in this branch; the Pages Function is not deployed or externally scanned.**
-The canonical resource is `https://www.hazardnet.live`. `https://hazardnet.live` is the apex
-alias and redirects to the canonical host.
+**Status: implemented in this branch; not yet deployed. The live scanner currently FAILS this
+check on production — see "Scanner evidence" below for the observed cause.**
+
+Both `https://hazardnet.live` (apex) and `https://www.hazardnet.live` serve the site from the
+same Pages project. `www` remains the canonical host for pages, sitemap and documentation, but
+**this path does not redirect**: the scanner fetched the apex directly and got `200`. The
+`resource` identifier is therefore host-aware — the apex document names the apex, and the
+`www` document names `www` — because RFC 9728 §3.2 requires the returned `resource` to match
+the identifier the client used.
 
 ## Issuer decision
 
@@ -121,7 +127,8 @@ Manual equivalent, from a network that can reach both hosts:
 
 ```bash
 curl -sS -D - https://hazardnet.live/.well-known/oauth-protected-resource
-# Expect the apex redirect, then fetch the canonical URL below.
+# Expect 200 application/json with resource=https://hazardnet.live (the apex answers for
+# itself; this path does not redirect to www).
 curl -sS -D - https://www.hazardnet.live/.well-known/oauth-protected-resource
 # Expect 200 application/json, resource=https://www.hazardnet.live,
 # authorization_servers=[https://securetoken.google.com/hazardnet-aas48424].
@@ -139,9 +146,10 @@ static document remains available if the Function allowance is exhausted.
 
 ## Verification record (2026-11-06, branch-local)
 
-- `npx jest --ci --runInBand --silent`: **217 suites, 2338 tests passed** (includes
+- `npx jest --ci --runInBand --silent`: **217 suites, 2345 tests passed** (includes
   `__tests__/agentReadinessScan.test.js`, which spawns the scan script against a real local
-  HTTP server and asserts the POST method, content type, body and every exit path).
+  HTTP server and asserts the POST method, content type, body and every exit path, and the
+  host-identity regressions in `__tests__/oauthProtectedResource.test.js`).
 - `node scripts/check-workflows.mjs`: passed — `site-health.yml` parses with 2 jobs and no
   `secrets` context in any `if:`. `bash scripts/check-secrets.sh`: passed.
 - `npm run lint` (TypeScript): passed.
@@ -155,8 +163,21 @@ static document remains available if the Function allowance is exhausted.
   --ip=0.0.0.0 --compatibility-date=2026-11-06`): GET returned 200 JSON with the canonical
   resource/issuer/scopes and CSP/HSTS/Link/CORS headers; HEAD returned 200 with an empty
   body; POST returned 405 with `Allow: GET, HEAD` and `{"error":"method not allowed"}`.
-  Assertion marker: `LOCAL_PAGES_PRM_PASS`. The preview was stopped and the generated
-  `.wrangler` cache removed after the smoke.
+  Assertion marker: `LOCAL_PAGES_PRM_PASS`.
+- **Host-identity smoke on the same real Pages runtime** — the fix for the observed scanner
+  failure, asserted over the wire with different `Host` headers:
+
+  | Request `Host` | Status | Returned `resource` |
+  |---|---|---|
+  | `hazardnet.live` | 200 | `https://hazardnet.live` |
+  | `www.hazardnet.live` | 200 | `https://www.hazardnet.live` |
+  | `attacker.example` | 200 | `https://www.hazardnet.live` (canonical fallback) |
+  | `hazardnet.live.attacker.example` | 200 | `https://www.hazardnet.live` (canonical fallback) |
+
+  Every response was `application/json; charset=utf-8` with the Firebase issuer and
+  `read:historical`; HEAD on the apex returned 200 with an empty body and POST returned 405
+  with `Allow: GET, HEAD`. Assertion marker: `HOST_AWARE_PAGES_PRM_PASS`. The preview was
+  stopped and the generated `.wrangler` cache removed after the smokes.
 - The new `WWW-Authenticate` header write is dispositioned in
   `docs/ops/cache-write-register.json` as a Headers mutation, not a cache write.
 - Design/source, design, audit, protocol, path and claim gates passed. The aggregate
@@ -173,8 +194,56 @@ recorded below when the run lands — until then no scanner pass is claimed. The
 observed live document was the static Firebase-issuer metadata, not evidence that this new
 Function is deployed. Owner Action 26 remains open.
 
+### Scanner evidence — observed 2026-11-05, production (before this branch)
+
+Read from the scanner's own public report for `https://hazardnet.live`
+(`https://isitagentready.com/hazardnet.live`, "Last scanned 11/5/2026"). Overall score 94,
+"API, Auth, MCP & Skill Discovery" 7/8 — the one failing check is this one:
+
+```
+OAuth Protected Resource
+  GET /.well-known/oauth-protected-resource   200
+      content-type: application/octet-stream
+      content-length: 617
+  Received JSON response (200)
+  Validate resource metadata
+      → JSON missing or invalid "resource" field, or resource mismatch
+  GET /   200
+      → Target resource returned 200 (no WWW-Authenticate header)
+  Conclusion: No OAuth Protected Resource Metadata found
+```
+
+The document was reachable and parseable. It failed on **identity**: the scan target was the
+apex `https://hazardnet.live`, while the served static file declared
+`resource: "https://www.hazardnet.live"`. Two defects follow, and this branch fixes both:
+
+1. **Resource mismatch** — the response now derives `resource` from the request host through a
+   closed allowlist (`hazardnet.live`, `www.hazardnet.live`); any other Host falls back to the
+   canonical origin, so a spoofed Host cannot make the endpoint mint an attacker's identifier.
+2. **`application/octet-stream`** — the extensionless static asset was served untyped. The
+   Function sets `application/json; charset=utf-8`, and `_headers` sets the same on the static
+   fallback.
+
+The same report shows the sibling Auth.md check reading this document successfully
+("Valid metadata with resource https://www.hazardnet.live and 1 authorization server(s)"),
+which confirms the JSON was well-formed and the issuer was accepted — the failing assertion
+was specifically the resource-identity comparison.
+
+**Fail-open caveat:** the static fallback is one file and can only declare one identifier
+(`www`). If the Pages Function allowance is exhausted and the apex serves the static asset,
+the apex identity check can fail again. The Function is the primary path; this is a degraded
+mode, not the published contract.
+
 ### Scanner run record
 
-| Date (UTC) | Run | Scanned URL | `checks.discovery.oauthProtectedResource.status` | Outcome |
+| Date (UTC) | Source | Scanned URL | Verdict | Note |
 |---|---|---|---|---|
-| _pending_ | _dispatched from this branch_ | `https://hazardnet.live` | _not yet observed_ | inconclusive until the run reports |
+| 2026-11-05 | Scanner public report | `https://hazardnet.live` | **fail** — "No OAuth Protected Resource Metadata found" | Production before this branch; resource mismatch (apex vs `www`) |
+| _pending_ | `agent-readiness` job | `https://hazardnet.live` | _not yet observed_ | Requires this branch deployed, then a dispatch |
+
+The required `POST https://isitagentready.com/api/scan` could not be issued from the build
+sandbox (outbound TLS blocked; a GET to that path answers `{"error":"Method not allowed. Use
+POST."}`). The `agent-readiness` job added in this branch runs that exact POST on a runner.
+Dispatching it from this session returned **HTTP 403 — Resource not accessible by integration**:
+the session's GitHub token can push but cannot dispatch workflows. The owner must run it.
+**No post-fix scanner pass is claimed.**

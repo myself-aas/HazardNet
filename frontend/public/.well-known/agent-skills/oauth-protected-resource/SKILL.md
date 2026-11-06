@@ -17,7 +17,7 @@ Publish OAuth Protected Resource Metadata so agents can discover the resource id
 
 ## Implementation
 
-HazardNet serves this document from a Cloudflare Pages Function (Workers runtime), with an identical extensionless static asset as the fail-open/local-development fallback. Express serves the same shared document. The canonical resource is `https://www.hazardnet.live`; `https://hazardnet.live` redirects to it.
+HazardNet serves this document from a Cloudflare Pages Function (Workers runtime), with an identical extensionless static asset as the fail-open/local-development fallback. Express serves the same shared document. Both `https://hazardnet.live` and `https://www.hazardnet.live` serve this path directly (it does not redirect), so `resource` matches the requested host: the apex document names the apex, the `www` document names `www`. Any other Host falls back to the canonical `https://www.hazardnet.live`. Documentation, policy and TOS URLs stay canonical.
 
 ```json
 {

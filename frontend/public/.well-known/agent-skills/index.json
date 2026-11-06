@@ -62,7 +62,7 @@
       "type": "skill-md",
       "description": "Publish OAuth Protected Resource Metadata per RFC 9728.",
       "url": "/.well-known/agent-skills/oauth-protected-resource/SKILL.md",
-      "digest": "sha256:1df6415884351154f96619e7022fb5b23dcafd3dde8fb02d706503a959ef2d2c"
+      "digest": "sha256:ae25ead188d6a3c5cee52eebf4be5ebde7876810f3de06d92b016d6327f44439"
     }
   ]
 }

@@ -1,5 +1,5 @@
 /** Express adapter for the RFC 9728 §5 discovery challenge. */
-import { RESOURCE_METADATA_CHALLENGE } from '../security/oauthProtectedResource.js';
+import { resourceMetadataChallengeFor, resourceOriginFor } from '../security/oauthProtectedResource.js';
 
 /**
  * Express routes call res.status(401) before sending their body. Intercept the
@@ -7,7 +7,8 @@ import { RESOURCE_METADATA_CHALLENGE } from '../security/oauthProtectedResource.
  * A challenge already set by the route wins, including one passed to writeHead.
  * Successful/public responses keep proactive discovery in Link, not WWW-Authenticate.
  */
-export function oauthResourceMetadataChallenge(_req, res, next) {
+export function oauthResourceMetadataChallenge(req, res, next) {
+  const challenge = resourceMetadataChallengeFor(resourceOriginFor(`${req.protocol}://${req.get('host')}`));
   const writeHead = res.writeHead;
   res.writeHead = function (statusCode, ...args) {
     const supplied = args.findLast((arg) => arg !== null && typeof arg === 'object');
@@ -16,7 +17,7 @@ export function oauthResourceMetadataChallenge(_req, res, next) {
       : Boolean(supplied && Object.keys(supplied).some((name) => name.toLowerCase() === 'www-authenticate'));
 
     if (statusCode === 401 && !res.getHeader('WWW-Authenticate') && !hasChallenge) {
-      res.setHeader('WWW-Authenticate', RESOURCE_METADATA_CHALLENGE);
+      res.setHeader('WWW-Authenticate', challenge);
     }
     return writeHead.call(this, statusCode, ...args);
   };

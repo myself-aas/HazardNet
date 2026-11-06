@@ -230,7 +230,7 @@ const FIREBASE_API_KEY = 'AIzaSyBwyxWm0MIQlTmjJ-NKPKjl72AYLS7oDqQ';
 // RFC 9728: the same public metadata document as the Pages Function. Keep the
 // Firebase issuer and the static fail-open asset in sync through the shared module.
 app.all(PROTECTED_RESOURCE_PATH, async (req, res) => {
-  const response = protectedResourceMetadataResponse(req.method);
+  const response = protectedResourceMetadataResponse(req.method, `${req.protocol}://${req.get('host')}`);
   res.status(response.status);
   response.headers.forEach((value, name) => res.setHeader(name, value));
   if (response.body === null) return res.end();

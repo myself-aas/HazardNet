@@ -6,5 +6,7 @@ interface PagesContext {
 }
 
 export function onRequest(context: PagesContext): Response {
-  return protectedResourceMetadataResponse(context.request.method);
+  // Pass the request URL: RFC 9728 §3.2 requires `resource` to match the identifier the
+  // client used, and both the apex and www hostnames serve this path.
+  return protectedResourceMetadataResponse(context.request.method, context.request.url);
 }

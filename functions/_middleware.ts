@@ -41,7 +41,7 @@ export async function onRequest(context: PagesContext): Promise<Response> {
   applySecurityHeaders(headers);
   // RFC 9728 §5: a discovery hint on an otherwise unchallenged 401. This does
   // not authenticate the request or turn a public endpoint into a protected one.
-  applyResourceMetadataChallenge(headers, response.status);
+  applyResourceMetadataChallenge(headers, response.status, context.request.url);
 
   const body = NULL_BODY_STATUSES.has(response.status) ? null : response.body;
 
