@@ -32,7 +32,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { parse } from '@babel/parser';
 import _traverse from '@babel/traverse';
-import { resolvePaintColor, contrast, isResting, RESOLVER, LITERAL } from './lib/class-resolver.mjs';
+import { resolvePaintColor, contrast, isResting, propOf, RESOLVER, LITERAL } from './lib/class-resolver.mjs';
 import { parseColor, toHex } from './lib/token-resolver.mjs';
 
 const traverse = _traverse.default ?? _traverse;
@@ -182,12 +182,28 @@ function classesOf(node) {
   return out;
 }
 
+/**
+ * True when a class paints `prop` with a colour this model can stand behind — a named ramp
+ * step (`text-carbon-70`), or an arbitrary value that resolves to a colour
+ * (`bg-[var(--ap-bg-card)]`, `text-[#8a5a00]`). Arbitrary payloads that are not colours
+ * (`bg-[url(…)]`, `text-[length:var(--ap-type-body-md-size)]`) answer false, exactly as
+ * they did when the CLS regex was the only gate; the difference is that an arbitrary
+ * *colour* is no longer invisible to the walk. That mattered: the district, alerts and map
+ * surfaces are written almost entirely in arbitrary `var(--ap-*)` values, so the routes a
+ * visitor actually reads were the ones this scanner could not see.
+ */
+function paintsProp(cls, prop, mode) {
+  if (!isResting(cls)) return false;
+  const m = CLS.exec(cls);
+  if (m) return m[2] === prop;
+  return propOf(cls) === prop && resolvePaintColor(cls, mode) !== null;
+}
+
 const pick = (entries, prop, mode) => {
   let base = null;
   let dark = null;
   for (const e of entries) {
-    const m = CLS.exec(e.cls);
-    if (!m || m[2] !== prop || !isResting(e.cls)) continue;
+    if (!paintsProp(e.cls, prop, mode)) continue;
     if (e.cls.startsWith('dark:')) dark = e;
     else base = e;
   }
@@ -261,7 +277,12 @@ function hasUnknownImageBackground(classes, mode) {
   return classes.some(({ cls }) => {
     if (cls.startsWith('dark:') && mode !== 'dark') return false;
     const base = cls.split(':').pop();
-    return /^bg-(?:gradient|linear)-/.test(base) || /^bg-\[/.test(base);
+    if (/^bg-(?:gradient|linear)-/.test(base)) return true;
+    // An arbitrary background is an unscoreable image ONLY when its payload is not a colour
+    // (`bg-[url(…)]`, `bg-[linear-gradient(…)]`). `bg-[var(--ap-bg-card)]` paints a known
+    // colour and is the surface its children must be measured against — treating it as an
+    // image is what made whole district-route subtrees invisible to this walk.
+    return /^bg-\[/.test(base) && resolvePaintColor(cls, mode) === null;
   });
 }
 

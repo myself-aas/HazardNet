@@ -68,7 +68,7 @@ export const DistrictLiveSnapshotSlot: React.FC<{ districtId: string }> = ({ dis
           </p>
         </div>
 
-        <span className="inline-flex min-h-[44px] shrink-0 self-start items-center rounded-full border border-[var(--ap-separator-opaque)] bg-[var(--ap-canvas)] px-4 text-xs font-semibold text-[var(--ap-label)]">
+        <span className="inline-flex min-h-[44px] shrink-0 self-start items-center rounded-full border border-[var(--ap-separator-opaque)] bg-[var(--ap-bg-elevated)] px-4 text-xs font-semibold text-[var(--ap-label)]">
           Continuous 15-day trajectory (Days 1–15)
         </span>
       </div>

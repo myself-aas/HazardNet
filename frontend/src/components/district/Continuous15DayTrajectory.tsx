@@ -12,7 +12,7 @@ import {
   ReferenceLine,
   Legend,
 } from 'recharts';
-import { AlertLevelBadge, ADVISORY_TIER_COLOURS } from '../alerts/AlertLevelBadge';
+import { AlertLevelBadge, ADVISORY_TIER_COLOUR_VARS } from '../alerts/AlertLevelBadge';
 import { HazardGlyph } from '../apple/HazardGlyph';
 import { CardStackRows, type CardStackRow } from '../ui/CardStackTable';
 import { useI18n } from '../../hooks/useI18n';
@@ -176,8 +176,8 @@ export const Continuous15DayTrajectory: React.FC<Continuous15DayTrajectoryProps>
       {peakRows.length > 0 && primaryPeak && (
         <div
           data-testid="peak-severe-banner"
-          className="rounded-xl border-2 bg-[var(--ap-canvas)] p-3.5 sm:p-4 space-y-2.5"
-          style={{ borderColor: ADVISORY_TIER_COLOURS[primaryPeak.tier] ?? ADVISORY_TIER_COLOURS.WATCH }}
+          className="rounded-xl border-2 bg-[var(--ap-bg-elevated)] p-3.5 sm:p-4 space-y-2.5"
+          style={{ borderColor: ADVISORY_TIER_COLOUR_VARS[primaryPeak.tier] ?? ADVISORY_TIER_COLOUR_VARS.WATCH }}
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="space-y-1 min-w-0">
@@ -248,7 +248,7 @@ export const Continuous15DayTrajectory: React.FC<Continuous15DayTrajectoryProps>
       {/* 2. Interactive 15-Day Trajectory Chart */}
       <div
         data-testid="trajectory-15day-chart"
-        className="rounded-xl border border-[var(--ap-separator-opaque)] bg-[var(--ap-canvas)] p-3.5 sm:p-4 space-y-3 no-print"
+        className="rounded-xl border border-[var(--ap-separator-opaque)] bg-[var(--ap-bg-elevated)] p-3.5 sm:p-4 space-y-3 no-print"
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
@@ -273,7 +273,7 @@ export const Continuous15DayTrajectory: React.FC<Continuous15DayTrajectoryProps>
                   className={`ap-focusable min-h-[44px] rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
                     active
                       ? 'border-[var(--ap-primary)] bg-[var(--ap-bg-grouped)] text-[var(--ap-label)]'
-                      : 'border-[var(--ap-separator-opaque)] bg-[var(--ap-canvas)] text-[var(--ap-label-secondary)] hover:text-[var(--ap-label)]'
+                      : 'border-[var(--ap-separator-opaque)] bg-[var(--ap-bg-card)] text-[var(--ap-label-secondary)] hover:text-[var(--ap-label)]'
                   }`}
                 >
                   {label}
@@ -312,7 +312,7 @@ export const Continuous15DayTrajectory: React.FC<Continuous15DayTrajectoryProps>
                   contentStyle={{
                     fontSize: 12,
                     borderRadius: 8,
-                    backgroundColor: 'var(--ap-canvas)',
+                    backgroundColor: 'var(--ap-bg-elevated)',
                     borderColor: 'var(--ap-separator-opaque)',
                     color: 'var(--ap-label)',
                   }}
@@ -366,7 +366,7 @@ export const Continuous15DayTrajectory: React.FC<Continuous15DayTrajectoryProps>
                   contentStyle={{
                     fontSize: 12,
                     borderRadius: 8,
-                    backgroundColor: 'var(--ap-canvas)',
+                    backgroundColor: 'var(--ap-bg-elevated)',
                     borderColor: 'var(--ap-separator-opaque)',
                     color: 'var(--ap-label)',
                   }}
@@ -414,7 +414,7 @@ export const Continuous15DayTrajectory: React.FC<Continuous15DayTrajectoryProps>
                   contentStyle={{
                     fontSize: 12,
                     borderRadius: 8,
-                    backgroundColor: 'var(--ap-canvas)',
+                    backgroundColor: 'var(--ap-bg-elevated)',
                     borderColor: 'var(--ap-separator-opaque)',
                     color: 'var(--ap-label)',
                   }}
@@ -465,7 +465,7 @@ export const Continuous15DayTrajectory: React.FC<Continuous15DayTrajectoryProps>
               data-testid="trajectory-day-picker"
               value={selectedDayFilter}
               onChange={(e) => setSelectedDayFilter(e.target.value)}
-              className="ap-focusable min-h-[44px] rounded-lg border border-[var(--ap-separator-opaque)] bg-[var(--ap-canvas)] px-3 py-1.5 text-xs font-semibold text-[var(--ap-label)]"
+              className="ap-focusable min-h-[44px] rounded-lg border border-[var(--ap-separator-opaque)] bg-[var(--ap-input-fill)] px-3 py-1.5 text-xs font-semibold text-[var(--ap-label)]"
             >
               <option value="all">{t('daily.filterAll')}</option>
               {peakRows.length > 0 && <option value="peak">{t('daily.filterPeak')}</option>}
@@ -489,7 +489,7 @@ export const Continuous15DayTrajectory: React.FC<Continuous15DayTrajectoryProps>
               data-testid="trajectory-sort-picker"
               value={tableSort}
               onChange={(e) => setTableSort(e.target.value as TableSort)}
-              className="ap-focusable min-h-[44px] rounded-lg border border-[var(--ap-separator-opaque)] bg-[var(--ap-canvas)] px-3 py-1.5 text-xs font-semibold text-[var(--ap-label)]"
+              className="ap-focusable min-h-[44px] rounded-lg border border-[var(--ap-separator-opaque)] bg-[var(--ap-input-fill)] px-3 py-1.5 text-xs font-semibold text-[var(--ap-label)]"
             >
               <option value="day">{t('daily.sortDay')}</option>
               <option value="severity">{t('daily.sortSeverity')}</option>
@@ -508,7 +508,7 @@ export const Continuous15DayTrajectory: React.FC<Continuous15DayTrajectoryProps>
         {filteredDays.map((row) => {
           const isPeak = peakDateSet.has(row.targetDate);
           const sevIndex = severityIndexOf(row.severityScore);
-          const tierColour = ADVISORY_TIER_COLOURS[row.tier] ?? ADVISORY_TIER_COLOURS.NORMAL;
+          const tierColour = ADVISORY_TIER_COLOUR_VARS[row.tier] ?? ADVISORY_TIER_COLOUR_VARS.NORMAL;
           const cellInner = (
             <>
               <div className="flex items-center justify-between gap-1">
@@ -558,8 +558,8 @@ export const Continuous15DayTrajectory: React.FC<Continuous15DayTrajectoryProps>
               data-peak={isPeak ? 'true' : undefined}
               className={`rounded-lg p-2.5 transition-colors ${
                 isPeak
-                  ? 'border-2 bg-[var(--ap-canvas)] shadow-2xs'
-                  : 'border border-[var(--ap-separator-opaque)] bg-[var(--ap-canvas)]/70'
+                  ? 'border-2 bg-[var(--ap-bg-elevated)] shadow-2xs'
+                  : 'border border-[var(--ap-separator-opaque)] bg-[var(--ap-bg-elevated)]/70'
               }`}
               style={isPeak ? { borderColor: tierColour } : undefined}
             >
@@ -583,7 +583,7 @@ export const Continuous15DayTrajectory: React.FC<Continuous15DayTrajectoryProps>
       {/* 5. Responsive 15-Day Daily Forecast & Weather Table */}
       <div
         data-testid="trajectory-15day-table"
-        className="rounded-xl border border-[var(--ap-separator-opaque)] bg-[var(--ap-canvas)] overflow-hidden"
+        className="rounded-xl border border-[var(--ap-separator-opaque)] bg-[var(--ap-bg-elevated)] overflow-hidden"
       >
         <div className="border-b border-[var(--ap-separator-opaque)] px-4 py-3">
           <h3 id={tableHeadingId} className="text-sm font-semibold text-[var(--ap-label)]">
@@ -630,7 +630,7 @@ export const Continuous15DayTrajectory: React.FC<Continuous15DayTrajectoryProps>
                     <td className="px-3 py-2.5 whitespace-nowrap">
                       <span>D{formatNumber(row.forecastDay)}</span>
                       {isPeak && (
-                        <span className="ml-1.5 rounded border border-[var(--ap-separator-opaque)] bg-[var(--ap-canvas)] px-1.5 py-0.5 text-xs font-bold">
+                        <span className="ml-1.5 rounded border border-[var(--ap-separator-opaque)] bg-[var(--ap-bg-elevated)] px-1.5 py-0.5 text-xs font-bold">
                           {t('daily.peakBadge')}
                         </span>
                       )}

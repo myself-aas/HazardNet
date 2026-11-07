@@ -155,6 +155,40 @@ export function isResting(cls) {
 const bare = (cls) => cls.split(':').pop();
 
 /**
+ * Arbitrary-value payloads — `text-[var(--ap-label)]`, `bg-[#fdf3e0]`, `bg-[rgb(0_0_0/0.4)]`.
+ *
+ * These are the vocabulary the district, alerts and map surfaces are actually written in,
+ * and until this helper existed every one of them resolved to null, so both scanners walked
+ * straight past them: `bg-[var(--ap-bg-grouped)]` was reported as "background image/gradient"
+ * and its children were never scored, while `text-[var(--ap-label-secondary)]` on a
+ * `bg-[var(--ap-canvas)]` card had no scoreable pair at all. The blind spot was not
+ * hypothetical — it covered exactly the routes a visitor reads.
+ *
+ * Returns:
+ *   undefined — not an arbitrary-value payload; fall through to the named-token graph
+ *   null      — arbitrary, but not a colour this model can stand behind (a `length:`/`url()`/
+ *               gradient payload, an unknown variable): skip it, never guess
+ *   [r,g,b,a] — the paint, resolved through the token graph so `var(--ap-*)` inverts by mode
+ */
+export function arbitraryPaint(payload, mode) {
+  const boxed = /^\[([\s\S]*)\]$/.exec(payload);
+  if (!boxed) return undefined;
+  let value = boxed[1].trim();
+  // Tailwind's data-type hint. Only `color:` is a colour; `length:`, `url()`, `image:`,
+  // `family:` and friends are the other props that share this syntax and must stay null.
+  const hint = /^([a-z-]+):/.exec(value);
+  if (hint) {
+    if (hint[1] !== 'color') return null;
+    value = value.slice(hint[0].length).trim();
+  }
+  value = value.replace(/_/g, ' '); // Tailwind writes spaces in arbitrary values as `_`
+  if (!value) return null;
+  if (/^var\(/.test(value)) return RESOLVER.evaluate(value, mode);
+  return parseColor(value);
+}
+
+
+/**
  * resolve(cls, mode) → the flat scanner's canvas-composited hex, or null when the class is
  * not a colour utility this model can stand behind (arbitrary values, typo'd tokens, non-colour
  * props resolve to null and are skipped by the scanners). Use resolvePaintColor() when the
@@ -210,8 +244,15 @@ export function resolvePaintColor(cls, mode) {
   // Literals and the token graph. Read the raw declaration rather than `token()` so
   // semantic colours that are themselves translucent retain their own alpha.
   let color;
+  const arbitrary = arbitraryPaint(name, mode);
   if (name === 'white' || name === 'black' || name === 'transparent') {
     color = parseColor(name);
+  } else if (arbitrary !== undefined) {
+    // Arbitrary-value utility: `[var(--ap-label)]`, `[#8a5a00]`, `[rgb(0_0_0/0.4)]`.
+    // `arbitrary` is null when the payload is not a colour we can stand behind
+    // (`[length:var(--ap-type-body-md-size)]`, `[url(…)]`, `[linear-gradient(…)]`),
+    // which keeps the scanners skipping it exactly as they did before.
+    color = arbitrary;
   } else {
     const raw = RESOLVER.theme[`--color-${name}`]
       ?? RESOLVER.vars[mode][`--ap-${name}`]
