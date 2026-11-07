@@ -1808,7 +1808,7 @@ caption {
     size: A4 portrait;
     margin: 20mm 15mm; /* Top/Bottom: 20mm, Left/Right; 15mm (A4 Standard) */
     @bottom-left {
-      content: "HazardNet Bangladesh • Emergency Directive Handout";
+      content: "HazardNet Bangladesh • Published report";
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       font-size: 8.5pt;
       font-weight: 600;
@@ -1866,7 +1866,7 @@ caption {
 
   /* 4. HazardNet Official Emergency Handout Watermark */
   body::before {
-    content: "HAZARDNET BANGLADESH • OFFICIAL EMERGENCY ADVISORY • OPERATIONAL DIRECTIVE";
+    content: "HAZARDNET BANGLADESH • MODEL-GENERATED INFORMATION • NOT AN OFFICIAL WARNING";
     position: fixed;
     top: 50%;
     left: 50%;
@@ -1889,7 +1889,7 @@ caption {
 
   /* 5. Non-Printable Elements Cleanup */
   nav,
-  header:not(.print-only):not(.district-brief-header),
+  header:not(.print-only):not(.district-brief-header):not(.report-print-header),
   footer:not(.print-only):not(.print-page-footer),
   aside,
   button,
@@ -2464,6 +2464,34 @@ caption {
 
   .screen-only {
     display: none !important;
+  }
+
+  /* Daily-report output keeps its provenance and safety framing while dropping screen navigation. */
+  [data-report-page] .report-layout {
+    display: block;
+  }
+
+  [data-report-page] .report-print-header,
+  [data-report-page] .report-chart {
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+  }
+
+  [data-report-page] .report-table-region {
+    overflow-x: visible;
+    overflow-y: visible;
+  }
+
+  [data-report-page] dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  [data-report-page] details:not([open]) > :not(summary) {
+    display: block;
+  }
+
+  [data-report-page] details > summary {
+    display: none;
   }
 }
 
