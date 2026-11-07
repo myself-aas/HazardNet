@@ -2630,7 +2630,7 @@
     {
      "h2": "A worked statistical example from run v47",
      "paragraphs": [
-      "This fixed example uses the 2026-11-06 daily snapshot, run kaggle-v47-30b123dbb95c, with 960 published rows. All 960 severityScore values are exactly 0.30, while the snapshot publishes tier=WATCH on every row. Read the two fields separately: the tier is the row’s published label, not a value inferred from the client-side severity fallback bands. This example is descriptive of one run, not later runs or real-world impacts."
+      "This fixed example uses the 2026-11-06 daily snapshot, run kaggle-v47-30b123dbb95c, with 960 published rows. All 960 severityScore values are exactly 0.30, while the snapshot publishes tier=WATCH on every row. Read the two fields separately: the tier is the row\u2019s published label, not a value inferred from the client-side severity fallback bands. This example is descriptive of one run, not later runs or real-world impacts."
      ],
      "chart": {
       "type": "bar",
@@ -4454,6 +4454,21 @@
      ]
     }
    ]
+  },
+  {
+   "path": "/assistant",
+   "label": "Assistant",
+   "title": "HazardNet assistant: ask about a hazard and see the evidence",
+   "description": "Ask the HazardNet assistant about a hazard, a district or a decision. It reads the published outlook, alert and freshness artifacts before answering, and shows every artifact it read, every source it cited and anything its own review objected to.",
+   "robots": "index,follow",
+   "sitemap": {
+    "changefreq": "weekly",
+    "priority": 0.7
+   },
+   "appShell": true,
+   "updated": "2026-11-08",
+   "h1": "Hazard assistant",
+   "standfirst": "Ask about a hazard, a district or a decision, and see exactly what the assistant read before it answered."
   }
  ],
  "appScreens": [

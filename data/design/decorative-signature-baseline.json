@@ -109,6 +109,13 @@
           "kind": "console",
           "reason": "the studio's tool tray; dense product UI."
         }
+      },
+      "pages/AssistantPage.tsx": {
+        "sm:grid-cols-3": {
+          "kind": "stats",
+          "reason": "the three tiles that summarise one question turn: how it was understood, the place and hazard, and which artifacts were read. Three because those are the three things a reader checks first, and the count is fixed.",
+          "count": 1
+        }
       }
     }
   }

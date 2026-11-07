@@ -258,6 +258,19 @@ export default function ChatBot() {
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
+                  {/* The popover is 380px wide: it can show an answer, but not the
+                      tool trace, the citations or the review flags behind it. This
+                      hands the visitor the full page, which uses the same
+                      /api/chat/query contract so the two cannot disagree. */}
+                  <a
+                    href="/assistant"
+                    onClick={() => setIsOpen(false)}
+                    className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg border border-carbon-20 px-3 text-sm font-medium text-carbon-90 transition-colors hover:bg-carbon-05 dark:hover:bg-carbon-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary"
+                    aria-label="Open the full assistant page, which shows what the assistant read"
+                  >
+                    <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                    <span>Details</span>
+                  </a>
                   <button
                     id="tab-voice-mode-btn"
                     type="button"
