@@ -41,7 +41,7 @@ describe('build_daily_report', () => {
 
   test('renderReport embeds real-time values and template directives', () => {
     const md = renderReport({ snapshot, auditMarkdown: '# Audit\nshort form', generatedBy: 'test' });
-    expect(md).toContain('# HazardNet Daily Report — 2026-11-06');
+    expect(md).toContain('# HazardNet Daily Report: 2026-11-06');
     expect(md).toContain('{{chart:tier-distribution}}');
     expect(md).toContain('{{table:top-advisories}}');
     expect(md).toContain(':::warning');

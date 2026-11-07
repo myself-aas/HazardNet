@@ -133,7 +133,7 @@ const TopAdvisoriesTable: React.FC<{ rows: DailySnapshot['advisories'] }> = ({ r
                   onClick={() => toggle(h.key)}
                   className="px-2 py-1 font-bold text-carbon-80 hover:text-ap-link"
                 >
-                  {h.label}{sortKey === h.key ? (desc ? ' ▼' : ' ▲') : ''}
+                  {h.label}{sortKey === h.key ? (desc ? ' (desc)' : ' (asc)') : ''}
                 </button>
               </th>
             ))}
