@@ -2,6 +2,27 @@
   "schema": 1,
   "entries": [
     {
+      "date": "2026-11-06",
+      "file": "2026-11-06.md",
+      "runId": "kaggle-v47-30b123dbb95c",
+      "generatedAt": "2026-11-06T23:07:39.823Z",
+      "datasetVersion": 47,
+      "modelVersion": "2.1.9+model.0bb5bdaf1789",
+      "rows": 960,
+      "districts": 64,
+      "forecastDays": 15,
+      "tiers": {
+        "WATCH": 960
+      },
+      "topAdvisory": {
+        "district": "Bagerhat",
+        "hazard": "Flash Flood",
+        "targetDate": "2026-11-08",
+        "tier": "WATCH",
+        "severityScore": 0.3
+      }
+    },
+    {
       "date": "2026-11-05",
       "file": "2026-11-05.md",
       "runId": "kaggle-v46-a03b9ccce324",

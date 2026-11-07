@@ -334,7 +334,7 @@
    },
    "success": {
     "kind": "page",
-    "evidence": "How the documentation is organized"
+    "evidence": "The documentation hub is authored in site-routes.json like its child pages."
    }
   },
   "pages/DownloadCenter.tsx": {
@@ -797,13 +797,13 @@
    },
    "empty": {
     "kind": "notice",
-    "evidence": "No report published for"
+    "evidence": "No report published for any date yet"
    },
    "error": {
     "kind": "notice",
-    "evidence": "No report published for",
-    "retry": false,
-    "reason": "a missing report is a fact, not a failed read: the page links the archive instead of retrying"
+    "evidence": "No report published for this selection can be confirmed",
+    "retry": true,
+    "retry_via": "Try again"
    },
    "success": {
     "kind": "page",
@@ -822,9 +822,9 @@
    },
    "error": {
     "kind": "notice",
-    "evidence": "No archived reports yet",
-    "retry": false,
-    "reason": "an empty archive is a fact about the pipeline, not a failed read; there is nothing to retry"
+    "evidence": "Archive unavailable",
+    "retry": true,
+    "retry_via": "Try again"
    },
    "success": {
     "kind": "page",

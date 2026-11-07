@@ -90,7 +90,7 @@
    },
    "appShell": false,
    "h1": "A forecast you can check, not just read",
-   "standfirst": "HazardNet is an independent, open research platform that turns satellite observations and weather forecasts into continuous 15-day daily outlooks for eight climate hazards across Bangladesh’s 64 districts. Every figure it shows comes from a named artifact with a build date, the validation scorecard is published whether it flatters the model or not, and the boundary between this platform and the agencies that issue official warnings is stated on every page.",
+   "standfirst": "HazardNet is an independent, open research platform that turns satellite observations and weather forecasts into continuous 15-day daily outlooks for eight climate hazards across Bangladesh\u2019s 64 districts. Every figure it shows comes from a named artifact with a build date, the validation scorecard is published whether it flatters the model or not, and the boundary between this platform and the agencies that issue official warnings is stated on every page.",
    "updated": "2026-11-02",
    "sections": [
     {
@@ -300,7 +300,7 @@
       "Bangla and English sit side by side. The switch at the top of this page renders the front door's editorial copy and its controls in Bengali; the alert cards, the map and the district tables were translated first. The long-form knowledge products (the model card, the methodology and the data-source ledger) remain English-only, and where a sentence has no Bengali version the English one is shown rather than a gap."
      ],
      "bullets": [
-      "An em dash (—), a value left blank, or the words “not reported” mean the run or the file did not supply that value. They never mean zero.",
+      "An em dash (\u2014), a value left blank, or the words \u201cnot reported\u201d mean the run or the file did not supply that value. They never mean zero.",
       "An unread file is not a count of zero, and no published alert is not the same as no hazard. The live strip states those cases separately, so a loading failure cannot be mistaken for safety.",
       "If a panel cannot load, use its Try again button where one is offered, then check the status page to see whether the source file itself is stale or failing. The rest of the page stays readable while one panel is missing.",
       "To report a broken page, a stale run or a prediction that looks wrong, use the contact page and include the district and the date: that is enough to act on."
@@ -382,7 +382,7 @@
       "Bangladesh Meteorological Department (BMD): weather forecasts, cyclone signals, and heat, cold and storm warnings.",
       "Flood Forecasting and Warning Centre (FFWC): river-level forecasts and flood bulletins.",
       "Department of Disaster Management (DDM), Ministry of Disaster Management and Relief: the Standing Orders on Disaster, relief and response.",
-      "In an emergency, call the national hotline 999, and follow your local administration’s instructions over anything published here."
+      "In an emergency, call the national hotline 999, and follow your local administration\u2019s instructions over anything published here."
      ],
      "links": [
       {
@@ -410,7 +410,7 @@
     {
      "h2": "Take part",
      "paragraphs": [
-      "The platform is maintained as a Master’s thesis project at Bangladesh Agricultural University, and it improves fastest where practitioners push back on it."
+      "The platform is maintained as a Master\u2019s thesis project at Bangladesh Agricultural University, and it improves fastest where practitioners push back on it."
      ],
      "bullets": [
       "Use it in the field and report where it was wrong. A district, a date and what you observed is enough to act on.",
@@ -468,7 +468,7 @@
     },
     {
      "question": "Why is the training archive not published here?",
-     "answer": "The model card reports a 2,931-event archive (2000–2025) assembled from third-party records whose own licences govern redistribution. Rather than ship a stale copy that pages would quote as current, the repository ships the loader and the district and season pages state that no archive is loaded. The claim stays a claim until a deployment loads the export."
+     "answer": "The model card reports a 2,931-event archive (2000\u20132025) assembled from third-party records whose own licences govern redistribution. Rather than ship a stale copy that pages would quote as current, the repository ships the loader and the district and season pages state that no archive is loaded. The claim stays a claim until a deployment loads the export."
     }
    ],
    "i18n": {
@@ -476,34 +476,34 @@
      "review": "approved-native-speaker",
      "reviewedAt": "2026-09-19",
      "reviewedBy": "project owner",
-     "label": "সারসংক্ষেপ",
-     "h1": "এমন এক পূর্বাভাস, যা আপনি কেবল পড়বেন না: যাচাইও করতে পারবেন",
-     "standfirst": "HazardNet একটি স্বাধীন ও উন্মুক্ত গবেষণা প্ল্যাটফর্ম, যা উপগ্রহ পর্যবেক্ষণ ও আবহাওয়া পূর্বাভাস থেকে বাংলাদেশের ৬৪টি জেলার জন্য আটটি জলবায়ু-দুর্যোগের ধারাবাহিক ১৫ দিনের দৈনিক পূর্বাভাস তৈরি করে। এতে দেখানো প্রতিটি সংখ্যা একটি নির্দিষ্ট আর্টিফ্যাক্ট থেকে আসে যার নির্মাণ-তারিখ আছে; যাচাই স্কোরকার্ড প্রকাশ করা হয় তা মডেলের পক্ষে যাক বা না যাক; এবং সরকারি সতর্কবার্তা প্রকাশকারী সংস্থাগুলোর সঙ্গে এই প্ল্যাটফর্মের সীমারেখা প্রতিটি পাতায় লেখা থাকে।",
+     "label": "\u09b8\u09be\u09b0\u09b8\u0982\u0995\u09cd\u09b7\u09c7\u09aa",
+     "h1": "\u098f\u09ae\u09a8 \u098f\u0995 \u09aa\u09c2\u09b0\u09cd\u09ac\u09be\u09ad\u09be\u09b8, \u09af\u09be \u0986\u09aa\u09a8\u09bf \u0995\u09c7\u09ac\u09b2 \u09aa\u09a1\u09bc\u09ac\u09c7\u09a8 \u09a8\u09be: \u09af\u09be\u099a\u09be\u0987\u0993 \u0995\u09b0\u09a4\u09c7 \u09aa\u09be\u09b0\u09ac\u09c7\u09a8",
+     "standfirst": "HazardNet \u098f\u0995\u099f\u09bf \u09b8\u09cd\u09ac\u09be\u09a7\u09c0\u09a8 \u0993 \u0989\u09a8\u09cd\u09ae\u09c1\u0995\u09cd\u09a4 \u0997\u09ac\u09c7\u09b7\u09a3\u09be \u09aa\u09cd\u09b2\u09cd\u09af\u09be\u099f\u09ab\u09b0\u09cd\u09ae, \u09af\u09be \u0989\u09aa\u0997\u09cd\u09b0\u09b9 \u09aa\u09b0\u09cd\u09af\u09ac\u09c7\u0995\u09cd\u09b7\u09a3 \u0993 \u0986\u09ac\u09b9\u09be\u0993\u09af\u09bc\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09be\u09ad\u09be\u09b8 \u09a5\u09c7\u0995\u09c7 \u09ac\u09be\u0982\u09b2\u09be\u09a6\u09c7\u09b6\u09c7\u09b0 \u09ec\u09ea\u099f\u09bf \u099c\u09c7\u09b2\u09be\u09b0 \u099c\u09a8\u09cd\u09af \u0986\u099f\u099f\u09bf \u099c\u09b2\u09ac\u09be\u09af\u09bc\u09c1-\u09a6\u09c1\u09b0\u09cd\u09af\u09cb\u0997\u09c7\u09b0 \u09a7\u09be\u09b0\u09be\u09ac\u09be\u09b9\u09bf\u0995 \u09e7\u09eb \u09a6\u09bf\u09a8\u09c7\u09b0 \u09a6\u09c8\u09a8\u09bf\u0995 \u09aa\u09c2\u09b0\u09cd\u09ac\u09be\u09ad\u09be\u09b8 \u09a4\u09c8\u09b0\u09bf \u0995\u09b0\u09c7\u0964 \u098f\u09a4\u09c7 \u09a6\u09c7\u0996\u09be\u09a8\u09cb \u09aa\u09cd\u09b0\u09a4\u09bf\u099f\u09bf \u09b8\u0982\u0996\u09cd\u09af\u09be \u098f\u0995\u099f\u09bf \u09a8\u09bf\u09b0\u09cd\u09a6\u09bf\u09b7\u09cd\u099f \u0986\u09b0\u09cd\u099f\u09bf\u09ab\u09cd\u09af\u09be\u0995\u09cd\u099f \u09a5\u09c7\u0995\u09c7 \u0986\u09b8\u09c7 \u09af\u09be\u09b0 \u09a8\u09bf\u09b0\u09cd\u09ae\u09be\u09a3-\u09a4\u09be\u09b0\u09bf\u0996 \u0986\u099b\u09c7; \u09af\u09be\u099a\u09be\u0987 \u09b8\u09cd\u0995\u09cb\u09b0\u0995\u09be\u09b0\u09cd\u09a1 \u09aa\u09cd\u09b0\u0995\u09be\u09b6 \u0995\u09b0\u09be \u09b9\u09af\u09bc \u09a4\u09be \u09ae\u09a1\u09c7\u09b2\u09c7\u09b0 \u09aa\u0995\u09cd\u09b7\u09c7 \u09af\u09be\u0995 \u09ac\u09be \u09a8\u09be \u09af\u09be\u0995; \u098f\u09ac\u0982 \u09b8\u09b0\u0995\u09be\u09b0\u09bf \u09b8\u09a4\u09b0\u09cd\u0995\u09ac\u09be\u09b0\u09cd\u09a4\u09be \u09aa\u09cd\u09b0\u0995\u09be\u09b6\u0995\u09be\u09b0\u09c0 \u09b8\u0982\u09b8\u09cd\u09a5\u09be\u0997\u09c1\u09b2\u09cb\u09b0 \u09b8\u0999\u09cd\u0997\u09c7 \u098f\u0987 \u09aa\u09cd\u09b2\u09cd\u09af\u09be\u099f\u09ab\u09b0\u09cd\u09ae\u09c7\u09b0 \u09b8\u09c0\u09ae\u09be\u09b0\u09c7\u0996\u09be \u09aa\u09cd\u09b0\u09a4\u09bf\u099f\u09bf \u09aa\u09be\u09a4\u09be\u09af\u09bc \u09b2\u09c7\u0996\u09be \u09a5\u09be\u0995\u09c7\u0964",
      "sections": [
       {},
       {},
       {
-       "h2": "বর্তমান পূর্বাভাস, এবং তা কোথায় দেখবেন",
+       "h2": "\u09ac\u09b0\u09cd\u09a4\u09ae\u09be\u09a8 \u09aa\u09c2\u09b0\u09cd\u09ac\u09be\u09ad\u09be\u09b8, \u098f\u09ac\u0982 \u09a4\u09be \u0995\u09cb\u09a5\u09be\u09af\u09bc \u09a6\u09c7\u0996\u09ac\u09c7\u09a8",
        "paragraphs": [
-        "এই পাতাটি দলিল; লাইভ মানচিত্র হলো পূর্বাভাস। এই বিভাজন ইচ্ছাকৃত ও নথিভুক্ত, কারণ দুটি প্রশ্নের জন্য দুই ধরনের পাতা দরকার: 'দুর্যোগ এখন কোথায়', এর উত্তর দেয় মানচিত্র; আর 'এটি কে তৈরি করেছে, কী থেকে তৈরি করেছে, এবং কাজ করা বন্ধ করলে আমি তা জানব কীভাবে', এর উত্তর দেয় তারিখ-সহ একটি দলিল।",
-        "শিরোনামের নিচের স্ট্রিপটি প্রতিবার লোড করলে সংরক্ষিত সতর্কবার্তা-আর্টিফ্যাক্ট পড়ে: প্রতিটি স্তরে কতটি সতর্কবার্তা প্রকাশিত, শেষ রান কতটি জেলা আওতা করেছে, এবং প্রকাশনা-গেট মূল্যায়িত কতটি সারি আটকে রেখেছে। কিছু প্রকাশিত না হলে সেটি স্পষ্ট করে বলা হয় এবং কারণও বলা হয়: দুর্যোগ প্ল্যাটফর্মে নীরবতাকে নিরাপত্তা বলে ধরে নেওয়া হয়, তাই এই পাতা সেটি অনুমানের ওপর ছেড়ে দেয় না।"
+        "\u098f\u0987 \u09aa\u09be\u09a4\u09be\u099f\u09bf \u09a6\u09b2\u09bf\u09b2; \u09b2\u09be\u0987\u09ad \u09ae\u09be\u09a8\u099a\u09bf\u09a4\u09cd\u09b0 \u09b9\u09b2\u09cb \u09aa\u09c2\u09b0\u09cd\u09ac\u09be\u09ad\u09be\u09b8\u0964 \u098f\u0987 \u09ac\u09bf\u09ad\u09be\u099c\u09a8 \u0987\u099a\u09cd\u099b\u09be\u0995\u09c3\u09a4 \u0993 \u09a8\u09a5\u09bf\u09ad\u09c1\u0995\u09cd\u09a4, \u0995\u09be\u09b0\u09a3 \u09a6\u09c1\u099f\u09bf \u09aa\u09cd\u09b0\u09b6\u09cd\u09a8\u09c7\u09b0 \u099c\u09a8\u09cd\u09af \u09a6\u09c1\u0987 \u09a7\u09b0\u09a8\u09c7\u09b0 \u09aa\u09be\u09a4\u09be \u09a6\u09b0\u0995\u09be\u09b0: '\u09a6\u09c1\u09b0\u09cd\u09af\u09cb\u0997 \u098f\u0996\u09a8 \u0995\u09cb\u09a5\u09be\u09af\u09bc', \u098f\u09b0 \u0989\u09a4\u09cd\u09a4\u09b0 \u09a6\u09c7\u09af\u09bc \u09ae\u09be\u09a8\u099a\u09bf\u09a4\u09cd\u09b0; \u0986\u09b0 '\u098f\u099f\u09bf \u0995\u09c7 \u09a4\u09c8\u09b0\u09bf \u0995\u09b0\u09c7\u099b\u09c7, \u0995\u09c0 \u09a5\u09c7\u0995\u09c7 \u09a4\u09c8\u09b0\u09bf \u0995\u09b0\u09c7\u099b\u09c7, \u098f\u09ac\u0982 \u0995\u09be\u099c \u0995\u09b0\u09be \u09ac\u09a8\u09cd\u09a7 \u0995\u09b0\u09b2\u09c7 \u0986\u09ae\u09bf \u09a4\u09be \u099c\u09be\u09a8\u09ac \u0995\u09c0\u09ad\u09be\u09ac\u09c7', \u098f\u09b0 \u0989\u09a4\u09cd\u09a4\u09b0 \u09a6\u09c7\u09af\u09bc \u09a4\u09be\u09b0\u09bf\u0996-\u09b8\u09b9 \u098f\u0995\u099f\u09bf \u09a6\u09b2\u09bf\u09b2\u0964",
+        "\u09b6\u09bf\u09b0\u09cb\u09a8\u09be\u09ae\u09c7\u09b0 \u09a8\u09bf\u099a\u09c7\u09b0 \u09b8\u09cd\u099f\u09cd\u09b0\u09bf\u09aa\u099f\u09bf \u09aa\u09cd\u09b0\u09a4\u09bf\u09ac\u09be\u09b0 \u09b2\u09cb\u09a1 \u0995\u09b0\u09b2\u09c7 \u09b8\u0982\u09b0\u0995\u09cd\u09b7\u09bf\u09a4 \u09b8\u09a4\u09b0\u09cd\u0995\u09ac\u09be\u09b0\u09cd\u09a4\u09be-\u0986\u09b0\u09cd\u099f\u09bf\u09ab\u09cd\u09af\u09be\u0995\u09cd\u099f \u09aa\u09a1\u09bc\u09c7: \u09aa\u09cd\u09b0\u09a4\u09bf\u099f\u09bf \u09b8\u09cd\u09a4\u09b0\u09c7 \u0995\u09a4\u099f\u09bf \u09b8\u09a4\u09b0\u09cd\u0995\u09ac\u09be\u09b0\u09cd\u09a4\u09be \u09aa\u09cd\u09b0\u0995\u09be\u09b6\u09bf\u09a4, \u09b6\u09c7\u09b7 \u09b0\u09be\u09a8 \u0995\u09a4\u099f\u09bf \u099c\u09c7\u09b2\u09be \u0986\u0993\u09a4\u09be \u0995\u09b0\u09c7\u099b\u09c7, \u098f\u09ac\u0982 \u09aa\u09cd\u09b0\u0995\u09be\u09b6\u09a8\u09be-\u0997\u09c7\u099f \u09ae\u09c2\u09b2\u09cd\u09af\u09be\u09af\u09bc\u09bf\u09a4 \u0995\u09a4\u099f\u09bf \u09b8\u09be\u09b0\u09bf \u0986\u099f\u0995\u09c7 \u09b0\u09c7\u0996\u09c7\u099b\u09c7\u0964 \u0995\u09bf\u099b\u09c1 \u09aa\u09cd\u09b0\u0995\u09be\u09b6\u09bf\u09a4 \u09a8\u09be \u09b9\u09b2\u09c7 \u09b8\u09c7\u099f\u09bf \u09b8\u09cd\u09aa\u09b7\u09cd\u099f \u0995\u09b0\u09c7 \u09ac\u09b2\u09be \u09b9\u09af\u09bc \u098f\u09ac\u0982 \u0995\u09be\u09b0\u09a3\u0993 \u09ac\u09b2\u09be \u09b9\u09af\u09bc: \u09a6\u09c1\u09b0\u09cd\u09af\u09cb\u0997 \u09aa\u09cd\u09b2\u09cd\u09af\u09be\u099f\u09ab\u09b0\u09cd\u09ae\u09c7 \u09a8\u09c0\u09b0\u09ac\u09a4\u09be\u0995\u09c7 \u09a8\u09bf\u09b0\u09be\u09aa\u09a4\u09cd\u09a4\u09be \u09ac\u09b2\u09c7 \u09a7\u09b0\u09c7 \u09a8\u09c7\u0993\u09af\u09bc\u09be \u09b9\u09af\u09bc, \u09a4\u09be\u0987 \u098f\u0987 \u09aa\u09be\u09a4\u09be \u09b8\u09c7\u099f\u09bf \u0985\u09a8\u09c1\u09ae\u09be\u09a8\u09c7\u09b0 \u0993\u09aa\u09b0 \u099b\u09c7\u09a1\u09bc\u09c7 \u09a6\u09c7\u09af\u09bc \u09a8\u09be\u0964"
        ],
        "bullets": [
-        "লাইভ মানচিত্র ৬৪টি জেলার সবগুলোকেই আওতা করে। বর্তমান রানে যেসব জেলার তথ্য নেই, সেগুলো স্থির ভিত্তিমান রঙেই থাকে এবং নিজের পাতায় তা জানিয়ে দেয়: পাশের জেলার সংখ্যা ধার নেয় না।",
-        "প্রকাশিত প্রতিটি সতর্কবার্তার সঙ্গে তার নিজস্ব প্রমাণ থাকে: স্তরের পেছনের চালকগুলো, প্রয়োগ হওয়া নীতির সংস্করণ, এবং এটি কোনো দায়িত্বরত কর্মকর্তা পর্যালোচনা করেছেন নাকি ইঞ্জিন স্বয়ংক্রিয়-প্রকাশের সীমার মধ্যে থেকে নিজে প্রকাশ করেছে।",
-        "স্ট্যাটাস পাতায় এই ডিপ্লয়মেন্টের প্রতিটি আর্টিফ্যাক্টের বয়স থাকে, যে SLO মেনে চলার কথা তার বিপরীতে মাপা, এবং প্রতিটি রান নিজের বিরুদ্ধে যেসব নোট জানায় তাও থাকে।"
+        "\u09b2\u09be\u0987\u09ad \u09ae\u09be\u09a8\u099a\u09bf\u09a4\u09cd\u09b0 \u09ec\u09ea\u099f\u09bf \u099c\u09c7\u09b2\u09be\u09b0 \u09b8\u09ac\u0997\u09c1\u09b2\u09cb\u0995\u09c7\u0987 \u0986\u0993\u09a4\u09be \u0995\u09b0\u09c7\u0964 \u09ac\u09b0\u09cd\u09a4\u09ae\u09be\u09a8 \u09b0\u09be\u09a8\u09c7 \u09af\u09c7\u09b8\u09ac \u099c\u09c7\u09b2\u09be\u09b0 \u09a4\u09a5\u09cd\u09af \u09a8\u09c7\u0987, \u09b8\u09c7\u0997\u09c1\u09b2\u09cb \u09b8\u09cd\u09a5\u09bf\u09b0 \u09ad\u09bf\u09a4\u09cd\u09a4\u09bf\u09ae\u09be\u09a8 \u09b0\u0999\u09c7\u0987 \u09a5\u09be\u0995\u09c7 \u098f\u09ac\u0982 \u09a8\u09bf\u099c\u09c7\u09b0 \u09aa\u09be\u09a4\u09be\u09af\u09bc \u09a4\u09be \u099c\u09be\u09a8\u09bf\u09af\u09bc\u09c7 \u09a6\u09c7\u09af\u09bc: \u09aa\u09be\u09b6\u09c7\u09b0 \u099c\u09c7\u09b2\u09be\u09b0 \u09b8\u0982\u0996\u09cd\u09af\u09be \u09a7\u09be\u09b0 \u09a8\u09c7\u09af\u09bc \u09a8\u09be\u0964",
+        "\u09aa\u09cd\u09b0\u0995\u09be\u09b6\u09bf\u09a4 \u09aa\u09cd\u09b0\u09a4\u09bf\u099f\u09bf \u09b8\u09a4\u09b0\u09cd\u0995\u09ac\u09be\u09b0\u09cd\u09a4\u09be\u09b0 \u09b8\u0999\u09cd\u0997\u09c7 \u09a4\u09be\u09b0 \u09a8\u09bf\u099c\u09b8\u09cd\u09ac \u09aa\u09cd\u09b0\u09ae\u09be\u09a3 \u09a5\u09be\u0995\u09c7: \u09b8\u09cd\u09a4\u09b0\u09c7\u09b0 \u09aa\u09c7\u099b\u09a8\u09c7\u09b0 \u099a\u09be\u09b2\u0995\u0997\u09c1\u09b2\u09cb, \u09aa\u09cd\u09b0\u09af\u09bc\u09cb\u0997 \u09b9\u0993\u09af\u09bc\u09be \u09a8\u09c0\u09a4\u09bf\u09b0 \u09b8\u0982\u09b8\u09cd\u0995\u09b0\u09a3, \u098f\u09ac\u0982 \u098f\u099f\u09bf \u0995\u09cb\u09a8\u09cb \u09a6\u09be\u09af\u09bc\u09bf\u09a4\u09cd\u09ac\u09b0\u09a4 \u0995\u09b0\u09cd\u09ae\u0995\u09b0\u09cd\u09a4\u09be \u09aa\u09b0\u09cd\u09af\u09be\u09b2\u09cb\u099a\u09a8\u09be \u0995\u09b0\u09c7\u099b\u09c7\u09a8 \u09a8\u09be\u0995\u09bf \u0987\u099e\u09cd\u099c\u09bf\u09a8 \u09b8\u09cd\u09ac\u09af\u09bc\u0982\u0995\u09cd\u09b0\u09bf\u09af\u09bc-\u09aa\u09cd\u09b0\u0995\u09be\u09b6\u09c7\u09b0 \u09b8\u09c0\u09ae\u09be\u09b0 \u09ae\u09a7\u09cd\u09af\u09c7 \u09a5\u09c7\u0995\u09c7 \u09a8\u09bf\u099c\u09c7 \u09aa\u09cd\u09b0\u0995\u09be\u09b6 \u0995\u09b0\u09c7\u099b\u09c7\u0964",
+        "\u09b8\u09cd\u099f\u09cd\u09af\u09be\u099f\u09be\u09b8 \u09aa\u09be\u09a4\u09be\u09af\u09bc \u098f\u0987 \u09a1\u09bf\u09aa\u09cd\u09b2\u09af\u09bc\u09ae\u09c7\u09a8\u09cd\u099f\u09c7\u09b0 \u09aa\u09cd\u09b0\u09a4\u09bf\u099f\u09bf \u0986\u09b0\u09cd\u099f\u09bf\u09ab\u09cd\u09af\u09be\u0995\u09cd\u099f\u09c7\u09b0 \u09ac\u09af\u09bc\u09b8 \u09a5\u09be\u0995\u09c7, \u09af\u09c7 SLO \u09ae\u09c7\u09a8\u09c7 \u099a\u09b2\u09be\u09b0 \u0995\u09a5\u09be \u09a4\u09be\u09b0 \u09ac\u09bf\u09aa\u09b0\u09c0\u09a4\u09c7 \u09ae\u09be\u09aa\u09be, \u098f\u09ac\u0982 \u09aa\u09cd\u09b0\u09a4\u09bf\u099f\u09bf \u09b0\u09be\u09a8 \u09a8\u09bf\u099c\u09c7\u09b0 \u09ac\u09bf\u09b0\u09c1\u09a6\u09cd\u09a7\u09c7 \u09af\u09c7\u09b8\u09ac \u09a8\u09cb\u099f \u099c\u09be\u09a8\u09be\u09af\u09bc \u09a4\u09be\u0993 \u09a5\u09be\u0995\u09c7\u0964"
        ],
        "links": [
         {
-         "label": "লাইভ মানচিত্র খুলুন",
+         "label": "\u09b2\u09be\u0987\u09ad \u09ae\u09be\u09a8\u099a\u09bf\u09a4\u09cd\u09b0 \u0996\u09c1\u09b2\u09c1\u09a8",
          "href": "/live"
         },
         {
-         "label": "প্রকাশিত সতর্কবার্তা",
+         "label": "\u09aa\u09cd\u09b0\u0995\u09be\u09b6\u09bf\u09a4 \u09b8\u09a4\u09b0\u09cd\u0995\u09ac\u09be\u09b0\u09cd\u09a4\u09be",
          "href": "/alerts"
         },
         {
-         "label": "সিস্টেম স্ট্যাটাস",
+         "label": "\u09b8\u09bf\u09b8\u09cd\u099f\u09c7\u09ae \u09b8\u09cd\u099f\u09cd\u09af\u09be\u099f\u09be\u09b8",
          "href": "/status"
         }
        ]
@@ -514,52 +514,52 @@
       {},
       {},
       {
-       "h2": "জ্ঞান-পণ্য",
+       "h2": "\u099c\u09cd\u099e\u09be\u09a8-\u09aa\u09a3\u09cd\u09af",
        "paragraphs": [
-        "এই ডিপ্লয়মেন্ট যে তারিখ-সহ পণ্যগুলো প্রকাশ করে। পর্যালোচনার তারিখ হলো সেই তারিখ যা পাতাটি নিজেই বহন করে, ফলে একটি পুরনো পণ্যকে পুরনো বলেই চেনা যায়।"
+        "\u098f\u0987 \u09a1\u09bf\u09aa\u09cd\u09b2\u09af\u09bc\u09ae\u09c7\u09a8\u09cd\u099f \u09af\u09c7 \u09a4\u09be\u09b0\u09bf\u0996-\u09b8\u09b9 \u09aa\u09a3\u09cd\u09af\u0997\u09c1\u09b2\u09cb \u09aa\u09cd\u09b0\u0995\u09be\u09b6 \u0995\u09b0\u09c7\u0964 \u09aa\u09b0\u09cd\u09af\u09be\u09b2\u09cb\u099a\u09a8\u09be\u09b0 \u09a4\u09be\u09b0\u09bf\u0996 \u09b9\u09b2\u09cb \u09b8\u09c7\u0987 \u09a4\u09be\u09b0\u09bf\u0996 \u09af\u09be \u09aa\u09be\u09a4\u09be\u099f\u09bf \u09a8\u09bf\u099c\u09c7\u0987 \u09ac\u09b9\u09a8 \u0995\u09b0\u09c7, \u09ab\u09b2\u09c7 \u098f\u0995\u099f\u09bf \u09aa\u09c1\u09b0\u09a8\u09cb \u09aa\u09a3\u09cd\u09af\u0995\u09c7 \u09aa\u09c1\u09b0\u09a8\u09cb \u09ac\u09b2\u09c7\u0987 \u099a\u09c7\u09a8\u09be \u09af\u09be\u09af\u09bc\u0964"
        ],
        "table": {
-        "caption": "প্রকাশিত পণ্য, তারা কী নথিভুক্ত করে এবং সর্বশেষ কবে পর্যালোচনা হয়েছে",
+        "caption": "\u09aa\u09cd\u09b0\u0995\u09be\u09b6\u09bf\u09a4 \u09aa\u09a3\u09cd\u09af, \u09a4\u09be\u09b0\u09be \u0995\u09c0 \u09a8\u09a5\u09bf\u09ad\u09c1\u0995\u09cd\u09a4 \u0995\u09b0\u09c7 \u098f\u09ac\u0982 \u09b8\u09b0\u09cd\u09ac\u09b6\u09c7\u09b7 \u0995\u09ac\u09c7 \u09aa\u09b0\u09cd\u09af\u09be\u09b2\u09cb\u099a\u09a8\u09be \u09b9\u09af\u09bc\u09c7\u099b\u09c7",
         "columns": [
-         "পণ্য",
-         "যা নথিভুক্ত করে",
-         "পর্যালোচনা",
-         "কোথায় আছে"
+         "\u09aa\u09a3\u09cd\u09af",
+         "\u09af\u09be \u09a8\u09a5\u09bf\u09ad\u09c1\u0995\u09cd\u09a4 \u0995\u09b0\u09c7",
+         "\u09aa\u09b0\u09cd\u09af\u09be\u09b2\u09cb\u099a\u09a8\u09be",
+         "\u0995\u09cb\u09a5\u09be\u09af\u09bc \u0986\u099b\u09c7"
         ],
         "rows": [
          [
-          "মডেল কার্ড",
-          "আর্কিটেকচার, ১৫টি ইনপুট চ্যানেল, উদ্দিষ্ট ব্যবহার ও ব্যবহারের অযোগ্য ক্ষেত্র",
+          "\u09ae\u09a1\u09c7\u09b2 \u0995\u09be\u09b0\u09cd\u09a1",
+          "\u0986\u09b0\u09cd\u0995\u09bf\u099f\u09c7\u0995\u099a\u09be\u09b0, \u09e7\u09eb\u099f\u09bf \u0987\u09a8\u09aa\u09c1\u099f \u099a\u09cd\u09af\u09be\u09a8\u09c7\u09b2, \u0989\u09a6\u09cd\u09a6\u09bf\u09b7\u09cd\u099f \u09ac\u09cd\u09af\u09ac\u09b9\u09be\u09b0 \u0993 \u09ac\u09cd\u09af\u09ac\u09b9\u09be\u09b0\u09c7\u09b0 \u0985\u09af\u09cb\u0997\u09cd\u09af \u0995\u09cd\u09b7\u09c7\u09a4\u09cd\u09b0",
           "@review-date:/model",
           "/model"
          ],
          [
-          "হিন্ডকাস্ট যাচাই",
-          "পাঁচটি ঐতিহাসিক ঘটনার ঘটনা-প্রতি শনাক্তকরণ সংখ্যা, POD, FAR ও CSI: সীমাবদ্ধতাসহ",
+          "\u09b9\u09bf\u09a8\u09cd\u09a1\u0995\u09be\u09b8\u09cd\u099f \u09af\u09be\u099a\u09be\u0987",
+          "\u09aa\u09be\u0981\u099a\u099f\u09bf \u0990\u09a4\u09bf\u09b9\u09be\u09b8\u09bf\u0995 \u0998\u099f\u09a8\u09be\u09b0 \u0998\u099f\u09a8\u09be-\u09aa\u09cd\u09b0\u09a4\u09bf \u09b6\u09a8\u09be\u0995\u09cd\u09a4\u0995\u09b0\u09a3 \u09b8\u0982\u0996\u09cd\u09af\u09be, POD, FAR \u0993 CSI: \u09b8\u09c0\u09ae\u09be\u09ac\u09a6\u09cd\u09a7\u09a4\u09be\u09b8\u09b9",
           "@review-date:/model-performance",
           "/model-performance"
          ],
          [
-          "তথ্যসূত্র খতিয়ান",
-          "প্রতিটি ইনপুট চ্যানেলের লাইসেন্স, হালনাগাদের হার ও পেছনের ফাইল",
+          "\u09a4\u09a5\u09cd\u09af\u09b8\u09c2\u09a4\u09cd\u09b0 \u0996\u09a4\u09bf\u09af\u09bc\u09be\u09a8",
+          "\u09aa\u09cd\u09b0\u09a4\u09bf\u099f\u09bf \u0987\u09a8\u09aa\u09c1\u099f \u099a\u09cd\u09af\u09be\u09a8\u09c7\u09b2\u09c7\u09b0 \u09b2\u09be\u0987\u09b8\u09c7\u09a8\u09cd\u09b8, \u09b9\u09be\u09b2\u09a8\u09be\u0997\u09be\u09a6\u09c7\u09b0 \u09b9\u09be\u09b0 \u0993 \u09aa\u09c7\u099b\u09a8\u09c7\u09b0 \u09ab\u09be\u0987\u09b2",
           "@review-date:/data-sources",
           "/data-sources"
          ],
          [
-          "সিস্টেম স্ট্যাটাস",
-          "প্রতিটি সংরক্ষিত আর্টিফ্যাক্টের বয়স তার SLO-র বিপরীতে, এবং সেগুলোর সঙ্গে যুক্ত সততার নোট",
+          "\u09b8\u09bf\u09b8\u09cd\u099f\u09c7\u09ae \u09b8\u09cd\u099f\u09cd\u09af\u09be\u099f\u09be\u09b8",
+          "\u09aa\u09cd\u09b0\u09a4\u09bf\u099f\u09bf \u09b8\u0982\u09b0\u0995\u09cd\u09b7\u09bf\u09a4 \u0986\u09b0\u09cd\u099f\u09bf\u09ab\u09cd\u09af\u09be\u0995\u09cd\u099f\u09c7\u09b0 \u09ac\u09af\u09bc\u09b8 \u09a4\u09be\u09b0 SLO-\u09b0 \u09ac\u09bf\u09aa\u09b0\u09c0\u09a4\u09c7, \u098f\u09ac\u0982 \u09b8\u09c7\u0997\u09c1\u09b2\u09cb\u09b0 \u09b8\u0999\u09cd\u0997\u09c7 \u09af\u09c1\u0995\u09cd\u09a4 \u09b8\u09a4\u09a4\u09be\u09b0 \u09a8\u09cb\u099f",
           "@review-date:/status",
           "/status"
          ],
          [
-          "সতর্কবার্তা",
-          "প্রকাশিত সতর্কবার্তা কার্ড, প্রতিটির প্রমাণ, বাধা ও নীতি-সংস্করণসহ",
+          "\u09b8\u09a4\u09b0\u09cd\u0995\u09ac\u09be\u09b0\u09cd\u09a4\u09be",
+          "\u09aa\u09cd\u09b0\u0995\u09be\u09b6\u09bf\u09a4 \u09b8\u09a4\u09b0\u09cd\u0995\u09ac\u09be\u09b0\u09cd\u09a4\u09be \u0995\u09be\u09b0\u09cd\u09a1, \u09aa\u09cd\u09b0\u09a4\u09bf\u099f\u09bf\u09b0 \u09aa\u09cd\u09b0\u09ae\u09be\u09a3, \u09ac\u09be\u09a7\u09be \u0993 \u09a8\u09c0\u09a4\u09bf-\u09b8\u0982\u09b8\u09cd\u0995\u09b0\u09a3\u09b8\u09b9",
           "@review-date:/alerts",
           "/alerts"
          ],
          [
-          "খাতভিত্তিক পরামর্শ",
-          "ধাপে ধাপে প্রোটোকল, যেখানে প্রতিটি ধাপে বার্তা প্রকাশকারী কর্তৃপক্ষের নাম দেওয়া",
+          "\u0996\u09be\u09a4\u09ad\u09bf\u09a4\u09cd\u09a4\u09bf\u0995 \u09aa\u09b0\u09be\u09ae\u09b0\u09cd\u09b6",
+          "\u09a7\u09be\u09aa\u09c7 \u09a7\u09be\u09aa\u09c7 \u09aa\u09cd\u09b0\u09cb\u099f\u09cb\u0995\u09b2, \u09af\u09c7\u0996\u09be\u09a8\u09c7 \u09aa\u09cd\u09b0\u09a4\u09bf\u099f\u09bf \u09a7\u09be\u09aa\u09c7 \u09ac\u09be\u09b0\u09cd\u09a4\u09be \u09aa\u09cd\u09b0\u0995\u09be\u09b6\u0995\u09be\u09b0\u09c0 \u0995\u09b0\u09cd\u09a4\u09c3\u09aa\u0995\u09cd\u09b7\u09c7\u09b0 \u09a8\u09be\u09ae \u09a6\u09c7\u0993\u09af\u09bc\u09be",
           "@review-date:/advisories",
           "/advisories"
          ]
@@ -567,64 +567,64 @@
        }
       },
       {
-       "h2": "সরকারি নথি, এবং তা কোথায় আছে",
+       "h2": "\u09b8\u09b0\u0995\u09be\u09b0\u09bf \u09a8\u09a5\u09bf, \u098f\u09ac\u0982 \u09a4\u09be \u0995\u09cb\u09a5\u09be\u09af\u09bc \u0986\u099b\u09c7",
        "paragraphs": [
-        "HazardNet কোনো সতর্কবার্তা, ঘূর্ণিঝড় সংকেত বা আশ্রয়ণ-নির্দেশনা জারি করে না, এবং একে কখনোই তাই মনে করা যাবে না। যেসব সংস্থা এগুলো জারি করে তাদের নাম নিচে দেওয়া; তাদের বুলেটিন এই সাইটের যেকোনো কিছুর চেয়ে অগ্রাধিকার পাবে।"
+        "HazardNet \u0995\u09cb\u09a8\u09cb \u09b8\u09a4\u09b0\u09cd\u0995\u09ac\u09be\u09b0\u09cd\u09a4\u09be, \u0998\u09c2\u09b0\u09cd\u09a3\u09bf\u099d\u09a1\u09bc \u09b8\u0982\u0995\u09c7\u09a4 \u09ac\u09be \u0986\u09b6\u09cd\u09b0\u09af\u09bc\u09a3-\u09a8\u09bf\u09b0\u09cd\u09a6\u09c7\u09b6\u09a8\u09be \u099c\u09be\u09b0\u09bf \u0995\u09b0\u09c7 \u09a8\u09be, \u098f\u09ac\u0982 \u098f\u0995\u09c7 \u0995\u0996\u09a8\u09cb\u0987 \u09a4\u09be\u0987 \u09ae\u09a8\u09c7 \u0995\u09b0\u09be \u09af\u09be\u09ac\u09c7 \u09a8\u09be\u0964 \u09af\u09c7\u09b8\u09ac \u09b8\u0982\u09b8\u09cd\u09a5\u09be \u098f\u0997\u09c1\u09b2\u09cb \u099c\u09be\u09b0\u09bf \u0995\u09b0\u09c7 \u09a4\u09be\u09a6\u09c7\u09b0 \u09a8\u09be\u09ae \u09a8\u09bf\u099a\u09c7 \u09a6\u09c7\u0993\u09af\u09bc\u09be; \u09a4\u09be\u09a6\u09c7\u09b0 \u09ac\u09c1\u09b2\u09c7\u099f\u09bf\u09a8 \u098f\u0987 \u09b8\u09be\u0987\u099f\u09c7\u09b0 \u09af\u09c7\u0995\u09cb\u09a8\u09cb \u0995\u09bf\u099b\u09c1\u09b0 \u099a\u09c7\u09af\u09bc\u09c7 \u0985\u0997\u09cd\u09b0\u09be\u09a7\u09bf\u0995\u09be\u09b0 \u09aa\u09be\u09ac\u09c7\u0964"
        ],
        "bullets": [
-        "বাংলাদেশ আবহাওয়া অধিদপ্তর (BMD): আবহাওয়ার পূর্বাভাস, ঘূর্ণিঝড় সংকেত, এবং তাপ, শৈত ও ঝড় সম্পর্কিত সতর্কবার্তা।",
-        "প্লাবন পূর্বাভাস ও সতর্কীকরণ কেন্দ্র (FFWC): নদীর পানির স্তরের পূর্বাভাস ও বন্যা বুলেটিন।",
-        "দুর্যোগ ব্যবস্থাপনা অধিদপ্তর (DDM), দুর্যোগ ব্যবস্থাপনা ও ত্রাণ মন্ত্রণালয়: দুর্যোগ বিষয়ক স্থায়ী আদেশ (Standing Orders on Disaster), ত্রাণ ও সাড়াদান।",
-        "জরুরি অবস্থায় জাতীয় হটলাইন ৯৯৯ নম্বরে কল করুন, এবং এখানে প্রকাশিত যেকোনো কিছুর চেয়ে আপনার স্থানীয় প্রশাসনের নির্দেশনা মেনে চলুন।"
+        "\u09ac\u09be\u0982\u09b2\u09be\u09a6\u09c7\u09b6 \u0986\u09ac\u09b9\u09be\u0993\u09af\u09bc\u09be \u0985\u09a7\u09bf\u09a6\u09aa\u09cd\u09a4\u09b0 (BMD): \u0986\u09ac\u09b9\u09be\u0993\u09af\u09bc\u09be\u09b0 \u09aa\u09c2\u09b0\u09cd\u09ac\u09be\u09ad\u09be\u09b8, \u0998\u09c2\u09b0\u09cd\u09a3\u09bf\u099d\u09a1\u09bc \u09b8\u0982\u0995\u09c7\u09a4, \u098f\u09ac\u0982 \u09a4\u09be\u09aa, \u09b6\u09c8\u09a4 \u0993 \u099d\u09a1\u09bc \u09b8\u09ae\u09cd\u09aa\u09b0\u09cd\u0995\u09bf\u09a4 \u09b8\u09a4\u09b0\u09cd\u0995\u09ac\u09be\u09b0\u09cd\u09a4\u09be\u0964",
+        "\u09aa\u09cd\u09b2\u09be\u09ac\u09a8 \u09aa\u09c2\u09b0\u09cd\u09ac\u09be\u09ad\u09be\u09b8 \u0993 \u09b8\u09a4\u09b0\u09cd\u0995\u09c0\u0995\u09b0\u09a3 \u0995\u09c7\u09a8\u09cd\u09a6\u09cd\u09b0 (FFWC): \u09a8\u09a6\u09c0\u09b0 \u09aa\u09be\u09a8\u09bf\u09b0 \u09b8\u09cd\u09a4\u09b0\u09c7\u09b0 \u09aa\u09c2\u09b0\u09cd\u09ac\u09be\u09ad\u09be\u09b8 \u0993 \u09ac\u09a8\u09cd\u09af\u09be \u09ac\u09c1\u09b2\u09c7\u099f\u09bf\u09a8\u0964",
+        "\u09a6\u09c1\u09b0\u09cd\u09af\u09cb\u0997 \u09ac\u09cd\u09af\u09ac\u09b8\u09cd\u09a5\u09be\u09aa\u09a8\u09be \u0985\u09a7\u09bf\u09a6\u09aa\u09cd\u09a4\u09b0 (DDM), \u09a6\u09c1\u09b0\u09cd\u09af\u09cb\u0997 \u09ac\u09cd\u09af\u09ac\u09b8\u09cd\u09a5\u09be\u09aa\u09a8\u09be \u0993 \u09a4\u09cd\u09b0\u09be\u09a3 \u09ae\u09a8\u09cd\u09a4\u09cd\u09b0\u09a3\u09be\u09b2\u09af\u09bc: \u09a6\u09c1\u09b0\u09cd\u09af\u09cb\u0997 \u09ac\u09bf\u09b7\u09af\u09bc\u0995 \u09b8\u09cd\u09a5\u09be\u09af\u09bc\u09c0 \u0986\u09a6\u09c7\u09b6 (Standing Orders on Disaster), \u09a4\u09cd\u09b0\u09be\u09a3 \u0993 \u09b8\u09be\u09a1\u09bc\u09be\u09a6\u09be\u09a8\u0964",
+        "\u099c\u09b0\u09c1\u09b0\u09bf \u0985\u09ac\u09b8\u09cd\u09a5\u09be\u09af\u09bc \u099c\u09be\u09a4\u09c0\u09af\u09bc \u09b9\u099f\u09b2\u09be\u0987\u09a8 \u09ef\u09ef\u09ef \u09a8\u09ae\u09cd\u09ac\u09b0\u09c7 \u0995\u09b2 \u0995\u09b0\u09c1\u09a8, \u098f\u09ac\u0982 \u098f\u0996\u09be\u09a8\u09c7 \u09aa\u09cd\u09b0\u0995\u09be\u09b6\u09bf\u09a4 \u09af\u09c7\u0995\u09cb\u09a8\u09cb \u0995\u09bf\u099b\u09c1\u09b0 \u099a\u09c7\u09af\u09bc\u09c7 \u0986\u09aa\u09a8\u09be\u09b0 \u09b8\u09cd\u09a5\u09be\u09a8\u09c0\u09af\u09bc \u09aa\u09cd\u09b0\u09b6\u09be\u09b8\u09a8\u09c7\u09b0 \u09a8\u09bf\u09b0\u09cd\u09a6\u09c7\u09b6\u09a8\u09be \u09ae\u09c7\u09a8\u09c7 \u099a\u09b2\u09c1\u09a8\u0964"
        ],
        "links": [
         {
-         "label": "বাংলাদেশ আবহাওয়া অধিদপ্তর",
+         "label": "\u09ac\u09be\u0982\u09b2\u09be\u09a6\u09c7\u09b6 \u0986\u09ac\u09b9\u09be\u0993\u09af\u09bc\u09be \u0985\u09a7\u09bf\u09a6\u09aa\u09cd\u09a4\u09b0",
          "href": "https://bmd.gov.bd/"
         },
         {
-         "label": "প্লাবন পূর্বাভাস ও সতর্কীকরণ কেন্দ্র",
+         "label": "\u09aa\u09cd\u09b2\u09be\u09ac\u09a8 \u09aa\u09c2\u09b0\u09cd\u09ac\u09be\u09ad\u09be\u09b8 \u0993 \u09b8\u09a4\u09b0\u09cd\u0995\u09c0\u0995\u09b0\u09a3 \u0995\u09c7\u09a8\u09cd\u09a6\u09cd\u09b0",
          "href": "https://ffwc.gov.bd/"
         },
         {
-         "label": "দুর্যোগ ব্যবস্থাপনা অধিদপ্তর",
+         "label": "\u09a6\u09c1\u09b0\u09cd\u09af\u09cb\u0997 \u09ac\u09cd\u09af\u09ac\u09b8\u09cd\u09a5\u09be\u09aa\u09a8\u09be \u0985\u09a7\u09bf\u09a6\u09aa\u09cd\u09a4\u09b0",
          "href": "https://ddm.gov.bd/"
         },
         {
-         "label": "দুর্যোগ ব্যবস্থাপনা ও ত্রাণ মন্ত্রণালয়",
+         "label": "\u09a6\u09c1\u09b0\u09cd\u09af\u09cb\u0997 \u09ac\u09cd\u09af\u09ac\u09b8\u09cd\u09a5\u09be\u09aa\u09a8\u09be \u0993 \u09a4\u09cd\u09b0\u09be\u09a3 \u09ae\u09a8\u09cd\u09a4\u09cd\u09b0\u09a3\u09be\u09b2\u09af\u09bc",
          "href": "https://modmr.gov.bd/"
         },
         {
-         "label": "প্রশাসনিক সীমানা",
+         "label": "\u09aa\u09cd\u09b0\u09b6\u09be\u09b8\u09a8\u09bf\u0995 \u09b8\u09c0\u09ae\u09be\u09a8\u09be",
          "href": "https://data.humdata.org/"
         }
        ]
       },
       {
-       "h2": "অংশ নিন",
+       "h2": "\u0985\u0982\u09b6 \u09a8\u09bf\u09a8",
        "paragraphs": [
-        "এই প্ল্যাটফর্মটি বাংলাদেশ কৃষি বিশ্ববিদ্যালয়ের এক এমএস থিসিস প্রকল্প হিসেবে রক্ষণাবেক্ষণ করা হয়, এবং অনুশীলনকারীরা এর সমালোচনা করলেই এটি সবচেয়ে দ্রুত উন্নত হয়।"
+        "\u098f\u0987 \u09aa\u09cd\u09b2\u09cd\u09af\u09be\u099f\u09ab\u09b0\u09cd\u09ae\u099f\u09bf \u09ac\u09be\u0982\u09b2\u09be\u09a6\u09c7\u09b6 \u0995\u09c3\u09b7\u09bf \u09ac\u09bf\u09b6\u09cd\u09ac\u09ac\u09bf\u09a6\u09cd\u09af\u09be\u09b2\u09af\u09bc\u09c7\u09b0 \u098f\u0995 \u098f\u09ae\u098f\u09b8 \u09a5\u09bf\u09b8\u09bf\u09b8 \u09aa\u09cd\u09b0\u0995\u09b2\u09cd\u09aa \u09b9\u09bf\u09b8\u09c7\u09ac\u09c7 \u09b0\u0995\u09cd\u09b7\u09a3\u09be\u09ac\u09c7\u0995\u09cd\u09b7\u09a3 \u0995\u09b0\u09be \u09b9\u09af\u09bc, \u098f\u09ac\u0982 \u0985\u09a8\u09c1\u09b6\u09c0\u09b2\u09a8\u0995\u09be\u09b0\u09c0\u09b0\u09be \u098f\u09b0 \u09b8\u09ae\u09be\u09b2\u09cb\u099a\u09a8\u09be \u0995\u09b0\u09b2\u09c7\u0987 \u098f\u099f\u09bf \u09b8\u09ac\u099a\u09c7\u09af\u09bc\u09c7 \u09a6\u09cd\u09b0\u09c1\u09a4 \u0989\u09a8\u09cd\u09a8\u09a4 \u09b9\u09af\u09bc\u0964"
        ],
        "bullets": [
-        "মাঠে ব্যবহার করুন এবং কোথায় ভুল ছিল তা জানান। একটি জেলা, একটি তারিখ আর আপনি কী প্রত্যক্ষ করেছেন: কাজ করার জন্য এটুকুই যথেষ্ট।",
-        "তথ্য পুনর্ব্যবহার করুন: ডাউনলোড সেন্টারে পূর্বাভাস স্ন্যাপশট ও অফলাইন বিল্ড আছে, এবং কোড MIT লাইসেন্সযুক্ত: এই পাতায় উদ্ধৃতি দেওয়া আছে।",
-        "কোনো পাতা ভাঙা, রান পুরনো বা পূর্বাভাস ভুল মনে হলে যোগাযোগ পাতা থেকে জানান: প্রতিটি রিপোর্ট পড়া হয়।"
+        "\u09ae\u09be\u09a0\u09c7 \u09ac\u09cd\u09af\u09ac\u09b9\u09be\u09b0 \u0995\u09b0\u09c1\u09a8 \u098f\u09ac\u0982 \u0995\u09cb\u09a5\u09be\u09af\u09bc \u09ad\u09c1\u09b2 \u099b\u09bf\u09b2 \u09a4\u09be \u099c\u09be\u09a8\u09be\u09a8\u0964 \u098f\u0995\u099f\u09bf \u099c\u09c7\u09b2\u09be, \u098f\u0995\u099f\u09bf \u09a4\u09be\u09b0\u09bf\u0996 \u0986\u09b0 \u0986\u09aa\u09a8\u09bf \u0995\u09c0 \u09aa\u09cd\u09b0\u09a4\u09cd\u09af\u0995\u09cd\u09b7 \u0995\u09b0\u09c7\u099b\u09c7\u09a8: \u0995\u09be\u099c \u0995\u09b0\u09be\u09b0 \u099c\u09a8\u09cd\u09af \u098f\u099f\u09c1\u0995\u09c1\u0987 \u09af\u09a5\u09c7\u09b7\u09cd\u099f\u0964",
+        "\u09a4\u09a5\u09cd\u09af \u09aa\u09c1\u09a8\u09b0\u09cd\u09ac\u09cd\u09af\u09ac\u09b9\u09be\u09b0 \u0995\u09b0\u09c1\u09a8: \u09a1\u09be\u0989\u09a8\u09b2\u09cb\u09a1 \u09b8\u09c7\u09a8\u09cd\u099f\u09be\u09b0\u09c7 \u09aa\u09c2\u09b0\u09cd\u09ac\u09be\u09ad\u09be\u09b8 \u09b8\u09cd\u09a8\u09cd\u09af\u09be\u09aa\u09b6\u099f \u0993 \u0985\u09ab\u09b2\u09be\u0987\u09a8 \u09ac\u09bf\u09b2\u09cd\u09a1 \u0986\u099b\u09c7, \u098f\u09ac\u0982 \u0995\u09cb\u09a1 MIT \u09b2\u09be\u0987\u09b8\u09c7\u09a8\u09cd\u09b8\u09af\u09c1\u0995\u09cd\u09a4: \u098f\u0987 \u09aa\u09be\u09a4\u09be\u09af\u09bc \u0989\u09a6\u09cd\u09a7\u09c3\u09a4\u09bf \u09a6\u09c7\u0993\u09af\u09bc\u09be \u0986\u099b\u09c7\u0964",
+        "\u0995\u09cb\u09a8\u09cb \u09aa\u09be\u09a4\u09be \u09ad\u09be\u0999\u09be, \u09b0\u09be\u09a8 \u09aa\u09c1\u09b0\u09a8\u09cb \u09ac\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09be\u09ad\u09be\u09b8 \u09ad\u09c1\u09b2 \u09ae\u09a8\u09c7 \u09b9\u09b2\u09c7 \u09af\u09cb\u0997\u09be\u09af\u09cb\u0997 \u09aa\u09be\u09a4\u09be \u09a5\u09c7\u0995\u09c7 \u099c\u09be\u09a8\u09be\u09a8: \u09aa\u09cd\u09b0\u09a4\u09bf\u099f\u09bf \u09b0\u09bf\u09aa\u09cb\u09b0\u09cd\u099f \u09aa\u09a1\u09bc\u09be \u09b9\u09af\u09bc\u0964"
        ],
        "links": [
         {
-         "label": "অ্যাকাউন্ট খুলুন",
+         "label": "\u0985\u09cd\u09af\u09be\u0995\u09be\u0989\u09a8\u09cd\u099f \u0996\u09c1\u09b2\u09c1\u09a8",
          "href": "/signup"
         },
         {
-         "label": "তথ্য ও অ্যাপ ডাউনলোড",
+         "label": "\u09a4\u09a5\u09cd\u09af \u0993 \u0985\u09cd\u09af\u09be\u09aa \u09a1\u09be\u0989\u09a8\u09b2\u09cb\u09a1",
          "href": "/download"
         },
         {
-         "label": "যোগাযোগ",
+         "label": "\u09af\u09cb\u0997\u09be\u09af\u09cb\u0997",
          "href": "/contact"
         },
         {
-         "label": "প্রকল্প সম্পর্কে",
+         "label": "\u09aa\u09cd\u09b0\u0995\u09b2\u09cd\u09aa \u09b8\u09ae\u09cd\u09aa\u09b0\u09cd\u0995\u09c7",
          "href": "/about"
         }
        ]
@@ -632,24 +632,24 @@
      ],
      "faqs": [
       {
-       "question": "HazardNet কি কোনো সরকারি সতর্কবার্তা সেবা?",
-       "answer": "না। এটি কৃষির জন্য স্বাধীন সিদ্ধান্ত সহায়তা। সরকারি সতর্কবার্তা আসে আবহাওয়া-জনিত দুর্যোগের ক্ষেত্রে বাংলাদেশ আবহাওয়া অধিদপ্তর থেকে, নদীর বন্যার ক্ষেত্রে প্লাবন পূর্বাভাস ও সতর্কীকরণ কেন্দ্র (FFWC) থেকে, এবং সাড়াদানের ক্ষেত্রে দুর্যোগ ব্যবস্থাপনা অধিদপ্তর ও আপনার স্থানীয় প্রশাসন থেকে। জরুরি অবস্থায় ৯৯৯ নম্বরে কল করুন। HazardNet-এর উদ্দেশ্য প্রস্তুতির জন্য আপনাকে বেশি অগ্রিম সময় দেওয়া, ওই কর্তৃপক্ষগুলোর বিকল্প হওয়া নয়।"
+       "question": "HazardNet \u0995\u09bf \u0995\u09cb\u09a8\u09cb \u09b8\u09b0\u0995\u09be\u09b0\u09bf \u09b8\u09a4\u09b0\u09cd\u0995\u09ac\u09be\u09b0\u09cd\u09a4\u09be \u09b8\u09c7\u09ac\u09be?",
+       "answer": "\u09a8\u09be\u0964 \u098f\u099f\u09bf \u0995\u09c3\u09b7\u09bf\u09b0 \u099c\u09a8\u09cd\u09af \u09b8\u09cd\u09ac\u09be\u09a7\u09c0\u09a8 \u09b8\u09bf\u09a6\u09cd\u09a7\u09be\u09a8\u09cd\u09a4 \u09b8\u09b9\u09be\u09af\u09bc\u09a4\u09be\u0964 \u09b8\u09b0\u0995\u09be\u09b0\u09bf \u09b8\u09a4\u09b0\u09cd\u0995\u09ac\u09be\u09b0\u09cd\u09a4\u09be \u0986\u09b8\u09c7 \u0986\u09ac\u09b9\u09be\u0993\u09af\u09bc\u09be-\u099c\u09a8\u09bf\u09a4 \u09a6\u09c1\u09b0\u09cd\u09af\u09cb\u0997\u09c7\u09b0 \u0995\u09cd\u09b7\u09c7\u09a4\u09cd\u09b0\u09c7 \u09ac\u09be\u0982\u09b2\u09be\u09a6\u09c7\u09b6 \u0986\u09ac\u09b9\u09be\u0993\u09af\u09bc\u09be \u0985\u09a7\u09bf\u09a6\u09aa\u09cd\u09a4\u09b0 \u09a5\u09c7\u0995\u09c7, \u09a8\u09a6\u09c0\u09b0 \u09ac\u09a8\u09cd\u09af\u09be\u09b0 \u0995\u09cd\u09b7\u09c7\u09a4\u09cd\u09b0\u09c7 \u09aa\u09cd\u09b2\u09be\u09ac\u09a8 \u09aa\u09c2\u09b0\u09cd\u09ac\u09be\u09ad\u09be\u09b8 \u0993 \u09b8\u09a4\u09b0\u09cd\u0995\u09c0\u0995\u09b0\u09a3 \u0995\u09c7\u09a8\u09cd\u09a6\u09cd\u09b0 (FFWC) \u09a5\u09c7\u0995\u09c7, \u098f\u09ac\u0982 \u09b8\u09be\u09a1\u09bc\u09be\u09a6\u09be\u09a8\u09c7\u09b0 \u0995\u09cd\u09b7\u09c7\u09a4\u09cd\u09b0\u09c7 \u09a6\u09c1\u09b0\u09cd\u09af\u09cb\u0997 \u09ac\u09cd\u09af\u09ac\u09b8\u09cd\u09a5\u09be\u09aa\u09a8\u09be \u0985\u09a7\u09bf\u09a6\u09aa\u09cd\u09a4\u09b0 \u0993 \u0986\u09aa\u09a8\u09be\u09b0 \u09b8\u09cd\u09a5\u09be\u09a8\u09c0\u09af\u09bc \u09aa\u09cd\u09b0\u09b6\u09be\u09b8\u09a8 \u09a5\u09c7\u0995\u09c7\u0964 \u099c\u09b0\u09c1\u09b0\u09bf \u0985\u09ac\u09b8\u09cd\u09a5\u09be\u09af\u09bc \u09ef\u09ef\u09ef \u09a8\u09ae\u09cd\u09ac\u09b0\u09c7 \u0995\u09b2 \u0995\u09b0\u09c1\u09a8\u0964 HazardNet-\u098f\u09b0 \u0989\u09a6\u09cd\u09a6\u09c7\u09b6\u09cd\u09af \u09aa\u09cd\u09b0\u09b8\u09cd\u09a4\u09c1\u09a4\u09bf\u09b0 \u099c\u09a8\u09cd\u09af \u0986\u09aa\u09a8\u09be\u0995\u09c7 \u09ac\u09c7\u09b6\u09bf \u0985\u0997\u09cd\u09b0\u09bf\u09ae \u09b8\u09ae\u09af\u09bc \u09a6\u09c7\u0993\u09af\u09bc\u09be, \u0993\u0987 \u0995\u09b0\u09cd\u09a4\u09c3\u09aa\u0995\u09cd\u09b7\u0997\u09c1\u09b2\u09cb\u09b0 \u09ac\u09bf\u0995\u09b2\u09cd\u09aa \u09b9\u0993\u09af\u09bc\u09be \u09a8\u09af\u09bc\u0964"
       },
       {},
       {},
       {},
       {},
       {
-       "question": "এই পাতা কি বাংলায় পাওয়া যায়?",
-       "answer": "হ্যাঁ, এই পাতার ওপরের সুইচ ব্যবহার করলে সম্মুখপৃষ্ঠার সম্পাদকীয় লেখা ও নিয়ন্ত্রণগুলো বাংলায় দেখা যাবে। কোনো বাক্যের বাংলা সংস্করণ না থাকলে ফাঁকা না রেখে ইংরেজিটিই দেখানো হয়: ইংরেজি লেখাটিই কাঠামোগত ভিত্তি, তাই অনুবাদ একটি পাতাকে নতুন করে লিখতে পারে কিন্তু সংক্ষিপ্ত বা এলোমেলো করতে পারে না। সতর্কবার্তা কার্ড, মানচিত্র ও জেলার তালিকা আগেই অনূদিত হয���েছে; বিস্তারিত জ্ঞান-পণ্য, মডেল কার্ড, পদ্ধতি ও তথ্যসূত্র খতিয়ান, এখনো ইংরেজিতেই আছে।"
+       "question": "\u098f\u0987 \u09aa\u09be\u09a4\u09be \u0995\u09bf \u09ac\u09be\u0982\u09b2\u09be\u09af\u09bc \u09aa\u09be\u0993\u09af\u09bc\u09be \u09af\u09be\u09af\u09bc?",
+       "answer": "\u09b9\u09cd\u09af\u09be\u0981, \u098f\u0987 \u09aa\u09be\u09a4\u09be\u09b0 \u0993\u09aa\u09b0\u09c7\u09b0 \u09b8\u09c1\u0987\u099a \u09ac\u09cd\u09af\u09ac\u09b9\u09be\u09b0 \u0995\u09b0\u09b2\u09c7 \u09b8\u09ae\u09cd\u09ae\u09c1\u0996\u09aa\u09c3\u09b7\u09cd\u09a0\u09be\u09b0 \u09b8\u09ae\u09cd\u09aa\u09be\u09a6\u0995\u09c0\u09af\u09bc \u09b2\u09c7\u0996\u09be \u0993 \u09a8\u09bf\u09af\u09bc\u09a8\u09cd\u09a4\u09cd\u09b0\u09a3\u0997\u09c1\u09b2\u09cb \u09ac\u09be\u0982\u09b2\u09be\u09af\u09bc \u09a6\u09c7\u0996\u09be \u09af\u09be\u09ac\u09c7\u0964 \u0995\u09cb\u09a8\u09cb \u09ac\u09be\u0995\u09cd\u09af\u09c7\u09b0 \u09ac\u09be\u0982\u09b2\u09be \u09b8\u0982\u09b8\u09cd\u0995\u09b0\u09a3 \u09a8\u09be \u09a5\u09be\u0995\u09b2\u09c7 \u09ab\u09be\u0981\u0995\u09be \u09a8\u09be \u09b0\u09c7\u0996\u09c7 \u0987\u0982\u09b0\u09c7\u099c\u09bf\u099f\u09bf\u0987 \u09a6\u09c7\u0996\u09be\u09a8\u09cb \u09b9\u09af\u09bc: \u0987\u0982\u09b0\u09c7\u099c\u09bf \u09b2\u09c7\u0996\u09be\u099f\u09bf\u0987 \u0995\u09be\u09a0\u09be\u09ae\u09cb\u0997\u09a4 \u09ad\u09bf\u09a4\u09cd\u09a4\u09bf, \u09a4\u09be\u0987 \u0985\u09a8\u09c1\u09ac\u09be\u09a6 \u098f\u0995\u099f\u09bf \u09aa\u09be\u09a4\u09be\u0995\u09c7 \u09a8\u09a4\u09c1\u09a8 \u0995\u09b0\u09c7 \u09b2\u09bf\u0996\u09a4\u09c7 \u09aa\u09be\u09b0\u09c7 \u0995\u09bf\u09a8\u09cd\u09a4\u09c1 \u09b8\u0982\u0995\u09cd\u09b7\u09bf\u09aa\u09cd\u09a4 \u09ac\u09be \u098f\u09b2\u09cb\u09ae\u09c7\u09b2\u09cb \u0995\u09b0\u09a4\u09c7 \u09aa\u09be\u09b0\u09c7 \u09a8\u09be\u0964 \u09b8\u09a4\u09b0\u09cd\u0995\u09ac\u09be\u09b0\u09cd\u09a4\u09be \u0995\u09be\u09b0\u09cd\u09a1, \u09ae\u09be\u09a8\u099a\u09bf\u09a4\u09cd\u09b0 \u0993 \u099c\u09c7\u09b2\u09be\u09b0 \u09a4\u09be\u09b2\u09bf\u0995\u09be \u0986\u0997\u09c7\u0987 \u0985\u09a8\u09c2\u09a6\u09bf\u09a4 \u09b9\u09af\ufffd\ufffd\ufffd\u09c7\u099b\u09c7; \u09ac\u09bf\u09b8\u09cd\u09a4\u09be\u09b0\u09bf\u09a4 \u099c\u09cd\u099e\u09be\u09a8-\u09aa\u09a3\u09cd\u09af, \u09ae\u09a1\u09c7\u09b2 \u0995\u09be\u09b0\u09cd\u09a1, \u09aa\u09a6\u09cd\u09a7\u09a4\u09bf \u0993 \u09a4\u09a5\u09cd\u09af\u09b8\u09c2\u09a4\u09cd\u09b0 \u0996\u09a4\u09bf\u09af\u09bc\u09be\u09a8, \u098f\u0996\u09a8\u09cb \u0987\u0982\u09b0\u09c7\u099c\u09bf\u09a4\u09c7\u0987 \u0986\u099b\u09c7\u0964"
       },
       {
-       "question": "HazardNet কীভাবে উদ্ধৃত করব?",
-       "answer": "লেখক, তত্ত্বাবধায়ক ও প্রতিষ্ঠানের নাম এই পাতার স্বীকৃতি-অংশে দেওয়া আছে, এবং একই তথ্য মেশিন-পাঠযোগ্য রূপে CITATION.cff ফাইলে রিপোজিটরিতে আছে। কোড MIT লাইসেন্সযুক্ত; এর পেছনের তৃতীয় পক্ষের তথ্যের নিজস্ব শর্ত বহাল থাকে, যা তথ্যসূত্র পাতায় একেকটি ডেটাসেট হিসেবে তালিকাভুক্ত।"
+       "question": "HazardNet \u0995\u09c0\u09ad\u09be\u09ac\u09c7 \u0989\u09a6\u09cd\u09a7\u09c3\u09a4 \u0995\u09b0\u09ac?",
+       "answer": "\u09b2\u09c7\u0996\u0995, \u09a4\u09a4\u09cd\u09a4\u09cd\u09ac\u09be\u09ac\u09a7\u09be\u09af\u09bc\u0995 \u0993 \u09aa\u09cd\u09b0\u09a4\u09bf\u09b7\u09cd\u09a0\u09be\u09a8\u09c7\u09b0 \u09a8\u09be\u09ae \u098f\u0987 \u09aa\u09be\u09a4\u09be\u09b0 \u09b8\u09cd\u09ac\u09c0\u0995\u09c3\u09a4\u09bf-\u0985\u0982\u09b6\u09c7 \u09a6\u09c7\u0993\u09af\u09bc\u09be \u0986\u099b\u09c7, \u098f\u09ac\u0982 \u098f\u0995\u0987 \u09a4\u09a5\u09cd\u09af \u09ae\u09c7\u09b6\u09bf\u09a8-\u09aa\u09be\u09a0\u09af\u09cb\u0997\u09cd\u09af \u09b0\u09c2\u09aa\u09c7 CITATION.cff \u09ab\u09be\u0987\u09b2\u09c7 \u09b0\u09bf\u09aa\u09cb\u099c\u09bf\u099f\u09b0\u09bf\u09a4\u09c7 \u0986\u099b\u09c7\u0964 \u0995\u09cb\u09a1 MIT \u09b2\u09be\u0987\u09b8\u09c7\u09a8\u09cd\u09b8\u09af\u09c1\u0995\u09cd\u09a4; \u098f\u09b0 \u09aa\u09c7\u099b\u09a8\u09c7\u09b0 \u09a4\u09c3\u09a4\u09c0\u09af\u09bc \u09aa\u0995\u09cd\u09b7\u09c7\u09b0 \u09a4\u09a5\u09cd\u09af\u09c7\u09b0 \u09a8\u09bf\u099c\u09b8\u09cd\u09ac \u09b6\u09b0\u09cd\u09a4 \u09ac\u09b9\u09be\u09b2 \u09a5\u09be\u0995\u09c7, \u09af\u09be \u09a4\u09a5\u09cd\u09af\u09b8\u09c2\u09a4\u09cd\u09b0 \u09aa\u09be\u09a4\u09be\u09af\u09bc \u098f\u0995\u09c7\u0995\u099f\u09bf \u09a1\u09c7\u099f\u09be\u09b8\u09c7\u099f \u09b9\u09bf\u09b8\u09c7\u09ac\u09c7 \u09a4\u09be\u09b2\u09bf\u0995\u09be\u09ad\u09c1\u0995\u09cd\u09a4\u0964"
       },
       {
-       "question": "প্রশিক্ষণ আর্কাইভ কেন এখানে প্রকাশ করা হয়নি?",
-       "answer": "মডেল কার্ডে ২,৯৩১ ঘটনার একটি আর্কাইভের (২০০০–২০২৫) কথা বলা হয়েছে, যা তৃতীয় পক্ষের রেকর্ড থেকে সংকলিত এবং যার নিজস্ব লাইসেন্স পুনর্বিতরণ নিয়ন্ত্রণ করে। একটি পুরনো কপি রেখে দেওয়ার চেয়ে, যা পাতাগুলো হালনাগাদ হিসেবে উদ্ধৃত করত, এই রিপোজিটরি লোডারটি সরবরাহ করে, এবং জেলা ও মৌসুমের পাতাগুলো জানিয়ে দেয় যে কোনো আর্কাইভ লোড করা নেই। যতদিন না কোনো ডিপ্লয়মেন্ট এক্সপোর্টটি লোড করে, ততদিন দাবিটি দাবিই থাকে।"
+       "question": "\u09aa\u09cd\u09b0\u09b6\u09bf\u0995\u09cd\u09b7\u09a3 \u0986\u09b0\u09cd\u0995\u09be\u0987\u09ad \u0995\u09c7\u09a8 \u098f\u0996\u09be\u09a8\u09c7 \u09aa\u09cd\u09b0\u0995\u09be\u09b6 \u0995\u09b0\u09be \u09b9\u09af\u09bc\u09a8\u09bf?",
+       "answer": "\u09ae\u09a1\u09c7\u09b2 \u0995\u09be\u09b0\u09cd\u09a1\u09c7 \u09e8,\u09ef\u09e9\u09e7 \u0998\u099f\u09a8\u09be\u09b0 \u098f\u0995\u099f\u09bf \u0986\u09b0\u09cd\u0995\u09be\u0987\u09ad\u09c7\u09b0 (\u09e8\u09e6\u09e6\u09e6\u2013\u09e8\u09e6\u09e8\u09eb) \u0995\u09a5\u09be \u09ac\u09b2\u09be \u09b9\u09af\u09bc\u09c7\u099b\u09c7, \u09af\u09be \u09a4\u09c3\u09a4\u09c0\u09af\u09bc \u09aa\u0995\u09cd\u09b7\u09c7\u09b0 \u09b0\u09c7\u0995\u09b0\u09cd\u09a1 \u09a5\u09c7\u0995\u09c7 \u09b8\u0982\u0995\u09b2\u09bf\u09a4 \u098f\u09ac\u0982 \u09af\u09be\u09b0 \u09a8\u09bf\u099c\u09b8\u09cd\u09ac \u09b2\u09be\u0987\u09b8\u09c7\u09a8\u09cd\u09b8 \u09aa\u09c1\u09a8\u09b0\u09cd\u09ac\u09bf\u09a4\u09b0\u09a3 \u09a8\u09bf\u09af\u09bc\u09a8\u09cd\u09a4\u09cd\u09b0\u09a3 \u0995\u09b0\u09c7\u0964 \u098f\u0995\u099f\u09bf \u09aa\u09c1\u09b0\u09a8\u09cb \u0995\u09aa\u09bf \u09b0\u09c7\u0996\u09c7 \u09a6\u09c7\u0993\u09af\u09bc\u09be\u09b0 \u099a\u09c7\u09af\u09bc\u09c7, \u09af\u09be \u09aa\u09be\u09a4\u09be\u0997\u09c1\u09b2\u09cb \u09b9\u09be\u09b2\u09a8\u09be\u0997\u09be\u09a6 \u09b9\u09bf\u09b8\u09c7\u09ac\u09c7 \u0989\u09a6\u09cd\u09a7\u09c3\u09a4 \u0995\u09b0\u09a4, \u098f\u0987 \u09b0\u09bf\u09aa\u09cb\u099c\u09bf\u099f\u09b0\u09bf \u09b2\u09cb\u09a1\u09be\u09b0\u099f\u09bf \u09b8\u09b0\u09ac\u09b0\u09be\u09b9 \u0995\u09b0\u09c7, \u098f\u09ac\u0982 \u099c\u09c7\u09b2\u09be \u0993 \u09ae\u09cc\u09b8\u09c1\u09ae\u09c7\u09b0 \u09aa\u09be\u09a4\u09be\u0997\u09c1\u09b2\u09cb \u099c\u09be\u09a8\u09bf\u09af\u09bc\u09c7 \u09a6\u09c7\u09af\u09bc \u09af\u09c7 \u0995\u09cb\u09a8\u09cb \u0986\u09b0\u09cd\u0995\u09be\u0987\u09ad \u09b2\u09cb\u09a1 \u0995\u09b0\u09be \u09a8\u09c7\u0987\u0964 \u09af\u09a4\u09a6\u09bf\u09a8 \u09a8\u09be \u0995\u09cb\u09a8\u09cb \u09a1\u09bf\u09aa\u09cd\u09b2\u09af\u09bc\u09ae\u09c7\u09a8\u09cd\u099f \u098f\u0995\u09cd\u09b8\u09aa\u09cb\u09b0\u09cd\u099f\u099f\u09bf \u09b2\u09cb\u09a1 \u0995\u09b0\u09c7, \u09a4\u09a4\u09a6\u09bf\u09a8 \u09a6\u09be\u09ac\u09bf\u099f\u09bf \u09a6\u09be\u09ac\u09bf\u0987 \u09a5\u09be\u0995\u09c7\u0964"
       }
      ]
     }
@@ -658,8 +658,8 @@
   {
    "path": "/live",
    "label": "Live map",
-   "title": "Live hazard map: continuous 15-day daily outlooks for Bangladesh’s 64 districts",
-   "description": "The HazardNet GIS console: district-level continuous 15-day daily hazard trajectory, 0–100 severity index, peak severe dates, confidence bin and physics cross-check on an offline-capable map, with the run date printed beside it.",
+   "title": "Live hazard map: continuous 15-day daily outlooks for Bangladesh\u2019s 64 districts",
+   "description": "The HazardNet GIS console: district-level continuous 15-day daily hazard trajectory, 0\u2013100 severity index, peak severe dates, confidence bin and physics cross-check on an offline-capable map, with the run date printed beside it.",
    "keywords": [
     "live hazard map Bangladesh",
     "district flood outlook",
@@ -690,8 +690,8 @@
     {
      "h2": "How to read the numbers honestly",
      "bullets": [
-      "Severity index (0.00–1.00 normalized, 0–100 index) is the model's continuous damage-potential score across Days 1 to 15. It is not a probability and not a percentage of damage.",
-      "Confidence (Certain ≥ 0.85, Probable 0.70–0.85, Uncertain < 0.70) is the model's own certainty in the hazard class it selected. It is not a measure of whether the forecast is correct, and it is not derived from the physics cross-check: the two tracks are computed separately and can disagree, and each district card shows both side by side so the divergence is visible.",
+      "Severity index (0.00\u20131.00 normalized, 0\u2013100 index) is the model's continuous damage-potential score across Days 1 to 15. It is not a probability and not a percentage of damage.",
+      "Confidence (Certain \u2265 0.85, Probable 0.70\u20130.85, Uncertain < 0.70) is the model's own certainty in the hazard class it selected. It is not a measure of whether the forecast is correct, and it is not derived from the physics cross-check: the two tracks are computed separately and can disagree, and each district card shows both side by side so the divergence is visible.",
       "Physics severity is an independent, formula-based estimate (for example, a vegetation-health index for drought or an excess-heat factor for heat waves). Model and physics severity diverging is normal and is shown rather than hidden.",
       "Lead time spans a continuous 15-day daily trajectory (Days 1 to 15), with peak severe dates highlighted and a day picker to inspect any individual forecast day. Later days carry higher uncertainty; treat the entire trajectory as a planning window, not an official warning."
      ],
@@ -731,21 +731,21 @@
    "updated": "2026-11-02",
    "sections": [
     {
-     "h2": "1 · What a level means",
+     "h2": "1 \u00b7 What a level means",
      "paragraphs": [
       "Four levels are published: no alert, watch, warning and severe. The level comes from the alert policy in force, at or below the configured ceiling for each hazard class, and is never inflated by this site.",
       "Each alert states the hazard class, the district, the forecast window within the 15-day trajectory, the forecast issue time, the data cutoff and the model version it came from."
      ]
     },
     {
-     "h2": "2 · The evidence behind an alert",
+     "h2": "2 \u00b7 The evidence behind an alert",
      "paragraphs": [
       "Every alert carries a model severity, an independently computed physics severity and the divergence between the two tracks. When the tracks disagree beyond the policy threshold the alert is flagged rather than silently averaged.",
       "The score on a record is a relative priority signal for the class it carries. It is not a probability that the hazard will occur, and it is uncalibrated. The evidence behind an alert is the published forecast record itself: district, hazard, severity and forecast date."
      ]
     },
     {
-     "h2": "3 · Who approves what",
+     "h2": "3 \u00b7 Who approves what",
      "paragraphs": [
       "The engine publishes at or below the watch level automatically. A warning or severe alert requires a named duty officer, a review timestamp and the model version and data cutoff recorded against the decision, so a published alert can always be traced back to the run that produced it.",
       "Alerts are also delivered by SMS and Telegram to subscribers who have opted in. Both channels carry the same disclaimer as this page, and a single SMS is capped at 70 Bengali characters per segment, which is why the message body is short and links back to the evidence card."
@@ -776,7 +776,7 @@
    "updated": "2026-09-17",
    "sections": [
     {
-     "h2": "1 · What HazardNet publishes",
+     "h2": "1 \u00b7 What HazardNet publishes",
      "paragraphs": [
       "Each daily forecast run publishes a continuous 15-day sequence (Days 1 to 15) per district: dominant hazard class, continuous severity index (0 to 100), peak severe dates, and confidence score, stamped with the forecast date of the run that produced it."
      ],
@@ -788,31 +788,31 @@
      ]
     },
     {
-     "h2": "2 · How to read a severity value",
+     "h2": "2 \u00b7 How to read a severity value",
      "paragraphs": [
       "Severity is a continuous value with two tracks reported side by side. The skill track is the system's own score for the class it selected; the physics track is an independent estimate. They can disagree, and when they do, that is shown rather than smoothed away. Confidence scores are uncalibrated."
      ]
     },
     {
-     "h2": "3 · Horizons and lead time",
+     "h2": "3 \u00b7 Horizons and lead time",
      "paragraphs": [
       "Outlooks are published as a continuous 15-day daily trajectory (Days 1 to 15) per district, with peak severe dates highlighted across the full sequence. Every step is a planning window, not an official warning, and Days 8 to 15 carry greater meteorological uncertainty than Days 1 to 7."
      ]
     },
     {
-     "h2": "4 · Freshness, staleness and failure",
+     "h2": "4 \u00b7 Freshness, staleness and failure",
      "paragraphs": [
       "Every surface shows the forecast date behind it. A stale run is labelled as stale; a missing run is shown as missing: no number is interpolated to fill a gap."
      ]
     },
     {
-     "h2": "5 · What is validated: and what is not",
+     "h2": "5 \u00b7 What is validated: and what is not",
      "paragraphs": [
       "Forecast skill is not yet validated against observed outcomes. The published scorecard reports detection counts for five historical episodes and states what those numbers cannot support. No calibration accuracy is claimed."
      ]
     },
     {
-     "h2": "6 · Methods are research-private",
+     "h2": "6 \u00b7 Methods are research-private",
      "paragraphs": [
       "Model code, dataset collection procedures, training and benchmarking are research-private. Only results and outputs are published: on this site and in the public repository. For research collaboration or licensing, use the contact page."
      ]
@@ -923,8 +923,8 @@
     {
      "h2": "Attribution and licence notes for reusers",
      "paragraphs": [
-      "Map tiles © Esri and contributors.",
-      "Administrative boundaries: © OpenStreetMap contributors (ODbL), via OCHA/HDX COD-AB geometry.",
+      "Map tiles \u00a9 Esri and contributors.",
+      "Administrative boundaries: \u00a9 OpenStreetMap contributors (ODbL), via OCHA/HDX COD-AB geometry.",
       "If you republish figures derived from HazardNet outputs, cite this site and the forecast date behind each figure."
      ]
     },
@@ -965,7 +965,7 @@
     },
     {
      "question": "What does the percentage next to a district actually mean?",
-     "answer": "It is the model's severity index, scaled 0–100 for display. It is a continuous score of damage potential for the forecast unit and horizon: not a probability, and not a forecast that X% of the district will be damaged. The underlying value runs from 0.00 to 1.00 and is shown with the physics-based severity estimate beside it."
+     "answer": "It is the model's severity index, scaled 0\u2013100 for display. It is a continuous score of damage potential for the forecast unit and horizon: not a probability, and not a forecast that X% of the district will be damaged. The underlying value runs from 0.00 to 1.00 and is shown with the physics-based severity estimate beside it."
     },
     {
      "question": "What is the difference between severity, confidence and physics severity?",
@@ -1143,7 +1143,7 @@
      "bullets": [
       "64 districts on the interactive map; 507 ADM3 units in the published archive.",
       "Eight hazards: cold wave, drought, fire, flash flood, flood, heat wave, severe local storm, tropical cyclone.",
-      "Continuous 15-day daily outlooks (Days 1 to 15) with 0–100 severity index, peak severe dates, confidence bins, dual-track severity and a physics cross-check."
+      "Continuous 15-day daily outlooks (Days 1 to 15) with 0\u2013100 severity index, peak severe dates, confidence bins, dual-track severity and a physics cross-check."
      ]
     },
     {
@@ -1281,15 +1281,15 @@
   {
    "path": "/docs",
    "label": "Documentation",
-   "title": "Documentation: the HazardNet platform, forecasts and data",
-   "description": "How to read HazardNet: the platform and its surfaces, the eight hazard classes, district coverage, forecast records, alert levels, the historical archive, data and the API, and validation status.",
+   "title": "HazardNet documentation: forecasts, evidence and statistical limits",
+   "description": "A quantitative guide to HazardNet: district and hazard coverage, forecast scores, archive statistics, data quality, validation limits, public artifacts and APIs.",
    "keywords": [
     "HazardNet documentation",
-    "how to read forecasts",
-    "alert levels",
-    "historical archive",
-    "forecast API",
-    "validation status"
+    "forecast severity statistics",
+    "historical hazard archive",
+    "district coverage",
+    "validation limits",
+    "forecast API"
    ],
    "robots": "index,follow",
    "sitemap": {
@@ -1297,75 +1297,567 @@
     "priority": 0.6
    },
    "appShell": false,
-   "h1": "Documentation",
-   "standfirst": "One place that explains every HazardNet surface and every number it shows: what the system publishes, how to read it, and where its limits are.",
-   "updated": "2026-10-05",
+   "h1": "HazardNet documentation",
+   "standfirst": "A quantitative field guide to the numbers HazardNet publishes: coverage, severity, confidence, archive summaries, verification limits and the source behind each figure.",
+   "updated": "2026-11-07",
    "sections": [
     {
-     "h2": "How the documentation is organized",
+     "h2": "Browse the documentation",
      "paragraphs": [
-      "The documentation is split by topic. Each page is short, factual and linked to the surface it describes. Methods remain research-private: this site publishes results and outputs only."
+      "Start with the topic that matches your question. Each page gives its measurement units, source population, caveats and links to the product surface it describes. Model internals remain research-private."
      ],
-     "bullets": [
-      "The platform: what HazardNet publishes and a map of every surface.",
-      "Hazard classes: the eight classes, their seasons and their limits.",
-      "Districts: the 64-district, 8-division coverage and what a district page shows.",
-      "Forecasts: the published record, the two severity tracks and the freshness policy.",
-      "Alerts and advisories: the four levels, the ceiling rule and the official-warning line.",
-      "Historical archive: the catalogued record since 2000 and its cross-checks.",
-      "Data and the API: provenance, downloads and the read-only endpoints.",
-      "Verification: what has been checked, what has not, and what stays private."
+     "topics": [
+      {
+       "to": "/docs/platform",
+       "kicker": "01",
+       "title": "The platform",
+       "blurb": "What HazardNet publishes, where a number comes from, and what each surface can tell you."
+      },
+      {
+       "to": "/docs/hazards",
+       "kicker": "02",
+       "title": "Hazard classes",
+       "blurb": "Eight forecast classes, their public physics cues, and the limits of each proxy."
+      },
+      {
+       "to": "/docs/districts",
+       "kicker": "03",
+       "title": "District coverage",
+       "blurb": "64 districts, 8 divisions, and how the published district-day grid is counted."
+      },
+      {
+       "to": "/docs/forecasts",
+       "kicker": "04",
+       "title": "Forecasts and scores",
+       "blurb": "Severity, confidence, physics cross-checks, horizons, and a worked statistical example."
+      },
+      {
+       "to": "/docs/alerts-and-advisories",
+       "kicker": "05",
+       "title": "Alerts and advisories",
+       "blurb": "The four platform labels, how to read an advisory, and why official warnings take precedence."
+      },
+      {
+       "to": "/docs/archive",
+       "kicker": "06",
+       "title": "Historical archive",
+       "blurb": "Descriptive counts, trends, correlation readiness, and the archive quality checks."
+      },
+      {
+       "to": "/docs/data-and-api",
+       "kicker": "07",
+       "title": "Data and API",
+       "blurb": "Public artifact shapes, endpoint purposes, provenance, and safe reuse."
+      },
+      {
+       "to": "/docs/verification",
+       "kicker": "08",
+       "title": "Verification status",
+       "blurb": "What the five-episode scorecard can show, what its denominators cannot support, and what is not published."
+      }
+     ]
+    },
+    {
+     "h2": "The published forecast grid",
+     "paragraphs": [
+      "A complete daily snapshot has one selected hazard class for each district and target date. The eight hazard classes are candidate labels, not eight rows for every district-day. The 960-row count follows from coverage, not from multiplying the row count by the number of classes."
      ],
+     "formulas": [
+      {
+       "label": "Full-coverage row count",
+       "expression": "N = D \u00d7 H = 64 \u00d7 15 = 960",
+       "spoken": "N equals the number of districts times the number of target days, or 64 times 15 equals 960.",
+       "explanation": "This is the expected district-day row count when all 64 districts have all 15 target days. A partial or invalid snapshot can contain fewer rows.",
+       "variables": [
+        {
+         "symbol": "N",
+         "meaning": "Expected district-day records"
+        },
+        {
+         "symbol": "D",
+         "meaning": "Covered districts: 64"
+        },
+        {
+         "symbol": "H",
+         "meaning": "Target days: 15"
+        }
+       ]
+      }
+     ],
+     "table": {
+      "caption": "The stable dimensions of a complete daily forecast snapshot",
+      "columns": [
+       "Dimension",
+       "Value",
+       "How to read it"
+      ],
+      "rows": [
+       [
+        "District coverage",
+        "64",
+        "All Bangladesh districts in the current public coverage table."
+       ],
+       [
+        "Hazard classes",
+        "8",
+        "Candidate classes; a row carries its selected class."
+       ],
+       [
+        "Forecast horizon",
+        "15 days",
+        "Consecutive target days, Days 1 to 15."
+       ],
+       [
+        "Expected rows",
+        "960",
+        "64 districts multiplied by 15 target dates."
+       ],
+       [
+        "Severity scale",
+        "0.00 to 1.00",
+        "Normalized score, not an observed impact rate or calibrated event probability."
+       ]
+      ]
+     },
+     "figure": {
+      "type": "process",
+      "title": "From published snapshot to reader",
+      "description": "The public page carries the data run and coverage context forward. It does not fill missing values or replace official warning sources.",
+      "steps": [
+       {
+        "title": "Published snapshot",
+        "detail": "Run ID, source dataset, forecast date and coverage accompany the output."
+       },
+       {
+        "title": "Coverage checks",
+        "detail": "District and target-date counts are checked; missing rows stay missing."
+       },
+       {
+        "title": "Public surfaces",
+        "detail": "Forecast pages expose the dated snapshot; reports and archive pages retain their own date and source-run provenance where available."
+       },
+       {
+        "title": "Reader decision",
+        "detail": "Use as planning context, then check BMD and FFWC for official warnings."
+       }
+      ]
+     }
+    },
+    {
+     "h2": "How to read a number",
+     "paragraphs": [
+      "A severity score, a confidence score, a physics cross-check and an alert label are different quantities. A chart can summarize only the field named in its caption."
+     ],
+     "formulas": [
+      {
+       "label": "Display scale",
+       "expression": "I = 100 \u00d7 S",
+       "spoken": "The displayed index equals one hundred times the normalized severity score.",
+       "explanation": "This is a linear rescaling for display only. It does not calibrate the score or give it probability meaning.",
+       "variables": [
+        {
+         "symbol": "S",
+         "meaning": "Normalized severity score in the interval 0 to 1"
+        },
+        {
+         "symbol": "I",
+         "meaning": "Displayed severity index in the interval 0 to 100"
+        }
+       ]
+      }
+     ],
+     "table": {
+      "caption": "Do not substitute one measure for another",
+      "columns": [
+       "Field",
+       "What it represents",
+       "What it does not mean"
+      ],
+      "rows": [
+       [
+        "Severity",
+        "Continuous damage-potential score for the forecast unit and horizon.",
+        "Not a probability, observed loss, or percent of a district affected."
+       ],
+       [
+        "Confidence",
+        "Model-produced score for its selected class; some endpoints publish a confidence_kind field.",
+        "Not a calibrated probability unless the source explicitly labels it calibrated_probability; not agreement with physics severity."
+       ],
+       [
+        "Physics severity",
+        "Independent estimate from meteorological drivers.",
+        "Not an official warning; disagreement is not averaged away."
+       ],
+       [
+        "Alert label",
+        "Policy output constrained by hazard-specific ceilings and review rules.",
+        "Not a probability or a final published level derived from the score alone; review rules and the published policy level govern."
+       ]
+      ]
+     }
+    },
+    {
+     "h2": "Historical evidence is descriptive, not forecast skill",
+     "paragraphs": [
+      "The archive has multiple populations. The 3,324-row historical master baseline feeds the hazard distribution and yearly frequency artifacts; the cleaned catalog shown to readers has 3,062 rows. The Google Earth Engine hand-off comparison reports 2,870 matched rows and 454 rows with field drift. Do not treat these as interchangeable denominators."
+     ],
+     "chart": {
+      "type": "bar",
+      "title": "Master baseline rows by hazard type",
+      "description": "Counts in the 3,324-row historical master baseline. These are catalogued rows, not event probabilities or future risk rates.",
+      "xLabel": "Master baseline rows",
+      "yLabel": "Hazard type",
+      "valueFormat": "count",
+      "data": [
+       {
+        "label": "Flood",
+        "value": 890
+       },
+       {
+        "label": "Tropical Cyclone",
+        "value": 709
+       },
+       {
+        "label": "Severe Local Storm",
+        "value": 514
+       },
+       {
+        "label": "Flash Flood",
+        "value": 334
+       },
+       {
+        "label": "Cold Wave",
+        "value": 322
+       },
+       {
+        "label": "Epidemic",
+        "value": 262
+       },
+       {
+        "label": "Earthquake",
+        "value": 128
+       },
+       {
+        "label": "Fire",
+        "value": 65
+       },
+       {
+        "label": "Drought",
+        "value": 64
+       },
+       {
+        "label": "Heat Wave",
+        "value": 36
+       }
+      ],
+      "source": "/data/historical/hazard-distribution.json; 3,324 baseline rows.",
+      "note": "This baseline includes historical categories such as Epidemic and Earthquake that are not among the eight forecast classes."
+     },
+     "table": {
+      "caption": "Historical artifact populations and limits",
+      "columns": [
+       "Artifact or check",
+       "Rows / result",
+       "Interpretation"
+      ],
+      "rows": [
+       [
+        "Master baseline",
+        "3,324",
+        "Population used by the yearly and hazard-distribution artifacts."
+       ],
+       [
+        "Clean event catalog",
+        "3,062",
+        "Reader-facing event rows, 2 May 2000 to 5 July 2026; 9 normalized classes."
+       ],
+       [
+        "GEE cross-check matched",
+        "2,870 of 3,324 (86.3%)",
+        "Rows agree on the checked fields."
+       ],
+       [
+        "GEE cross-check drift",
+        "454 of 3,324 (13.7%)",
+        "Drift is retained and reported, not silently repaired."
+       ],
+       [
+        "Clean-catalog severity_score",
+        "1.00 in all 3,062 rows",
+        "Zero variance, so correlation with this field is undefined."
+       ],
+       [
+        "Clean-catalog validated_affected",
+        "0 in all 3,062 rows",
+        "This is not a usable observed-impact outcome series."
+       ]
+      ]
+     },
+     "formulas": [
+      {
+       "label": "Cross-check rates",
+       "expression": "match rate = 2,870 / 3,324 \u2248 86.3%",
+       "spoken": "The match rate equals matched rows divided by all rows checked, approximately 86.3 percent.",
+       "explanation": "The complementary drift rate is 454 divided by 3,324, approximately 13.7 percent. These are record-agreement rates, not forecast-skill scores.",
+       "variables": [
+        {
+         "symbol": "2,870",
+         "meaning": "Rows matched by the cross-check"
+        },
+        {
+         "symbol": "3,324",
+         "meaning": "Rows in the cross-check input"
+        }
+       ]
+      }
+     ],
+     "callout": {
+      "tone": "warning",
+      "text": "The historical catalog currently carries constant severity_score values and zero validated_affected values. Correlations involving either field are undefined or uninformative, not evidence of no relationship. The published historical analysis must not be used to claim forecast skill or impact calibration."
+     },
      "links": [
       {
-       "label": "The platform",
-       "href": "/docs/platform"
-      },
-      {
-       "label": "Hazard classes",
-       "href": "/docs/hazards"
-      },
-      {
-       "label": "Districts",
-       "href": "/docs/districts"
-      },
-      {
-       "label": "Forecasts",
-       "href": "/docs/forecasts"
-      },
-      {
-       "label": "Alerts and advisories",
-       "href": "/docs/alerts-and-advisories"
-      },
-      {
-       "label": "Historical archive",
+       "label": "Inspect the historical archive and source caveats",
        "href": "/docs/archive"
       },
       {
-       "label": "Data and the API",
-       "href": "/docs/data-and-api"
-      },
-      {
-       "label": "Verification",
+       "label": "Read verification limits",
        "href": "/docs/verification"
       },
       {
-       "label": "Methodology",
-       "href": "/methodology"
+       "label": "Open the published hazard-distribution JSON",
+       "href": "/data/historical/hazard-distribution.json"
       },
       {
-       "label": "Data sources",
-       "href": "/data-sources"
+       "label": "Open the published yearly-trends JSON",
+       "href": "/data/historical/temporal-trends.json"
       },
       {
-       "label": "Validation scorecard",
-       "href": "/model-performance"
+       "label": "Open the historical baseline metadata",
+       "href": "/data/historical/national-summary.json"
       },
       {
-       "label": "FAQ",
-       "href": "/faq"
+       "label": "Read the full 2026-11-06 daily report and calculations",
+       "href": "/reports/2026-11-06"
       }
      ]
+    },
+    {
+     "h2": "Yearly archive counts need their denominator",
+     "paragraphs": [
+      "This chart is a count of 3,324 historical master-baseline rows by recorded year. The series has no 2001 row and 2026 is partial through 5 July. Without a stable exposure denominator and collection-coverage adjustment, it is not an incidence or climate trend."
+     ],
+     "chart": {
+      "type": "line",
+      "title": "Master-baseline rows by recorded year",
+      "description": "Annual row counts in the historical master baseline. A missing year is shown as a gap.",
+      "xLabel": "Calendar year",
+      "yLabel": "Rows",
+      "valueFormat": "count",
+      "data": [
+       {
+        "label": "2000",
+        "value": 256,
+        "x": 2000
+       },
+       {
+        "label": "2002",
+        "value": 257,
+        "x": 2002
+       },
+       {
+        "label": "2003",
+        "value": 192,
+        "x": 2003
+       },
+       {
+        "label": "2004",
+        "value": 128,
+        "x": 2004
+       },
+       {
+        "label": "2005",
+        "value": 192,
+        "x": 2005
+       },
+       {
+        "label": "2006",
+        "value": 256,
+        "x": 2006
+       },
+       {
+        "label": "2007",
+        "value": 384,
+        "x": 2007
+       },
+       {
+        "label": "2008",
+        "value": 128,
+        "x": 2008
+       },
+       {
+        "label": "2009",
+        "value": 261,
+        "x": 2009
+       },
+       {
+        "label": "2010",
+        "value": 73,
+        "x": 2010
+       },
+       {
+        "label": "2011",
+        "value": 129,
+        "x": 2011
+       },
+       {
+        "label": "2012",
+        "value": 3,
+        "x": 2012
+       },
+       {
+        "label": "2013",
+        "value": 2,
+        "x": 2013
+       },
+       {
+        "label": "2014",
+        "value": 12,
+        "x": 2014
+       },
+       {
+        "label": "2015",
+        "value": 67,
+        "x": 2015
+       },
+       {
+        "label": "2016",
+        "value": 74,
+        "x": 2016
+       },
+       {
+        "label": "2017",
+        "value": 256,
+        "x": 2017
+       },
+       {
+        "label": "2018",
+        "value": 64,
+        "x": 2018
+       },
+       {
+        "label": "2019",
+        "value": 76,
+        "x": 2019
+       },
+       {
+        "label": "2020",
+        "value": 64,
+        "x": 2020
+       },
+       {
+        "label": "2021",
+        "value": 65,
+        "x": 2021
+       },
+       {
+        "label": "2022",
+        "value": 64,
+        "x": 2022
+       },
+       {
+        "label": "2023",
+        "value": 75,
+        "x": 2023
+       },
+       {
+        "label": "2024",
+        "value": 164,
+        "x": 2024
+       },
+       {
+        "label": "2025",
+        "value": 15,
+        "x": 2025
+       },
+       {
+        "label": "2026",
+        "value": 67,
+        "x": 2026
+       }
+      ],
+      "source": "/data/historical/temporal-trends.json; 3,324 master-baseline rows.",
+      "note": "2001 is absent; 2026 is partial through 5 July. Descriptive counts are not a climate trend or forecast."
+     }
+    },
+    {
+     "h2": "Analysis rules",
+     "paragraphs": [
+      "Report the population, unit, time window and missingness with every summary. Forecast rows share districts and lead times, so they are not independent observations. The published evidence does not support significance tests, confidence intervals or causal claims."
+     ],
+     "formulas": [
+      {
+       "label": "Arithmetic mean",
+       "expression": "x\u0304 = (\u03a3 x\u1d62) / n",
+       "spoken": "The arithmetic mean is the sum of values divided by the number of values.",
+       "explanation": "Use for a descriptive snapshot only; state whether rows are districts, district-days or archive records.",
+       "variables": [
+        {
+         "symbol": "x\u1d62",
+         "meaning": "Value for row i"
+        },
+        {
+         "symbol": "n",
+         "meaning": "Number of included rows"
+        }
+       ]
+      },
+      {
+       "label": "Population standard deviation",
+       "expression": "\u03c3 = \u221a(\u03a3 (x\u1d62 \u2212 \u03bc)\u00b2 / n)",
+       "spoken": "Population standard deviation is the square root of the average squared distance from the population mean.",
+       "explanation": "When every included value is identical, \u03c3 is zero. A zero denominator in a correlation makes that correlation undefined.",
+       "variables": [
+        {
+         "symbol": "\u03bc",
+         "meaning": "Mean of the included population"
+        },
+        {
+         "symbol": "n",
+         "meaning": "Number of included rows"
+        }
+       ]
+      },
+      {
+       "label": "Pearson correlation",
+       "expression": "r\u2093\u1d67 = \u03a3((x\u1d62 \u2212 x\u0304)(y\u1d62 \u2212 \u0233)) / \u221a(\u03a3(x\u1d62 \u2212 x\u0304)\u00b2 \u03a3(y\u1d62 \u2212 \u0233)\u00b2)",
+       "spoken": "Pearson r is the covariance numerator divided by the product of the two centered sums of squares.",
+       "explanation": "If either variable has zero variance or no usable values, the denominator is zero and r is undefined. Correlation does not establish causation."
+      }
+     ]
+    }
+   ],
+   "faqs": [
+    {
+     "question": "Is the 960-row count 64 districts times 15 days times 8 hazards?",
+     "answer": "No. A complete daily snapshot has one selected hazard class per district and target date, so the expected count is 64 \u00d7 15 = 960. Eight is the set of candidate classes, not an extra row multiplier."
+    },
+    {
+     "question": "Does a severity value of 30 mean a 30 percent chance of an event?",
+     "answer": "No. It is the normalized severity score rescaled to a 0 to 100 display index. It is not a calibrated probability or an observed percentage of damage."
+    },
+    {
+     "question": "Can I infer a historical risk trend from the yearly chart?",
+     "answer": "No. It is a count of catalogued master-baseline rows, with an absent year and a partial final year. It is not a rate adjusted for changing collection coverage and is not a forecast."
+    },
+    {
+     "question": "Why are some correlations unavailable?",
+     "answer": "The historical cleaned catalog has constant severity values and zero validated-affected values. Pearson correlation requires variation in both variables, so those correlations are undefined rather than zero."
+    },
+    {
+     "question": "Who issues official warnings?",
+     "answer": "The Bangladesh Meteorological Department and Flood Forecasting and Warning Centre issue official warnings. HazardNet is decision support and defers to them. In an emergency call 999."
     }
    ]
   },
@@ -1386,8 +1878,8 @@
    },
    "appShell": false,
    "h1": "The HazardNet platform",
-   "standfirst": "What the system publishes, which surface shows what, and where official warnings come from.",
-   "updated": "2026-10-05",
+   "standfirst": "What the system publishes, how a dated output reaches its public surfaces, and where official warnings come from.",
+   "updated": "2026-11-07",
    "sections": [
     {
      "h2": "What HazardNet publishes",
@@ -1396,23 +1888,14 @@
      ],
      "bullets": [
       "Scope: the 64 districts of Bangladesh, grouped into 8 divisions.",
-      "Output: one published forecast record per district, hazard class, horizon and forecast date.",
+      "Output: one selected hazard class per district and target date in the daily advisory snapshot; a full 15-day snapshot has 960 district-day rows.",
       "Honesty: forecast skill is not yet validated against observed outcomes. See the verification page.",
       "Methods: model code, dataset collection, training and benchmarking are research-private. Results and outputs are public."
      ]
     },
     {
      "h2": "Product surfaces",
-     "bullets": [
-      "Live situational map: satellite, precipitation, wind and the district layer in one view.",
-      "Forecast dashboard: overview, saved districts, compare and settings.",
-      "Hazard classes: one page per class carrying its full methodology.",
-      "Districts and divisions: the current outlook for every district and the division roll-ups.",
-      "Alerts and advisories: published alert levels and sector guidance.",
-      "Analytics: trend and comparison views over the published record.",
-      "Historical archive: 3,062 catalogued hazard events since May 2000.",
-      "Downloads, system status and the last run: the published artifacts and the state of the pipeline."
-     ],
+     "bullets": [],
      "links": [
       {
        "label": "Live map",
@@ -1458,7 +1941,52 @@
        "label": "The last run",
        "href": "/last-run"
       }
-     ]
+     ],
+     "table": {
+      "caption": "Public product surfaces and the unit each presents",
+      "columns": [
+       "Surface",
+       "What it presents",
+       "Interpretation limit"
+      ],
+      "rows": [
+       [
+        "Live situational map",
+        "Satellite, precipitation, wind and district layers.",
+        "Contextual layers are not an official warning."
+       ],
+       [
+        "Forecast dashboard",
+        "District-day outlooks and saved district views.",
+        "A displayed score is not an observed impact."
+       ],
+       [
+        "Hazard and district pages",
+        "One hazard-class page or district outlook at a time.",
+        "District severity is not a division-level re-score."
+       ],
+       [
+        "Division pages",
+        "District records grouped by division.",
+        "A roll-up is navigation and aggregation, not a new model output."
+       ],
+       [
+        "Alerts and advisories",
+        "Platform alert labels and sector guidance.",
+        "BMD and FFWC warnings take precedence."
+       ],
+       [
+        "Historical archive",
+        "3,062 cleaned event-catalog rows and static source artifacts.",
+        "Archive counts are not future risk rates or forecast verification."
+       ],
+       [
+        "Downloads, status and last run",
+        "Published artifacts and pipeline freshness/provenance.",
+        "A fresh run does not establish forecast skill."
+       ]
+      ]
+     }
     },
     {
      "h2": "Official warnings",
@@ -1469,6 +1997,84 @@
      "paragraphs": [
       "Alert levels on this site are published at or below the configured ceiling for each hazard class and are never inflated. Where an official warning exists, it always takes precedence."
      ]
+    },
+    {
+     "h2": "A dated output from publication to use",
+     "paragraphs": [
+      "A reader should be able to follow a displayed number back to the run that produced it. The public snapshot carries a run ID, generated time, model version, source dataset version and coverage counts."
+     ],
+     "figure": {
+      "type": "process",
+      "title": "Provenance path for a public forecast",
+      "description": "The diagram shows the reader-facing stages and the provenance carried between them; it does not expose private model-training steps.",
+      "steps": [
+       {
+        "title": "Run metadata",
+        "detail": "Record the source version, model version, timestamp and run identifier."
+       },
+       {
+        "title": "Coverage snapshot",
+        "detail": "Publish the district and target-day coverage with the output rows."
+       },
+       {
+        "title": "Dated product",
+        "detail": "Forecast pages and reports retain the run/date pairing."
+       },
+       {
+        "title": "Official context",
+        "detail": "Check BMD and FFWC; their warnings take precedence."
+       }
+      ]
+     },
+     "table": {
+      "caption": "A number and its provenance",
+      "columns": [
+       "Context field",
+       "Example source",
+       "How a reader uses it"
+      ],
+      "rows": [
+       [
+        "Run ID",
+        "run.id",
+        "Distinguishes one committed publication from another."
+       ],
+       [
+        "Generated time",
+        "run.generatedAt",
+        "Shows when the artifact was built."
+       ],
+       [
+        "Dataset version",
+        "run.sourceDatasetVersion",
+        "Names the source dataset release when recorded."
+       ],
+       [
+        "Coverage",
+        "coverage.districts and coverage.forecastDays",
+        "Shows the dimensions expected for the snapshot."
+       ],
+       [
+        "Target date",
+        "advisories[].targetDate",
+        "Identifies the forecast day, not the time the page was opened."
+       ]
+      ]
+     }
+    }
+   ],
+   "faqs": [
+    {
+     "question": "Is the public website the source of official warnings?",
+     "answer": "No. HazardNet presents decision-support outputs. The Bangladesh Meteorological Department and Flood Forecasting and Warning Centre issue official warnings."
+    },
+    {
+     "question": "Does a division page calculate a new division-level forecast?",
+     "answer": "No. It groups published district records for regional reading; it does not claim a separately trained or re-scored division model."
+    },
+    {
+     "question": "Are model internals published here?",
+     "answer": "No. Model code, data collection, training and benchmarking details remain research-private; public results and output provenance are documented."
     }
    ]
   },
@@ -1491,13 +2097,86 @@
    "appShell": false,
    "h1": "The eight hazard classes",
    "standfirst": "When each hazard occurs, what it is scored from, and where the score stops telling the truth.",
-   "updated": "2026-10-05",
+   "updated": "2026-11-07",
    "sections": [
     {
      "h2": "Eight classes, one published record",
      "paragraphs": [
-      "Every forecast run labels each district with one of eight hazard classes. Each class has its own season, its own physics proxy and its own limits. The full methodology for each class is published on its hazard page."
-     ]
+      "Every district-day forecast record carries one selected hazard class from the eight-class set. Each class has its own seasonal context, public physics proxy and limits. The full methodology for each class is published on its hazard page."
+     ],
+     "figure": {
+      "type": "process",
+      "title": "Read a class in context",
+      "description": "A class name is one field in a dated district outlook, not a complete warning or impact statement.",
+      "steps": [
+       {
+        "title": "Identify the record",
+        "detail": "Check district, target date and run provenance."
+       },
+       {
+        "title": "Read the selected class",
+        "detail": "The record carries one selected class from the current eight-class set."
+       },
+       {
+        "title": "Compare separate tracks",
+        "detail": "Read severity, confidence kind and physics proxy as distinct measures."
+       },
+       {
+        "title": "Check official sources",
+        "detail": "BMD and FFWC warnings and local instructions take precedence."
+       }
+      ]
+     },
+     "table": {
+      "caption": "Seasonal orientation for the eight forecast classes",
+      "columns": [
+       "Class",
+       "Typical seasonal context",
+       "Limit"
+      ],
+      "rows": [
+       [
+        "Flood",
+        "June to September monsoon; peak in July to August.",
+        "Rainfall proxy does not simulate river routing."
+       ],
+       [
+        "Flash Flood",
+        "March to May pre-monsoon convection and June to September.",
+        "Rainfall proxy does not simulate local catchment response."
+       ],
+       [
+        "Tropical Cyclone",
+        "April to May and October to November.",
+        "A district outlook is not a cyclone track or official bulletin."
+       ],
+       [
+        "Drought",
+        "November to April dry season.",
+        "Short forecast window is not a long-term water-balance estimate."
+       ],
+       [
+        "Heat Wave",
+        "March to June pre-monsoon.",
+        "Temperature cue is not a health-impact model."
+       ],
+       [
+        "Cold Wave",
+        "December to February, especially north and north-west.",
+        "Temperature cue is not an exposure or health-outcome estimate."
+       ],
+       [
+        "Fire",
+        "March to May and the December to January dry spell.",
+        "The detailed vegetation/fuel model is private."
+       ],
+       [
+        "Severe Local Storm",
+        "March to May Nor\u2019wester / Kalbaishakhi.",
+        "Public proxy is not a complete convective simulation."
+       ]
+      ]
+     }
     },
     {
      "h2": "Flood",
@@ -1555,7 +2234,7 @@
      "h2": "Heat Wave",
      "bullets": [
       "Season: March to June; the pre-monsoon window.",
-      "Scored from: Exceedance above 30 °C, plus persistence."
+      "Scored from: Exceedance above 30 \u00b0C, plus persistence."
      ],
      "links": [
       {
@@ -1568,7 +2247,7 @@
      "h2": "Cold Wave",
      "bullets": [
       "Season: December to February, concentrated in the north and north-west.",
-      "Scored from: How far the minimum falls below 16 °C, plus persistence."
+      "Scored from: How far the minimum falls below 16 \u00b0C, plus persistence."
      ],
      "links": [
       {
@@ -1606,7 +2285,7 @@
     {
      "h2": "Where the classes share limits",
      "paragraphs": [
-      "Two limits apply across the board. The published confidence is the model's own score over the eight classes and is reported as uncalibrated: it is not a probability. And the rainfall classes carry no hydrology, so a high score says how much rain a district saw, not whether a river will breach."
+      "Two limits apply across the board. Where a confidence score is present, it is the model\u2019s own score for its selected class, not automatically a probability. Treat it as a calibrated probability only when the source explicitly publishes confidence_kind as calibrated_probability; if the kind is absent, calibration is not established. The rainfall classes carry no hydrology, so a high rainfall-based score reflects the precipitation signal, not whether a river will breach."
      ],
      "links": [
       {
@@ -1614,6 +2293,86 @@
        "href": "/methodology"
       }
      ]
+    },
+    {
+     "h2": "Public proxy register and numeric cues",
+     "paragraphs": [
+      "The table distinguishes public descriptions from private scoring internals. A proxy is not a complete physical simulation, and the numeric cues below are not a calibrated severity formula."
+     ],
+     "table": {
+      "caption": "Eight forecast classes and the public proxy description",
+      "columns": [
+       "Forecast class",
+       "Public proxy description",
+       "Limit to keep in view"
+      ],
+      "rows": [
+       [
+        "Flood",
+        "Rainfall amount and intensity.",
+        "No river routing or hydrology; rainfall alone does not establish a breach."
+       ],
+       [
+        "Flash Flood",
+        "Short-duration, high-intensity rainfall.",
+        "The proxy does not simulate catchment response or local inundation."
+       ],
+       [
+        "Tropical Cyclone",
+        "Sustained wind above 50 km/h with associated rainfall.",
+        "A district outlook is not a storm track or official cyclone bulletin."
+       ],
+       [
+        "Drought",
+        "Heat load considered against rainfall across the 15-day window.",
+        "The detailed score formula and long-term water balance are not published."
+       ],
+       [
+        "Heat Wave",
+        "Maximum temperature above 30 \u00b0C, with persistence.",
+        "The public cue is not a complete health-impact model."
+       ],
+       [
+        "Cold Wave",
+        "Minimum temperature below 16 \u00b0C, with persistence.",
+        "The public cue is not an exposure or health-outcome estimate."
+       ],
+       [
+        "Fire",
+        "Vegetation and burn risk considered with heat, wind and drying.",
+        "The detailed vegetation/fuel model is research-private."
+       ],
+       [
+        "Severe Local Storm",
+        "Squall wind combined with a convective downpour.",
+        "The public page does not publish the full convective scoring function."
+       ]
+      ]
+     },
+     "callout": {
+      "tone": "warning",
+      "text": "The eight forecast classes are not the same population as the historical archive categories. Historical labels such as Epidemic and Earthquake can appear in the archive, but are not forecast classes in the current eight-class outlook."
+     },
+     "links": [
+      {
+       "label": "Read the severity and confidence definitions",
+       "href": "/docs/forecasts"
+      }
+     ]
+    }
+   ],
+   "faqs": [
+    {
+     "question": "Are the eight hazard classes equally likely?",
+     "answer": "No probability distribution is implied by listing eight classes. The selected class is a model output, and its confidence is not calibrated as an event probability."
+    },
+    {
+     "question": "Does a high rainfall proxy predict river flooding?",
+     "answer": "Not by itself. The published rainfall classes do not include hydrological routing, so rainfall severity is not a river-breach forecast."
+    },
+    {
+     "question": "Are all scoring formulas public?",
+     "answer": "No. The page states public proxy descriptions and limits. Model code, training, collection details and exact private scoring internals are not published."
     }
    ]
   },
@@ -1635,7 +2394,7 @@
    "appShell": false,
    "h1": "District and division coverage",
    "standfirst": "Every district has a page. This is what each one carries and how the divisions roll up.",
-   "updated": "2026-10-05",
+   "updated": "2026-11-07",
    "sections": [
     {
      "h2": "Coverage",
@@ -1670,6 +2429,148 @@
        "href": "/divisions"
       }
      ]
+    },
+    {
+     "h2": "Division coverage in the 2026-11-06 snapshot",
+     "paragraphs": [
+      "The counts below are a coverage check for run kaggle-v47-30b123dbb95c, not a ranking of risk. The source snapshot labels the Chattogram division as Chittagong; this page uses the current display name. Each district contributes 15 target days in this complete snapshot."
+     ],
+     "chart": {
+      "type": "bar",
+      "title": "Districts per division",
+      "description": "Distinct district coverage by division in the 2026-11-06 public snapshot. The bar length represents district count, not severity.",
+      "xLabel": "District count",
+      "yLabel": "Division",
+      "valueFormat": "count",
+      "data": [
+       {
+        "label": "Barisal",
+        "value": 6
+       },
+       {
+        "label": "Chattogram",
+        "value": 11
+       },
+       {
+        "label": "Dhaka",
+        "value": 13
+       },
+       {
+        "label": "Khulna",
+        "value": 10
+       },
+       {
+        "label": "Mymensingh",
+        "value": 4
+       },
+       {
+        "label": "Rajshahi",
+        "value": 8
+       },
+       {
+        "label": "Rangpur",
+        "value": 8
+       },
+       {
+        "label": "Sylhet",
+        "value": 4
+       }
+      ],
+      "source": "daily-advisories-v1.json, run kaggle-v47-30b123dbb95c."
+     },
+     "table": {
+      "caption": "Coverage by division in run kaggle-v47-30b123dbb95c",
+      "columns": [
+       "Division",
+       "Districts",
+       "15-day district-day rows"
+      ],
+      "rows": [
+       [
+        "Barisal",
+        "6",
+        "90"
+       ],
+       [
+        "Chattogram (source label: Chittagong)",
+        "11",
+        "165"
+       ],
+       [
+        "Dhaka",
+        "13",
+        "195"
+       ],
+       [
+        "Khulna",
+        "10",
+        "150"
+       ],
+       [
+        "Mymensingh",
+        "4",
+        "60"
+       ],
+       [
+        "Rajshahi",
+        "8",
+        "120"
+       ],
+       [
+        "Rangpur",
+        "8",
+        "120"
+       ],
+       [
+        "Sylhet",
+        "4",
+        "60"
+       ],
+       [
+        "Total",
+        "64",
+        "960"
+       ]
+      ]
+     },
+     "formulas": [
+      {
+       "label": "Division record count",
+       "expression": "R\u1d65 = D\u1d65 \u00d7 15",
+       "spoken": "Rows for division v equal its district count times the 15 target days.",
+       "explanation": "This count is a completeness expectation for the named run; it is not an average severity or a hazard rate.",
+       "variables": [
+        {
+         "symbol": "R\u1d65",
+         "meaning": "District-day rows for division v"
+        },
+        {
+         "symbol": "D\u1d65",
+         "meaning": "Number of covered districts in division v"
+        }
+       ]
+      }
+     ],
+     "links": [
+      {
+       "label": "Open the dated daily advisory snapshot",
+       "href": "/data/daily-advisories-v1.json"
+      }
+     ]
+    }
+   ],
+   "faqs": [
+    {
+     "question": "Does a larger division bar mean higher risk?",
+     "answer": "No. The chart counts how many districts are covered. It does not show severity, impacts or hazard likelihood."
+    },
+    {
+     "question": "Are division values re-scored?",
+     "answer": "No. Division pages aggregate the published district records for navigation and comparison; they do not create a new division-level model output."
+    },
+    {
+     "question": "Why is the source label Chittagong?",
+     "answer": "The public snapshot retains that source label. This documentation uses Chattogram as the current division name and states the mapping explicitly."
     }
    ]
   },
@@ -1692,26 +2593,26 @@
    "appShell": false,
    "h1": "Reading a forecast",
    "standfirst": "Every figure on the site traces to one published record. This is how to read it.",
-   "updated": "2026-11-02",
+   "updated": "2026-11-07",
    "sections": [
     {
      "h2": "The published record",
      "paragraphs": [
-      "Every figure on HazardNet traces to one published record per district and forecast date. The record carries:"
+      "A daily advisory row identifies a district, target date and selected hazard class. It carries a normalized severity score and meteorological fields where available. Forecast API records may also carry a confidence score and confidence_kind; some daily snapshot artifacts expose metrics.probTop1 without a separate confidence-kind field. Do not infer calibration from a field name."
      ],
      "bullets": [
       "District: one of the 64 districts of Bangladesh.",
-      "Hazard class: one of the eight classes.",
-      "Severity: a continuous value (0.00 to 1.00 normalized, 0 to 100 index) reported alongside a physics cross-check.",
-      "Confidence score: the score for the chosen class, reported as uncalibrated.",
-      "Trajectory: 15 consecutive daily steps (Days 1 to 15) with peak severe dates highlighted and an interactive day filter.",
-      "Forecast date: the run that produced the record."
+      "Target date and horizon: one of 15 consecutive daily steps, Days 1 to 15.",
+      "Hazard class: the selected class from the eight-class set.",
+      "Severity: a continuous normalized value from 0.00 to 1.00, shown as a 0 to 100 display index.",
+      "Confidence: a top-class score when present; only treat it as a calibrated probability when the source explicitly labels confidence_kind as calibrated_probability.",
+      "Run provenance: source version, model version and generated time identify the output snapshot."
      ]
     },
     {
      "h2": "Two severity tracks",
      "paragraphs": [
-      "Severity is reported side by side in two tracks. The skill track is the system's own score for the class it selected. The physics track is an independent estimate built from the meteorological drivers alone. The two can disagree, and when they do, the disagreement is shown rather than smoothed away. Neither track is an official warning level."
+      "Severity is reported side by side in two tracks. The model track is the system\u2019s own score for its selected class; it is not a verification metric or an estimate of forecast skill. The physics track is an independent estimate built from the meteorological drivers alone. The two can disagree, and when they do, the disagreement is shown rather than smoothed away. Neither track is an official warning level."
      ]
     },
     {
@@ -1725,6 +2626,248 @@
      "paragraphs": [
       "Every surface is stamped with the forecast date behind it. A stale run is labelled as stale. A missing run is shown as missing. No number is interpolated to fill a gap."
      ]
+    },
+    {
+     "h2": "A worked statistical example from run v47",
+     "paragraphs": [
+      "This fixed example uses the 2026-11-06 daily snapshot, run kaggle-v47-30b123dbb95c, with 960 published rows. All 960 severityScore values are exactly 0.30, while the snapshot publishes tier=WATCH on every row. Read the two fields separately: the tier is the row’s published label, not a value inferred from the client-side severity fallback bands. This example is descriptive of one run, not later runs or real-world impacts."
+     ],
+     "chart": {
+      "type": "bar",
+      "title": "Severity values in the v47 snapshot",
+      "description": "All 960 advisory rows in the named snapshot have normalized severityScore 0.30. This is a one-bin distribution, not a calibrated event-probability chart.",
+      "xLabel": "Advisory rows",
+      "yLabel": "Severity score bin",
+      "valueFormat": "count",
+      "data": [
+       {
+        "label": "0.30",
+        "value": 960
+       }
+      ],
+      "source": "daily-advisories-v1.json, generated 2026-11-06, run kaggle-v47-30b123dbb95c.",
+      "note": "A constant score distribution has no within-run variance and does not imply identical observed hazard or impact."
+     },
+     "table": {
+      "caption": "Descriptive statistics for the 960 published severityScore values",
+      "columns": [
+       "Statistic",
+       "Value",
+       "Definition"
+      ],
+      "rows": [
+       [
+        "Published advisory rows",
+        "960",
+        "Number of district-day records."
+       ],
+       [
+        "Valid / missing scores",
+        "960 / 0",
+        "All rows have a finite severityScore."
+       ],
+       [
+        "Mean",
+        "0.30",
+        "Arithmetic mean of the normalized score."
+       ],
+       [
+        "Median",
+        "0.30",
+        "Middle value after ordering the 960 scores."
+       ],
+       [
+        "Minimum / Q1",
+        "0.30 / 0.30",
+        "Lower end and first quartile; quantiles use linear interpolation."
+       ],
+       [
+        "Q3 / maximum",
+        "0.30 / 0.30",
+        "Third quartile and upper end."
+       ],
+       [
+        "Interquartile range",
+        "0.00",
+        "Q3 minus Q1."
+       ],
+       [
+        "Range",
+        "0.00",
+        "Maximum minus minimum."
+       ],
+       [
+        "Population standard deviation",
+        "0.00",
+        "All values equal the mean."
+       ],
+       [
+        "Coefficient of variation",
+        "0.0%",
+        "100 \u00d7 standard deviation divided by absolute mean."
+       ],
+       [
+        "Skewness",
+        "Undefined",
+        "Variance is zero, so standardized third-moment skewness is undefined."
+       ],
+       [
+        "Mode",
+        "0.30; count 960",
+        "The only distinct score value."
+       ],
+       [
+        "Distinct score values",
+        "1",
+        "No within-run score variation."
+       ],
+       [
+        "Tukey outliers",
+        "0",
+        "No value falls outside the Q1 \u2212 1.5 \u00d7 IQR and Q3 + 1.5 \u00d7 IQR fences."
+       ],
+       [
+        "Daily mean slope",
+        "0.00 score units per day",
+        "Ordinary least-squares slope across 15 target dates."
+       ],
+       [
+        "Pearson r: target date vs daily mean",
+        "Undefined",
+        "Severity has zero variance, so the correlation denominator is zero."
+       ],
+       [
+        "Target dates included",
+        "15",
+        "Days 1 to 15 in the named run."
+       ],
+       [
+        "Tier rows",
+        "WATCH: 960",
+        "Published advisory tier count for this run."
+       ]
+      ]
+     },
+     "formulas": [
+      {
+       "label": "Mean",
+       "expression": "x\u0304 = (\u03a3 x\u1d62) / n",
+       "spoken": "Sum the severity scores and divide by the number of rows.",
+       "explanation": "For this snapshot: 960 \u00d7 0.30 divided by 960 equals 0.30.",
+       "variables": [
+        {
+         "symbol": "x\u1d62",
+         "meaning": "Normalized severity score for row i"
+        },
+        {
+         "symbol": "n",
+         "meaning": "960 published rows"
+        }
+       ]
+      },
+      {
+       "label": "Population standard deviation",
+       "expression": "\u03c3 = \u221a(\u03a3 (x\u1d62 \u2212 \u03bc)\u00b2 / n)",
+       "spoken": "Take the square root of the mean squared deviation from the mean.",
+       "explanation": "Here every x\u1d62 equals \u03bc = 0.30, so every squared deviation is zero and \u03c3 = 0.00."
+      },
+      {
+       "label": "Display index",
+       "expression": "I = 100 \u00d7 S",
+       "spoken": "Multiply normalized severity S by one hundred for the display index I.",
+       "explanation": "The mapping changes the scale, not the meaning. A score of 0.30 displays as 30; it does not mean a 30 percent event chance."
+      },
+      {
+       "label": "Interquartile range and Tukey fences",
+       "expression": "IQR = Q3 \u2212 Q1; fences = [Q1 \u2212 1.5 \u00d7 IQR, Q3 + 1.5 \u00d7 IQR]",
+       "spoken": "Interquartile range equals the third quartile minus the first quartile; Tukey fences extend one point five interquartile ranges on either side.",
+       "explanation": "These are descriptive distribution diagnostics, not hazard thresholds. Here IQR is zero and all equal values lie on the fences."
+      },
+      {
+       "label": "Coefficient of variation",
+       "expression": "CV = 100 \u00d7 \u03c3 / |\u03bc|",
+       "spoken": "Coefficient of variation equals one hundred times population standard deviation divided by the absolute mean.",
+       "explanation": "It is zero here because \u03c3 = 0 and \u03bc = 0.30. It is undefined when the mean is zero."
+      },
+      {
+       "label": "Population skewness",
+       "expression": "\u03b3\u2081 = (\u03a3 (x\u1d62 \u2212 \u03bc)\u00b3 / n) / \u03c3\u00b3",
+       "spoken": "Population skewness is the third central moment divided by the cube of the population standard deviation.",
+       "explanation": "It is undefined when \u03c3 = 0. The published report correctly labels skewness undefined for this constant score set."
+      }
+     ],
+     "callout": {
+      "tone": "warning",
+      "text": "No p-value, confidence interval or significance claim is appropriate for this constant snapshot. Forecast rows share districts and dates, and the score is not validated as an outcome probability."
+     },
+     "links": [
+      {
+       "label": "Open the source daily advisory snapshot",
+       "href": "/data/daily-advisories-v1.json"
+      },
+      {
+       "label": "Read the full 2026-11-06 daily report and calculations",
+       "href": "/reports/2026-11-06"
+      }
+     ]
+    },
+    {
+     "h2": "Confidence bins and scale mapping",
+     "paragraphs": [
+      "Confidence bins are display categories for the model confidence value. They do not change the continuous severity score and do not certify calibration."
+     ],
+     "table": {
+      "caption": "Confidence display bins",
+      "columns": [
+       "Label",
+       "Boundary",
+       "Interpretation"
+      ],
+      "rows": [
+       [
+        "Certain",
+        "0.85 and above",
+        "Model confidence bin; not an outcome probability unless separately calibrated and labelled."
+       ],
+       [
+        "Probable",
+        "0.70 to below 0.85",
+        "Model confidence bin; not a probability statement."
+       ],
+       [
+        "Uncertain",
+        "Below 0.70",
+        "Model confidence bin; read with the selected class and physics track."
+       ]
+      ]
+     },
+     "figure": {
+      "type": "horizon",
+      "title": "Fifteen daily forecast steps",
+      "description": "The daily outlook spans Days 1 to 15. Days 8 to 15 are longer lead time and generally carry greater meteorological uncertainty; this graphic is not a calibrated uncertainty interval.",
+      "totalDays": 15,
+      "nearTermDays": 7,
+      "nearTermLabel": "Nearer lead: Days 1 to 7",
+      "longerLeadLabel": "Longer lead: Days 8 to 15"
+     }
+    }
+   ],
+   "faqs": [
+    {
+     "question": "Does severity 0.30 mean a 30 percent chance of a hazard?",
+     "answer": "No. Severity is a normalized damage-potential score shown on a 0 to 100 index. It is not calibrated as an event probability."
+    },
+    {
+     "question": "Why are model and physics severity both shown?",
+     "answer": "They are distinct tracks. The model track is a model-produced score, while physics severity is estimated from meteorological drivers. Their disagreement remains visible rather than being averaged away; neither is a validation metric."
+    },
+    {
+     "question": "Does confidence measure agreement between the two tracks?",
+     "answer": "No. Confidence is the model-produced support for its selected class. Agreement or disagreement with physics severity is a separate comparison."
+    },
+    {
+     "question": "Why does the example show a zero standard deviation?",
+     "answer": "All 960 severity values in the named 2026-11-06 snapshot are 0.30. A zero standard deviation describes that snapshot only; it is not evidence of zero hazard or model accuracy."
     }
    ]
   },
@@ -1746,7 +2889,7 @@
    "appShell": false,
    "h1": "Alert levels and advisories",
    "standfirst": "Four levels, a ceiling rule, and a strict line between guidance and official warnings.",
-   "updated": "2026-10-05",
+   "updated": "2026-11-07",
    "sections": [
     {
      "h2": "Four alert levels",
@@ -1762,6 +2905,50 @@
      },
      "paragraphs": [
       "When an official warning is in force for a district, it takes precedence over anything this site shows for that district and hazard."
+     ],
+     "table": {
+      "caption": "Who issues which kind of information",
+      "columns": [
+       "Source",
+       "Role",
+       "Authority boundary"
+      ],
+      "rows": [
+       [
+        "HazardNet",
+        "Independent district outlooks, platform labels and planning advisories.",
+        "Decision support only; not an official warning service."
+       ],
+       [
+        "Bangladesh Meteorological Department (BMD)",
+        "Official meteorological forecasts and weather warnings.",
+        "Follow the bulletin and its stated instructions."
+       ],
+       [
+        "Flood Forecasting and Warning Centre (FFWC)",
+        "Official river and flood forecasts and warnings.",
+        "Follow FFWC guidance for riverine flood risk."
+       ],
+       [
+        "Emergency services",
+        "National emergency hotline: 999.",
+        "Use for emergencies; do not wait for a platform update."
+       ]
+      ]
+     },
+     "links": [
+      {
+       "label": "Bangladesh Meteorological Department (BMD)",
+       "href": "https://bmd.gov.bd/"
+      },
+      {
+       "label": "Flood Forecasting and Warning Centre (FFWC)",
+       "href": "https://ffwc.gov.bd/"
+      },
+      {
+       "label": "Department of Disaster Management (DDM)",
+       "href": "https://ddm.gov.bd/"
+      }
      ]
     },
     {
@@ -1779,6 +2966,84 @@
        "href": "/advisories"
       }
      ]
+    },
+    {
+     "h2": "The four published platform labels",
+     "paragraphs": [
+      "The shared severity bands used for client-side fallback display are 0.40 for WATCH, 0.70 for WARNING and 0.85 for SEVERE. These are policy/display cutoffs on normalized severity S, not probabilities, impact thresholds or official warning levels. They are used only when no published tier or alert level is available; an existing tier or level is the label to display and must not be recalculated from the fallback bands. Automatic publication stops at WATCH, WARNING requires a named duty-officer review, and SEVERE requires ministry authorisation. Hazard ceilings and the recorded review state still apply."
+     ],
+     "table": {
+      "caption": "Severity fallback bands and publication gates",
+      "columns": [
+       "Normalized severity S",
+       "Fallback band",
+       "Publication gate",
+       "Interpretation limit"
+      ],
+      "rows": [
+       [
+        "Below 0.40",
+        "NORMAL / no-alert fallback",
+        "No alert is inferred from the score alone.",
+        "Does not prove the hazard is absent."
+       ],
+       [
+        "0.40 to below 0.70",
+        "WATCH",
+        "May be auto-published, subject to policy ceilings.",
+        "A platform label, not an official watch."
+       ],
+       [
+        "0.70 to below 0.85",
+        "WARNING candidate",
+        "Requires named duty-officer review before publication.",
+        "A score alone does not authorize a warning."
+       ],
+       [
+        "0.85 and above",
+        "SEVERE candidate",
+        "Requires ministry authorisation before publication.",
+        "A score alone does not authorize a severe alert."
+       ]
+      ]
+     },
+     "figure": {
+      "type": "process",
+      "title": "How to act on a displayed advisory",
+      "description": "The reading order keeps platform guidance and official authority separate.",
+      "steps": [
+       {
+        "title": "Check the run",
+        "detail": "Confirm the forecast date, target date and freshness label."
+       },
+       {
+        "title": "Read the platform label",
+        "detail": "Use the hazard, district, severity and linked guidance together."
+       },
+       {
+        "title": "Check official sources",
+        "detail": "Look for BMD weather warnings and FFWC river-flood bulletins."
+       },
+       {
+        "title": "Follow authority",
+        "detail": "Official warnings, evacuation orders and emergency services take precedence."
+       }
+      ]
+     }
+    }
+   ],
+   "faqs": [
+    {
+     "question": "Does WATCH mean an official watch has been issued?",
+     "answer": "No. It is a HazardNet platform label. Official warnings and notices are issued by the relevant government authorities."
+    },
+    {
+     "question": "Can the 0 to 100 severity index be converted directly to an alert level?",
+     "answer": "No. Alert policy uses configured hazard-specific ceilings and review rules. The display index is not a universal alert threshold."
+    },
+    {
+     "question": "What if an official warning disagrees with HazardNet?",
+     "answer": "Follow the official warning and instructions from the responsible authority. HazardNet is decision support and defers to them."
     }
    ]
   },
@@ -1799,17 +3064,16 @@
    },
    "appShell": false,
    "h1": "The historical archive",
-   "standfirst": "What the archive holds, where its numbers come from, and how they were cross-checked.",
-   "updated": "2026-10-05",
+   "standfirst": "What the historical files count, how their populations differ, and which statistical summaries are currently meaningful.",
+   "updated": "2026-11-07",
    "sections": [
     {
      "h2": "What the archive holds",
      "bullets": [
-      "3,062 catalogued hazard events.",
-      "Spanning 2 May 2000 to 5 July 2026.",
-      "Covering all 64 districts of Bangladesh.",
-      "Labelled across 26 hazard-type names.",
-      "70 events carry GLIDE identifiers linking them to the international disaster register."
+      "Clean reader-facing catalog: 3,062 event rows, 2 May 2000 to 5 July 2026, covering 64 districts and 9 normalized hazard classes.",
+      "Master baseline: 3,324 rows. Its hazard-distribution and yearly-frequency files use this larger population.",
+      "Google Earth Engine check: 2,870 of 3,324 rows matched on the checked fields; 454 rows are recorded as drift.",
+      "The clean catalog currently has severity_score = 1.00 and validated_affected = 0 for every row; these fields do not support impact correlation or model-skill claims."
      ],
      "links": [
       {
@@ -1821,14 +3085,603 @@
     {
      "h2": "The national baseline",
      "paragraphs": [
-      "The master dataset behind the archive carries 3,324 unique event rows. The archive page publishes the national baseline derived from it: totals, the date range, the most-affected districts and the most frequent hazard types, each shown as a figure and a machine-readable number."
+      "The baseline file summarizes 3,324 master rows. The reader-facing event catalog contains 3,062 cleaned rows, so the two figures use different populations. The hazard-distribution file has ten master-baseline categories, while the cleaned catalog currently has nine normalized classes. Use the population named by each chart or table."
+     ],
+     "links": [
+      {
+       "label": "Open the national-summary artifact",
+       "href": "/data/historical/national-summary.json"
+      }
      ]
     },
     {
      "h2": "Cross-check against Google Earth Engine",
      "paragraphs": [
       "Every row of the master dataset was matched against the Google Earth Engine export that carries its extraction window: 2,870 rows matched and 454 drifted. The drift is dominated by revised GLIDE identifiers rather than coordinates, and every row in the export resolves back to a catalogued event. The full mismatch sample is published on the archive page."
+     ],
+     "links": [
+      {
+       "label": "Open the GEE validation artifact",
+       "href": "/data/historical/gee-validation.json"
+      }
      ]
+    },
+    {
+     "h2": "Master-baseline hazard distribution",
+     "paragraphs": [
+      "The distribution below sums to 3,324 rows. It describes the historical master baseline and includes Epidemic and Earthquake, which are not among the eight current forecast classes."
+     ],
+     "chart": {
+      "type": "bar",
+      "title": "Master rows by hazard category",
+      "description": "Historical master-baseline row counts by catalogued hazard type; bar length represents row count.",
+      "xLabel": "Master rows",
+      "yLabel": "Rows",
+      "valueFormat": "count",
+      "data": [
+       {
+        "label": "Flood",
+        "value": 890
+       },
+       {
+        "label": "Tropical Cyclone",
+        "value": 709
+       },
+       {
+        "label": "Severe Local Storm",
+        "value": 514
+       },
+       {
+        "label": "Flash Flood",
+        "value": 334
+       },
+       {
+        "label": "Cold Wave",
+        "value": 322
+       },
+       {
+        "label": "Epidemic",
+        "value": 262
+       },
+       {
+        "label": "Earthquake",
+        "value": 128
+       },
+       {
+        "label": "Fire",
+        "value": 65
+       },
+       {
+        "label": "Drought",
+        "value": 64
+       },
+       {
+        "label": "Heat Wave",
+        "value": 36
+       }
+      ],
+      "source": "/data/historical/hazard-distribution.json; population n = 3,324.",
+      "note": "The supplied one-decimal category percentages total 100.1% because each category is rounded independently."
+     },
+     "table": {
+      "caption": "Master-baseline distribution by category",
+      "columns": [
+       "Hazard category",
+       "Rows",
+       "Share"
+      ],
+      "rows": [
+       [
+        "Flood",
+        "890",
+        "26.8%"
+       ],
+       [
+        "Tropical Cyclone",
+        "709",
+        "21.3%"
+       ],
+       [
+        "Severe Local Storm",
+        "514",
+        "15.5%"
+       ],
+       [
+        "Flash Flood",
+        "334",
+        "10.0%"
+       ],
+       [
+        "Cold Wave",
+        "322",
+        "9.7%"
+       ],
+       [
+        "Epidemic",
+        "262",
+        "7.9%"
+       ],
+       [
+        "Earthquake",
+        "128",
+        "3.9%"
+       ],
+       [
+        "Fire",
+        "65",
+        "2.0%"
+       ],
+       [
+        "Drought",
+        "64",
+        "1.9%"
+       ],
+       [
+        "Heat Wave",
+        "36",
+        "1.1%"
+       ],
+       [
+        "Total",
+        "3324",
+        "100.1% rounded"
+       ]
+      ]
+     },
+     "links": [
+      {
+       "label": "Open the hazard-distribution artifact",
+       "href": "/data/historical/hazard-distribution.json"
+      }
+     ]
+    },
+    {
+     "h2": "Yearly record counts are not an incidence trend",
+     "paragraphs": [
+      "This chart shows the 3,324 master-baseline rows by their recorded year. The artifact has no 2001 row and 2026 is partial through 5 July. Collection and catalog coverage are not adjusted for exposure, population or reporting changes, so do not infer a change in hazard probability from the shape."
+     ],
+     "chart": {
+      "type": "line",
+      "title": "Master-baseline rows by recorded year",
+      "description": "Annual row counts in the historical master baseline. A missing year is left as a gap, not joined across.",
+      "xLabel": "Calendar year",
+      "yLabel": "Rows",
+      "valueFormat": "count",
+      "data": [
+       {
+        "label": "2000",
+        "value": 256,
+        "x": 2000
+       },
+       {
+        "label": "2002",
+        "value": 257,
+        "x": 2002
+       },
+       {
+        "label": "2003",
+        "value": 192,
+        "x": 2003
+       },
+       {
+        "label": "2004",
+        "value": 128,
+        "x": 2004
+       },
+       {
+        "label": "2005",
+        "value": 192,
+        "x": 2005
+       },
+       {
+        "label": "2006",
+        "value": 256,
+        "x": 2006
+       },
+       {
+        "label": "2007",
+        "value": 384,
+        "x": 2007
+       },
+       {
+        "label": "2008",
+        "value": 128,
+        "x": 2008
+       },
+       {
+        "label": "2009",
+        "value": 261,
+        "x": 2009
+       },
+       {
+        "label": "2010",
+        "value": 73,
+        "x": 2010
+       },
+       {
+        "label": "2011",
+        "value": 129,
+        "x": 2011
+       },
+       {
+        "label": "2012",
+        "value": 3,
+        "x": 2012
+       },
+       {
+        "label": "2013",
+        "value": 2,
+        "x": 2013
+       },
+       {
+        "label": "2014",
+        "value": 12,
+        "x": 2014
+       },
+       {
+        "label": "2015",
+        "value": 67,
+        "x": 2015
+       },
+       {
+        "label": "2016",
+        "value": 74,
+        "x": 2016
+       },
+       {
+        "label": "2017",
+        "value": 256,
+        "x": 2017
+       },
+       {
+        "label": "2018",
+        "value": 64,
+        "x": 2018
+       },
+       {
+        "label": "2019",
+        "value": 76,
+        "x": 2019
+       },
+       {
+        "label": "2020",
+        "value": 64,
+        "x": 2020
+       },
+       {
+        "label": "2021",
+        "value": 65,
+        "x": 2021
+       },
+       {
+        "label": "2022",
+        "value": 64,
+        "x": 2022
+       },
+       {
+        "label": "2023",
+        "value": 75,
+        "x": 2023
+       },
+       {
+        "label": "2024",
+        "value": 164,
+        "x": 2024
+       },
+       {
+        "label": "2025",
+        "value": 15,
+        "x": 2025
+       },
+       {
+        "label": "2026",
+        "value": 67,
+        "x": 2026
+       }
+      ],
+      "source": "/data/historical/temporal-trends.json; 3,324 master-baseline rows.",
+      "note": "2001 is absent; 2026 is partial. The line is descriptive only, not a climate trend or forecast."
+     },
+     "table": {
+      "caption": "Yearly row-count data",
+      "columns": [
+       "Year",
+       "Rows"
+      ],
+      "rows": [
+       [
+        "2000",
+        "256"
+       ],
+       [
+        "2002",
+        "257"
+       ],
+       [
+        "2003",
+        "192"
+       ],
+       [
+        "2004",
+        "128"
+       ],
+       [
+        "2005",
+        "192"
+       ],
+       [
+        "2006",
+        "256"
+       ],
+       [
+        "2007",
+        "384"
+       ],
+       [
+        "2008",
+        "128"
+       ],
+       [
+        "2009",
+        "261"
+       ],
+       [
+        "2010",
+        "73"
+       ],
+       [
+        "2011",
+        "129"
+       ],
+       [
+        "2012",
+        "3"
+       ],
+       [
+        "2013",
+        "2"
+       ],
+       [
+        "2014",
+        "12"
+       ],
+       [
+        "2015",
+        "67"
+       ],
+       [
+        "2016",
+        "74"
+       ],
+       [
+        "2017",
+        "256"
+       ],
+       [
+        "2018",
+        "64"
+       ],
+       [
+        "2019",
+        "76"
+       ],
+       [
+        "2020",
+        "64"
+       ],
+       [
+        "2021",
+        "65"
+       ],
+       [
+        "2022",
+        "64"
+       ],
+       [
+        "2023",
+        "75"
+       ],
+       [
+        "2024",
+        "164"
+       ],
+       [
+        "2025",
+        "15"
+       ],
+       [
+        "2026",
+        "67"
+       ]
+      ]
+     },
+     "links": [
+      {
+       "label": "Open the temporal-trends artifact",
+       "href": "/data/historical/temporal-trends.json"
+      }
+     ]
+    },
+    {
+     "h2": "Summary statistics of represented years",
+     "paragraphs": [
+      "Across the 26 calendar-year bins present in temporal-trends.json, the 3,324 rows have a mean of 127.8 and a median of 75.5 per represented year. These summarize the file as stored; they are not annual incidence rates and are not adjusted for missing 2001, partial 2026, exposure or collection coverage."
+     ],
+     "table": {
+      "caption": "Descriptive statistics across the 26 year bins that are present",
+      "columns": [
+       "Statistic",
+       "Value",
+       "Interpretation"
+      ],
+      "rows": [
+       [
+        "Represented year bins",
+        "26",
+        "2000 and 2002 through 2026; 2001 is absent."
+       ],
+       [
+        "Total master-baseline rows",
+        "3,324",
+        "Sum of the included yearly counts."
+       ],
+       [
+        "Mean per represented year",
+        "127.8",
+        "3,324 divided by 26; not annualized for partial 2026."
+       ],
+       [
+        "Median per represented year",
+        "75.5",
+        "Middle of the 26 available yearly counts."
+       ],
+       [
+        "Minimum / maximum",
+        "2 / 384",
+        "Minimum in 2013; maximum in 2007."
+       ],
+       [
+        "2026 coverage",
+        "Partial",
+        "Counts stop at 5 July 2026."
+       ]
+      ]
+     },
+     "callout": {
+      "tone": "info",
+      "text": "The arithmetic is descriptive, not inferential. It cannot establish a temporal increase or decrease in hazard probability."
+     }
+    },
+    {
+     "h2": "Correlation matrix and zero-variance fields",
+     "paragraphs": [
+      "Pearson correlation is defined only when both variables vary and have usable paired values. In the current clean catalog, severity_score is constant at 1.00 and validated_affected is constant at 0, so the corresponding correlations are null. Null means not estimable, not zero."
+     ],
+     "table": {
+      "caption": "Published Pearson correlation artifact",
+      "columns": [
+       "Variable",
+       "Severity score",
+       "Validated affected",
+       "Latitude",
+       "Longitude"
+      ],
+      "rows": [
+       [
+        "Severity score",
+        "Not estimable",
+        "Not estimable",
+        "Not estimable",
+        "Not estimable"
+       ],
+       [
+        "Validated affected",
+        "Not estimable",
+        "Not estimable",
+        "Not estimable",
+        "Not estimable"
+       ],
+       [
+        "Latitude",
+        "Not estimable",
+        "Not estimable",
+        "1.000",
+        "-0.454"
+       ],
+       [
+        "Longitude",
+        "Not estimable",
+        "Not estimable",
+        "-0.454",
+        "1.000"
+       ]
+      ]
+     },
+     "formulas": [
+      {
+       "label": "Pearson correlation",
+       "expression": "r\u2093\u1d67 = \u03a3((x\u1d62 \u2212 x\u0304)(y\u1d62 \u2212 \u0233)) / \u221a(\u03a3(x\u1d62 \u2212 x\u0304)\u00b2 \u03a3(y\u1d62 \u2212 \u0233)\u00b2)",
+       "spoken": "Pearson r divides the centered cross-product sum by the product of each variable\u2019s centered magnitude.",
+       "explanation": "If either centered sum of squares is zero, the denominator is zero and r is undefined. The latitude-longitude value describes coordinate structure only; it is not a causal relationship or forecast skill."
+      }
+     ],
+     "callout": {
+      "tone": "warning",
+      "text": "The archive is a catalog, not a calibrated outcome dataset. Do not interpret the constant severity and affected fields as model validation or as evidence that no impacts occurred."
+     },
+     "links": [
+      {
+       "label": "Open the published correlations artifact",
+       "href": "/data/historical/correlations.json"
+      }
+     ]
+    },
+    {
+     "h2": "Counts, shares and match rates",
+     "paragraphs": [
+      "For a category count n\u2096 in a stated population N, its descriptive share is p\u2096 = 100 \u00d7 n\u2096 / N. Always keep the denominator with the percentage; here the hazard distribution uses N = 3,324 master rows."
+     ],
+     "formulas": [
+      {
+       "label": "Category share",
+       "expression": "p\u2096 = 100 \u00d7 n\u2096 / N",
+       "spoken": "A category share is the category row count divided by the stated population, multiplied by one hundred.",
+       "explanation": "A share of archive rows is not the probability of that hazard occurring in a future season.",
+       "variables": [
+        {
+         "symbol": "n\u2096",
+         "meaning": "Rows in category k"
+        },
+        {
+         "symbol": "N",
+         "meaning": "Rows in the named archive population"
+        }
+       ]
+      }
+     ],
+     "table": {
+      "caption": "Cross-check arithmetic",
+      "columns": [
+       "Quantity",
+       "Calculation",
+       "Rounded result"
+      ],
+      "rows": [
+       [
+        "Matched share",
+        "2,870 / 3,324",
+        "86.3%"
+       ],
+       [
+        "Drift share",
+        "454 / 3,324",
+        "13.7%"
+       ],
+       [
+        "Clean catalog difference",
+        "3,324 - 3,062",
+        "262 fewer rows in the clean catalog; not a forecast miss rate."
+       ]
+      ]
+     }
+    }
+   ],
+   "faqs": [
+    {
+     "question": "Why are 3,324 and 3,062 both used?",
+     "answer": "The 3,324 figure is the master-baseline population used by the distribution and yearly files. The reader-facing cleaned event catalog currently has 3,062 rows. Always use the denominator stated with the artifact."
+    },
+    {
+     "question": "Does the yearly chart show climate change or future risk?",
+     "answer": "No. It counts rows in an archive with a missing year and a partial final year, without a consistent exposure denominator. It is descriptive only."
+    },
+    {
+     "question": "Why does the correlation matrix show Not estimable?",
+     "answer": "The current clean-catalog severity and validated-affected fields are constant, so their variance is zero. Pearson correlation has a zero denominator and is undefined for those pairs."
+    },
+    {
+     "question": "Are the archive categories the same as the forecast classes?",
+     "answer": "No. The historical master baseline includes categories such as Epidemic and Earthquake. The current forecast system publishes eight different hazard classes."
     }
    ]
   },
@@ -1851,7 +3704,7 @@
    "appShell": false,
    "h1": "Data, downloads and the API",
    "standfirst": "Provenance, downloadable artifacts and the read-only API surface.",
-   "updated": "2026-10-05",
+   "updated": "2026-11-07",
    "sections": [
     {
      "h2": "Data sources and attribution",
@@ -1951,6 +3804,113 @@
        ]
       ]
      }
+    },
+    {
+     "h2": "Public artifact shapes",
+     "paragraphs": [
+      "These fields let a reader inspect a result without confusing a display value with a calibrated probability. The daily snapshot and the historical catalog are different datasets with different record units."
+     ],
+     "table": {
+      "caption": "Useful fields in the public daily snapshot",
+      "columns": [
+       "Path",
+       "Meaning",
+       "Caveat"
+      ],
+      "rows": [
+       [
+        "run.id",
+        "Identifier for the published run.",
+        "Use it to match a dated report to a snapshot."
+       ],
+       [
+        "run.generatedAt",
+        "UTC generation timestamp.",
+        "It is not the forecast target date."
+       ],
+       [
+        "run.sourceDatasetVersion",
+        "Source dataset version when recorded.",
+        "May be missing in other run formats."
+       ],
+       [
+        "coverage.districts / forecastDays",
+        "Coverage dimensions.",
+        "Full coverage is 64 districts by 15 days."
+       ],
+       [
+        "advisories[].targetDate",
+        "Forecast day for a district row.",
+        "Different from the run generation time."
+       ],
+       [
+        "advisories[].tier",
+        "Published platform advisory label for this district-day row.",
+        "Use the published label when present; severity cutoffs are fallback display only."
+       ],
+       [
+        "advisories[].severityScore",
+        "Normalized severity score from 0 to 1.",
+        "Not an event probability or observed impact."
+       ],
+       [
+        "advisories[].metrics.probTop1",
+        "Top-class model score when present.",
+        "Not assumed calibrated; the daily snapshot does not include a separate confidence_kind field."
+       ]
+      ]
+     },
+     "figure": {
+      "type": "process",
+      "title": "Request and provenance path",
+      "description": "Use the response metadata to retain the source run, then read the values according to their field definitions.",
+      "steps": [
+       {
+        "title": "Choose a read endpoint",
+        "detail": "Select metadata, latest rows, bulk horizon or history."
+       },
+       {
+        "title": "Check response status",
+        "detail": "A missing or stale response is not replaced with invented values."
+       },
+       {
+        "title": "Read run metadata",
+        "detail": "Record run ID, generation time and source version."
+       },
+       {
+        "title": "Preserve attribution",
+        "detail": "Carry source attribution and forecast date into downstream figures."
+       }
+      ]
+     },
+     "links": [
+      {
+       "label": "Open the daily advisory JSON",
+       "href": "/data/daily-advisories-v1.json"
+      },
+      {
+       "label": "Open the model-performance JSON",
+       "href": "/data/model-performance.json"
+      },
+      {
+       "label": "Read the full 2026-11-06 daily report and calculations",
+       "href": "/reports/2026-11-06"
+      }
+     ]
+    }
+   ],
+   "faqs": [
+    {
+     "question": "Can I treat the API severity field as a probability?",
+     "answer": "No. Severity is a normalized score, not an event probability. Top-class confidence fields also are not presumed calibrated; when an endpoint provides confidence_kind, treat a value as calibrated only if it explicitly says calibrated_probability. If the kind is absent, calibration is not established."
+    },
+    {
+     "question": "Was the historical REST API removed?",
+     "answer": "Yes. The historical archive is served as static JSON artifacts; the current documentation lists those files as the supported historical read path."
+    },
+    {
+     "question": "How do I cite a downloaded figure?",
+     "answer": "Include HazardNet, the source artifact or endpoint, the run or forecast date, the source dataset version when present, and the official-warning disclaimer."
     }
    ]
   },
@@ -1972,7 +3932,7 @@
    "appShell": false,
    "h1": "Validation status",
    "standfirst": "What has been checked, what has not, and what stays research-private.",
-   "updated": "2026-10-05",
+   "updated": "2026-11-07",
    "sections": [
     {
      "h2": "Current status",
@@ -1997,12 +3957,71 @@
        "label": "Open the validation scorecard",
        "href": "/model-performance"
       }
-     ]
+     ],
+     "table": {
+      "caption": "Headline counts from model-performance.json, schema v2, updated 2026-09-24",
+      "columns": [
+       "Artifact field",
+       "Count",
+       "Interpretation boundary"
+      ],
+      "rows": [
+       [
+        "Selected historical episodes",
+        5,
+        "Small, selected sample; not a representative seasonal evaluation."
+       ],
+       [
+        "Named districts",
+        50,
+        "Episodes contain named districts; district rows are not independent episodes."
+       ],
+       [
+        "Districts with a scored row",
+        50,
+        "A score was available for each named district in this artifact."
+       ],
+       [
+        "Flagged for any class",
+        50,
+        "At least one class was flagged in the scorecard; not evidence of event-class correctness."
+       ],
+       [
+        "Flagged for the episode class",
+        13,
+        "Class-specific detections under the artifact rules."
+       ],
+       [
+        "Episode-class rows over threshold",
+        23,
+        "Lead-time rows, not 23 unique districts or 23 validated hits."
+       ],
+       [
+        "Scored samples",
+        100,
+        "The artifact reports 100 samples across its selected horizons."
+       ],
+       [
+        "Alarms without a recorded impact",
+        532,
+        "Missing recorded impact is not a confirmed no-impact outcome or a verified false alarm."
+       ],
+       [
+        "Episodes with computable POD",
+        1,
+        "The artifact reports this count; it is not a pooled multi-season POD estimate."
+       ]
+      ]
+     },
+     "callout": {
+      "tone": "warning",
+      "text": "These are artifact totals, not a validated forecast-skill estimate. In particular, an alarm without a recorded impact is not automatically a false alarm: the outcome may be missing or unobserved."
+     }
     },
     {
      "h2": "What those numbers cannot support",
      "paragraphs": [
-      "Detection counts for five episodes do not establish probability calibration, skill against a climatology baseline, or a false-alarm rate. Until validation against observed outcomes ships, treat every severity value as decision support only."
+      "The counts do not establish probability calibration, skill against a climatology baseline, or a general operational false-alarm rate. The artifact contains episode-specific derived metrics, but their denominators depend on the recorded outcomes and are not comparable as a pooled estimate. Its 532 alarms without a recorded impact are not confirmed no-impact cases. Until evaluation against verified outcomes ships, treat every severity value as decision support only."
      ]
     },
     {
@@ -2016,6 +4035,233 @@
        "href": "/contact"
       }
      ]
+    },
+    {
+     "h2": "Detection metrics and denominator checks",
+     "paragraphs": [
+      "The formulas below are standard definitions, not a claim that the current scorecard has a valid pooled estimate. A denominator of zero or an unavailable outcome makes a metric undefined; it must not be printed as zero."
+     ],
+     "table": {
+      "caption": "Counts required for a binary verification table",
+      "columns": [
+       "Symbol",
+       "Meaning"
+      ],
+      "rows": [
+       [
+        "TP",
+        "A forecast event and an observed event align under the stated unit, class, horizon and window."
+       ],
+       [
+        "FP",
+        "A forecast event has no matched observed event under the same matching rule."
+       ],
+       [
+        "FN",
+        "An observed event has no matched forecast event under the same matching rule."
+       ],
+       [
+        "TN",
+        "A non-event is correctly not forecast, only where the negative sample space is explicitly defined."
+       ]
+      ]
+     },
+     "formulas": [
+      {
+       "label": "Probability of detection",
+       "expression": "POD = TP / (TP + FN)",
+       "spoken": "Hits divided by hits plus misses.",
+       "explanation": "Undefined when TP + FN is zero; an episode count is not a multi-season skill estimate."
+      },
+      {
+       "label": "False alarm ratio",
+       "expression": "FAR = FP / (TP + FP)",
+       "spoken": "False alarms divided by all forecast events.",
+       "explanation": "Undefined when TP + FP is zero; does not describe event probability calibration."
+      },
+      {
+       "label": "Critical success index",
+       "expression": "CSI = TP / (TP + FP + FN)",
+       "spoken": "Hits divided by the union of forecast and observed events.",
+       "explanation": "Requires a documented event match rule and a nonzero denominator."
+      },
+      {
+       "label": "Confidence calibration",
+       "expression": "Compare stated confidence with observed event frequency in reliability bins.",
+       "spoken": "Calibration compares forecasts grouped by confidence with corresponding observed event frequencies.",
+       "explanation": "The current publication makes no calibration claim and does not publish the full training or benchmarking process."
+      }
+     ]
+    },
+    {
+     "h2": "What the current five-episode scorecard can say",
+     "paragraphs": [
+      "The public artifact counts detections for five selected historical episodes at a class severity threshold of 0.500. It is not a broad prospective evaluation: the classifier was not re-run for the evaluation, episode selection is small, and several aggregate skill quantities are not published."
+     ],
+     "table": {
+      "caption": "Evidence boundary",
+      "columns": [
+       "Available now",
+       "Not supported by this evidence"
+      ],
+      "rows": [
+       [
+        "Raw per-episode detection counts for five named episodes.",
+        "General forecast-skill claim across hazards, districts or seasons."
+       ],
+       [
+        "A stated class severity threshold of 0.500 for the scorecard.",
+        "Probability calibration or a reliability curve."
+       ],
+       [
+        "Explicitly reported null/undefined denominators.",
+        "P-values, confidence intervals or significance claims."
+       ],
+       [
+        "Recorded event matches for selected cases.",
+        "A climatology comparison or a complete false-alarm rate."
+       ]
+      ]
+     },
+     "figure": {
+      "type": "process",
+      "title": "Verification evidence path",
+      "description": "A valid metric needs matched forecast and outcome units, a declared threshold and a nonzero denominator.",
+      "steps": [
+       {
+        "title": "Name the episode",
+        "detail": "Record event class, date window and affected districts."
+       },
+       {
+        "title": "Align forecasts",
+        "detail": "Match district, target date, horizon and class under an explicit rule."
+       },
+       {
+        "title": "Count outcomes",
+        "detail": "Record hits, misses and false alarms; leave unavailable outcomes null."
+       },
+       {
+        "title": "Publish limits",
+        "detail": "Show raw counts and denominators; do not promote them to a broad skill claim."
+       }
+      ]
+     },
+     "links": [
+      {
+       "label": "Open the published validation scorecard",
+       "href": "/model-performance"
+      },
+      {
+       "label": "Open the published model-performance artifact",
+       "href": "/data/model-performance.json"
+      }
+     ]
+    },
+    {
+     "h2": "What a future validation study would require",
+     "paragraphs": [
+      "A defensible evaluation would lock the unit and event-matching rule before scoring, use genuinely out-of-time episodes, compare with a named reference forecast, and retain complete outcome denominators. Probability scores would be reported only after probability semantics and calibration are established."
+     ],
+     "table": {
+      "caption": "Minimum analysis design before publishing a skill estimate",
+      "columns": [
+       "Requirement",
+       "Analysis or record",
+       "Why it matters"
+      ],
+      "rows": [
+       [
+        "Independent evaluation",
+        "Out-of-time seasons or episodes not used to select or tune the model.",
+        "Avoids leakage from fitting or selecting on the same events."
+       ],
+       [
+        "Defined matching unit",
+        "District, hazard, target date, lead time, event window and spatial rule.",
+        "Makes TP, FP and FN reproducible."
+       ],
+       [
+        "Reference baseline",
+        "Climatology and/or persistence evaluated on the same cases.",
+        "Skill is relative to a stated benchmark, not a raw hit count."
+       ],
+       [
+        "Probability semantics",
+        "Calibrated probability for a named event and horizon, with verified binary outcomes.",
+        "Required before using probability scoring rules or reliability claims."
+       ],
+       [
+        "Dependence-aware uncertainty",
+        "Resample whole events or seasons, not individual district-day rows.",
+        "Rows cluster by event, district and time; row-wise independence is implausible."
+       ],
+       [
+        "Stratified reporting",
+        "Report by hazard class, lead time, region and missingness.",
+        "A pooled average can conceal uneven coverage or failure modes."
+       ]
+      ]
+     },
+     "formulas": [
+      {
+       "label": "Brier score, if probabilities are validated",
+       "expression": "BS = (1 / n) \u00d7 \u03a3 (p\u1d62 \u2212 o\u1d62)\u00b2",
+       "spoken": "Brier score equals the average squared difference between forecast probability and binary outcome.",
+       "explanation": "Use only when p\u1d62 is a probability for a clearly defined event and o\u1d62 is a verified zero-or-one outcome. The current HazardNet documentation makes no Brier-score claim.",
+       "variables": [
+        {
+         "symbol": "p\u1d62",
+         "meaning": "Probability assigned to the event for case i."
+        },
+        {
+         "symbol": "o\u1d62",
+         "meaning": "Verified binary outcome for case i."
+        },
+        {
+         "symbol": "n",
+         "meaning": "Number of matched cases with defined outcomes."
+        }
+       ]
+      },
+      {
+       "label": "Brier skill score, relative to a named baseline",
+       "expression": "BSS = 1 \u2212 BS_model / BS_reference",
+       "spoken": "Brier skill score equals one minus the model Brier score divided by the reference Brier score.",
+       "explanation": "The reference must be stated and evaluated on the same cases. BSS is not currently estimated for HazardNet."
+      },
+      {
+       "label": "Block-bootstrap uncertainty",
+       "expression": "SE_block \u2248 SD(\u03b8\u0302*\u2081, \u03b8\u0302*\u2082, \u2026, \u03b8\u0302*\u1d2e)",
+       "spoken": "Block bootstrap standard error is the standard deviation of the metric across B resamples of whole events or seasons.",
+       "explanation": "Resample dependent event or season blocks rather than treating every district-day row as independent. A valid interval still requires enough independent blocks; the current five episodes are insufficient for a broad claim."
+      }
+     ],
+     "callout": {
+      "tone": "info",
+      "text": "These are candidate evaluation methods, not results. No probability-calibration, Brier-score, Brier-skill-score or confidence-interval result is published here."
+     }
+    }
+   ],
+   "faqs": [
+    {
+     "question": "Has HazardNet forecast skill been validated against observed outcomes?",
+     "answer": "Not yet. The public scorecard reports descriptive detection counts for five historical episodes and explicitly says they are inconclusive."
+    },
+    {
+     "question": "Why not calculate p-values or confidence intervals from the current scorecard?",
+     "answer": "Five selected episodes are not a suitable independent sample for a general skill claim. The outcome matching and negative sample space also need to be well-defined."
+    },
+    {
+     "question": "What does a null metric mean?",
+     "answer": "It means the metric is not estimable from the available numerator and denominator. Null is not zero and must not be interpreted as no skill or no events."
+    },
+    {
+     "question": "Are model code and benchmark details public?",
+     "answer": "No. Model code, data collection, training and benchmarking details remain research-private; only selected results and public outputs are published."
+    },
+    {
+     "question": "What would be needed for a future forecast-skill claim?",
+     "answer": "A pre-specified matching rule, independent out-of-time cases, complete outcome denominators, a named baseline, lead-time and hazard-specific reporting, and uncertainty methods that resample dependent events or seasons."
     }
    ]
   },
@@ -2182,7 +4428,7 @@
    "path": "/archive",
    "label": "Archive",
    "title": "Historical Hazard Archive: HazardNet",
-   "description": "Historical disaster event archive for Bangladesh (2000–2025): documented flood, cyclone, drought and storm observations across 64 districts.",
+   "description": "Historical disaster event archive for Bangladesh (2000\u20132025): documented flood, cyclone, drought and storm observations across 64 districts.",
    "keywords": [
     "historical disaster archive Bangladesh",
     "EM-DAT climatic hazards",
@@ -2196,7 +4442,7 @@
    },
    "appShell": false,
    "h1": "Historical Hazard Archive",
-   "standfirst": "2,931 recorded event-district observations across Bangladesh (2000–2025). This is an observation count, not a count of disasters: 254 distinct physical episodes are documented. Currently no hazard archive artifact loaded; this deployment states no historical count from unverified sources.",
+   "standfirst": "2,931 recorded event-district observations across Bangladesh (2000\u20132025). This is an observation count, not a count of disasters: 254 distinct physical episodes are documented. Currently no hazard archive artifact loaded; this deployment states no historical count from unverified sources.",
    "updated": "2026-09-19",
    "sections": [
     {

@@ -94,9 +94,9 @@
    "reason": "the Pearson matrix renders as a phone card list of pair values below md and the table only from md up; a 4x4 numeric matrix would otherwise scroll sideways at 390px."
   },
   "components/ReportTemplate.tsx": {
-   "tables": 2,
+   "tables": 3,
    "status": "allowListed",
-   "reason": "both tables (markdown table wrapper and the sortable top-advisories table) sit inside an overflow-x-auto wrapper, so they scroll locally and never widen the document"
+   "reason": "the Markdown, reusable analysis-data-table and sortable top-advisory renderers each use a focusable local overflow wrapper; at narrow widths they scroll within the labelled region rather than shrinking data text or widening the document"
   },
   "pages/ReportsArchivePage.tsx": {
    "tables": 1,

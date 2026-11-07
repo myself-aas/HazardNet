@@ -1,15 +1,14 @@
 /**
  * Leading gate for type we author.
  *
- * Why this exists: impeccable's `tight-leading` rule is waived on built pages
- * (docs/design/impeccable-baseline.json) because NASA's own composite display tokens
- * declare 100% leading — `--hds-typography-h1-2xl: 700 7.5rem/1` — which the detector
- * reads as 0.13x. The waiver is only safe if something still enforces leading where it
- * matters, which is body-scale type. This file is that something.
+ * The built-page detector uses a generic 1.3 minimum and cannot distinguish compact Apple
+ * roles from accidental tight leading. A handful of exact token pairs (and print CSS that
+ * the detector misreads) are therefore waived in the design baseline. This test keeps the
+ * authored CSS accountable: compact roles pass only when their exact size/line pair exists
+ * in apple.css; all other body-scale copy keeps at least 1.3 leading.
  *
- * The typographic rule it encodes is the one NASA's scale itself follows: display and
- * number styles (24px and up) may sit at 1.0–1.15, everything a person reads in
- * paragraphs stays at 1.3 or above.
+ * Display and number styles (24px and up) may sit at 1.0–1.15. The regular reading scale
+ * remains 1.3 or above except for the compact roles the global system explicitly defines.
  */
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
@@ -21,6 +20,21 @@ const SRC = join(ROOT, 'frontend/src');
 const AUTHORED_CSS = [join(SRC, 'index.css')];
 /** The single token stylesheet. Was styles/nasa-hds.css before the Apple migration. */
 const GENERATED_CSS = join(SRC, 'styles/apple.css');
+const APPLE_TYPE_PAIRS = (() => {
+  const values = new Map();
+  const css = readFileSync(GENERATED_CSS, 'utf8');
+  for (const match of css.matchAll(/--(ap-type-[\w-]+)-(size|line):\s*([\d.]+)px\s*;/g)) {
+    const [, role, part, value] = match;
+    const entry = values.get(role) ?? {};
+    entry[part] = Number(value);
+    values.set(role, entry);
+  }
+  return new Set(
+    [...values.values()]
+      .filter((value) => Number.isFinite(value.size) && Number.isFinite(value.line))
+      .map((value) => `${value.size}px/${value.line}px`),
+  );
+})();
 const PRERENDER = join(ROOT, 'frontend/scripts/prerender.mjs');
 
 const PX_PER_REM = 16;
@@ -107,14 +121,19 @@ describe('leading on type we author', () => {
   it.each([
     ['frontend/src/index.css', readFileSync(AUTHORED_CSS[0], 'utf8')],
     ['the prerendered static shell', staticShellCss()],
-  ])('%s keeps body-scale leading at or above 1.3', (_label, text) => {
+  ])('%s keeps body-scale leading above the floor except at exact Apple-token pairs', (_label, text) => {
     const rules = parseRules(flattenAtRules(stripComments(text)));
     const offenders = [];
     for (const { selector, decls } of rules) {
       const leading = leadingOf(decls);
       if (leading === null) continue;
-      const size = toPx(decls['font-size']) ?? PX_PER_REM;
+      const fontSize = toPx(decls['font-size']);
+      const lineHeight = toPx(decls['line-height']);
+      const size = fontSize ?? PX_PER_REM;
       const weight = parseInt(decls['font-weight'] ?? '400', 10) || 400;
+      // Compact Apple roles (e.g. body-sm 14/18 and caption 11/14) intentionally use
+      // token-defined ratios below 1.3. Only the exact global size/line pair is exempt.
+      if (fontSize !== null && lineHeight !== null && APPLE_TYPE_PAIRS.has(`${fontSize}px/${lineHeight}px`)) continue;
       // Display and number scale may lead tightly; so may large bold type (WCAG's own
       // large-text threshold), which is a single line by definition.
       if (size >= DISPLAY_PX || (size >= LARGE_BOLD_PX && weight >= 700)) continue;
@@ -193,10 +212,10 @@ describe('leading on type we author', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('never sets a screen h1 larger than NASA\'s own h1 ceiling', () => {
-    // --hds-font-size-2xl (3rem / 48px) is NASA's h1; 7.5rem is reserved for display and
-    // number styles. A screen h1 above 48px would be the real version of the finding the
-    // detector reports in print points.
+  it('keeps screen h1 at or below the global headline-xl ceiling', () => {
+    // DESIGN.md publishes headline-xl at 44px (32px on mobile); display-hero is a separate
+    // editorial role. A screen h1 above 44px would exceed the global heading ramp, while the
+    // detector's 306px built-page result is its print-point-to-rem parsing artifact.
     const text = stripComments(readFileSync(AUTHORED_CSS[0], 'utf8'));
     const rules = parseRules(flattenAtRules(text)).filter((r) => /(^|[\s,])h1([\s,{:]|$)/.test(r.selector));
     expect(rules.length).toBeGreaterThan(0);
@@ -205,7 +224,7 @@ describe('leading on type we author', () => {
       const size = toPx(decls['font-size']);
       if (size === null) continue;
       if (/print/i.test(selector)) continue;
-      if (size > 48) oversized.push(`${selector} — ${decls['font-size']} (${size}px)`);
+      if (size > 44) oversized.push(`${selector} — ${decls['font-size']} (${size}px)`);
     }
     expect(oversized).toEqual([]);
   });
