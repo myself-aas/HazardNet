@@ -191,19 +191,19 @@ function renderToc(sections, faqs, routePath) {
 
 function renderTopics(topics) {
   if (!Array.isArray(topics) || topics.length === 0) return '';
-  const cards = topics
+  const rows = topics
     .filter((topic) => topic && typeof topic.to === 'string' && topic.to.startsWith('/') && !topic.to.startsWith('//') && topic.title)
     .map((topic) => `<li><a href="${escapeHtml(topic.to)}"><span class="hn-topic-kicker">${renderInline(topic.kicker ?? '')}</span><strong>${renderInline(topic.title)}</strong><span>${renderInline(topic.blurb ?? '')}</span></a></li>`)
     .join('');
-  return cards ? `<ul class="hn-topic-grid">${cards}</ul>` : '';
+  return rows ? `<ol class="hn-topic-list">${rows}</ol>` : '';
 }
 
 function renderFigure(figure) {
   if (!figure || !figure.title) return '';
-  const caption = `<figcaption><strong>${renderInline(figure.title)}</strong><p>${renderInline(figure.description ?? '')}</p></figcaption>`;
+  const caption = `<figcaption><strong class="hn-figure-title">${renderInline(figure.title)}</strong><p>${renderInline(figure.description ?? '')}</p></figcaption>`;
   if (figure.type === 'process') {
     const steps = (Array.isArray(figure.steps) ? figure.steps : [])
-      .map((step, index) => `<li><span class="hn-step-number">${String(index + 1).padStart(2, '0')}</span><strong>${renderInline(step.title ?? '')}</strong><p>${renderInline(step.detail ?? '')}</p></li>`)
+      .map((step, index) => `<li><span class="hn-step-number">${String(index + 1).padStart(2, '0')}</span><strong class="hn-step-title">${renderInline(step.title ?? '')}</strong><p>${renderInline(step.detail ?? '')}</p></li>`)
       .join('');
     return steps ? `<figure class="hn-process-figure">${caption}<ol>${steps}</ol></figure>` : '';
   }
@@ -342,8 +342,10 @@ function renderSections(sections, routePath = '') {
       const bullets = Array.isArray(section.bullets) && section.bullets.length
         ? `<ul>${section.bullets.map((b) => `<li>${renderInline(b)}</li>`).join('')}</ul>`
         : '';
+      const calloutTone = section.callout?.tone ?? 'info';
+      const calloutLabel = calloutTone === 'warning' ? 'Warning' : calloutTone === 'danger' ? 'Important' : 'Information';
       const callout = section.callout?.text
-        ? `<p class="hn-callout hn-callout--${escapeHtml(section.callout.tone ?? 'info')}">${renderInline(section.callout.text)}</p>`
+        ? `<p class="hn-callout hn-callout--${escapeHtml(calloutTone)}" role="note" aria-label="${escapeHtml(calloutTone)} documentation note"><strong>${calloutLabel}:</strong> ${renderInline(section.callout.text)}</p>`
         : '';
       return `<section>${heading}${paragraphs}${bullets}${renderTopics(section.topics)}${renderFigure(section.figure)}${renderFormulas(section.formulas)}${renderChart(section.chart, routePath, index)}${renderTable(section.table)}${callout}${renderLinks(section.links)}</section>`;
     })
@@ -584,9 +586,9 @@ const STATIC_STYLES = `<style>
 
      Literals, not custom properties, on purpose: this style block is inlined into every
      prerendered document and paints BEFORE the application stylesheet arrives, so a custom
-     property here would resolve to nothing on the one paint that matters most. Every value
-     below is copied from the design system, and a test fails if one of them stops being a
-     colour the system publishes.
+     property here would resolve to nothing on the one paint that matters most. Values below
+     mirror the global Apple tokens, including literal results for semantic color-mix roles;
+     regression tests pin the geometry and typography back to that system.
 
      The type is the platform UI face, never a webfont: Inter is named first where it is
      installed, system-ui everywhere else, so the shell's first paint uses the same metrics
@@ -595,39 +597,42 @@ const STATIC_STYLES = `<style>
      The dark arm is a prefers-color-scheme media query rather than a class, because there is
      no JavaScript yet to read the stored preference — this is what stops a system-dark
      visitor getting a white flash before the app boots. */
-  .hn-static{max-width:60rem;margin:0 auto;padding:5.5rem 1.25rem 3rem;background:#ffffff;font-family:"Inter",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans Bengali",sans-serif;font-size:1rem;color:#1d1d1f;line-height:1.62}
+  .hn-static{max-width:60rem;margin:0 auto;padding:5.5rem 1.25rem 3rem;background:#ffffff;font-family:"Inter",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans Bengali",sans-serif;font-size:17px;color:#1d1d1f;line-height:24px}
   .hn-static h1,.hn-static h2,.hn-static h3,.hn-static summary,.hn-static th{font-family:"Inter",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans Bengali",sans-serif}
-  .hn-static h1{font-size:1.9rem;line-height:1.15;margin:0 0 .75rem;font-weight:700}
-  .hn-static h2{font-size:1.15rem;line-height:1.35;margin:2rem 0 .5rem;font-weight:700}
-  .hn-static p{margin:.6rem 0;color:#333333;overflow-wrap:anywhere}
-  .hn-static .hn-lead{font-size:1.03rem;line-height:1.5;color:#1d1d1f}
-  .hn-static ul{margin:.5rem 0 1rem;padding-left:1.15rem;color:#333333}
+  .hn-static h1{font-size:28px;line-height:32px;margin:0 0 .75rem;font-weight:600}
+  .hn-static h2{font-size:21px;line-height:26px;margin:2rem 0 .5rem;font-weight:600}
+  .hn-static p{margin:.6rem 0;color:#272729;overflow-wrap:anywhere}
+  .hn-static .hn-lead{font-size:19px;line-height:26px;color:#333333}
+  .hn-static ul{margin:.5rem 0 1rem;padding-left:1.15rem;color:#272729}
   .hn-static li{margin:.3rem 0}
   .hn-static a{color:#0066cc}
   /* A callout is a surface, not a stripe. It used to carry a 2px accent left edge on a
      tinted ground — the generated-callout signature, and a colour-only carrier of meaning
      for a reader who cannot see the hue. One hairline all round, the raised corner, and the
      label in the body weight carries it instead. */
-  .hn-static .hn-callout{border:1px solid #b3400f;background:#fdeee7;color:#b3400f;padding:.7rem .9rem;border-radius:8px;font-size:.94rem}
-  .hn-static .hn-meta{font-size:.8rem;line-height:1.75;letter-spacing:.025em;color:#5a5a5d;border-top:1px solid #e0e0e0;padding-top:.9rem;margin-top:2rem}
-  .hn-static .hn-meta-line{font-size:.8rem;line-height:1.75;letter-spacing:.025em;color:#5a5a5d}
+  .hn-static .hn-callout{border:1px solid #d2d2d7;background:#fafafc;color:#272729;padding:1rem;border-radius:16px;font-size:17px;line-height:24px}
+  .hn-static .hn-callout--info{border-color:#d2d2d7;background:#fafafc;color:#272729}
+  .hn-static .hn-callout--warning{border-color:#d2d2d7;background:#fdf3e0;color:#8a5a00}
+  .hn-static .hn-callout--danger{border-color:#d2d2d7;background:#fdebeb;color:#c01f1f}
+  .hn-static .hn-meta{font-size:12px;line-height:16px;letter-spacing:.01em;color:#5a5a5d;border-top:1px solid #e0e0e0;padding-top:.9rem;margin-top:2rem}
+  .hn-static .hn-meta-line{font-size:12px;line-height:16px;letter-spacing:.01em;color:#5a5a5d}
   .hn-static .hn-tablewrap{overflow-x:auto;margin:.75rem 0 1rem}
-  .hn-static table{width:100%;border-collapse:collapse;font-size:.92rem}
+  .hn-static table{width:100%;border-collapse:collapse;font-size:14px;line-height:18px}
   .hn-static li,.hn-static td,.hn-static th{overflow-wrap:anywhere}
-  .hn-static caption{text-align:left;font-size:.8rem;line-height:1.75;letter-spacing:.025em;color:#5a5a5d;padding-bottom:.35rem}
+  .hn-static caption{text-align:left;font-size:11px;line-height:14px;letter-spacing:.012em;color:#5a5a5d;padding-bottom:.35rem}
   .hn-static th,.hn-static td{border-bottom:1px solid #e0e0e0;padding:.45rem .6rem .45rem 0;text-align:left;vertical-align:top}
-  .hn-static th{font-weight:700}
-  .hn-static .hn-state{display:inline-block;border:1px solid #a1a1a6;border-radius:9999px;background:#ffffff;color:#1d1d1f;padding:.1rem .5rem;font-size:.75rem;font-weight:700;white-space:nowrap}
+  .hn-static th{font-weight:600}
+  .hn-static .hn-state{display:inline-block;border:1px solid #a1a1a6;border-radius:9999px;background:#ffffff;color:#1d1d1f;padding:.1rem .5rem;font-size:12px;line-height:16px;font-weight:600;white-space:nowrap}
   .hn-static .hn-state-fresh{border-color:#1d7a3e;background:#f5f5f7;color:#1d1d1f}
   .hn-static .hn-state-stale{border-color:#b3400f;background:#fdeee7;color:#b3400f}
   .hn-static .hn-state-failing{border-color:#c01f1f;background:#fdeee7;color:#c01f1f}
   .hn-static .hn-state-unknown{border-color:#a1a1a6;background:#f5f5f7;color:#333333}
-  .hn-static .hn-reason{display:block;font-weight:400;font-size:.8rem;color:#5a5a5d}
+  .hn-static .hn-reason{display:block;font-weight:400;font-size:12px;line-height:16px;color:#5a5a5d}
   .hn-static .hn-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-  .hn-static .hn-loading{font-size:.8rem;color:#5a5a5d}
+  .hn-static .hn-loading{font-size:12px;line-height:16px;color:#5a5a5d}
   /* The safety framing closes every static document (DESIGN.md §Safety framing). It is the
      last thing on the page on purpose: still in the flow, never behind an interaction. */
-  .hn-static .hn-safety{font-size:.8rem;line-height:1.6;color:#5a5a5d;border-top:1px solid #e0e0e0;padding-top:.8rem;margin-top:1.6rem}
+  .hn-static .hn-safety{font-size:14px;line-height:18px;color:#5a5a5d;border-top:1px solid #e0e0e0;padding-top:.8rem;margin-top:1.6rem}
   .hn-static .hn-safety a{color:#0066cc}
   /* The brand mark that loads in place of the notice below. The artwork itself is
      /hazardnet-loader.svg — the infinity mark, animated — so a slow connection
@@ -637,26 +642,39 @@ const STATIC_STYLES = `<style>
   .hn-static .hn-loader{display:flex;flex-direction:column;align-items:center;gap:1.1rem;margin:2.75rem 0 .5rem}
   .hn-static .hn-loader-mark{display:block;width:112px;height:63px}
   .hn-static details{border-bottom:1px solid #e0e0e0;padding:.55rem 0}
-  .hn-static summary{min-height:44px;padding:.55rem 0;font-weight:600;cursor:pointer}
-  .hn-static .hn-doc-toc{border:1px solid #e0e0e0;border-radius:10px;padding:.75rem 1rem;margin:1.25rem 0}
-  .hn-static .hn-doc-toc ol{margin:.5rem 0 0;padding-left:1.25rem}
-  .hn-static .hn-topic-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;list-style:none;padding:0;margin:1rem 0}
-  .hn-static .hn-topic-grid li{margin:0}
-  .hn-static .hn-topic-grid a{display:flex;min-height:8rem;flex-direction:column;gap:.4rem;border:1px solid #e0e0e0;border-radius:10px;padding:1rem;color:#1d1d1f;text-decoration:none}
-  .hn-static .hn-topic-grid a:hover{border-color:#0066cc}
-  .hn-static .hn-topic-kicker,.hn-static .hn-step-number{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.75rem;color:#5a5a5d}
-  .hn-static .hn-topic-grid strong,.hn-static .hn-process-figure strong{font-weight:700}
-  .hn-static .hn-process-figure,.hn-static .hn-horizon-figure,.hn-static .hn-chart,.hn-static .hn-formula{border:1px solid #e0e0e0;border-radius:10px;background:#f5f5f7;padding:1rem;margin:1rem 0}
-  .hn-static .hn-process-figure figcaption,.hn-static .hn-horizon-figure figcaption{margin-bottom:.75rem}
-  .hn-static .hn-process-figure ol{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;list-style:none;padding:0;margin:.5rem 0}
-  .hn-static .hn-process-figure li{border:1px solid #e0e0e0;border-radius:8px;background:#ffffff;padding:.75rem;margin:0}
-  .hn-static .hn-process-figure li p,.hn-static .hn-horizon-figure p{font-size:.82rem}
-  .hn-static .hn-horizon-group{margin:.85rem 0}
+  .hn-static summary{min-height:44px;padding:.55rem 0;font-size:17px;line-height:22px;font-weight:600;cursor:pointer}
+  .hn-static .hn-doc-toc summary{font-size:14px;line-height:18px}
+  .hn-static .hn-doc-toc{border:1px solid #f0f0f0;border-radius:16px;padding:.75rem;margin:1.25rem 0}
+  .hn-static .hn-doc-toc ol{margin:.5rem 0 0;padding-left:1.25rem;font-size:14px;line-height:18px}
+  .hn-static .hn-topic-list{list-style:none;padding:0;margin:1rem 0}
+  .hn-static .hn-topic-list li{margin:0;border-bottom:1px solid #f0f0f0}
+  .hn-static .hn-topic-list li:last-child{border-bottom:0}
+  .hn-static .hn-topic-list a{display:grid;grid-template-columns:2rem minmax(0,1fr);column-gap:1rem;align-items:start;min-height:44px;padding:1rem .5rem;border-radius:12px;color:#1d1d1f;text-decoration:none}
+  .hn-static .hn-topic-list a:focus-visible{outline:2px solid #0071e3;outline-offset:2px}
+  .hn-static .hn-topic-list a:hover strong{color:#0066cc}
+  .hn-static .hn-topic-kicker{grid-column:1;grid-row:1 / span 2;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;line-height:16px;color:#6e6e73}
+  .hn-static .hn-topic-list strong{grid-column:2;font-size:17px;line-height:22px;font-weight:600}
+  .hn-static .hn-topic-list a > span:last-child{grid-column:2;font-size:14px;line-height:18px;color:#5a5a5d}
+  .hn-static .hn-step-number{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;line-height:16px;color:#6e6e73}
+  .hn-static .hn-process-figure strong{font-weight:600}
+  .hn-static .hn-process-figure,.hn-static .hn-horizon-figure,.hn-static .hn-chart,.hn-static .hn-formula{border:1px solid #e0e0e0;border-radius:20px;background:#ffffff;padding:1.5rem;margin:1.25rem 0}
+  .hn-static .hn-process-figure figcaption,.hn-static .hn-horizon-figure figcaption{margin-bottom:1rem}
+  .hn-static .hn-figure-title,.hn-static .hn-chart h3{display:block;font-size:17px;line-height:22px;font-weight:600;margin:0 0 .25rem}
+  .hn-static .hn-step-title{font-size:14px;line-height:18px;font-weight:600}
+  .hn-static .hn-formula h3{font-size:14px;line-height:18px;font-weight:600;margin:0}
+  .hn-static .hn-process-figure ol{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));column-gap:1rem;row-gap:.75rem;list-style:none;padding:0;margin:.5rem 0}
+  .hn-static .hn-process-figure li{border-top:1px solid #f0f0f0;padding:.75rem 0 0;margin:0}
+  .hn-static .hn-process-figure figcaption p,.hn-static .hn-horizon-figure figcaption p,.hn-static .hn-chart > p,.hn-static .hn-formula > p:not(.hn-equation){font-size:14px;line-height:18px}
+  .hn-static .hn-process-figure li p,.hn-static .hn-horizon-figure > p,.hn-static .hn-chart figcaption p{font-size:12px;line-height:16px}
+  .hn-static .hn-horizon-group{margin:1rem 0}
+  .hn-static .hn-horizon-group > strong{display:block;font-size:14px;line-height:18px;font-weight:600}
   .hn-static .hn-horizon-days{display:grid;gap:.25rem;list-style:none;padding:0;margin:.4rem 0}
   .hn-static .hn-horizon-days--near{grid-template-columns:repeat(7,minmax(0,1fr))}
   .hn-static .hn-horizon-days--far{grid-template-columns:repeat(8,minmax(0,1fr))}
-  .hn-static .hn-horizon-days li{border:1px solid #a1a1a6;border-radius:5px;padding:.45rem .1rem;text-align:center;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.75rem;margin:0}
-  .hn-static .hn-chart-scroll{overflow-x:auto;border-radius:6px}
+  .hn-static .hn-horizon-days li{border:1px solid #f0f0f0;border-radius:8px;padding:.45rem .1rem;text-align:center;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;line-height:16px;margin:0}
+  .hn-static .hn-horizon-days--near li{border-color:#0066cc;background:#f5f5f7;color:#1d1d1f}
+  .hn-static .hn-horizon-days--far li{color:#5a5a5d}
+  .hn-static .hn-chart-scroll{overflow-x:auto;border-radius:8px}
   .hn-static .hn-chart svg{display:block;width:100%;min-width:34rem;height:auto;color:#0066cc}
   .hn-static .hn-chart-muted{color:#5a5a5d;font-size:11px}
   .hn-static .hn-chart-label{fill:#333333;font-size:12px}
@@ -664,22 +682,26 @@ const STATIC_STYLES = `<style>
   .hn-static .hn-chart-bar,.hn-static .hn-chart-dot{fill:#0066cc}
   .hn-static .hn-chart-line{fill:none;stroke:#0066cc;stroke-width:2.5}
   .hn-static .hn-chart-axis{stroke:#5a5a5d}
-  .hn-static .hn-equation{overflow-x:auto;border-radius:6px;background:#ffffff;padding:.65rem .8rem;font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+  .hn-static .hn-equation{overflow-x:auto;border-radius:8px;background:#eeedf3;padding:.65rem .8rem;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:14px;line-height:18px}
+  .hn-static .hn-formula-set{display:grid;gap:.75rem;margin:1rem 0}
+  .hn-static .hn-formula-set .hn-formula{margin:0}
   .hn-static .hn-formula dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem;margin:.75rem 0 0}
-  .hn-static .hn-formula dl div{display:flex;gap:.5rem;font-size:.8rem}
-  .hn-static .hn-formula dt{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:700}
+  .hn-static .hn-formula dl div{display:flex;gap:.5rem;font-size:12px;line-height:16px}
+  .hn-static .hn-formula dt{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:600}
   .hn-static .hn-formula dd{margin:0;color:#5a5a5d}
-  /* Dark scheme. Every rule restates its own background next to its text colour so the
-     pairing stays legible to a reader (and to a static contrast checker) that does not
-     cascade media queries. Ratios on the stated backgrounds are all >= 4.5:1. */
+  /* Dark scheme. Use the matching Apple surface for every text role; the static-shell
+     contrast test resolves this media block independently and checks inherited text/surface
+     pairs against WCAG AA. These literal values mirror the semantic Apple tokens above. */
   @media (prefers-color-scheme:dark){
     body{background:#000000}
-    .hn-static{background:#1c1c1e;color:#ffffff}
-    .hn-static p,.hn-static ul,.hn-static li{color:#cccccc}
-    .hn-static .hn-lead{color:#e0e0e0}
+    .hn-static{background:#000000;color:#f5f5f7}
+    .hn-static p,.hn-static ul,.hn-static li{color:#f2f2f4}
+    .hn-static .hn-lead{color:#e4e4e6}
     .hn-static a{color:#2997ff}
-    .hn-static .hn-callout{background:#272729;border-color:#b3400f;color:#fdeee7}
-    .hn-static .hn-meta{background:#242426;border-top-color:#333333;color:#a1a1a6}
+    .hn-static .hn-callout--info{background:#1c1c1e;border-color:#48484a;color:#f2f2f4}
+    .hn-static .hn-callout--warning{background:#33260a;border-color:#424245;color:#f5b73d}
+    .hn-static .hn-callout--danger{background:#3a1512;border-color:#424245;color:#ff6b60}
+    .hn-static .hn-meta{background:#000000;border-top-color:#333333;color:#a1a1a6}
     .hn-static .hn-meta-line,.hn-static caption,.hn-static .hn-reason,.hn-static .hn-loading,.hn-static .hn-safety{color:#a1a1a6}
     .hn-static .hn-safety{border-top-color:#333333}
     .hn-static .hn-safety a{color:#2997ff}
@@ -693,20 +715,27 @@ const STATIC_STYLES = `<style>
     .hn-static .hn-state-stale{background:#3a1d10;border-color:#b3400f;color:#fdeee7}
     .hn-static .hn-state-failing{background:#3a1512;border-color:#c01f1f;color:#ff6b60}
     .hn-static .hn-state-unknown{background:#272729;border-color:#5a5a5d;color:#a1a1a6}
-    .hn-static .hn-doc-toc,.hn-static .hn-process-figure,.hn-static .hn-horizon-figure,.hn-static .hn-chart,.hn-static .hn-formula{background:#242426;border-color:#333333}
-    .hn-static .hn-topic-grid a,.hn-static .hn-process-figure li{background:#1c1c1e;border-color:#333333;color:#e0e0e0}
-    .hn-static .hn-topic-kicker,.hn-static .hn-step-number,.hn-static .hn-formula dd,.hn-static .hn-chart-muted{color:#a1a1a6}
+    .hn-static .hn-doc-toc{border-color:#333333}
+    .hn-static .hn-process-figure,.hn-static .hn-horizon-figure,.hn-static .hn-chart,.hn-static .hn-formula{background:#161617;border-color:#333333}
+    .hn-static .hn-topic-list li,.hn-static .hn-process-figure li{border-color:#333333}
+    .hn-static .hn-topic-list a{background:#000000;color:#f2f2f4}
+    .hn-static .hn-process-figure li{background:#161617;color:#f2f2f4}
+    .hn-static .hn-topic-list a:hover strong{color:#2997ff}
+    .hn-static .hn-topic-list a:focus-visible{outline-color:#2997ff}
+    .hn-static .hn-topic-kicker,.hn-static .hn-step-number,.hn-static .hn-formula dd,.hn-static .hn-chart-muted,.hn-static .hn-topic-list a > span:last-child{color:#a1a1a6}
     .hn-static .hn-chart svg{color:#2997ff}
     .hn-static .hn-chart-label,.hn-static .hn-chart-value{fill:#e0e0e0}
     .hn-static .hn-chart-bar,.hn-static .hn-chart-dot{fill:#2997ff}
     .hn-static .hn-chart-line{stroke:#2997ff}
     .hn-static .hn-chart-axis{stroke:#a1a1a6}
-    .hn-static .hn-equation{background:#272729;color:#f5f5f7}
-    .hn-static .hn-horizon-days li{border-color:#5a5a5d;background:#1c1c1e;color:#e0e0e0}
+    .hn-static .hn-equation{background:#242426;color:#f5f5f7}
+    .hn-static .hn-horizon-days li{border-color:#424245;background:#161617;color:#a1a1a6}
+    .hn-static .hn-horizon-days--near li{border-color:#2997ff;background:#161617;color:#f5f5f7}
+    .hn-static .hn-horizon-days--far li{background:#161617;color:#a1a1a6}
   }
   @media (min-width:640px){.hn-static .hn-process-figure ol{grid-template-columns:repeat(2,minmax(0,1fr))}}
   @media (min-width:1024px){.hn-static .hn-process-figure ol{grid-template-columns:repeat(4,minmax(0,1fr))}}
-  @media (max-width:639px){.hn-static .hn-topic-grid{grid-template-columns:1fr}.hn-static .hn-formula dl{grid-template-columns:1fr}.hn-static .hn-process-figure ol{grid-template-columns:1fr}}
+  @media (max-width:639px){.hn-static .hn-formula dl{grid-template-columns:1fr}.hn-static .hn-process-figure ol{grid-template-columns:1fr}}
 </style>`;
 
 function buildHtml(route) {

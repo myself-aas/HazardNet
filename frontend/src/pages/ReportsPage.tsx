@@ -115,7 +115,7 @@ const ReportsPage: React.FC = () => {
       <header className="report-print-header mt-6 border-b border-ap-hairline pb-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <h1 className="text-2xl font-semibold text-ap-label sm:text-3xl">
+            <h1 className="ap-display-md">
               {reportDate ? `Daily report: ${reportDate}` : 'Daily report'}
             </h1>
             <p className="mt-2 max-w-[72ch] text-ap-label-secondary">
@@ -125,14 +125,14 @@ const ReportsPage: React.FC = () => {
           <div className="no-print flex flex-wrap gap-2">
             <Link
               to="/reports/archive"
-              className="inline-flex min-h-[44px] items-center rounded-ap-md border border-ap-hairline px-4 py-2 font-medium text-ap-link underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary"
+              className="inline-flex min-h-[44px] items-center rounded-md border border-ap-hairline px-4 py-2 font-medium text-ap-link underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary"
             >
               Browse archive
             </Link>
             {reportDate && latestDate && reportDate !== latestDate && (
               <Link
                 to="/reports"
-                className="inline-flex min-h-[44px] items-center rounded-ap-md border border-ap-hairline px-4 py-2 font-medium text-ap-link underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary"
+                className="inline-flex min-h-[44px] items-center rounded-md border border-ap-hairline px-4 py-2 font-medium text-ap-link underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary"
               >
                 Latest report
               </Link>
@@ -145,48 +145,48 @@ const ReportsPage: React.FC = () => {
           </div>
         </div>
 
-        <p className="mt-5 max-w-[76ch] rounded-ap-md border border-ap-hairline bg-ap-grouped px-4 py-3 text-sm leading-relaxed text-ap-label">
-          HazardNet is not an official warning service. For official warnings, consult the Bangladesh Meteorological Department (BMD)
+        <p className="mt-5 max-w-[76ch] text-ap-body-sm text-ap-label">
+          <strong className="font-semibold">Official warnings:</strong> HazardNet is not an official warning service. Consult the Bangladesh Meteorological Department (BMD)
           and Flood Forecasting and Warning Centre (FFWC). For emergencies, call 999.
         </p>
 
         {state === 'ready' && (
           <dl className="mt-5 grid grid-cols-1 gap-x-6 gap-y-3 border-y border-ap-hairline py-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="min-w-0">
-              <dt className="text-sm text-ap-label-secondary">Generated at</dt>
-              <dd className="mt-1 font-mono text-sm tabular-nums text-ap-label">{formatUtc(reportGeneratedAt)}</dd>
+              <dt className="text-ap-label-md text-ap-label-secondary">Generated at</dt>
+              <dd className="mt-1 font-mono text-ap-body-sm tabular-nums text-ap-label">{formatUtc(reportGeneratedAt)}</dd>
             </div>
             <div className="min-w-0">
-              <dt className="text-sm text-ap-label-secondary">Published run</dt>
-              <dd className="mt-1 break-words font-mono text-sm text-ap-label">{reportValue(reportRunId)}</dd>
+              <dt className="text-ap-label-md text-ap-label-secondary">Published run</dt>
+              <dd className="mt-1 break-words font-mono text-ap-body-sm text-ap-label">{reportValue(reportRunId)}</dd>
             </div>
             <div className="min-w-0">
-              <dt className="text-sm text-ap-label-secondary">Dataset version</dt>
-              <dd className="mt-1 font-mono text-sm tabular-nums text-ap-label">{reportValue(datasetVersion)}</dd>
+              <dt className="text-ap-label-md text-ap-label-secondary">Dataset version</dt>
+              <dd className="mt-1 font-mono text-ap-body-sm tabular-nums text-ap-label">{reportValue(datasetVersion)}</dd>
             </div>
             <div className="min-w-0">
-              <dt className="text-sm text-ap-label-secondary">Model version</dt>
-              <dd className="mt-1 break-words font-mono text-sm text-ap-label">{reportValue(modelVersion)}</dd>
+              <dt className="text-ap-label-md text-ap-label-secondary">Model version</dt>
+              <dd className="mt-1 break-words font-mono text-ap-body-sm text-ap-label">{reportValue(modelVersion)}</dd>
             </div>
           </dl>
         )}
       </header>
 
       {!archive && state === 'ready' && (
-        <p className="mt-5 max-w-[76ch] rounded-ap-md border border-ap-hairline bg-ap-grouped px-4 py-3 text-sm leading-relaxed text-ap-label-secondary" role="note">
+        <p className="mt-5 max-w-[76ch] text-ap-body-sm text-ap-label-secondary" role="note">
           {date
             ? 'The archive index could not be loaded, so this dated report could not be verified against the published archive.'
             : 'The archive index could not be loaded. The latest report was selected from the available snapshot, so the archive listing may be incomplete.'}
         </p>
       )}
       {snapshotIsDifferent && state === 'ready' && (
-        <p className="mt-5 max-w-[76ch] rounded-ap-md border border-ap-hairline bg-ap-grouped px-4 py-3 text-sm leading-relaxed text-ap-label-secondary" role="note">
+        <p className="mt-5 max-w-[76ch] text-ap-body-sm text-ap-label-secondary" role="note">
           A newer snapshot is available ({reportValue(snapshot?.run.id)}, generated {formatUtc(snapshot?.run.generatedAt)}),
           but it does not match this archived report. Interactive analyses use only a matching run; the newer data are not substituted.
         </p>
       )}
       {!snapshot && state === 'ready' && (
-        <p className="mt-5 max-w-[76ch] rounded-ap-md border border-ap-hairline bg-ap-grouped px-4 py-3 text-sm leading-relaxed text-ap-label-secondary" role="note">
+        <p className="mt-5 max-w-[76ch] text-ap-body-sm text-ap-label-secondary" role="note">
           The report text is available, but its source snapshot could not be loaded. Published tables remain readable; interactive calculations are omitted.
         </p>
       )}
@@ -218,26 +218,26 @@ const ReportsPage: React.FC = () => {
           )}
 
           {state === 'loading' && (
-            <p className="py-8 text-center text-sm text-ap-label-secondary" role="status" aria-live="polite">
+            <p className="py-8 text-center text-ap-label-md text-ap-label-secondary" role="status" aria-live="polite">
               Loading daily report and published data…
             </p>
           )}
           {state === 'empty' && (
             <section className="py-6" aria-labelledby="empty-report-heading">
-              <h2 id="empty-report-heading" className="text-xl font-semibold text-ap-label">No report published for any date yet</h2>
+              <h2 id="empty-report-heading" className="ap-tagline">No report published for any date yet</h2>
               <p className="mt-2 max-w-[72ch] text-ap-label-secondary">A report will appear after the next verified publication run.</p>
               <Button intent="secondary" className="mt-4" onClick={retry}>Try again</Button>
             </section>
           )}
           {state === 'not-found' && (
             <section className="py-6" aria-labelledby="missing-report-heading">
-              <h2 id="missing-report-heading" className="text-xl font-semibold text-ap-label">Report not found</h2>
+              <h2 id="missing-report-heading" className="ap-tagline">Report not found</h2>
               <p className="mt-2 max-w-[72ch] text-ap-label-secondary">
                 No published report is indexed for {reportDate || date || 'that date'}. Choose a dated entry from the report archive.
               </p>
               <Link
                 to="/reports/archive"
-                className="mt-3 inline-flex min-h-[44px] items-center rounded-ap-md border border-ap-hairline px-4 py-2 font-medium text-ap-link underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary"
+                className="mt-3 inline-flex min-h-[44px] items-center rounded-md border border-ap-hairline px-4 py-2 font-medium text-ap-link underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary"
               >
                 Browse report archive
               </Link>
@@ -245,14 +245,14 @@ const ReportsPage: React.FC = () => {
           )}
           {state === 'unavailable' && (
             <section className="py-6" aria-labelledby="unavailable-report-heading">
-              <h2 id="unavailable-report-heading" className="text-xl font-semibold text-ap-label">No report published for this selection can be confirmed</h2>
+              <h2 id="unavailable-report-heading" className="ap-tagline">No report published for this selection can be confirmed</h2>
               <p className="mt-2 max-w-[72ch] text-ap-label-secondary">
                 The report index, report file or published snapshot is unavailable. Check your connection and try again; the page will not fill missing values with zeros.
               </p>
               <Button intent="secondary" className="mt-4" onClick={retry}>Try again</Button>
               <Link
                 to="/reports/archive"
-                className="ml-3 inline-flex min-h-[44px] items-center rounded-ap-md px-3 py-2 font-medium text-ap-link underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary"
+                className="ml-3 inline-flex min-h-[44px] items-center rounded-md px-3 py-2 font-medium text-ap-link underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary"
               >
                 Open archive
               </Link>

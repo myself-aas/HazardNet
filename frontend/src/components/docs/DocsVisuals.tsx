@@ -227,23 +227,23 @@ export const DocsStatChart: React.FC<{ chart: DocsChartDefinition }> = ({ chart 
     : `${chart.xLabel} is shown on the horizontal axis; ${chart.yLabel.toLowerCase()} is the measured quantity.`;
 
   return (
-    <figure className="my-5 min-w-0 rounded-ap-md border border-ap-hairline bg-ap-grouped p-4 sm:p-5" aria-labelledby={titleId}>
+    <figure className="ap-card my-5 min-w-0" aria-labelledby={titleId}>
       <div className="mb-3">
-        <h3 id={titleId} className="text-base font-semibold text-ap-label">{chart.title}</h3>
-        <p id={descriptionId} className="mt-1 max-w-[72ch] text-sm leading-relaxed text-ap-label-secondary">{chart.description}</p>
+        <h3 id={titleId} className="ap-body-strong">{chart.title}</h3>
+        <p id={descriptionId} className="mt-1 max-w-[72ch] text-ap-body-sm text-ap-label-secondary">{chart.description}</p>
       </div>
-      <div className="overflow-x-auto rounded-ap-sm" role="region" aria-label={`${chart.title} chart`} tabIndex={0}>
+      <div className="overflow-x-auto rounded" role="region" aria-label={`${chart.title} chart`} tabIndex={0}>
         {chart.type === 'bar'
           ? <BarChartSvg chart={chart} titleId={`${titleId}-svg`} descriptionId={`${descriptionId}-svg`} />
           : <LineChartSvg chart={chart} titleId={`${titleId}-svg`} descriptionId={`${descriptionId}-svg`} />}
       </div>
-      <figcaption className="mt-3 space-y-1 text-xs leading-relaxed text-ap-label-secondary">
+      <figcaption className="mt-3 space-y-1 text-ap-label-sm text-ap-label-secondary">
         <p>{axisDescription}</p>
         {chart.source && <p>Source: {chart.source}</p>}
         {chart.note && <p>{chart.note}</p>}
       </figcaption>
       <details className="mt-3 border-t border-ap-hairline pt-2">
-        <summary className="min-h-[44px] cursor-pointer py-2 text-sm font-medium text-ap-link underline underline-offset-4">View chart values as a table</summary>
+        <summary className="min-h-[44px] cursor-pointer py-2 text-ap-label-md font-medium text-ap-link underline underline-offset-4">View chart values as a table</summary>
         <div className="mt-2">
           <CardStackTable columns={tableColumns} rows={tableRows} caption={tableCaption} />
         </div>
@@ -255,16 +255,16 @@ export const DocsStatChart: React.FC<{ chart: DocsChartDefinition }> = ({ chart 
 export const DocsFormulaSet: React.FC<{ formulas: DocsFormulaDefinition[] }> = ({ formulas }) => (
   <div className="my-4 grid gap-3">
     {formulas.map((formula) => (
-      <section key={`${formula.label}-${formula.expression}`} className="rounded-ap-md border border-ap-hairline bg-ap-grouped p-4" aria-label={formula.label}>
-        <h3 className="text-sm font-semibold text-ap-label">{formula.label}</h3>
-        <p className="mt-2 overflow-x-auto rounded-ap-sm bg-ap-inset px-3 py-2 font-mono text-sm text-ap-label">
+      <section key={`${formula.label}-${formula.expression}`} className="ap-card" aria-label={formula.label}>
+        <h3 className="text-ap-label-md font-semibold text-ap-label">{formula.label}</h3>
+        <p className="mt-2 overflow-x-auto rounded bg-ap-inset px-3 py-2 font-mono text-ap-body-sm text-ap-label">
           <code aria-label={formula.spoken}>{formula.expression}</code>
         </p>
-        <p className="mt-2 max-w-[72ch] text-sm leading-relaxed text-ap-label-secondary">{formula.explanation}</p>
+        <p className="mt-2 max-w-[72ch] text-ap-body-sm text-ap-label-secondary">{formula.explanation}</p>
         {formula.variables && formula.variables.length > 0 && (
           <dl className="mt-3 grid gap-2 sm:grid-cols-2">
             {formula.variables.map((variable) => (
-              <div key={`${formula.label}-${variable.symbol}`} className="flex gap-2 text-xs leading-relaxed">
+              <div key={`${formula.label}-${variable.symbol}`} className="flex gap-2 text-ap-label-sm">
                 <dt className="min-w-8 font-mono font-semibold text-ap-label">{variable.symbol}</dt>
                 <dd className="text-ap-label-secondary">{variable.meaning}</dd>
               </div>
@@ -277,18 +277,18 @@ export const DocsFormulaSet: React.FC<{ formulas: DocsFormulaDefinition[] }> = (
 );
 
 export const DocsProcessFigure: React.FC<{ figure: DocsFigureDefinition }> = ({ figure }) => (
-  <figure className="my-5 rounded-ap-md border border-ap-hairline p-4 sm:p-5" aria-label={figure.title}>
+  <figure className="ap-card my-5" aria-label={figure.title}>
     <figcaption className="mb-4">
-      <h3 className="text-base font-semibold text-ap-label">{figure.title}</h3>
-      <p className="mt-1 max-w-[72ch] text-sm leading-relaxed text-ap-label-secondary">{figure.description}</p>
+      <h3 className="ap-body-strong">{figure.title}</h3>
+      <p className="mt-1 max-w-[72ch] text-ap-body-sm text-ap-label-secondary">{figure.description}</p>
     </figcaption>
     {figure.type === 'process' ? (
-      <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      <ol className="grid gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
         {(figure.steps ?? []).map((step, index) => (
-          <li key={`${step.title}-${index}`} className="min-w-0 rounded-ap-sm border border-ap-hairline bg-ap-grouped p-3">
-            <span className="font-mono text-xs font-semibold text-ap-label-tertiary">{String(index + 1).padStart(2, '0')}</span>
-            <h4 className="mt-1 text-sm font-semibold text-ap-label">{step.title}</h4>
-            <p className="mt-1 text-xs leading-relaxed text-ap-label-secondary">{step.detail}</p>
+          <li key={`${step.title}-${index}`} className="min-w-0 border-t border-ap-hairline pt-3">
+            <span className="font-mono text-ap-label-sm font-semibold text-ap-label-tertiary">{String(index + 1).padStart(2, '0')}</span>
+            <h4 className="mt-1 text-ap-label-md font-semibold text-ap-label">{step.title}</h4>
+            <p className="mt-1 text-ap-label-sm text-ap-label-secondary">{step.detail}</p>
           </li>
         ))}
       </ol>
@@ -305,12 +305,12 @@ export const DocsProcessFigure: React.FC<{ figure: DocsFigureDefinition }> = ({ 
           return (
             <div key={label}>
               <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
-                <h4 className="text-sm font-semibold text-ap-label">{label}</h4>
-                <span className="text-xs text-ap-label-secondary">{days.length} daily steps</span>
+                <h4 className="text-ap-label-md font-semibold text-ap-label">{label}</h4>
+                <span className="text-ap-label-sm text-ap-label-secondary">{days.length} daily steps</span>
               </div>
               <ol className={`grid gap-1 ${rangeIndex === 0 ? 'grid-cols-7' : 'grid-cols-8'}`} aria-label={label}>
                 {days.map((day) => (
-                  <li key={day} className={`min-w-0 rounded-ap-sm border px-1 py-2 text-center font-mono text-xs tabular-nums ${rangeIndex === 0 ? 'border-ap-primary bg-ap-grouped text-ap-label' : 'border-ap-hairline text-ap-label-secondary'}`}>
+                  <li key={day} className={`min-w-0 rounded border px-1 py-2 text-center font-mono text-ap-label-sm tabular-nums ${rangeIndex === 0 ? 'border-ap-link bg-ap-grouped text-ap-label' : 'border-ap-hairline text-ap-label-secondary'}`}>
                     {day}
                   </li>
                 ))}
@@ -318,22 +318,27 @@ export const DocsProcessFigure: React.FC<{ figure: DocsFigureDefinition }> = ({ 
             </div>
           );
         })}
-        <p className="text-xs leading-relaxed text-ap-label-secondary">The longer-lead band is not a numerical uncertainty interval. It communicates that meteorological uncertainty generally grows with lead time.</p>
+        <p className="text-ap-label-sm text-ap-label-secondary">The longer-lead band is not a numerical uncertainty interval. It communicates that meteorological uncertainty generally grows with lead time.</p>
       </div>
     )}
   </figure>
 );
 
 export const DocsTopicGrid: React.FC<{ topics: DocsTopic[] }> = ({ topics }) => (
-  <div className="grid gap-3 sm:grid-cols-2">
+  <ol className="list-none divide-y divide-ap-hairline">
     {topics.map((topic) => (
-      <Link key={topic.to} to={topic.to} className="group flex min-h-32 flex-col rounded-ap-md border border-ap-hairline p-4 transition-colors hover:border-ap-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary">
-        <span className="font-mono text-xs font-semibold text-ap-label-tertiary">{topic.kicker}</span>
-        <span className="mt-2 text-base font-semibold text-ap-label group-hover:text-ap-link">{topic.title}</span>
-        <span className="mt-1 text-sm leading-relaxed text-ap-label-secondary">{topic.blurb}</span>
-      </Link>
+      <li key={topic.to}>
+        <Link
+          to={topic.to}
+          className="group grid min-h-[44px] grid-cols-[2rem_minmax(0,1fr)] gap-x-4 rounded-md py-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary"
+        >
+          <span className="row-span-2 pt-0.5 font-mono text-ap-label-sm font-semibold tabular-nums text-ap-label-tertiary">{topic.kicker}</span>
+          <span className="ap-body-strong text-ap-label group-hover:text-ap-link">{topic.title}</span>
+          <span className="text-ap-body-sm text-ap-label-secondary">{topic.blurb}</span>
+        </Link>
+      </li>
     ))}
-  </div>
+  </ol>
 );
 
 export const DocsTableOfContents: React.FC<{ items: TocItem[]; variant: 'desktop' | 'mobile' }> = ({ items, variant }) => {
@@ -341,9 +346,9 @@ export const DocsTableOfContents: React.FC<{ items: TocItem[]; variant: 'desktop
   if (variant === 'mobile') {
     return (
       <nav aria-label="On this page" className="mb-5 lg:hidden">
-        <details className="rounded-ap-md border border-ap-hairline p-3">
-          <summary className="min-h-[44px] cursor-pointer py-2 text-sm font-semibold text-ap-label">On this page</summary>
-          <ol className="mt-2 list-decimal space-y-2 pl-5 text-sm">
+        <details className="rounded-lg border border-ap-hairline p-3">
+          <summary className="min-h-[44px] cursor-pointer py-2 text-ap-label-md font-semibold text-ap-label">On this page</summary>
+          <ol className="mt-2 list-decimal space-y-2 pl-5 text-ap-body-sm">
             {items.map((item) => <li key={item.id}><a href={`#${item.id}`} className="text-ap-link underline underline-offset-4">{item.label}</a></li>)}
           </ol>
         </details>
@@ -352,8 +357,8 @@ export const DocsTableOfContents: React.FC<{ items: TocItem[]; variant: 'desktop
   }
   return (
     <nav aria-label="On this page" className="hidden lg:block">
-      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-ap-label-tertiary">On this page</p>
-      <ol className="list-decimal space-y-2 border-l border-ap-hairline pl-5 text-sm">
+      <h2 className="mb-3 text-ap-label-sm font-semibold text-ap-label-tertiary">On this page</h2>
+      <ol className="list-decimal space-y-2 border-l border-ap-hairline pl-5 text-ap-body-sm">
         {items.map((item) => <li key={item.id}><a href={`#${item.id}`} className="text-ap-label-secondary underline-offset-4 hover:text-ap-link hover:underline">{item.label}</a></li>)}
       </ol>
     </nav>

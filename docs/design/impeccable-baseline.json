@@ -1,6 +1,6 @@
 {
   "$comment": "Design-quality baseline for scripts/check-design-quality.mjs. `waivers` are accepted on purpose and each names the check that covers the same risk. `outstanding` is the work left to do; it may only shrink without a commit that explains why it grew.",
-  "generatedAt": "2026-11-07T15:22:19.167Z",
+  "generatedAt": "2026-11-07T16:44:41.558Z",
   "impeccable": {},
   "targets": [
     "frontend/src",
@@ -25,16 +25,46 @@
     {
       "rule": "oversized-h1",
       "snippet": "288px h1",
-      "reason": "Detector artifact, verified against the shipped cascade. Nothing in the product resolves an h1 to 288px: .hn-h1/h1 is 32px and 44px above 640px (headline-xl-mobile / headline-xl), and the prerendered no-JS shell's h1 is 1.9rem = 30.4px. All 22 hits are the static shell's sentence-length page titles in frontend/dist; the rule needs >=72px and >=40 characters, and the 288px is the detector's fallback when it cannot resolve the inline style block against the linked bundle. The risk the rule covers (a long headline blown up to display size) is measured for real by __tests__/designTypography.test.js (every authored h1 on the ramp) and scripts/check-contrast.mjs (rendered sizes in both themes). Re-open if an h1 above 72px appears in source."
+      "reason": "Detector artifact, verified against the shipped cascade. The no-JS shell h1 is 28px/32px (Apple headline-lg), and the authored screen h1 is 32px mobile / 44px desktop; the detector reads an 18pt print h1 as 288px by treating points as rem. __tests__/designTypography.test.js keeps point sizes inside print/paper scopes and caps screen h1 at the DESIGN.md headline-xl size of 44px. Re-open if a screen h1 exceeds 44px."
     },
     {
       "rule": "extreme-negative-tracking",
       "snippet": "letter-spacing: -0.72em at 12.8px",
       "reason": "Detector false positive in prerendered documentation. On a disposable copy of frontend/dist/docs.html, removing the linked Vite stylesheet removes every tracking hit (only the unrelated font finding remains); the emitted static markup has no .tracking-tight class or -0.72em declaration, and its inline styles use only positive .025em tracking. The detector is attributing utility typography from the linked SPA bundle to no-JS static copy. The static shell's body/table/disclosure selectors are checked by __tests__/docsStaticTypography.test.js; authored Apple typography remains bounded by __tests__/appleParity.test.js. Re-open if negative tracking is introduced for static body copy."
+    },
+    {
+      "rule": "extreme-negative-tracking",
+      "snippet": "letter-spacing: -0.54em at 17px",
+      "reason": "Detector artifact from the linked production stylesheet on prerendered FAQ summaries. In a disposable frontend/dist/districts/brahmanbaria.html, removing the stylesheet link removes these tracking findings; no -0.54em declaration exists in authored source or emitted CSS. The authored Apple roles are pinned by __tests__/appleParity.test.js (\u22120.015em to +0.012em), and __tests__/docsStaticTypography.test.js rejects negative tracking on static reading text. Re-open if an authored declaration below \u22120.1em appears."
+    },
+    {
+      "rule": "tight-leading",
+      "snippet": "line-height 1.29x (need >=1.3)",
+      "reason": "Valid compact Apple type roles in the prerendered shell: 17/22 headline-sm and 14/18 body-sm or label-md both resolve to 1.29x. The generic detector does not know the token roles. __tests__/designTypography.test.js now loads exact Apple size/line pairs from apple.css and permits only those pairs below 1.3; all other non-token authored body leading remains >=1.3."
+    },
+    {
+      "rule": "tight-leading",
+      "snippet": "line-height 1.27x (need >=1.3)",
+      "reason": "Valid compact Apple caption role in the prerendered shell: 11/14 resolves to 1.27x by design. The generic detector does not know the token role. __tests__/designTypography.test.js loads exact Apple size/line pairs from apple.css and permits only those pairs below 1.3; all other non-token authored body leading remains >=1.3."
+    },
+    {
+      "rule": "oversized-h1",
+      "snippet": "306px h1",
+      "reason": "Detector artifact: its built-page parser treats a print stylesheet point size as rem, producing a 306px h1. In a disposable frontend/dist/hazards/flood.html, removing the linked stylesheet removes the finding; source CSS keeps point sizes inside print/paper scopes and screen h1 at <=44px, enforced by __tests__/designTypography.test.js. Re-open if an authored screen h1 exceeds 44px."
+    },
+    {
+      "rule": "extreme-negative-tracking",
+      "snippet": "letter-spacing: -0.77em at 12px",
+      "reason": "Detector artifact on prerendered documentation text. Removing the production stylesheet link from disposable frontend/dist/docs.html removes these hits; no -0.77em declaration exists in authored source, the static shell, or the emitted CSS. __tests__/docsStaticTypography.test.js asserts all static body/disclosure declarations have non-negative tracking, and __tests__/appleParity.test.js pins actual Apple roles to \u22120.015em\u2026+0.012em. Re-open if an authored declaration below \u22120.1em appears."
+    },
+    {
+      "rule": "extreme-negative-tracking",
+      "snippet": "letter-spacing: -0.66em at 14px",
+      "reason": "Detector artifact on prerendered documentation text. Removing the production stylesheet link from disposable frontend/dist/docs/alerts-and-advisories.html removes these hits; no -0.66em declaration exists in authored source, the static shell, or the emitted CSS. __tests__/docsStaticTypography.test.js asserts all static body/disclosure declarations have non-negative tracking, and __tests__/appleParity.test.js pins actual Apple roles to \u22120.015em\u2026+0.012em. Re-open if an authored declaration below \u22120.1em appears."
     }
   ],
   "counts": {
-    "waived": 1006,
+    "waived": 1138,
     "outstanding": 0,
     "byRule": {}
   },

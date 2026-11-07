@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import Breadcrumbs from './Breadcrumbs';
 import MaterialIcon from './MaterialIcon';
 import CardStackTable from './ui/CardStackTable';
@@ -62,7 +61,7 @@ const InlineLink: React.FC<{ link: SectionLink }> = ({ link }) => {
         href={link.href}
         target="_blank"
         rel="noopener noreferrer"
-        className="font-bold text-ap-link underline underline-offset-4 hover:text-ap-link"
+        className="ap-link underline underline-offset-4"
       >
         {link.label}
       </a>
@@ -70,13 +69,13 @@ const InlineLink: React.FC<{ link: SectionLink }> = ({ link }) => {
   }
   if (dataAsset) {
     return (
-      <a href={link.href} className="font-bold text-ap-link underline underline-offset-4 hover:text-ap-link">
+      <a href={link.href} className="ap-link underline underline-offset-4">
         {link.label}
       </a>
     );
   }
   return (
-    <Link to={link.href} className="font-bold text-ap-link underline underline-offset-4 hover:text-ap-link">
+    <Link to={link.href} className="ap-link underline underline-offset-4">
       {link.label}
     </Link>
   );
@@ -110,10 +109,10 @@ export const ArticlePage: React.FC<{ path: string; introSlot?: React.ReactNode }
   if (!content) {
     return (
       <div className="mx-auto max-w-3xl space-y-4 py-16 text-center">
-        <h1 className="text-xl font-black text-carbon-90">Page unavailable</h1>
-        <p className="text-sm text-carbon-60">
+        <h1 className="ap-tagline">Page unavailable</h1>
+        <p className="text-ap-body-sm text-carbon-60">
           This page&apos;s content could not be loaded. Return to the{' '}
-          <Link to="/live" className="font-bold text-ap-link">
+          <Link to="/live" className="ap-link">
             live map
           </Link>
           .
@@ -132,12 +131,7 @@ export const ArticlePage: React.FC<{ path: string; introSlot?: React.ReactNode }
   const hasToc = isDocsRoute && tocItems.length >= 2;
 
   return (
-    <motion.article
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
-      className={`mx-auto ${hasToc ? 'max-w-7xl' : 'max-w-3xl'} text-carbon-80`}
-    >
+    <article className={`ap-enter mx-auto ${hasToc ? 'max-w-7xl' : 'max-w-3xl'} text-carbon-80`}>
       <div className={hasToc ? 'grid gap-6 lg:grid-cols-[14rem_minmax(0,52rem)] lg:gap-10' : 'space-y-6'}>
         <div className={hasToc ? 'lg:col-span-2' : ''}>
           <Breadcrumbs />
@@ -151,19 +145,19 @@ export const ArticlePage: React.FC<{ path: string; introSlot?: React.ReactNode }
         )}
         <div className={`min-w-0 ${hasToc ? 'lg:col-start-2 lg:row-start-2' : ''}`}>
           <header className="space-y-4">
-            <h1 className="text-ap-lead font-bold leading-tight tracking-tight text-carbon-90 sm:text-ap-display-md">
+            <h1 className="ap-display-md">
               {content.h1 ?? content.title}
             </h1>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium text-carbon-60">{content.label ?? 'Reference'}</span>
+              <span className="text-ap-label-sm font-medium text-carbon-60">{content.label ?? 'Reference'}</span>
               {content.updated && (
-                <span className="text-xs font-medium text-carbon-60">
+                <span className="text-ap-label-sm font-medium text-carbon-60">
                   Last reviewed <time dateTime={content.updated}>{content.updated}</time>
                 </span>
               )}
             </div>
             {content.standfirst && (
-              <p className="max-w-[68ch] text-lg leading-[1.55] text-carbon-70">{content.standfirst}</p>
+              <p className="max-w-[68ch] text-ap-body-lg text-carbon-70">{content.standfirst}</p>
             )}
           </header>
 
@@ -174,20 +168,20 @@ export const ArticlePage: React.FC<{ path: string; introSlot?: React.ReactNode }
             {sections.map((section, index) => (
               <section key={index} className="space-y-3 py-7 first:pt-2 last:pb-0">
                 {section.h2 && (
-                  <h2 id={sectionAnchorId(section.h2, index)} className="scroll-mt-24 text-xl font-bold tracking-tight text-carbon-90 sm:text-2xl">
+                  <h2 id={sectionAnchorId(section.h2, index)} className="scroll-mt-24 ap-tagline">
                     {section.h2}
                   </h2>
                 )}
                 {(section.paragraphs ?? []).map((paragraph, i) => (
-                  <p key={i} className="max-w-[68ch] break-words text-base leading-[1.62] text-carbon-80">
+                  <p key={i} className="max-w-[68ch] break-words text-ap-body-md text-carbon-80">
                     {paragraph}
                   </p>
                 ))}
                 {(section.bullets ?? []).length > 0 && (
                   <ul className="space-y-2">
                     {(section.bullets ?? []).map((bullet, i) => (
-                      <li key={i} className="flex max-w-[68ch] gap-2 text-base leading-[1.62] text-carbon-80">
-                        <MaterialIcon name="chevron_right" className="mt-0.5 shrink-0 text-sm text-carbon-40" />
+                      <li key={i} className="flex max-w-[68ch] gap-2 text-ap-body-md text-carbon-80">
+                        <MaterialIcon name="chevron_right" className="mt-0.5 shrink-0 text-ap-label-md text-carbon-40" />
                         <span className="min-w-0 break-words">{bullet}</span>
                       </li>
                     ))}
@@ -200,11 +194,15 @@ export const ArticlePage: React.FC<{ path: string; introSlot?: React.ReactNode }
                 {section.table && <SectionTableBlock table={section.table} />}
                 {section.callout?.text && (
                   <div
-                    className={`border p-4 text-base leading-[1.62] ${
+                    className={`rounded-lg border p-4 text-ap-body-md ${
                       CALLOUT_STYLES[section.callout.tone ?? 'info'] ?? CALLOUT_STYLES.info
                     }`}
-                    role={section.callout.tone === 'warning' ? 'note' : undefined}
+                    role="note"
+                    aria-label={`${section.callout.tone ?? 'info'} documentation note`}
                   >
+                    <strong className="font-semibold">
+                      {section.callout.tone === 'warning' ? 'Warning' : section.callout.tone === 'danger' ? 'Important' : 'Information'}:{' '}
+                    </strong>
                     {section.callout.text}
                   </div>
                 )}
@@ -219,33 +217,33 @@ export const ArticlePage: React.FC<{ path: string; introSlot?: React.ReactNode }
 
           {faqs.length > 0 && (
             <section id="frequently-asked-questions" aria-label="Frequently asked questions" className="space-y-2 border-t border-carbon-20 pt-7">
-              <h2 className="mb-2 text-xl font-bold tracking-tight text-carbon-90 sm:text-2xl">Questions and answers</h2>
+              <h2 className="mb-2 ap-tagline">Questions and answers</h2>
               {faqs.map((faq) => (
                 <details key={faq.question} className="group border-b border-carbon-20 py-2 last:border-b-0">
-                  <summary className="cursor-pointer list-none text-base font-bold text-carbon-80 marker:hidden">
+                  <summary className="cursor-pointer list-none ap-body-strong marker:hidden">
                     <span className="inline-flex items-start gap-2">
-                      <MaterialIcon name="help" className="mt-0.5 text-sm text-carbon-40" />
+                      <MaterialIcon name="help" className="mt-0.5 text-ap-label-md text-carbon-40" />
                       {faq.question}
                     </span>
                   </summary>
-                  <p className="mt-2 max-w-[68ch] pl-6 text-base leading-[1.62] text-carbon-70">{faq.answer}</p>
+                  <p className="mt-2 max-w-[68ch] pl-6 text-ap-body-md text-carbon-70">{faq.answer}</p>
                 </details>
               ))}
             </section>
           )}
 
-          <footer className="border-t border-carbon-20 pt-6 text-sm leading-[1.62] text-carbon-70">
+          <footer className="border-t border-carbon-20 pt-6 text-ap-body-sm text-carbon-70">
             HazardNet is an independent decision-support platform. It does not replace official warnings from the Bangladesh
             Meteorological Department (BMD), the Flood Forecasting and Warning Centre (FFWC), the Department of Disaster
             Management (DDM) or your local administration. National emergency hotline: 999.{' '}
-            <Link to="/contact" className="font-bold text-ap-link hover:text-ap-link">
+            <Link to="/contact" className="ap-link hover:text-ap-link">
               Report a problem
             </Link>
             .
           </footer>
         </div>
       </div>
-    </motion.article>
+    </article>
   );
 };
 

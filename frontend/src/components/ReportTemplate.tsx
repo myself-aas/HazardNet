@@ -233,12 +233,12 @@ export const ReportTableOfContents: React.FC<{
   if (headings.length === 0) return null;
 
   const links = (
-    <ol className="mt-3 space-y-1 text-sm">
+    <ol className="mt-3 space-y-1 text-ap-body-sm">
       {headings.map((heading) => (
         <li key={heading.id} className={heading.level === 3 ? 'pl-3' : undefined}>
           <a
             href={`#${heading.id}`}
-            className="inline-flex min-h-[44px] items-center rounded-ap-sm py-2 text-ap-link underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary"
+            className="inline-flex min-h-[44px] items-center rounded py-2 text-ap-link underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary"
           >
             {heading.text}
           </a>
@@ -250,33 +250,33 @@ export const ReportTableOfContents: React.FC<{
   return (
     <>
       <details className="mb-8 border-y border-ap-hairline py-2 lg:hidden">
-        <summary className="flex min-h-[44px] cursor-pointer items-center font-semibold text-ap-label">
+        <summary className="flex min-h-[44px] cursor-pointer items-center text-ap-label-md font-semibold text-ap-label">
           In this report
         </summary>
         <nav aria-label="Report contents">{links}</nav>
       </details>
       <nav aria-label="Report contents" className="hidden lg:block">
-        <h2 className="text-sm font-semibold text-ap-label">In this report</h2>
+        <h2 className="text-ap-label-md font-semibold text-ap-label">In this report</h2>
         {links}
       </nav>
     </>
   );
 };
 
-const REPORT_TABLE_CLASS = 'min-w-full border-collapse text-sm';
+const REPORT_TABLE_CLASS = 'min-w-full border-collapse text-ap-body-sm';
 
 const ReportDataTable: React.FC<{
   caption: string;
   headers: string[];
   rows: Array<Array<string | number>>;
 }> = ({ caption, headers, rows }) => (
-  <div className="report-table-region my-4 overflow-x-auto rounded-ap-md border border-ap-hairline" role="region" aria-label={`${caption} table`} tabIndex={0}>
+  <div className="report-table-region my-4 overflow-x-auto rounded-md border border-ap-hairline" role="region" aria-label={`${caption} table`} tabIndex={0}>
     <table className={REPORT_TABLE_CLASS}>
       <caption className="sr-only">{caption}</caption>
       <thead className="border-b border-ap-hairline bg-ap-grouped text-left text-ap-label">
         <tr>
           {headers.map((header) => (
-            <th key={header} scope="col" className="whitespace-nowrap px-3 py-2 font-semibold">
+            <th key={header} scope="col" className="whitespace-nowrap px-3 py-2 text-ap-label-md font-semibold">
               {header}
             </th>
           ))}
@@ -304,8 +304,8 @@ const ReportDataTable: React.FC<{
 const ChartTooltip = () => (
   <Tooltip
     contentStyle={{
-      backgroundColor: 'var(--ap-canvas)',
-      border: '1px solid var(--ap-hairline)',
+      backgroundColor: 'var(--ap-bg-elevated)',
+      border: '1px solid var(--ap-card-border)',
       borderRadius: 'var(--ap-radius-sm)',
       color: 'var(--ap-label)',
       fontFamily: 'var(--ap-font-text)',
@@ -326,16 +326,16 @@ const ChartCard: React.FC<{
 }> = ({ id, title, description, sourceLabel, chartLabel, dataTable, children }) => (
   <figure id={id} className="report-chart my-8 min-w-0 border-b border-ap-hairline pb-6" aria-labelledby={`${id}-title`}>
     <figcaption className="mb-3">
-      <h3 id={`${id}-title`} className="text-lg font-semibold text-ap-label">{title}</h3>
-      <p className="mt-1 max-w-[72ch] text-sm leading-relaxed text-ap-label-secondary">{description}</p>
+      <h3 id={`${id}-title`} className="text-ap-headline-sm font-semibold text-ap-label">{title}</h3>
+      <p className="mt-1 max-w-[72ch] text-ap-body-sm text-ap-label-secondary">{description}</p>
     </figcaption>
     <div className="h-72 min-w-0 w-full" role="img" aria-label={chartLabel}>
       {children}
     </div>
-    <p className="mt-2 text-xs text-ap-label-secondary">Source: {sourceLabel}</p>
+    <p className="mt-2 text-ap-label-sm text-ap-label-secondary">Source: {sourceLabel}</p>
     {dataTable && (
       <details className="mt-2 border-t border-ap-hairline">
-        <summary className="flex min-h-[44px] cursor-pointer items-center text-sm font-medium text-ap-link underline underline-offset-4">
+        <summary className="flex min-h-[44px] cursor-pointer items-center text-ap-label-md font-medium text-ap-link underline underline-offset-4">
           View chart values as a table
         </summary>
         {dataTable}
@@ -345,7 +345,7 @@ const ChartCard: React.FC<{
 );
 
 const MissingChartData: React.FC<{ name: string }> = ({ name }) => (
-  <p className="my-4 rounded-ap-md border border-ap-hairline bg-ap-grouped px-4 py-3 text-sm text-ap-label-secondary" role="note">
+  <p className="my-4 text-ap-body-sm text-ap-label-secondary" role="note">
     The {name} figure is not rendered because the archived source snapshot for this report date is not available.
     The published report table below is retained; a newer run is not substituted for historical data.
   </p>
@@ -412,10 +412,10 @@ const TopAdvisoriesTable: React.FC<{ rows: DailyAdvisory[] }> = ({ rows }) => {
 
   return (
     <div className="my-6">
-      <p id="top-advisories-note" className="mb-2 text-sm text-ap-label-secondary">
+      <p id="top-advisories-note" className="mb-2 text-ap-body-sm text-ap-label-secondary">
         Highest-scoring 15 published rows. Ties retain the same score and are ordered by target date, district and hazard.
       </p>
-      <div className="overflow-x-auto rounded-ap-md border border-ap-hairline" role="region" aria-label="Sortable highest-severity advisories table" tabIndex={0}>
+      <div className="overflow-x-auto rounded-md border border-ap-hairline" role="region" aria-label="Sortable highest-severity advisories table" tabIndex={0}>
         <table className={`${REPORT_TABLE_CLASS} min-w-[48rem]`}>
           <caption className="sr-only">Highest-severity published advisory rows; sorted within the top 15 by the selected column.</caption>
           <thead className="border-b border-ap-hairline bg-ap-grouped text-left text-ap-label">
@@ -425,13 +425,13 @@ const TopAdvisoriesTable: React.FC<{ rows: DailyAdvisory[] }> = ({ rows }) => {
                   key={key}
                   scope="col"
                   aria-sort={sortKey === key ? (descending ? 'descending' : 'ascending') : 'none'}
-                  className="px-2 py-1 font-semibold"
+                  className="px-2 py-1 text-ap-label-md font-semibold"
                 >
                   <button
                     type="button"
                     onClick={() => toggle(key)}
                     aria-label={`Sort top advisory rows by ${label}${sortKey === key ? (descending ? ', descending' : ', ascending') : ''}`}
-                    className="flex min-h-[44px] items-center rounded-ap-sm px-2 text-left underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary"
+                    className="flex min-h-[44px] items-center rounded px-2 text-left underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary"
                   >
                     {label}
                     {sortKey === key && (descending
@@ -561,16 +561,16 @@ const ReportAnalysisSection: React.FC<{ analysis: ReportAnalysis; snapshot: Dail
 
   return (
     <section id="statistical-analysis" className="mt-12 scroll-mt-24" aria-labelledby="statistical-analysis-heading">
-      <h2 id="statistical-analysis-heading" className="mb-3 mt-10 text-2xl font-semibold text-ap-label">
+      <h2 id="statistical-analysis-heading" className="mb-3 mt-10 ap-tagline">
         Mathematical and statistical analysis
       </h2>
-      <p className="max-w-[72ch] leading-relaxed text-ap-label-secondary">
+      <p className="max-w-[72ch] text-ap-body-md text-ap-label-secondary">
         Descriptive statistics for the matched published snapshot only. Severity scores are model outputs, not observed impacts,
         event probabilities or calibrated confidence values. Rows in one run are related across districts and target dates.
       </p>
 
-      <h3 id="severity-distribution" className="mb-2 mt-8 scroll-mt-24 text-lg font-semibold text-ap-label">Severity-score distribution</h3>
-      <p className="max-w-[72ch] text-sm text-ap-label-secondary">{scoreRangeLabel} Values outside [0, 1] remain visible in dedicated bins.</p>
+      <h3 id="severity-distribution" className="mb-2 mt-8 scroll-mt-24 text-ap-headline-sm font-semibold text-ap-label">Severity-score distribution</h3>
+      <p className="max-w-[72ch] text-ap-body-sm text-ap-label-secondary">{scoreRangeLabel} Values outside [0, 1] remain visible in dedicated bins.</p>
       <ChartCard
         id="severity-distribution-figure"
         title="Published severity scores by 0.1-wide interval"
@@ -581,7 +581,7 @@ const ReportAnalysisSection: React.FC<{ analysis: ReportAnalysis; snapshot: Dail
       >
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={analysis.severityHistogram} layout="vertical" margin={{ top: 4, right: 24, bottom: 4, left: 8 }}>
-            <CartesianGrid stroke="var(--ap-hairline)" strokeDasharray="3 3" horizontal={false} />
+            <CartesianGrid stroke="var(--ap-separator)" strokeDasharray="3 3" horizontal={false} />
             <XAxis type="number" allowDecimals={false} tick={{ fill: 'var(--ap-label-secondary)', fontSize: 12 }} />
             <YAxis type="category" dataKey="name" width={96} tick={{ fill: 'var(--ap-label-secondary)', fontSize: 12 }} />
             <ChartTooltip />
@@ -591,8 +591,8 @@ const ReportAnalysisSection: React.FC<{ analysis: ReportAnalysis; snapshot: Dail
       </ChartCard>
       <ReportDataTable caption="Descriptive statistics for severity scores" headers={['Descriptive statistic', 'Value']} rows={statisticRows} />
 
-      <h3 id="forecast-horizon" className="mb-2 mt-10 scroll-mt-24 text-lg font-semibold text-ap-label">Mean severity by target date</h3>
-      <p className="max-w-[72ch] text-sm text-ap-label-secondary">
+      <h3 id="forecast-horizon" className="mb-2 mt-10 scroll-mt-24 text-ap-headline-sm font-semibold text-ap-label">Mean severity by target date</h3>
+      <p className="max-w-[72ch] text-ap-body-sm text-ap-label-secondary">
         A daily aggregate across the rows published for each target date. The optional slope and correlation are descriptive fits only;
         no significance test is applied.
       </p>
@@ -606,7 +606,7 @@ const ReportAnalysisSection: React.FC<{ analysis: ReportAnalysis; snapshot: Dail
       >
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={analysis.dates} margin={{ top: 12, right: 20, bottom: 18, left: 0 }}>
-            <CartesianGrid stroke="var(--ap-hairline)" strokeDasharray="3 3" />
+            <CartesianGrid stroke="var(--ap-separator)" strokeDasharray="3 3" />
             <XAxis
               dataKey="targetDate"
               tickFormatter={(value: string) => value.slice(5)}
@@ -630,8 +630,8 @@ const ReportAnalysisSection: React.FC<{ analysis: ReportAnalysis; snapshot: Dail
       </ChartCard>
       <ReportDataTable caption="Severity score summary by target date" headers={['Target date', 'Rows', 'Valid scores', 'Mean', 'Median', 'Population SD', 'Minimum', 'Maximum']} rows={dateRows} />
 
-      <h3 id="hazard-by-division" className="mb-2 mt-10 scroll-mt-24 text-lg font-semibold text-ap-label">Hazard rows by division</h3>
-      <p className="max-w-[72ch] text-sm text-ap-label-secondary">The stacked bars show counts, not rates. Hazard names are repeated in the data table so color is not the sole identifier.</p>
+      <h3 id="hazard-by-division" className="mb-2 mt-10 scroll-mt-24 text-ap-headline-sm font-semibold text-ap-label">Hazard rows by division</h3>
+      <p className="max-w-[72ch] text-ap-body-sm text-ap-label-secondary">The stacked bars show counts, not rates. Hazard names are repeated in the data table so color is not the sole identifier.</p>
       <ChartCard
         id="hazard-division-figure"
         title="Published rows by hazard and division"
@@ -646,7 +646,7 @@ const ReportAnalysisSection: React.FC<{ analysis: ReportAnalysis; snapshot: Dail
       >
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={analysis.divisionHazardRows} layout="vertical" margin={{ top: 4, right: 20, bottom: 4, left: 12 }}>
-            <CartesianGrid stroke="var(--ap-hairline)" strokeDasharray="3 3" horizontal={false} />
+            <CartesianGrid stroke="var(--ap-separator)" strokeDasharray="3 3" horizontal={false} />
             <XAxis type="number" allowDecimals={false} tick={{ fill: 'var(--ap-label-secondary)', fontSize: 12 }} />
             <YAxis type="category" dataKey="division" width={112} tick={{ fill: 'var(--ap-label-secondary)', fontSize: 12 }} />
             <ChartTooltip />
@@ -669,12 +669,12 @@ const ReportAnalysisSection: React.FC<{ analysis: ReportAnalysis; snapshot: Dail
         rows={hazardsByDivisionRows}
       />
 
-      <h3 id="coverage-quality" className="mb-2 mt-10 scroll-mt-24 text-lg font-semibold text-ap-label">Coverage and data quality</h3>
-      <p className="max-w-[72ch] text-sm text-ap-label-secondary">
+      <h3 id="coverage-quality" className="mb-2 mt-10 scroll-mt-24 text-ap-headline-sm font-semibold text-ap-label">Coverage and data quality</h3>
+      <p className="max-w-[72ch] text-ap-body-sm text-ap-label-secondary">
         District–target-date pair coverage compares unique observed pairs with the declared district × forecast-day count; it is not hazard-specific coverage.
       </p>
       <ReportDataTable caption="Snapshot coverage and data checks" headers={['Check', 'Observed value']} rows={qualityRows} />
-      <p className="my-4 max-w-[72ch] text-sm text-ap-label-secondary">
+      <p className="my-4 max-w-[72ch] text-ap-body-sm text-ap-label-secondary">
         No inferential p-values or confidence intervals are calculated: these are descriptive aggregates from one run, not an independent observed-outcome sample.
       </p>
     </section>
@@ -706,14 +706,14 @@ const FallbackFaq: React.FC = () => {
   ];
   return (
     <section id="report-faq" className="mt-12 scroll-mt-24" aria-labelledby="report-faq-heading">
-      <h2 id="report-faq-heading" className="mb-3 mt-10 text-2xl font-semibold text-ap-label">Frequently asked questions</h2>
+      <h2 id="report-faq-heading" className="mb-3 mt-10 ap-tagline">Frequently asked questions</h2>
       <div className="divide-y divide-ap-hairline border-y border-ap-hairline">
         {items.map((item) => (
           <details key={item.question}>
             <summary className="flex min-h-[48px] cursor-pointer items-center py-3 font-semibold text-ap-label focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary">
               {item.question}
             </summary>
-            <p className="max-w-[72ch] pb-4 leading-relaxed text-ap-label-secondary">{item.answer}</p>
+            <p className="max-w-[72ch] pb-4 text-ap-body-md text-ap-label-secondary">{item.answer}</p>
           </details>
         ))}
       </div>
@@ -761,32 +761,32 @@ const Markdown: React.FC<{ text: string; headings: ReportHeading[] }> = ({ text,
       components={{
         h1: () => null,
         h2: ({ children }) => (
-          <h2 id={headingId(children, 2)} className="mb-3 mt-10 scroll-mt-24 text-2xl font-semibold text-ap-label">
+          <h2 id={headingId(children, 2)} className="mb-3 mt-10 scroll-mt-24 ap-tagline">
             {children}
           </h2>
         ),
         h3: ({ children }) => (
-          <h3 id={headingId(children, 3)} className="mb-2 mt-8 scroll-mt-24 text-lg font-semibold text-ap-label">
+          <h3 id={headingId(children, 3)} className="mb-2 mt-8 scroll-mt-24 text-ap-headline-sm font-semibold text-ap-label">
             {children}
           </h3>
         ),
-        h4: ({ children }) => <h4 className="mb-2 mt-6 text-base font-semibold text-ap-label">{children}</h4>,
-        p: ({ children }) => <p className="my-3 max-w-[72ch] leading-relaxed text-ap-label-secondary">{children}</p>,
-        ul: ({ children }) => <ul className="my-3 list-disc space-y-2 pl-6 text-ap-label-secondary">{children}</ul>,
-        ol: ({ children }) => <ol className="my-3 list-decimal space-y-2 pl-6 text-ap-label-secondary">{children}</ol>,
-        li: ({ children }) => <li className="pl-1 leading-relaxed">{children}</li>,
-        a: ({ children, href }) => <a href={href} className="text-ap-link underline underline-offset-4">{children}</a>,
+        h4: ({ children }) => <h4 className="mb-2 mt-6 text-ap-headline-sm font-semibold text-ap-label">{children}</h4>,
+        p: ({ children }) => <p className="my-3 max-w-[72ch] text-ap-body-md text-ap-label-secondary">{children}</p>,
+        ul: ({ children }) => <ul className="my-3 list-disc space-y-2 pl-6 text-ap-body-md text-ap-label-secondary">{children}</ul>,
+        ol: ({ children }) => <ol className="my-3 list-decimal space-y-2 pl-6 text-ap-body-md text-ap-label-secondary">{children}</ol>,
+        li: ({ children }) => <li className="pl-1">{children}</li>,
+        a: ({ children, href }) => <a href={href} className="ap-link underline underline-offset-4">{children}</a>,
         table: ({ children }) => (
-          <div className="report-table-region my-5 overflow-x-auto rounded-ap-md border border-ap-hairline" role="region" aria-label="Published report data table" tabIndex={0}>
+          <div className="report-table-region my-5 overflow-x-auto rounded-md border border-ap-hairline" role="region" aria-label="Published report data table" tabIndex={0}>
             <table className={REPORT_TABLE_CLASS}>{children}</table>
           </div>
         ),
         thead: ({ children }) => <thead className="border-b border-ap-hairline bg-ap-grouped">{children}</thead>,
         tr: ({ children }) => <tr className="border-b border-ap-hairline last:border-0">{children}</tr>,
         th: ({ children }) => <th scope="col" className="whitespace-nowrap px-3 py-2 text-left font-semibold text-ap-label">{children}</th>,
-        td: ({ children }) => <td className="px-3 py-2 text-ap-label-secondary">{children}</td>,
-        code: ({ children }) => <code className="rounded-ap-sm bg-ap-grouped px-1 py-0.5 font-mono text-[0.9em] text-ap-label">{children}</code>,
-        pre: ({ children }) => <pre className="my-4 overflow-x-auto rounded-ap-md border border-ap-hairline bg-ap-grouped p-4 font-mono text-sm text-ap-label">{children}</pre>,
+        td: ({ children }) => <td className="px-3 py-2 text-ap-body-sm text-ap-label-secondary">{children}</td>,
+        code: ({ children }) => <code className="rounded bg-ap-grouped px-1 py-0.5 font-mono text-ap-body-sm text-ap-label">{children}</code>,
+        pre: ({ children }) => <pre className="my-4 overflow-x-auto rounded-lg border border-ap-hairline bg-ap-grouped p-4 font-mono text-ap-body-sm text-ap-label">{children}</pre>,
         blockquote: ({ children }) => <blockquote className="my-4 border-l border-ap-hairline pl-4 text-ap-label-secondary">{children}</blockquote>,
         hr: () => <hr className="my-8 border-ap-hairline" />,
         strong: ({ children }) => <strong className="font-semibold text-ap-label">{children}</strong>,
@@ -841,7 +841,7 @@ const ReportTemplate: React.FC<{
           >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={analysis.tiers} layout="vertical" margin={{ top: 4, right: 20, bottom: 4, left: 8 }}>
-                <CartesianGrid stroke="var(--ap-hairline)" strokeDasharray="3 3" horizontal={false} />
+                <CartesianGrid stroke="var(--ap-separator)" strokeDasharray="3 3" horizontal={false} />
                 <XAxis type="number" allowDecimals={false} tick={{ fill: 'var(--ap-label-secondary)', fontSize: 12 }} />
                 <YAxis type="category" dataKey="name" width={100} tick={{ fill: 'var(--ap-label-secondary)', fontSize: 12 }} />
                 <ChartTooltip />
@@ -864,7 +864,7 @@ const ReportTemplate: React.FC<{
           >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={analysis.hazards} layout="vertical" margin={{ top: 4, right: 20, bottom: 4, left: 12 }}>
-                <CartesianGrid stroke="var(--ap-hairline)" strokeDasharray="3 3" horizontal={false} />
+                <CartesianGrid stroke="var(--ap-separator)" strokeDasharray="3 3" horizontal={false} />
                 <XAxis type="number" allowDecimals={false} tick={{ fill: 'var(--ap-label-secondary)', fontSize: 12 }} />
                 <YAxis type="category" dataKey="name" width={130} tick={{ fill: 'var(--ap-label-secondary)', fontSize: 12 }} />
                 <ChartTooltip />
@@ -903,7 +903,7 @@ const ReportTemplate: React.FC<{
           >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={analysis.divisions} layout="vertical" margin={{ top: 4, right: 20, bottom: 4, left: 12 }}>
-                <CartesianGrid stroke="var(--ap-hairline)" strokeDasharray="3 3" horizontal={false} />
+                <CartesianGrid stroke="var(--ap-separator)" strokeDasharray="3 3" horizontal={false} />
                 <XAxis type="number" domain={[0, 1]} tick={{ fill: 'var(--ap-label-secondary)', fontSize: 12 }} />
                 <YAxis type="category" dataKey="name" width={118} tick={{ fill: 'var(--ap-label-secondary)', fontSize: 12 }} />
                 <ChartTooltip />
@@ -928,7 +928,7 @@ const ReportTemplate: React.FC<{
           >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={analysis.severityHistogram} layout="vertical" margin={{ top: 4, right: 20, bottom: 4, left: 8 }}>
-                <CartesianGrid stroke="var(--ap-hairline)" strokeDasharray="3 3" horizontal={false} />
+                <CartesianGrid stroke="var(--ap-separator)" strokeDasharray="3 3" horizontal={false} />
                 <XAxis type="number" allowDecimals={false} tick={{ fill: 'var(--ap-label-secondary)', fontSize: 12 }} />
                 <YAxis type="category" dataKey="name" width={96} tick={{ fill: 'var(--ap-label-secondary)', fontSize: 12 }} />
                 <ChartTooltip />
@@ -953,7 +953,7 @@ const ReportTemplate: React.FC<{
           >
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={analysis.dates} margin={{ top: 12, right: 20, bottom: 18, left: 0 }}>
-                <CartesianGrid stroke="var(--ap-hairline)" strokeDasharray="3 3" />
+                <CartesianGrid stroke="var(--ap-separator)" strokeDasharray="3 3" />
                 <XAxis dataKey="targetDate" tickFormatter={(value: string) => value.slice(5)} minTickGap={16} tick={{ fill: 'var(--ap-label-secondary)', fontSize: 12 }} />
                 <YAxis domain={[0, 1]} tick={{ fill: 'var(--ap-label-secondary)', fontSize: 12 }} />
                 <ChartTooltip />
@@ -978,7 +978,7 @@ const ReportTemplate: React.FC<{
           >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={analysis.divisionHazardRows} layout="vertical" margin={{ top: 4, right: 20, bottom: 4, left: 12 }}>
-                <CartesianGrid stroke="var(--ap-hairline)" strokeDasharray="3 3" horizontal={false} />
+                <CartesianGrid stroke="var(--ap-separator)" strokeDasharray="3 3" horizontal={false} />
                 <XAxis type="number" allowDecimals={false} tick={{ fill: 'var(--ap-label-secondary)', fontSize: 12 }} />
                 <YAxis type="category" dataKey="division" width={112} tick={{ fill: 'var(--ap-label-secondary)', fontSize: 12 }} />
                 <ChartTooltip />
@@ -1001,7 +1001,7 @@ const ReportTemplate: React.FC<{
         ? <TopAdvisoriesTable rows={advisories} />
         : <MissingChartData name="top advisories table" />;
     }
-    return <p className="my-3 text-sm text-ap-label-secondary">This report contains an unsupported visual directive: {name}.</p>;
+    return <p className="my-3 text-ap-body-sm text-ap-label-secondary">This report contains an unsupported visual directive: {name}.</p>;
   };
 
   const suppressTableAfter = new Set<string>([
@@ -1026,7 +1026,7 @@ const ReportTemplate: React.FC<{
           return (
             <div
               key={`callout-${index}`}
-              className="my-5 rounded-ap-md border px-4 py-3"
+              className="my-5 rounded-lg border px-4 py-3"
               style={{ ...CALLOUT_STYLE[block.tone], borderWidth: '1px' }}
               role="note"
               aria-label={`${block.tone} report note`}
@@ -1047,10 +1047,10 @@ const ReportTemplate: React.FC<{
           ? <ReportAnalysisSection analysis={analysis} snapshot={matchedSnapshot} />
           : (
             <section id="statistical-analysis" className="mt-12 scroll-mt-24" aria-labelledby="statistical-analysis-heading">
-              <h2 id="statistical-analysis-heading" className="mb-3 mt-10 text-2xl font-semibold text-ap-label">
+              <h2 id="statistical-analysis-heading" className="mb-3 mt-10 ap-tagline">
                 Mathematical and statistical analysis
               </h2>
-              <p className="max-w-[72ch] leading-relaxed text-ap-label-secondary">
+              <p className="max-w-[72ch] text-ap-body-md text-ap-label-secondary">
                 Interactive analysis is not available for this archived report because its matching source snapshot is not retained.
                 The newer published snapshot is not substituted; use the dated tables above as the archive record.
               </p>

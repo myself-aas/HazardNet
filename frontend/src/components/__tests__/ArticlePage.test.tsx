@@ -15,8 +15,23 @@ describe('documentation articles', () => {
   it('renders the hub as data-driven topics, quantitative reference, figures and FAQs', async () => {
     const { container } = renderDocs('/docs');
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'HazardNet documentation' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'HazardNet documentation' })).toHaveClass('ap-display-md');
+    expect(container.querySelector('article')).toHaveClass('ap-enter');
     expect(screen.getByRole('link', { name: /01 The platform/ })).toHaveAttribute('href', '/docs/platform');
+    const topicSection = screen.getByRole('heading', { name: 'Browse the documentation' }).closest('section');
+    const topicList = topicSection?.querySelector('ol');
+    expect(topicList?.tagName).toBe('OL');
+    expect(topicList?.querySelectorAll(':scope > li')).toHaveLength(8);
+    expect(Array.from(topicList?.querySelectorAll('a') ?? [], (link) => link.getAttribute('href'))).toEqual([
+      '/docs/platform',
+      '/docs/hazards',
+      '/docs/districts',
+      '/docs/forecasts',
+      '/docs/alerts-and-advisories',
+      '/docs/archive',
+      '/docs/data-and-api',
+      '/docs/verification',
+    ]);
     expect(screen.getByText('N = D × H = 64 × 15 = 960')).toBeInTheDocument();
     const charts = Array.from(container.querySelectorAll('svg[role="img"]'));
     expect(charts).toHaveLength(2);
