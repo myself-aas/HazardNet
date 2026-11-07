@@ -334,7 +334,7 @@
    },
    "success": {
     "kind": "page",
-    "evidence": "How the documentation is organized"
+    "evidence": "The documentation hub is authored in site-routes.json like its child pages."
    }
   },
   "pages/DownloadCenter.tsx": {

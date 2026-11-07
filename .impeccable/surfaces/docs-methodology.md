@@ -23,6 +23,12 @@ Read track. A documentation index of numbered topic rows (the number is real nav
 ## Decisions to preserve
 
 - Code and identifiers set in the mono face; body set at body-md.
+- Topic order is explicit and numbered; article sections have stable heading anchors.
+- The table of contents is sticky on wide screens and a keyboard-operable disclosure on narrow screens.
+- Every statistical chart states its population, units, source and limitation, and exposes the underlying values in a table.
+- Tables keep column headings and captions; the hydrated page uses card stacks on phones and static fallback tables stay keyboard-scrollable.
+- Mathematical notation is paired with plain-language interpretation; null, zero and unavailable are never conflated.
+- Official-warning authority stays visible: HazardNet is decision support and BMD/FFWC lead.
 
 ## Mode
 

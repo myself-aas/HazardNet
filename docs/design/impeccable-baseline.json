@@ -1,6 +1,6 @@
 {
   "$comment": "Design-quality baseline for scripts/check-design-quality.mjs. `waivers` are accepted on purpose and each names the check that covers the same risk. `outstanding` is the work left to do; it may only shrink without a commit that explains why it grew.",
-  "generatedAt": "2026-10-26T03:06:33.238Z",
+  "generatedAt": "2026-11-07T15:22:19.167Z",
   "impeccable": {},
   "targets": [
     "frontend/src",
@@ -26,10 +26,15 @@
       "rule": "oversized-h1",
       "snippet": "288px h1",
       "reason": "Detector artifact, verified against the shipped cascade. Nothing in the product resolves an h1 to 288px: .hn-h1/h1 is 32px and 44px above 640px (headline-xl-mobile / headline-xl), and the prerendered no-JS shell's h1 is 1.9rem = 30.4px. All 22 hits are the static shell's sentence-length page titles in frontend/dist; the rule needs >=72px and >=40 characters, and the 288px is the detector's fallback when it cannot resolve the inline style block against the linked bundle. The risk the rule covers (a long headline blown up to display size) is measured for real by __tests__/designTypography.test.js (every authored h1 on the ramp) and scripts/check-contrast.mjs (rendered sizes in both themes). Re-open if an h1 above 72px appears in source."
+    },
+    {
+      "rule": "extreme-negative-tracking",
+      "snippet": "letter-spacing: -0.72em at 12.8px",
+      "reason": "Detector false positive in prerendered documentation. On a disposable copy of frontend/dist/docs.html, removing the linked Vite stylesheet removes every tracking hit (only the unrelated font finding remains); the emitted static markup has no .tracking-tight class or -0.72em declaration, and its inline styles use only positive .025em tracking. The detector is attributing utility typography from the linked SPA bundle to no-JS static copy. The static shell's body/table/disclosure selectors are checked by __tests__/docsStaticTypography.test.js; authored Apple typography remains bounded by __tests__/appleParity.test.js. Re-open if negative tracking is introduced for static body copy."
     }
   ],
   "counts": {
-    "waived": 718,
+    "waived": 1006,
     "outstanding": 0,
     "byRule": {}
   },

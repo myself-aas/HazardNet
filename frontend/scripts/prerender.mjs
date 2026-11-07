@@ -153,9 +153,8 @@ function renderLinks(links) {
 
 /**
  * A section table. Cells are escaped through `renderInline`, so the composed copy can carry
- * emphasis but never markup — the same rule as paragraphs. The wrapper is a plain `<div>`: the
- * static CSS already makes tables full-width, and the React renderer adds the horizontal scroll
- * affordance (`.hn-static` has no client-side navigation to hide a stray column behind).
+ * emphasis but never markup — the same rule as paragraphs. The wrapper is a named, keyboard-focusable
+ * scroll region so a reader without JavaScript can pan wide tables without losing the caption or headers.
  */
 function renderTable(table) {
   if (!table || !Array.isArray(table.columns) || !Array.isArray(table.rows)) return '';
@@ -164,14 +163,179 @@ function renderTable(table) {
     .map((row) => `<tr>${row.map((cell) => `<td>${renderInline(cell)}</td>`).join('')}</tr>`)
     .join('');
   const caption = table.caption ? `<caption>${renderInline(table.caption)}</caption>` : '';
-  return `<div class="hn-tablewrap"><table>${caption}<thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+  const label = table.caption ? `Scrollable table: ${escapeHtml(table.caption)}` : 'Scrollable data table';
+  return `<div class="hn-tablewrap" role="region" aria-label="${label}" tabindex="0"><table>${caption}<thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
 }
 
-function renderSections(sections) {
+function sectionAnchorId(heading, index) {
+  const slug = String(heading)
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '') || 'section';
+  return `docs-${index + 1}-${slug}`;
+}
+
+function renderToc(sections, faqs, routePath) {
+  if (routePath !== '/docs' && !String(routePath).startsWith('/docs/')) return '';
+  const items = (Array.isArray(sections) ? sections : [])
+    .map((section, index) => section.h2
+      ? `<li><a href="#${sectionAnchorId(section.h2, index)}">${renderInline(section.h2)}</a></li>`
+      : '')
+    .filter(Boolean);
+  if (Array.isArray(faqs) && faqs.length > 0) items.push('<li><a href="#frequently-asked-questions">Questions and answers</a></li>');
+  if (items.length < 2) return '';
+  return `<nav class="hn-doc-toc" aria-label="On this page"><details><summary>On this page</summary><ol>${items.join('')}</ol></details></nav>`;
+}
+
+function renderTopics(topics) {
+  if (!Array.isArray(topics) || topics.length === 0) return '';
+  const cards = topics
+    .filter((topic) => topic && typeof topic.to === 'string' && topic.to.startsWith('/') && !topic.to.startsWith('//') && topic.title)
+    .map((topic) => `<li><a href="${escapeHtml(topic.to)}"><span class="hn-topic-kicker">${renderInline(topic.kicker ?? '')}</span><strong>${renderInline(topic.title)}</strong><span>${renderInline(topic.blurb ?? '')}</span></a></li>`)
+    .join('');
+  return cards ? `<ul class="hn-topic-grid">${cards}</ul>` : '';
+}
+
+function renderFigure(figure) {
+  if (!figure || !figure.title) return '';
+  const caption = `<figcaption><strong>${renderInline(figure.title)}</strong><p>${renderInline(figure.description ?? '')}</p></figcaption>`;
+  if (figure.type === 'process') {
+    const steps = (Array.isArray(figure.steps) ? figure.steps : [])
+      .map((step, index) => `<li><span class="hn-step-number">${String(index + 1).padStart(2, '0')}</span><strong>${renderInline(step.title ?? '')}</strong><p>${renderInline(step.detail ?? '')}</p></li>`)
+      .join('');
+    return steps ? `<figure class="hn-process-figure">${caption}<ol>${steps}</ol></figure>` : '';
+  }
+  if (figure.type === 'horizon') {
+    const total = Math.max(1, Math.min(31, Number(figure.totalDays) || 15));
+    const near = Math.max(1, Math.min(total, Number(figure.nearTermDays) || 7));
+    const groups = [
+      { label: figure.nearTermLabel ?? `Days 1 to ${near}`, start: 1, end: near },
+      { label: figure.longerLeadLabel ?? `Days ${near + 1} to ${total}`, start: near + 1, end: total },
+    ];
+    const rows = groups.filter((group) => group.start <= group.end).map((group, groupIndex) => {
+      const days = Array.from({ length: group.end - group.start + 1 }, (_, index) => group.start + index);
+      const cells = days.map((day) => `<li>${day}</li>`).join('');
+      return `<div class="hn-horizon-group"><strong>${renderInline(group.label)}</strong><ol class="hn-horizon-days hn-horizon-days--${groupIndex === 0 ? 'near' : 'far'}">${cells}</ol></div>`;
+    }).join('');
+    return `<figure class="hn-horizon-figure">${caption}${rows}<p>The later band is not a numerical uncertainty interval. It communicates that meteorological uncertainty generally grows with lead time.</p></figure>`;
+  }
+  return '';
+}
+
+function renderFormulas(formulas) {
+  if (!Array.isArray(formulas) || formulas.length === 0) return '';
+  const blocks = formulas.map((formula) => {
+    if (!formula || !formula.expression) return '';
+    const variables = Array.isArray(formula.variables) && formula.variables.length > 0
+      ? `<dl>${formula.variables.map((variable) => `<div><dt>${renderInline(variable.symbol ?? '')}</dt><dd>${renderInline(variable.meaning ?? '')}</dd></div>`).join('')}</dl>`
+      : '';
+    return `<section class="hn-formula"><h3>${renderInline(formula.label ?? 'Formula')}</h3><p class="hn-equation"><code aria-label="${escapeHtml(formula.spoken ?? formula.expression)}">${renderInline(formula.expression)}</code></p><p>${renderInline(formula.explanation ?? '')}</p>${variables}</section>`;
+  }).filter(Boolean).join('');
+  return blocks ? `<div class="hn-formula-set">${blocks}</div>` : '';
+}
+
+function formatChartValue(value, format = 'count') {
+  if (!Number.isFinite(Number(value))) return 'Not recorded';
+  const number = Number(value);
+  if (format === 'percent') return `${number.toFixed(1)}%`;
+  if (format === 'score') return number.toFixed(2);
+  if (format === 'decimal') return number.toLocaleString('en-US', { maximumFractionDigits: 3 });
+  return Math.round(number).toLocaleString('en-US');
+}
+
+function chartSvg(chart, ids) {
+  const data = (Array.isArray(chart.data) ? chart.data : []).filter((point) => Number.isFinite(Number(point.value)));
+  if (data.length === 0) return '';
+  const width = 720;
+  const maximum = Number.isFinite(Number(chart.maxValue)) && Number(chart.maxValue) > 0
+    ? Number(chart.maxValue)
+    : Math.max(1, ...data.map((point) => Number(point.value)));
+  const ticks = maximum <= 1 ? [0, maximum / 2, maximum] : [0, maximum / 2, maximum];
+  const label = (value) => escapeHtml(formatChartValue(value, chart.valueFormat));
+
+  if (chart.type === 'bar') {
+    const left = 198;
+    const plotWidth = 438;
+    const top = 26;
+    const rowHeight = 32;
+    const bottom = 46;
+    const height = Math.max(148, top + data.length * rowHeight + bottom);
+    const plotBottom = top + data.length * rowHeight;
+    const grid = ticks.map((tick) => {
+      const x = left + (tick / maximum) * plotWidth;
+      return `<g class="hn-chart-muted"><line x1="${x}" y1="${top - 8}" x2="${x}" y2="${plotBottom}" stroke="currentColor" stroke-dasharray="2 4"/><text x="${x}" y="${plotBottom + 18}" text-anchor="middle" fill="currentColor">${label(tick)}</text></g>`;
+    }).join('');
+    const bars = data.map((point, index) => {
+      const y = top + index * rowHeight + 2;
+      const barWidth = Math.max(0, Math.min(plotWidth, (Number(point.value) / maximum) * plotWidth));
+      return `<g><text x="${left - 10}" y="${y + 14}" text-anchor="end" class="hn-chart-label">${renderInline(point.label)}</text><rect x="${left}" y="${y}" width="${barWidth}" height="18" rx="3" class="hn-chart-bar"/><text x="${left + barWidth + 7}" y="${y + 14}" class="hn-chart-value">${label(point.value)}</text></g>`;
+    }).join('');
+    return `<svg viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="${ids.svgTitle}" aria-describedby="${ids.svgDescription}"><title id="${ids.svgTitle}">${renderInline(chart.title)}</title><desc id="${ids.svgDescription}">${renderInline(chart.description)}</desc>${grid}${bars}<text x="${left + plotWidth / 2}" y="${height - 6}" text-anchor="middle" class="hn-chart-muted">${renderInline(chart.xLabel ?? '')}</text></svg>`;
+  }
+
+  if (chart.type === 'line') {
+    const height = 300;
+    const left = 58;
+    const right = 24;
+    const top = 24;
+    const bottom = 62;
+    const plotWidth = width - left - right;
+    const plotHeight = height - top - bottom;
+    const xValues = data.map((point, index) => Number.isFinite(Number(point.x)) ? Number(point.x) : index);
+    const xMin = Math.min(...xValues);
+    const xMax = Math.max(...xValues);
+    const xPosition = (value) => left + ((value - xMin) / Math.max(1, xMax - xMin)) * plotWidth;
+    const yPosition = (value) => top + plotHeight - (Number(value) / maximum) * plotHeight;
+    const horizontalGrid = ticks.map((tick) => {
+      const y = yPosition(tick);
+      return `<g class="hn-chart-muted"><line x1="${left}" y1="${y}" x2="${width - right}" y2="${y}" stroke="currentColor" stroke-dasharray="2 4"/><text x="${left - 8}" y="${y + 4}" text-anchor="end" fill="currentColor">${label(tick)}</text></g>`;
+    }).join('');
+    const xStep = xMax - xMin > 10 ? 5 : Math.max(1, Math.round((xMax - xMin) / 4));
+    const xTicks = new Set([xMin, xMax]);
+    for (let tick = Math.ceil(xMin / xStep) * xStep; tick < xMax; tick += xStep) xTicks.add(tick);
+    const xAxis = [...xTicks].sort((a, b) => a - b).map((tick) => `<g class="hn-chart-muted"><line x1="${xPosition(tick)}" y1="${top + plotHeight}" x2="${xPosition(tick)}" y2="${top + plotHeight + 4}" stroke="currentColor"/><text x="${xPosition(tick)}" y="${height - 34}" text-anchor="middle" fill="currentColor">${tick}</text></g>`).join('');
+    const segments = [];
+    data.forEach((point, index) => {
+      const x = Number.isFinite(Number(point.x)) ? Number(point.x) : index;
+      const current = segments[segments.length - 1];
+      if (!current || (current.length > 0 && x - current[current.length - 1].x > 1)) segments.push([{ point, x }]);
+      else current.push({ point, x });
+    });
+    const paths = segments.map((segment) => segment.length > 1
+      ? `<path d="${segment.map(({ point, x }, index) => `${index === 0 ? 'M' : 'L'} ${xPosition(x)} ${yPosition(point.value)}`).join(' ')}" class="hn-chart-line"/>`
+      : '').join('');
+    const points = data.map((point, index) => {
+      const x = Number.isFinite(Number(point.x)) ? Number(point.x) : index;
+      return `<circle cx="${xPosition(x)}" cy="${yPosition(point.value)}" r="3.5" class="hn-chart-dot"><title>${renderInline(point.label)}: ${label(point.value)}</title></circle>`;
+    }).join('');
+    const yLabel = `<text x="14" y="${top + plotHeight / 2}" text-anchor="middle" class="hn-chart-muted" transform="rotate(-90 14 ${top + plotHeight / 2})">${renderInline(chart.yLabel ?? '')}</text>`;
+    return `<svg viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="${ids.svgTitle}" aria-describedby="${ids.svgDescription}"><title id="${ids.svgTitle}">${renderInline(chart.title)}</title><desc id="${ids.svgDescription}">${renderInline(chart.description)}</desc>${horizontalGrid}<line x1="${left}" y1="${top + plotHeight}" x2="${width - right}" y2="${top + plotHeight}" class="hn-chart-axis"/>${xAxis}${paths}${points}${yLabel}<text x="${left + plotWidth / 2}" y="${height - 7}" text-anchor="middle" class="hn-chart-muted">${renderInline(chart.xLabel ?? '')}</text></svg>`;
+  }
+  return '';
+}
+
+function renderChart(chart, routePath, sectionIndex) {
+  if (!chart || !['bar', 'line'].includes(chart.type) || !Array.isArray(chart.data) || chart.data.length === 0) return '';
+  const idBase = `hn-${String(routePath).replace(/[^a-z0-9]+/gi, '-')}-${sectionIndex}-${String(chart.title).replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`;
+  const ids = { svgTitle: `${idBase}-svg-title`, svgDescription: `${idBase}-svg-description` };
+  const rows = chart.data.map((point) => [String(point.label), formatChartValue(point.value, chart.valueFormat)]);
+  const columns = chart.type === 'bar'
+    ? [chart.yLabel ?? 'Category', chart.xLabel ?? 'Value']
+    : [chart.xLabel ?? 'Category', chart.yLabel ?? 'Value'];
+  const axisDescription = chart.type === 'bar'
+    ? `${chart.yLabel ?? 'Categories'} categories are shown beside the bars; bar length represents ${String(chart.xLabel ?? 'the value').toLowerCase()}.`
+    : `${chart.xLabel ?? 'The x axis'} is shown on the horizontal axis; ${String(chart.yLabel ?? 'value').toLowerCase()} is the measured quantity.`;
+  const table = renderTable({ caption: `${chart.title} data`, columns, rows });
+  return `<figure class="hn-chart"><h3>${renderInline(chart.title)}</h3><p>${renderInline(chart.description)}</p><div class="hn-chart-scroll" role="region" aria-label="${escapeHtml(`${chart.title} chart`)}" tabindex="0">${chartSvg(chart, ids)}</div><figcaption><p>${renderInline(axisDescription)}</p>${chart.source ? `<p>Source: ${renderInline(chart.source)}</p>` : ''}${chart.note ? `<p>${renderInline(chart.note)}</p>` : ''}</figcaption><details><summary>View chart values as a table</summary>${table}</details></figure>`;
+}
+
+function renderSections(sections, routePath = '') {
   if (!Array.isArray(sections) || sections.length === 0) return '';
   return sections
-    .map((section) => {
-      const heading = section.h2 ? `<h2>${renderInline(section.h2)}</h2>` : '';
+    .map((section, index) => {
+      const heading = section.h2 ? `<h2 id="${sectionAnchorId(section.h2, index)}">${renderInline(section.h2)}</h2>` : '';
       const paragraphs = (section.paragraphs ?? [])
         .map((p) => `<p>${renderInline(p)}</p>`)
         .join('');
@@ -181,11 +345,10 @@ function renderSections(sections) {
       const callout = section.callout?.text
         ? `<p class="hn-callout hn-callout--${escapeHtml(section.callout.tone ?? 'info')}">${renderInline(section.callout.text)}</p>`
         : '';
-      return `<section>${heading}${paragraphs}${bullets}${renderTable(section.table)}${callout}${renderLinks(section.links)}</section>`;
+      return `<section>${heading}${paragraphs}${bullets}${renderTopics(section.topics)}${renderFigure(section.figure)}${renderFormulas(section.formulas)}${renderChart(section.chart, routePath, index)}${renderTable(section.table)}${callout}${renderLinks(section.links)}</section>`;
     })
     .join('');
 }
-
 /**
  * The attribution block, injected into the front door's static HTML.
  *
@@ -229,7 +392,7 @@ function renderFaqs(faqs) {
         `<details><summary>${renderInline(faq.question)}</summary><p>${renderInline(faq.answer)}</p></details>`
     )
     .join('');
-  return `<section aria-label="Frequently asked questions"><h2>Questions and answers</h2>${items}</section>`;
+  return `<section id="frequently-asked-questions" aria-label="Frequently asked questions"><h2>Questions and answers</h2>${items}</section>`;
 }
 
 /**
@@ -310,11 +473,12 @@ function renderBody(route) {
     `<main class="hn-static">`,
     `<h1>${renderInline(route.h1 ?? route.title ?? 'Page not found')}</h1>`,
     route.standfirst ? `<p class="hn-lead">${renderInline(route.standfirst)}</p>` : '',
+    renderToc(route.sections, route.faqs, route.path),
     route.path === '/status' ? renderStatusPanel(statusArtifact) : '',
     // The front door is the page whose job is to say who is behind the numbers, so the
     // attribution block ships in its static HTML rather than only in the hydrated app.
     route.path === '/' ? renderAttribution(attribution) : '',
-    renderSections(resolveReviewDates(route.sections)),
+    renderSections(resolveReviewDates(route.sections), route.path),
     renderFaqs(route.faqs),
     route.updated
       ? `<p class="hn-meta">Content reviewed ${escapeHtml(route.updated)}. HazardNet is decision support, not an official warning service — see the <a href="/methodology">methodology</a> for scope and limitations.</p>`
@@ -433,8 +597,8 @@ const STATIC_STYLES = `<style>
      visitor getting a white flash before the app boots. */
   .hn-static{max-width:60rem;margin:0 auto;padding:5.5rem 1.25rem 3rem;background:#ffffff;font-family:"Inter",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans Bengali",sans-serif;font-size:1rem;color:#1d1d1f;line-height:1.62}
   .hn-static h1,.hn-static h2,.hn-static h3,.hn-static summary,.hn-static th{font-family:"Inter",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans Bengali",sans-serif}
-  .hn-static h1{font-size:1.9rem;line-height:1.15;letter-spacing:-.02em;margin:0 0 .75rem;font-weight:700}
-  .hn-static h2{font-size:1.15rem;line-height:1.35;letter-spacing:-.02em;margin:2rem 0 .5rem;font-weight:700}
+  .hn-static h1{font-size:1.9rem;line-height:1.15;margin:0 0 .75rem;font-weight:700}
+  .hn-static h2{font-size:1.15rem;line-height:1.35;margin:2rem 0 .5rem;font-weight:700}
   .hn-static p{margin:.6rem 0;color:#333333;overflow-wrap:anywhere}
   .hn-static .hn-lead{font-size:1.03rem;line-height:1.5;color:#1d1d1f}
   .hn-static ul{margin:.5rem 0 1rem;padding-left:1.15rem;color:#333333}
@@ -473,7 +637,38 @@ const STATIC_STYLES = `<style>
   .hn-static .hn-loader{display:flex;flex-direction:column;align-items:center;gap:1.1rem;margin:2.75rem 0 .5rem}
   .hn-static .hn-loader-mark{display:block;width:112px;height:63px}
   .hn-static details{border-bottom:1px solid #e0e0e0;padding:.55rem 0}
-  .hn-static summary{font-weight:600;cursor:pointer}
+  .hn-static summary{min-height:44px;padding:.55rem 0;font-weight:600;cursor:pointer}
+  .hn-static .hn-doc-toc{border:1px solid #e0e0e0;border-radius:10px;padding:.75rem 1rem;margin:1.25rem 0}
+  .hn-static .hn-doc-toc ol{margin:.5rem 0 0;padding-left:1.25rem}
+  .hn-static .hn-topic-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;list-style:none;padding:0;margin:1rem 0}
+  .hn-static .hn-topic-grid li{margin:0}
+  .hn-static .hn-topic-grid a{display:flex;min-height:8rem;flex-direction:column;gap:.4rem;border:1px solid #e0e0e0;border-radius:10px;padding:1rem;color:#1d1d1f;text-decoration:none}
+  .hn-static .hn-topic-grid a:hover{border-color:#0066cc}
+  .hn-static .hn-topic-kicker,.hn-static .hn-step-number{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.75rem;color:#5a5a5d}
+  .hn-static .hn-topic-grid strong,.hn-static .hn-process-figure strong{font-weight:700}
+  .hn-static .hn-process-figure,.hn-static .hn-horizon-figure,.hn-static .hn-chart,.hn-static .hn-formula{border:1px solid #e0e0e0;border-radius:10px;background:#f5f5f7;padding:1rem;margin:1rem 0}
+  .hn-static .hn-process-figure figcaption,.hn-static .hn-horizon-figure figcaption{margin-bottom:.75rem}
+  .hn-static .hn-process-figure ol{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.5rem;list-style:none;padding:0;margin:.5rem 0}
+  .hn-static .hn-process-figure li{border:1px solid #e0e0e0;border-radius:8px;background:#ffffff;padding:.75rem;margin:0}
+  .hn-static .hn-process-figure li p,.hn-static .hn-horizon-figure p{font-size:.82rem}
+  .hn-static .hn-horizon-group{margin:.85rem 0}
+  .hn-static .hn-horizon-days{display:grid;gap:.25rem;list-style:none;padding:0;margin:.4rem 0}
+  .hn-static .hn-horizon-days--near{grid-template-columns:repeat(7,minmax(0,1fr))}
+  .hn-static .hn-horizon-days--far{grid-template-columns:repeat(8,minmax(0,1fr))}
+  .hn-static .hn-horizon-days li{border:1px solid #a1a1a6;border-radius:5px;padding:.45rem .1rem;text-align:center;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.75rem;margin:0}
+  .hn-static .hn-chart-scroll{overflow-x:auto;border-radius:6px}
+  .hn-static .hn-chart svg{display:block;width:100%;min-width:34rem;height:auto;color:#0066cc}
+  .hn-static .hn-chart-muted{color:#5a5a5d;font-size:11px}
+  .hn-static .hn-chart-label{fill:#333333;font-size:12px}
+  .hn-static .hn-chart-value{fill:#1d1d1f;font-size:12px;font-weight:600}
+  .hn-static .hn-chart-bar,.hn-static .hn-chart-dot{fill:#0066cc}
+  .hn-static .hn-chart-line{fill:none;stroke:#0066cc;stroke-width:2.5}
+  .hn-static .hn-chart-axis{stroke:#5a5a5d}
+  .hn-static .hn-equation{overflow-x:auto;border-radius:6px;background:#ffffff;padding:.65rem .8rem;font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+  .hn-static .hn-formula dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem;margin:.75rem 0 0}
+  .hn-static .hn-formula dl div{display:flex;gap:.5rem;font-size:.8rem}
+  .hn-static .hn-formula dt{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:700}
+  .hn-static .hn-formula dd{margin:0;color:#5a5a5d}
   /* Dark scheme. Every rule restates its own background next to its text colour so the
      pairing stays legible to a reader (and to a static contrast checker) that does not
      cascade media queries. Ratios on the stated backgrounds are all >= 4.5:1. */
@@ -498,7 +693,20 @@ const STATIC_STYLES = `<style>
     .hn-static .hn-state-stale{background:#3a1d10;border-color:#b3400f;color:#fdeee7}
     .hn-static .hn-state-failing{background:#3a1512;border-color:#c01f1f;color:#ff6b60}
     .hn-static .hn-state-unknown{background:#272729;border-color:#5a5a5d;color:#a1a1a6}
+    .hn-static .hn-doc-toc,.hn-static .hn-process-figure,.hn-static .hn-horizon-figure,.hn-static .hn-chart,.hn-static .hn-formula{background:#242426;border-color:#333333}
+    .hn-static .hn-topic-grid a,.hn-static .hn-process-figure li{background:#1c1c1e;border-color:#333333;color:#e0e0e0}
+    .hn-static .hn-topic-kicker,.hn-static .hn-step-number,.hn-static .hn-formula dd,.hn-static .hn-chart-muted{color:#a1a1a6}
+    .hn-static .hn-chart svg{color:#2997ff}
+    .hn-static .hn-chart-label,.hn-static .hn-chart-value{fill:#e0e0e0}
+    .hn-static .hn-chart-bar,.hn-static .hn-chart-dot{fill:#2997ff}
+    .hn-static .hn-chart-line{stroke:#2997ff}
+    .hn-static .hn-chart-axis{stroke:#a1a1a6}
+    .hn-static .hn-equation{background:#272729;color:#f5f5f7}
+    .hn-static .hn-horizon-days li{border-color:#5a5a5d;background:#1c1c1e;color:#e0e0e0}
   }
+  @media (min-width:640px){.hn-static .hn-process-figure ol{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media (min-width:1024px){.hn-static .hn-process-figure ol{grid-template-columns:repeat(4,minmax(0,1fr))}}
+  @media (max-width:639px){.hn-static .hn-topic-grid{grid-template-columns:1fr}.hn-static .hn-formula dl{grid-template-columns:1fr}.hn-static .hn-process-figure ol{grid-template-columns:1fr}}
 </style>`;
 
 function buildHtml(route) {
