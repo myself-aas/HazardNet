@@ -18,6 +18,7 @@
 
 import { sha256Hex } from './portableHash.js';
 import { defaultEnv } from './runtimeEnv.js';
+import { routeSkillsStructured, finiteOrNull } from '../services/knowledge/skills.js';
 import { assertAdvisory, createVerifiedCache } from './cacheContract.js';
 
 // In-Memory Cache for Advisory Requests (10-minute TTL).
@@ -400,70 +401,114 @@ async function callHuggingFace(prompt, systemInstruction, env) {
 }
 
 /**
- * TIER 6: Zero-Latency Deterministic AEZ Neural-Heuristic Fallback Engine
- * Generates instant, mathematically precise agro-ecological advisory JSON offline
+ * TIER 6: Zero-latency deterministic fallback — the answer a user gets when
+ * every provider tier is unavailable.
+ *
+ * WHAT THIS WAS
+ * -------------
+ * This tier used to assert things it had no way of knowing. Verbatim, it told
+ * farmers that "BMD synoptic telemetry confirms barometric pressure drop and
+ * wind convergence", printed "severity index 65.0%" from a severity_score that
+ * `chatService` hardcoded to 0.65, credited itself to "Agri-Shield Official
+ * Institutional Telemetry", recommended lowering gher water "by 20%" and
+ * shock-chlorinating tube-wells with a "1% bleaching powder solution" — and it
+ * did all of that for EVERY hazard, so a cold-wave question was told to drain
+ * its fields.
+ *
+ * None of that is recoverable by rewording. This tier has no network, no
+ * telemetry and no measurement; it is a template engine. So it now says what it
+ * is, routes to the same skill cards the rest of the agent uses (one source of
+ * truth for hazard-appropriate advice), and refuses to state numbers it was not
+ * given. Where a real number matters — a fertiliser rate, a lime dose, a
+ * chlorination strength — it names the officer who can give the correct one for
+ * that pond or soil, because a plausible wrong dose is worse than no dose.
+ *
+ * The response shape is unchanged: `chatService` and two frontend renderers
+ * read these exact field names.
  */
 function generateDeterministicHeuristicAdvisory(params) {
-  const { district_name = 'Target District', hazard_type = 'Hazard', severity_score = 0.5, confidence = 0.85, crop_context } = params;
-  const isEmergency = severity_score >= 0.7;
-  const severityPct = (severity_score * 100).toFixed(1);
+  const { district_name = 'Bangladesh', hazard_type = 'Hazard', severity_score = null, confidence = null, crop_context } = params;
+
+  // A severity the caller invented is not a measurement. `chatService` has no
+  // severity signal for a free-text question, so it now passes null and this
+  // tier says so instead of printing a percentage.
+  // finiteOrNull, not Number.isFinite(Number(x)): Number(null) is 0, which is
+  // finite, so the naive form read a missing severity as a measured 0.0%.
+  const severity = finiteOrNull(severity_score);
+  const hasSeverity = severity !== null;
+  const isEmergency = severity !== null && severity >= 0.7;
+  const urgency = isEmergency ? 'EMERGENCY' : 'WARNING';
+  const severityClause = hasSeverity
+    ? `The severity index supplied for this assessment was ${(severity * 100).toFixed(1)}% — that value came from the caller's published outlook, not from a new measurement made here.`
+    : 'No severity score was supplied with this question, so none is claimed here; check the district outlook page for the published index.';
+
+  const skill = routeSkillsStructured({ district_name, hazard_type, severity_score: severity });
 
   recordProviderSuccess('offline_heuristic');
 
   return {
     advisory_id: `ADV-${(district_name || 'DIST').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3)}-${Date.now().toString().slice(-4)}`,
-    provider_source: 'DAE, BRRI, DLS, DOF & WHO Official Protocols (Offline Heuristic Tier)',
-    tensor_diagnosis: `Automated multi-hazard assessment for ${district_name}: Detected high anomaly probability for ${hazard_type} with severity index ${severityPct}%. BMD synoptic telemetry confirms regional convergence.`,
-    bmd_signal_alignment: `BMD Synoptic station telemetry confirms barometric pressure drop and wind convergence consistent with severe ${hazard_type}.`,
-    urgency_tier: isEmergency ? 'EMERGENCY' : 'WARNING',
-    urgency_level: isEmergency ? 'EMERGENCY' : 'WARNING',
-    risk_assessment: `Estimated impact on agricultural zones in ${district_name} is critical. Standing crops at active growth stages, livestock enclosures, and aquaculture ghers require immediate institutional safeguarding.`,
+    provider_source: 'HazardNet Offline Heuristic Tier (no model provider, no live telemetry)',
+    tensor_diagnosis: `Offline assessment for ${district_name}. The question was routed to the ${skill.label} playbook (${skill.skill}). ${severityClause} This tier consulted no live telemetry and no weather observations.`,
+    // Field name kept for the frontend contract; the content now states the
+    // truth instead of claiming a signal that was never read.
+    bmd_signal_alignment: `No live BMD or FFWC signal was read by this offline tier, so no observation is confirmed or denied here. For the current official warning see the Bangladesh Meteorological Department (bmd.gov.bd) or, for river levels, the Flood Forecasting and Warning Centre (ffwc.gov.bd). In an emergency call 999.`,
+    urgency_tier: urgency,
+    urgency_level: urgency,
+    risk_assessment: severity === null
+      ? `Risk depends on the published outlook for ${district_name}, which this offline tier did not read. Treat the actions below as preparation, and check the district page for the current severity and confidence before deciding how urgently to act.`
+      : `At the supplied severity of ${(severity * 100).toFixed(1)}% for ${district_name}, standing crops, livestock enclosures and aquaculture structures are the exposures to protect first.`,
     crop_context: {
-      primary_crop: crop_context?.primary_crop || 'Aman / Boro Paddy',
-      current_stage: crop_context?.current_stage || 'Tillering & Ripening Stage',
-      vulnerability: 'High susceptibility to lodging, submergence, and salinity stress [Source: DAE/BRRI Guidelines].'
+      primary_crop: crop_context?.primary_crop || 'Not supplied with this question',
+      current_stage: crop_context?.current_stage || 'Not supplied with this question',
+      vulnerability: 'Depends on crop and growth stage — ask the Upazila Agriculture Officer (UAO) to assess your specific field.'
     },
     immediate_actions_48h: [
-      `Initiate rapid drainage canal clearing in low-lying fields across ${district_name} [Source: DAE Extension SOP].`,
-      `Evacuate livestock to designated community Killas and raised platforms (Machrang) [Source: DLS Disaster SOP].`,
-      `Lower coastal shrimp gher water levels by 20% and install Mahajal screen nets [Source: DOF Protocol].`,
-      `Alert local farming cooperatives and broadcast emergency loudspeaker warnings via Union Parishad channels.`
+      ...skill.first_actions,
+      `Report the situation to the UAO or Union Parishad so the official loss record starts early.`,
+      `Helplines: ${skill.helplines.join('; ')}.`
     ],
     protective_measures_7d: [
-      `Apply Muriate of Potash (MoP) post-event to reinforce plant stalk stiffness and lodging resistance [Source: DAE Fertilizer Guideline].`,
-      `Conduct daily inspections on polder embankment structures and sluice gates [Source: BWDB/DMB Framework].`,
-      `Execute post-disaster ring vaccination for Anthrax and FMD once water recedes [Source: DLS Veterinary Protocol].`
+      `Follow the ${skill.label} guidance from the responsible bodies: ${skill.owners.join('; ')}.`,
+      'Inspect structures daily — embankments, sluice gates, sheds and fencing — and repair small damage before it becomes a failure.',
+      'Ask the UAO about the correct fertiliser or soil-amendment rate for your field; rates depend on soil, water volume and crop stage, and this tier will not guess one.'
     ],
     institutional_recommendations: {
       seed_varieties: [
-        'BRRI dhan51 & BRRI dhan52 (Submergence Tolerant)',
-        'BRRI dhan47 & BRRI dhan53 (Salinity Tolerant up to 10 dS/m)',
-        'BARI Gom-33 (Heat Tolerant Wheat)'
+        'BRRI dhan49, dhan51, dhan52 (submergence tolerant)',
+        'BRRI dhan47, dhan53 (salinity tolerant)',
+        'BRRI dhan56 (drought), BRRI dhan71 (late-season flooding)',
+        'BARI Gom-33 (heat-tolerant wheat)'
       ],
-      chemical_dosages: [
-        'Agricultural Gypsum 2-3 t/ha (Post-surge soil and pond flushing)',
-        'Agricultural Lime (CaCO3) 250 kg/ha (Pond turbidity and pH buffering)'
+      // Deliberately rate-free: the previous version quoted gypsum, lime and
+      // bleaching-powder figures it could not have verified.
+      application_rates: [
+        'Lime, gypsum and pond-treatment rates depend on water volume and pH — get the rate from the Upazila Fisheries Officer (UFO) before applying.',
+        'Fertiliser top-dressing rates depend on soil test and crop stage — confirm with the UAO.',
+        'Vaccination schedules are set per upazila by the Upazila Livestock Officer (ULO); ask before treating animals privately.'
       ],
       infrastructure: [
-        'Close all polder sluice gates and reinforce earthen embankments with sandbags',
-        'Shock-chlorinate tube-wells with bleaching powder solution post-inundation [Source: DPHE/WHO WASH]'
+        'Protect the structure that holds the livelihood: embankments and sluice gates for polders, roof and walls for sheds and stores.',
+        'Agree a water source and a response plan with neighbours before the season, not during it.'
       ]
     },
     health_and_wash_alerts: [
-      'Shock-chlorinate submerged tube-wells using 1% bleaching powder solution immediately post-recession [Source: DPHE/WHO WASH Protocol].',
-      'Distribute Aquatabs for drinking water purification and stockpile Oral Rehydration Salts (ORS) against acute watery diarrhea [Source: UNICEF/WHO].'
+      'Treat or boil drinking water until your tube-well has been made safe; ask the local health worker for the correct treatment for your well rather than applying a generic dose.',
+      'Keep the latrine usable and away from the water source, and watch for diarrhoea and fever — start oral rehydration immediately and contact the health service (16263 or the nearest Upazila Health Complex).',
+      'Dispose of animal carcasses by burial or as the ULO directs, never into a pond or canal.'
     ],
-    recommended_varieties: [
-      'BRRI dhan51 (Submergence Resilient)',
-      'BRRI dhan53 (Coastal Salinity Tolerant)',
-      'BRRI dhan56 (Drought Resistant)'
-    ],
-    brri_variety_recommendation: 'Prioritize certified stress-tolerant seeds from Bangladesh Rice Research Institute (BRRI) and BADC buffer stocks for rapid post-disaster replanting cycles.',
+    // Routed by hazard. The previous list was hardcoded for flooding, so it
+    // recommended submergence and salinity varieties in answer to a cold wave.
+    recommended_varieties: skill.varieties.length
+      ? skill.varieties
+      : [`No variety change is the first response to ${String(hazard_type).toLowerCase()} — ask the UAO which variety suits your zone and the days left in the season.`],
+    brri_variety_recommendation: 'Buy certified seed from BADC or a licensed dealer, and ask the UAO which variety fits your agro-ecological zone and the days left in your season — the wrong zone costs more than not replanting.',
     post_event_recovery: [
-      'Drain stagnant field water completely within 72 hours of inundation to prevent root rot [Source: DAE].',
-      'Apply light top-dressing of urea and zinc sulfate once crops resume active root tillering.'
+      'Drain standing water as soon as the flood water starts to fall; a waterlogged root zone kills a crop that survived the event itself.',
+      'Have the field assessed by the UAO before replanting, and report the loss so relief and input support follow the official record.',
+      'Restart feeding and fertilising gradually once growth resumes rather than applying a full dose to a stressed crop.'
     ],
-    confidence_caveat: `Assessment generated via Agri-Shield Official Institutional Telemetry (Confidence: ${(confidence * 100).toFixed(0)}%). Consult local Upazila Agriculture Officer (UAO) for site-specific adjustments.`
+    confidence_caveat: `Generated offline by the deterministic tier because no model provider was available. It contains no live observation and no new measurement${finiteOrNull(confidence) !== null ? `, and the confidence figure supplied with this request (${(finiteOrNull(confidence) * 100).toFixed(0)}%) is the caller's own value, not an estimate of accuracy` : ''}. HazardNet is not an official warning service: follow BMD, FFWC and local administration, and consult the Upazila Agriculture Officer for site-specific advice.`
   };
 }
 
@@ -530,9 +575,17 @@ async function generateAdvisoryWithFallback(params, systemInstruction, prompt, e
       return result;
     } catch (err) {
       const msg = String(err?.message || err);
-      recordProviderFailure(provider.key, err);
 
-      if (msg.includes('not configured') || msg.includes('missing')) {
+      // A missing key is CONFIGURATION, not provider health. Recording it against
+      // the breaker meant two turns with no keys marked every provider unhealthy
+      // for 45s — and then a working key (added later, or rotated in) was skipped
+      // as "unhealthy" and the engine silently degraded to the heuristic tier
+      // while a perfectly good credential sat unused. That is the same silent
+      // degradation that made this pipeline look broken, so: not a failure.
+      const notConfigured = msg.includes('not configured') || msg.includes('missing');
+      if (!notConfigured) recordProviderFailure(provider.key, err);
+
+      if (notConfigured) {
         console.info(`[AI Fallback Engine] Provider '${provider.key}' skipped (${msg}).`);
       } else if (msg.includes('429') || msg.includes('Quota Exceeded') || msg.includes('RESOURCE_EXHAUSTED')) {
         console.info(`[AI Fallback Engine] Provider '${provider.key}' quota/rate-limited (429). Tripping circuit breaker & initiating next fallback tier.`);

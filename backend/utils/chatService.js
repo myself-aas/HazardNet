@@ -12,7 +12,7 @@
  * split backend/utils/forecastServe.js already uses for the forecast API.
  */
 
-import { searchRAG, routeSkills, GOVT_OFFICE_DIRECTORY } from '../services/localKnowledge.js';
+import { routeSkills, routeSkillsStructured, GOVT_OFFICE_DIRECTORY, retrieveKnowledge, formatKnowledgeContext } from '../services/knowledge/index.js';
 import { generateAdvisoryWithFallback } from './ai_fallback_engine.js';
 import { detectGroundingIntent, executeMapsGrounding, executeSearchGrounding } from './gemini_grounding.js';
 import { defaultEnv } from './runtimeEnv.js';
@@ -24,7 +24,15 @@ export { GOVT_OFFICE_DIRECTORY };
  */
 function inferHazardTheme(query = '', baseline = null) {
   const q = String(query).toLowerCase();
-  if (/flood|submerg|flash flood|water log|inundat|haor|surma|kushiyara|jamuna|brahmaputra/i.test(q)) {
+  // Flash flood is tested FIRST and separately: it is not a small flood. The haor
+  // basin floods from upstream rain within hours, so the decision is "harvest the
+  // Boro early or lose it" — a different playbook, a different owner (FFWC), and a
+  // different document set. Collapsing it into 'Flood' meant the Flash Flood skill
+  // card was unreachable from the chat path entirely.
+  if (/flash flood|haor|surma|kushiyara|sunamganj|sylhet|netrokona|kishoreganj/i.test(q)) {
+    return 'Flash Flood';
+  }
+  if (/flood|submerg|water log|inundat|jamuna|brahmaputra|padma|meghna/i.test(q)) {
     return 'Flood';
   }
   if (/cyclone|storm|surge|salin|tidal|coastal|wind gust|depression|super cyclone/i.test(q)) {
@@ -151,15 +159,44 @@ export function directoryHandler(_req, res) {
   sendJson(res, 200, GOVT_OFFICE_DIRECTORY);
 }
 
-function getDistrictContacts(baseline) {
-  if (!baseline) return null;
+/**
+ * Project retrieved documents into the response's citation shape, limited to the
+ * documents `formatKnowledgeContext` actually placed in the prompt.
+ */
+function citedKnowledgeSources(results, includedIds) {
+  const allowed = new Set(includedIds ?? []);
+  return results
+    .filter((result) => allowed.has(result.id))
+    .map((result) => ({
+      id: result.id,
+      title: result.title,
+      category: result.category,
+      authority: result.authority,
+      url: result.url,
+      basis: result.basis,
+      relevanceScore: result.score,
+      snippet: result.snippet,
+      matched: result.matched,
+    }));
+}
+
+/**
+ * District contacts.
+ *
+ * This used to read a research-derived district baseline, which is private and
+ * is now gone. What remains is still useful and entirely public: the ROLE that
+ * owns each decision, and the national lines that reach it. Names and numbers of
+ * individual officers are deliberately absent — a support agent that invents an
+ * officer's phone number has done the opposite of its job.
+ */
+function getDistrictContacts(district = null) {
   return {
-    district: baseline.district || baseline.name,
-    dae_officer: baseline.dae_officer || 'Upazila Agriculture Officer (UAO)',
-    dls_officer: baseline.dls_officer || 'Upazila Livestock Officer (ULO)',
-    dof_officer: baseline.dof_officer || 'Upazila Fisheries Officer (UFO)',
-    dc_control_room: baseline.control_room || 'District Disaster Management Control Room',
-    contact_lines: baseline.contact_lines || ['16123 (Krishi Call Centre)', '1090 (Disaster Hotline)']
+    district: district || 'Bangladesh',
+    dae_officer: 'Upazila Agriculture Officer (UAO) — crop damage assessment, variety and input advice',
+    dls_officer: 'Upazila Livestock Officer (ULO) — animal health, vaccination, carcass disposal',
+    dof_officer: 'Upazila Fisheries Officer (UFO) — pond and gher condition, restocking',
+    dc_control_room: 'Upazila Disaster Management Committee / Union Parishad — shelter list, evacuation, relief',
+    contact_lines: ['16123 (Krishi Call Centre)', '1090 (disaster response)', '999 (emergency)']
   };
 }
 
@@ -197,22 +234,38 @@ export async function handleChatQuery(input, env = defaultEnv()) {
       }))
     : [];
 
-  // 1. Perform RAG Retrieval from 41+ indexed documents & district baselines
-  const ragResult = searchRAG(sanitizedQuery, { district: sanitizedDistrict });
-
-  // 2. Format Context for the LLM Prompt
-  let contextText = `=== RETRIEVED RAG KNOWLEDGE BASE DOCUMENTS (${ragResult.results.length} matched) ===\n`;
-  ragResult.results.forEach((doc, idx) => {
-    contextText += `\n[Doc ${idx + 1}: ${doc.title} (${doc.category})]\n${doc.content}\n`;
+  // 1. Route the skill FIRST: the hazard theme is a retrieval boost, not just a
+  //    prompt directive. Inferring it from the query (BM25's own read of the
+  //    text) rather than from a research baseline keeps this synchronous and
+  //    honest about what it knows.
+  const detectedHazard = inferHazardTheme(sanitizedQuery, null);
+  const routedSkills = routeSkillsStructured({
+    district_name: sanitizedDistrict,
+    hazard_type: detectedHazard,
+    // A free-text question carries no measured severity, so none is invented:
+    // the deterministic tier used to print a hardcoded 0.65 as though it were
+    // an assessment. The district outlook page is where a real index lives.
+    severity_score: null,
+    confidence: null,
   });
 
-  if (ragResult.districtBaseline) {
-    const baselineName = ragResult.districtBaseline.district || ragResult.districtBaseline.name;
-    contextText += `\n=== DISTRICT BASELINE: ${baselineName} ===\n`;
-    contextText += JSON.stringify(ragResult.districtBaseline, null, 2) + '\n';
-  }
+  // 2. Retrieve from the public support knowledge base. Lexical BM25 is the
+  //    floor and always runs; semantic re-ranking is layered on when a provider
+  //    key exists and silently gives way when it does not. `retrieval` records
+  //    which of the two actually ran so the response can say so.
+  const { results: knowledgeResults, retrieval } = await retrieveKnowledge(sanitizedQuery, {
+    district: sanitizedDistrict,
+    hazard: routedSkills.skill === 'Multi-Hazard' ? null : routedSkills.skill,
+    limit: 6,
+    env,
+  });
 
-  contextText += `\n=== OFFICIAL GOVT HELPLINES & WEBSITES ===\n`;
+  // 3. Format Context for the LLM Prompt. `formatKnowledgeContext` carries its
+  //    own budget so retrieval can never be what breaches MAX_PROMPT_CHARS, and
+  //    reports which documents it actually placed — only those may be cited.
+  const knowledgeContext = formatKnowledgeContext(knowledgeResults);
+  let contextText = knowledgeContext.text;
+  contextText += `\n=== OFFICIAL DIRECTORY (verify against these lines, do not invent numbers) ===\n`;
   contextText += JSON.stringify(GOVT_OFFICE_DIRECTORY, null, 2) + '\n';
 
   // 3. Detect Grounding Intent (Maps vs Search vs Standard RAG)
@@ -223,7 +276,7 @@ export async function handleChatQuery(input, env = defaultEnv()) {
     try {
       const mapsRes = await executeMapsGrounding({
         query: sanitizedQuery,
-        district: sanitizedDistrict || ragResult.districtBaseline?.district || ragResult.districtBaseline?.name,
+        district: sanitizedDistrict,
         userCoordinates,
         contextText,
         env
@@ -236,14 +289,9 @@ export async function handleChatQuery(input, env = defaultEnv()) {
           grounding_type: 'maps',
           facilities: mapsRes.facilities || [],
           coordinates: mapsRes.coordinates,
-          retrieved_sources: ragResult.results.map(r => ({
-            id: r.id,
-            title: r.title,
-            category: r.category,
-            relevanceScore: r.score
-          })),
-          district_baseline: ragResult.districtBaseline,
-          district_contacts: getDistrictContacts(ragResult.districtBaseline),
+          retrieved_sources: citedKnowledgeSources(knowledgeResults, knowledgeContext.includedIds),
+          district_baseline: null,
+          district_contacts: getDistrictContacts(sanitizedDistrict),
           govt_directory: GOVT_OFFICE_DIRECTORY,
           suggested_followups: [
             `Show emergency shelters in ${sanitizedDistrict || 'my district'} on Google Maps`,
@@ -265,7 +313,7 @@ export async function handleChatQuery(input, env = defaultEnv()) {
     try {
       const searchRes = await executeSearchGrounding({
         query: sanitizedQuery,
-        district: sanitizedDistrict || ragResult.districtBaseline?.district || ragResult.districtBaseline?.name,
+        district: sanitizedDistrict,
         contextText,
         env
       });
@@ -277,14 +325,9 @@ export async function handleChatQuery(input, env = defaultEnv()) {
           grounding_type: 'search',
           grounding_sources: searchRes.sources || [],
           search_queries: searchRes.searchQueries || [],
-          retrieved_sources: ragResult.results.map(r => ({
-            id: r.id,
-            title: r.title,
-            category: r.category,
-            relevanceScore: r.score
-          })),
-          district_baseline: ragResult.districtBaseline,
-          district_contacts: getDistrictContacts(ragResult.districtBaseline),
+          retrieved_sources: citedKnowledgeSources(knowledgeResults, knowledgeContext.includedIds),
+          district_baseline: null,
+          district_contacts: getDistrictContacts(sanitizedDistrict),
           govt_directory: GOVT_OFFICE_DIRECTORY,
           suggested_followups: [
             `What is the latest BMD weather warning for ${sanitizedDistrict || 'Bangladesh'}?`,
@@ -340,25 +383,31 @@ fences, no surrounding prose:
 
   const fullUserPrompt = `${contextText}${historyText}${promptTail}`;
 
+  // Citations must match the context the model was actually shown. The knowledge
+  // budget may have dropped documents and the SEC-11 cap above may have cut more;
+  // a response listing six "sources" when three reached the prompt is precisely
+  // the fabrication this pipeline used to be capable of. Match on the document
+  // header that `formatKnowledgeContext` wrote, so this is exact rather than
+  // inferred from a count.
+  const promptCitedKnowledge = knowledgeResults
+    .slice(0, knowledgeContext.includedIds.length)
+    .filter((result, index) => contextText.includes(`[Doc ${index + 1}: ${result.title}`));
+
   // Diagnostics the transports return as `prompt`: tests (and operators) can
   // verify the bound is enforced rather than merely computed.
   const promptStats = { chars: fullUserPrompt.length, truncated: promptTruncated };
 
   // 4. Generate Answer via Multi-Provider HA Fallback Engine with RAG Skills Routing
-  const targetDistrict = district || ragResult.districtBaseline?.district || ragResult.districtBaseline?.name || 'Bangladesh';
-  const detectedHazard = inferHazardTheme(sanitizedQuery, ragResult.districtBaseline);
-
-  let routedSkillsPrompt = '';
-  try {
-    routedSkillsPrompt = routeSkills({
-      district_name: targetDistrict,
-      hazard_type: detectedHazard,
-      severity_score: 0.65,
-      confidence: 0.90
-    });
-  } catch (skillErr) {
-    console.warn('[Chat Service] routeSkills routing warning:', skillErr.message);
-  }
+  const targetDistrict = sanitizedDistrict || 'Bangladesh';
+  // Same routing decision as the retrieval above, projected into the prompt
+  // fragment the system instructions expect — one router, so the documents the
+  // answer is told to cite are the documents that were actually retrieved.
+  const routedSkillsPrompt = routeSkills({
+    district_name: targetDistrict,
+    hazard_type: detectedHazard,
+    severity_score: routedSkills.severity_score,
+    confidence: null
+  });
 
   const effectiveSystemPrompt = routedSkillsPrompt
     ? `${routedSkillsPrompt}\n\n=== ADDITIONAL ADVISOR DIRECTIVES ===\n${systemPrompt}`
@@ -367,8 +416,10 @@ fences, no surrounding prose:
   const aiParams = {
     district_name: targetDistrict,
     hazard_type: detectedHazard,
-    severity_score: 0.65,
-    confidence: 0.90
+    // null, not a plausible-looking constant: this path has no measurement, and
+    // Tier 6 now says so instead of printing a fabricated index.
+    severity_score: null,
+    confidence: null
   };
 
   let aiResponse;
@@ -409,40 +460,39 @@ fences, no surrounding prose:
   }
 
   if (!answerMarkdown) {
-    answerMarkdown = `### 🌾 RAG Knowledge Base Search Results\n\nWe found **${ragResult.results.length} relevant official document(s)** matching your query:\n\n` +
-      ragResult.results.map(r => `#### 📄 ${r.title} (${r.category})\n${r.content.slice(0, 300)}...`).join('\n\n') +
+    answerMarkdown = `### 🌾 RAG Knowledge Base Search Results\n\nWe found **${knowledgeResults.length} relevant knowledge-base document(s)** matching your query:\n\n` +
+      knowledgeResults.map(r => `#### 📄 ${r.title} (${r.category})\n${String(r.body || '').slice(0, 300)}…\n_Authority: ${r.authority}_`).join('\n\n') +
       `\n\n---\n**Emergency Helplines:** DAE Krishi Hotline: **16123** | Disaster Warning: **1090** | Emergency: **999**`;
   }
 
-  // 5. Gather government contacts for district if available
-  let districtContacts = null;
-  if (ragResult.districtBaseline) {
-    districtContacts = {
-      district: ragResult.districtBaseline.district || ragResult.districtBaseline.name,
-      dae_officer: ragResult.districtBaseline.dae_officer || 'Upazila Agriculture Officer (UAO)',
-      dls_officer: ragResult.districtBaseline.dls_officer || 'Upazila Livestock Officer (ULO)',
-      dof_officer: ragResult.districtBaseline.dof_officer || 'Upazila Fisheries Officer (UFO)',
-      dc_control_room: ragResult.districtBaseline.control_room || 'District Disaster Management Control Room',
-      contact_lines: ragResult.districtBaseline.contact_lines || ['16123 (Krishi Call Centre)', '1090 (Disaster Hotline)']
-    };
-  }
+  // 5. Public role directory for the district (no research-derived officer data)
+  const districtContacts = getDistrictContacts(targetDistrict);
 
   return {
     query,
     answer: answerMarkdown,
-    retrieved_sources: ragResult.results.map(r => ({
+    retrieved_sources: promptCitedKnowledge.map(r => ({
       id: r.id,
       title: r.title,
       category: r.category,
-      relevanceScore: r.score
+      authority: r.authority,
+      url: r.url,
+      basis: r.basis,
+      relevanceScore: r.score,
+      snippet: r.snippet,
+      matched: r.matched
     })),
-    district_baseline: ragResult.districtBaseline,
+    // Which retrieval actually ran — bm25 alone, or bm25 + semantic re-ranking —
+    // plus how many retrieved documents made it into the prompt. A degraded
+    // retrieval has to be visible, never silent.
+    retrieval: { ...retrieval, cited: promptCitedKnowledge.length, omitted: knowledgeContext.omitted },
+    district_baseline: null,
     district_contacts: districtContacts,
     govt_directory: GOVT_OFFICE_DIRECTORY,
     routed_skills: {
+      ...routedSkills,
       hazard_category: detectedHazard,
-      routed: Boolean(routedSkillsPrompt),
-      institutional_protocols: ['DAE', 'BRRI', 'BARI', 'DLS', 'DoF', 'BMD', 'BWDB']
+      routed: true
     },
     suggested_followups: followups,
     provider_source: aiResponse?.provider_source || 'HazardNet RAG Knowledge Engine',
