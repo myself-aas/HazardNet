@@ -611,7 +611,7 @@ export const DistrictBriefBody: React.FC = () => {
               <Cpu className="w-4.5 h-4.5" />
             </div>
             <div>
-              <h2 className="text-lg font-black text-carbon-black tracking-tight">
+              <h2 className="text-lg font-black text-carbon-90 tracking-tight">
                 Provenance
               </h2>
               <p className="text-xs text-carbon-60">
@@ -672,7 +672,7 @@ export const DistrictBriefBody: React.FC = () => {
       <section className="end-of-brief-page print-end-of-brief mt-12 pt-8 text-xs font-mono text-carbon-80 space-y-4">
         <hr className="border-t-2 border-carbon-90 w-full mb-4" />
         <div className="text-center space-y-1">
-          <div className="text-xs font-black tracking-widest text-carbon-black uppercase font-mono">End of district brief</div>
+          <div className="text-xs font-black tracking-widest text-carbon-90 uppercase font-mono">End of district brief</div>
           <div className="text-xs text-carbon-60 font-medium">HazardNet Bangladesh • {data.districtName}</div>
         </div>
         <div className="text-center text-xs text-carbon-60 max-w-xl mx-auto space-y-1">

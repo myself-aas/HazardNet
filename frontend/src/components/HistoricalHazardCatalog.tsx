@@ -293,12 +293,12 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
       {/* Phone: one card per record. The table's seven columns are a two-screen sideways scroll
           at 390px, and the darkness of this console panel hides that it exists. */}
       {paginatedRecords.length === 0 ? (
-        <p className="rounded-xl border border-white/15 bg-carbon-black/40 p-6 text-center text-xs text-white/70 md:hidden">
+        <p className="rounded-xl border border-white/15 bg-carbon-black p-6 text-center text-xs text-ap-on-scrim-muted md:hidden">
           No historical records match the filter criteria.
         </p>
       ) : (
         <CardStackRows
-          className="rounded-xl bg-carbon-black/40"
+          className="rounded-xl bg-carbon-black"
           tone="onDark"
           rows={paginatedRecords.map((r) => {
             const hasValidGlide = isValidGlide(r.glide);
@@ -325,9 +325,9 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
         />
       )}
       {/* Catalog Table (md and up) */}
-      <div className="hidden overflow-x-auto border border-carbon-80 rounded-xl bg-carbon-black/40 md:block">
+      <div className="hidden overflow-x-auto border border-carbon-80 rounded-xl bg-carbon-black md:block">
         <table className="w-full text-left text-xs text-ap-on-scrim-muted" role="table">
-          <thead className="bg-carbon-black/90 text-white/70 text-xs uppercase tracking-wider font-semibold border-b border-white/15">
+          <thead className="bg-carbon-black/90 text-ap-on-scrim-muted text-xs uppercase tracking-wider font-semibold border-b border-white/15">
             <tr>
               <th scope="col" className="px-3 py-2.5">Date</th>
               <th scope="col" className="px-3 py-2.5">District</th>

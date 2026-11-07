@@ -83,7 +83,7 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="text-carbon-30 hover:text-white p-1 rounded-lg hover:bg-carbon-80 transition-colors"
+            className="text-carbon-30 hover:text-ap-on-inverse p-1 rounded-lg hover:bg-carbon-80 transition-colors"
             aria-label="Close GLIDE resources popover"
           >
             <X className="h-4 w-4" aria-hidden="true" />
@@ -101,85 +101,85 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
               href={links.reliefweb}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-between p-2.5 rounded-xl bg-carbon-black/60 border border-carbon-80 hover:border-blue-600 hover:bg-carbon-80/60 transition-all text-xs group"
+              className="flex items-center justify-between p-2.5 rounded-xl bg-carbon-black/80 border border-carbon-80 hover:border-blue-600 hover:bg-carbon-black/90 transition-all text-xs group"
             >
               <div className="flex flex-col">
-                <span className="font-semibold text-ap-on-scrim-muted group-hover:text-blue-400">
+                <span className="font-semibold text-ap-on-scrim-muted group-hover:text-ap-primary-on-dark">
                   ReliefWeb Disaster Registry (UN OCHA)
                 </span>
                 <span className="text-xs text-ap-on-scrim-muted">
                   Situation reports, sitreps, humanitarian maps, and appeals
                 </span>
               </div>
-              <ExternalLink className="h-4 w-4 shrink-0 text-ap-on-scrim-muted group-hover:text-blue-400" aria-hidden="true" />
+              <ExternalLink className="h-4 w-4 shrink-0 text-ap-on-scrim-muted group-hover:text-ap-primary-on-dark" aria-hidden="true" />
             </a>
 
             <a
               href={links.fao_giews}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-between p-2.5 rounded-xl bg-carbon-black/60 border border-carbon-80 hover:border-blue-600 hover:bg-carbon-80/60 transition-all text-xs group"
+              className="flex items-center justify-between p-2.5 rounded-xl bg-carbon-black/80 border border-carbon-80 hover:border-blue-600 hover:bg-carbon-black/90 transition-all text-xs group"
             >
               <div className="flex flex-col">
-                <span className="font-semibold text-ap-on-scrim-muted group-hover:text-blue-400">
+                <span className="font-semibold text-ap-on-scrim-muted group-hover:text-ap-primary-on-dark">
                   FAO GIEWS Country Brief (Bangladesh)
                 </span>
                 <span className="text-xs text-ap-on-scrim-muted">
                   Crop prospects, agricultural damage, food security assessment
                 </span>
               </div>
-              <ExternalLink className="h-4 w-4 shrink-0 text-ap-on-scrim-muted group-hover:text-blue-400" aria-hidden="true" />
+              <ExternalLink className="h-4 w-4 shrink-0 text-ap-on-scrim-muted group-hover:text-ap-primary-on-dark" aria-hidden="true" />
             </a>
 
             <a
               href={links.who_emergencies}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-between p-2.5 rounded-xl bg-carbon-black/60 border border-carbon-80 hover:border-blue-600 hover:bg-carbon-80/60 transition-all text-xs group"
+              className="flex items-center justify-between p-2.5 rounded-xl bg-carbon-black/80 border border-carbon-80 hover:border-blue-600 hover:bg-carbon-black/90 transition-all text-xs group"
             >
               <div className="flex flex-col">
-                <span className="font-semibold text-ap-on-scrim-muted group-hover:text-blue-400">
+                <span className="font-semibold text-ap-on-scrim-muted group-hover:text-ap-primary-on-dark">
                   WHO Public Health Emergencies
                 </span>
                 <span className="text-xs text-ap-on-scrim-muted">
                   Disease surveillance, epidemiological alerts, health cluster
                 </span>
               </div>
-              <ExternalLink className="h-4 w-4 shrink-0 text-ap-on-scrim-muted group-hover:text-blue-400" aria-hidden="true" />
+              <ExternalLink className="h-4 w-4 shrink-0 text-ap-on-scrim-muted group-hover:text-ap-primary-on-dark" aria-hidden="true" />
             </a>
 
             <a
               href={links.adrc_registry}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-between p-2.5 rounded-xl bg-carbon-black/60 border border-carbon-80 hover:border-blue-600 hover:bg-carbon-80/60 transition-all text-xs group"
+              className="flex items-center justify-between p-2.5 rounded-xl bg-carbon-black/80 border border-carbon-80 hover:border-blue-600 hover:bg-carbon-black/90 transition-all text-xs group"
             >
               <div className="flex flex-col">
-                <span className="font-semibold text-ap-on-scrim-muted group-hover:text-blue-400">
+                <span className="font-semibold text-ap-on-scrim-muted group-hover:text-ap-primary-on-dark">
                   Asian Disaster Reduction Center (ADRC)
                 </span>
                 <span className="text-xs text-ap-on-scrim-muted">
                   Multilateral GLIDE register and regional catastrophe database
                 </span>
               </div>
-              <ExternalLink className="h-4 w-4 shrink-0 text-ap-on-scrim-muted group-hover:text-blue-400" aria-hidden="true" />
+              <ExternalLink className="h-4 w-4 shrink-0 text-ap-on-scrim-muted group-hover:text-ap-primary-on-dark" aria-hidden="true" />
             </a>
 
             <a
               href={links.ifrc_go}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-between p-2.5 rounded-xl bg-carbon-black/60 border border-carbon-80 hover:border-blue-600 hover:bg-carbon-80/60 transition-all text-xs group"
+              className="flex items-center justify-between p-2.5 rounded-xl bg-carbon-black/80 border border-carbon-80 hover:border-blue-600 hover:bg-carbon-black/90 transition-all text-xs group"
             >
               <div className="flex flex-col">
-                <span className="font-semibold text-ap-on-scrim-muted group-hover:text-blue-400">
+                <span className="font-semibold text-ap-on-scrim-muted group-hover:text-ap-primary-on-dark">
                   IFRC GO Emergency Platform
                 </span>
                 <span className="text-xs text-ap-on-scrim-muted">
                   Red Cross / Red Crescent field operations and DREF emergency appeals
                 </span>
               </div>
-              <ExternalLink className="h-4 w-4 shrink-0 text-ap-on-scrim-muted group-hover:text-blue-400" aria-hidden="true" />
+              <ExternalLink className="h-4 w-4 shrink-0 text-ap-on-scrim-muted group-hover:text-ap-primary-on-dark" aria-hidden="true" />
             </a>
           </div>
         ) : (
