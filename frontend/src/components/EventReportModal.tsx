@@ -98,7 +98,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
         data-testid="event-report-modal"
       >
         {/* Modal Header */}
-        <div className="flex items-start justify-between p-5 border-b border-carbon-80 bg-carbon-black/40">
+        <div className="flex items-start justify-between p-5 border-b border-white/15 bg-carbon-black/90">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="px-2.5 py-0.5 rounded text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
@@ -131,7 +131,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
             <button
               type="button"
               onClick={handleShare}
-              className="p-1.5 text-ap-on-scrim-muted hover:text-white rounded-lg hover:bg-carbon-80 transition-colors"
+              className="p-1.5 text-ap-on-scrim-muted hover:text-white rounded-lg hover:bg-white/10 transition-colors"
               title="Share report"
               aria-label="Share report"
             >
@@ -140,7 +140,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
             <button
               type="button"
               onClick={handlePrint}
-              className="p-1.5 text-ap-on-scrim-muted hover:text-white rounded-lg hover:bg-carbon-80 transition-colors"
+              className="p-1.5 text-ap-on-scrim-muted hover:text-white rounded-lg hover:bg-white/10 transition-colors"
               title="Print report"
               aria-label="Print report"
             >
@@ -149,7 +149,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 text-ap-on-scrim-muted hover:text-white rounded-lg hover:bg-carbon-80 transition-colors"
+              className="p-1.5 text-ap-on-scrim-muted hover:text-white rounded-lg hover:bg-white/10 transition-colors"
               aria-label="Close disaster report modal"
             >
               <X className="h-4 w-4" aria-hidden="true" />
@@ -161,7 +161,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
         <div className="p-5 sm:p-6 overflow-y-auto space-y-6">
           {/* Metadata Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="bg-carbon-black/60 border border-carbon-80 rounded-xl p-3">
+            <div className="bg-carbon-black/80 border border-carbon-80 rounded-xl p-3">
               <span className="text-xs text-ap-on-scrim-muted font-medium">Impacted Districts</span>
               <p className="text-sm font-semibold text-white mt-0.5">
                 {event.location_districts && event.location_districts.length > 0
@@ -170,7 +170,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
               </p>
             </div>
 
-            <div className="bg-carbon-black/60 border border-carbon-80 rounded-xl p-3">
+            <div className="bg-carbon-black/80 border border-carbon-80 rounded-xl p-3">
               <span className="text-xs text-ap-on-scrim-muted font-medium">Affected Population</span>
               <p className="text-sm font-mono font-bold text-ap-on-scrim-sev mt-0.5">
                 {event.validated_affected && event.validated_affected > 0
@@ -179,7 +179,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
               </p>
             </div>
 
-            <div className="bg-carbon-black/60 border border-carbon-80 rounded-xl p-3">
+            <div className="bg-carbon-black/80 border border-carbon-80 rounded-xl p-3">
               <span className="text-xs text-ap-on-scrim-muted font-medium">GEE Observation Window</span>
               <p className="text-xs font-mono text-ap-on-scrim-muted mt-1">
                 {event.gee_start && event.gee_end
@@ -194,7 +194,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
             <h3 className="text-xs font-bold uppercase tracking-wider text-carbon-30 mb-2">
               Humanitarian Situation Report & Grounding Narrative
             </h3>
-            <div className="bg-carbon-black/80 border border-white/15 rounded-xl p-4 text-xs sm:text-sm text-white/80 leading-relaxed max-h-[300px] overflow-y-auto whitespace-pre-line font-sans scrollbar-thin">
+            <div className="bg-carbon-black/80 border border-white/15 rounded-xl p-4 text-xs sm:text-sm text-ap-on-scrim-muted leading-relaxed max-h-[300px] overflow-y-auto whitespace-pre-line font-sans scrollbar-thin">
               {event.full_description || 'No detailed situation report available for this entry.'}
             </div>
           </div>
@@ -212,7 +212,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 rounded-lg bg-carbon-black/60 border border-carbon-80 hover:border-blue-500 hover:bg-carbon-80/50 transition-colors flex items-center justify-between"
+                    className="p-2 rounded-lg bg-carbon-black/80 border border-carbon-80 hover:border-blue-500 hover:bg-carbon-black/90 transition-colors flex items-center justify-between"
                   >
                     <span className="capitalize text-ap-on-scrim-muted">
                       {source.replace('_', ' ')}
@@ -226,7 +226,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 border-t border-carbon-80 bg-carbon-black/40 flex justify-between items-center text-xs">
+        <div className="p-4 border-t border-carbon-80 bg-carbon-black/90 flex justify-between items-center text-xs">
           <span className="text-ap-on-scrim-muted">
             Source: HazardNet Master Multilateral Disaster Catalog
           </span>

@@ -26,14 +26,15 @@ export function getVulnerabilityTier(score: number): VulnerabilityTier {
  * Returns the `text` role: these values are used as ink and as a tinted fill,
  * and the text case is the one with a contrast requirement.
  */
-export function getVulnerabilityColor(score: number): string {
+export function getVulnerabilityColor(score: number, surface: 'light' | 'dark' = 'light'): string {
   const s = Math.max(0, Math.min(1, Number(score) || 0));
+  const ink = surface === 'dark' ? 'onDark' : 'text';
 
-  if (s >= 0.90) return APPLE_SEVERITY.extreme.text;
-  if (s >= 0.80) return APPLE_SEVERITY.veryHigh.text;
-  if (s >= 0.65) return APPLE_SEVERITY.high.text;
-  if (s >= 0.40) return APPLE_SEVERITY.moderate.text;
-  return APPLE_SEVERITY.low.text;
+  if (s >= 0.90) return APPLE_SEVERITY.extreme[ink];
+  if (s >= 0.80) return APPLE_SEVERITY.veryHigh[ink];
+  if (s >= 0.65) return APPLE_SEVERITY.high[ink];
+  if (s >= 0.40) return APPLE_SEVERITY.moderate[ink];
+  return APPLE_SEVERITY.low[ink];
 }
 
 export function formatVulnerabilityScore(score: number): string {

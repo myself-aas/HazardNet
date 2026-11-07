@@ -1,17 +1,14 @@
 /**
  * Contrast gate for the prerendered static shell.
  *
- * Why this exists: the impeccable detector resolves colours without cascading
- * `@media (prefers-color-scheme)`, so on a built page it pairs light-scheme text with
- * dark-scheme backgrounds and reports a failure on every document. That pairing is
- * waived for `frontend/dist/**\/*.html` in docs/design/impeccable-baseline.json, and
- * this file is the check that covers the same risk properly: it reads the generated
- * shell CSS out of frontend/scripts/prerender.mjs, resolves each scheme on its own
- * terms, and computes WCAG 2.1 contrast ratios.
+ * Why this exists: the impeccable detector cannot fully resolve inherited colours
+ * across `@media (prefers-color-scheme)` on prerendered pages. This test reads the
+ * generated shell CSS, resolves each scheme on its own terms, and computes WCAG 2.1
+ * contrast ratios instead of relying on a static text/background pairing.
  *
- * It also covers the case the detector cannot see at all: a colour that is declared once
- * in light mode and left alone in dark mode, which is how the shell shipped a callout
- * whose dark background (#2e2e32) met light-mode slate text at 1.1:1.
+ * It also covers the case the detector cannot see at all: a colour declared once in
+ * light mode and left alone in dark mode, which previously left light-mode slate text
+ * on a dark callout background at 1.1:1.
  */
 
 import { readFileSync } from 'node:fs';

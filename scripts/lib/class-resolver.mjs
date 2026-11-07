@@ -13,13 +13,14 @@
  *      hardcoded): `[data-theme='dark'] .bg-white { background-color: var(--ap-bg-canvas) }`,
  *      the `.bg-white\/NN` panel steps, and their `@media (prefers-color-scheme: dark)`
  *      mirrors. `npm run check:contrast -- --check-css` asserts this model stays honest.
- *   3. Alpha composition: `bg-x/60` paints `rgba(X, 0.6)`, and the scanner can only score
- *      it composited over the page canvas (`CANVAS_DARK` in dark). Veils too translucent to
- *      stand behind (`white/0`–`white/25`, transparent) are skipped by the callers.
+ *   3. Alpha composition: `resolvePaintColor()` preserves each utility's raw RGBA paint so
+ *      the JSX-tree scanner can composite translucent layers through real JSX ancestors.
+ *      `resolve()` remains the flat scanner's isolated-color API, compositing over its
+ *      conventional canvas (or black for black-family scrims).
  *
  * Exports the shared contract both contrast scanners import (they must not disagree about
  * what a class means): RAMP, LITERAL, PANEL_ALPHA_MIN, CANVAS_DARK, relLum, contrast,
- * propOf, isResting, resolve, RESOLVER.
+ * propOf, isResting, resolve, resolvePaintColor, RESOLVER.
  */
 
 import { dirname, join } from 'node:path';
@@ -54,7 +55,7 @@ export const LITERAL = {
   transparent: null,
 };
 
-/** Composite a colour with alpha over the page canvas, one mode. */
+/** Composite a colour for the flat scanner's isolated utility model. */
 const compositeOver = (color, canvas) =>
   toHex([
     color[0] * color[3] + canvas[0] * (1 - color[3]),
@@ -154,42 +155,70 @@ export function isResting(cls) {
 const bare = (cls) => cls.split(':').pop();
 
 /**
- * resolve(cls, mode) → hex the utility paints in that mode, or null when the class is not a
- * colour utility this model can stand behind (arbitrary values, typo'd tokens, non-colour
- * props resolve to null and are skipped by the scanners).
+ * resolve(cls, mode) → the flat scanner's canvas-composited hex, or null when the class is
+ * not a colour utility this model can stand behind (arbitrary values, typo'd tokens, non-colour
+ * props resolve to null and are skipped by the scanners). Use resolvePaintColor() when the
+ * caller needs the raw alpha channel for ancestor-aware composition.
  */
 export function resolve(cls, mode) {
+  const prop = propOf(cls);
+  if (!prop) return null;
+  const rest = bare(cls).slice(prop.length + 1);
+  const alphaMatch = rest.match(/\/(\d{1,3})$/);
+  const name = alphaMatch ? rest.slice(0, alphaMatch.index) : rest;
+  if (name === 'transparent') return null;
+
+  const paint = resolvePaintColor(cls, mode);
+  if (!paint) return null;
+
+  // This compact API is retained for the flat scanner, which scores a utility in isolation.
+  // The JSX-tree checker uses resolvePaintColor() instead, so alpha is composited over the
+  // actual inherited surface rather than an assumed page canvas or black scrim.
+  const ground = name === 'black' || name === 'carbon-black'
+    ? parseColor('#000000')
+    : canvasFor(mode);
+  return compositeOver(paint, ground);
+}
+
+/**
+ * Return the CSS paint as [r, g, b, a], without compositing alpha. The JSX-tree audit
+ * needs the alpha channel so it can layer a translucent background over the actual
+ * ancestor surface (and a translucent foreground over the resulting background).
+ */
+export function resolvePaintColor(cls, mode) {
   const base = bare(cls);
   const prop = propOf(cls);
   if (!prop) return null;
 
   const rest = base.slice(prop.length + 1); // 'white/60', 'carbon-40', 'severity-high-solid'
-  const alphaMatch = rest.match(/^(.*)\/(\d{1,3})$/);
-  const name = alphaMatch ? alphaMatch[1] : rest;
-  const alpha = alphaMatch ? Number(alphaMatch[2]) / 100 : 1;
 
-  // 1. The stylesheet's own dark overrides win (`bg-white`, `bg-white/40`, …).
+  // The stylesheet's own dark overrides win (`bg-white`, `bg-white/40`, …). These raw
+  // values preserve alpha: e.g. a dark `bg-white/40` is 40% of the dark canvas, not a
+  // literal white veil.
   if (mode === 'dark') {
     const raw = DARK_OVERRIDES.get(`${prop}-${rest}`);
     if (raw) {
-      const c = RESOLVER.evaluate(raw, 'dark');
-      if (c) return compositeOver(c, canvasFor('dark'));
+      const color = RESOLVER.evaluate(raw, 'dark');
+      if (color) return color;
     }
   }
 
-  // 2. Literals and the token graph.
-  let hex;
-  if (name === 'white' || name === 'black') hex = LITERAL[name];
-  else hex = RESOLVER.token(name, mode);
-  if (!hex) return null;
+  const alphaMatch = rest.match(/^(.*)\/(\d{1,3})$/);
+  const name = alphaMatch ? alphaMatch[1] : rest;
+  const alpha = alphaMatch ? Math.min(Number(alphaMatch[2]) / 100, 1) : 1;
 
-  // 3. Alpha composition over the ground the veil actually works against: dark-family
-  //    scrims (`bg-black/40`, `bg-carbon-black/60`…) exist to darken imagery, so the score
-  //    is against black in BOTH modes; every other alpha composites over the mode's page
-  //    canvas (apple.css' own white-panel overrides already redirected dark to it).
-  const c = parseColor(hex);
-  if (!c) return null;
-  c[3] = alpha;
-  const ground = name === 'black' || name === 'carbon-black' ? parseColor('#000000') : canvasFor(mode);
-  return compositeOver(c, ground);
+  // Literals and the token graph. Read the raw declaration rather than `token()` so
+  // semantic colours that are themselves translucent retain their own alpha.
+  let color;
+  if (name === 'white' || name === 'black' || name === 'transparent') {
+    color = parseColor(name);
+  } else {
+    const raw = RESOLVER.theme[`--color-${name}`]
+      ?? RESOLVER.vars[mode][`--ap-${name}`]
+      ?? RESOLVER.vars[mode][`--${name}`];
+    color = raw === undefined ? null : RESOLVER.evaluate(raw, mode);
+  }
+  if (!color) return null;
+  color[3] *= alpha;
+  return color;
 }

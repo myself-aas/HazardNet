@@ -21,7 +21,7 @@ export const getRiskColor = (risk: string) => {
   if (risk === 'High') {
     return {
       bg: 'bg-carbon-05 border-carbon-20 text-rose-800',
-      badge: 'bg-[var(--ap-sev-very-high)] text-white',
+      badge: 'bg-[var(--ap-sev-very-high)] text-ap-on-sev',
       bar: 'bg-[var(--ap-sev-very-high)]',
       text: 'text-[var(--ap-sev-very-high)]',
     };
@@ -29,14 +29,14 @@ export const getRiskColor = (risk: string) => {
   if (risk === 'Moderate') {
     return {
       bg: 'bg-amber-50 border-amber-200 text-amber-900',
-      badge: 'bg-[var(--ap-sev-moderate)] text-carbon-black font-bold',
+      badge: 'bg-[var(--ap-sev-moderate)] text-ap-on-sev font-bold',
       bar: 'bg-[var(--ap-sev-moderate)]',
       text: 'text-[var(--ap-sev-moderate)]',
     };
   }
   return {
     bg: 'bg-carbon-05 border-carbon-20 text-emerald-900',
-    badge: 'bg-[var(--ap-sev-low)] text-white',
+    badge: 'bg-[var(--ap-sev-low)] text-ap-on-sev',
     bar: 'bg-[var(--ap-sev-low)]',
     text: 'text-[var(--ap-sev-low)]',
   };

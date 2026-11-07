@@ -47,9 +47,9 @@ export interface CardStackRowsProps {
   /** `md:hidden` by default: the stack is the phone branch. Pass `''` for a stack-only panel. */
   visibility?: string;
   /**
-   * `onDark` for the console panels that are dark in either theme (`bg-carbon-black/40` with
-   * `text-white` rows). The default reads the page's carbon roles; `onDark` reads the panel's,
-   * so a card never inherits near-black ink on a near-black surface.
+   * `onDark` for callers that provide an explicit `bg-carbon-black` surface. Its ink and
+   * separators stay pinned to the scrim palette in both themes instead of inheriting the
+   * inverting carbon ramp.
    */
   tone?: 'default' | 'onDark';
 }
@@ -63,11 +63,11 @@ const TONES = {
     footer: 'border-carbon-20',
   },
   onDark: {
-    list: 'divide-carbon-80/80 border-carbon-80',
-    heading: 'text-white',
-    label: 'text-carbon-50',
-    value: 'text-carbon-30',
-    footer: 'border-carbon-80',
+    list: 'divide-white/15 border-white/15',
+    heading: 'text-ap-on-scrim',
+    label: 'text-ap-on-scrim-muted',
+    value: 'text-ap-on-scrim-muted',
+    footer: 'border-white/15',
   },
 } as const;
 

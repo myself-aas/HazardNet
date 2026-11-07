@@ -1517,7 +1517,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   </div>
 
                   {measurePoints.length === 0 && (
-                    <div className="rounded-lg bg-carbon-80/80 p-2.5 border border-carbon-70 text-xs text-carbon-30 flex items-center gap-2">
+                    <div className="rounded-lg bg-carbon-80 p-2.5 border border-carbon-70 text-xs text-carbon-30 flex items-center gap-2">
                       <MaterialIcon name="touch_app" className="w-4 h-4 shrink-0 text-amber-300" />
                       <span>
                         Click any location on the map to set <strong>Point 1 (Origin)</strong>.
@@ -1526,7 +1526,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   )}
 
                   {measurePoints.length === 1 && (
-                    <div className="rounded-lg bg-carbon-80/80 p-2.5 border border-carbon-70 text-xs text-carbon-30 space-y-1">
+                    <div className="rounded-lg bg-carbon-80 p-2.5 border border-carbon-70 text-xs text-carbon-30 space-y-1">
                       <div className="flex items-center gap-1.5 text-sky-400 font-bold">
                         <MaterialIcon name="location_on" className="w-4 h-4 inline-block align-middle" />
                         <span>Point 1 (Origin):</span>

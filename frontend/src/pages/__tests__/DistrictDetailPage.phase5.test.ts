@@ -43,6 +43,12 @@ describe('DistrictDetailPage Phase 5 contracts', () => {
     expect(body).toMatch(/not an official warning service/i);
   });
 
+  it('uses theme-inverting ink for standalone headings on the page canvas', () => {
+    expect(body).toContain('text-lg font-black text-carbon-90 tracking-tight');
+    expect(body).toContain('text-xs font-black tracking-widest text-carbon-90 uppercase');
+    expect(body).not.toContain('text-carbon-black');
+  });
+
   it('withholds Compound Vulnerability as a chart series', () => {
     expect(source).not.toMatch(/dataKey=["']Compound Vulnerability["']/);
   });

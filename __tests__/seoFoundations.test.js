@@ -104,7 +104,7 @@ maybe('the generated pages', () => {
       const body = textOf(html.slice(html.indexOf('<!--HN_STATIC_START-->'), html.indexOf('<!--HN_STATIC_END-->')));
       expect(body.length).toBeGreaterThan(600);
       for (const section of route.sections ?? []) {
-        if (section.h2) expect(html).toContain(`<h2>${esc(section.h2)}</h2>`);
+        if (section.h2) expect(html).toContain(`>${esc(section.h2)}</h2>`);
       }
       expect(html).toContain('HazardNet is decision support, not an official warning service');
     }

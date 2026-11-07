@@ -18,18 +18,22 @@
  *
  * Deliberately conservative — it reports only what it can stand behind:
  *   • static class strings only. A className built from a ternary or a variable
- *     may differ per state, so the element is treated as painting nothing
- *     rather than guessed at.
- *   • an ancestor whose background is a translucent veil or `bg-transparent`
- *     is skipped, because the true ground is whatever is behind the component.
+ *     may differ per state, so it is not guessed at.
+ *   • translucent color utilities are alpha-composited through the nearest
+ *     opaque JSX ancestor in both theme token graphs.
+ *   • inline-painted surfaces, gradients and background images are skipped;
+ *     component-specific audits own their contrast (the hero scrim has its
+ *     own worst-case-white regression test).
+ *   • aria-hidden decoration and icon-only ink are not treated as text.
  *   • it stops at the component root; it cannot know what a parent component
- *     renders this into.
+ *     renders this into, so a caller-owned surface is never guessed.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { parse } from '@babel/parser';
 import _traverse from '@babel/traverse';
-import { resolve, contrast, isResting, RESOLVER, LITERAL } from './lib/class-resolver.mjs';
+import { resolvePaintColor, contrast, isResting, RESOLVER, LITERAL } from './lib/class-resolver.mjs';
+import { parseColor, toHex } from './lib/token-resolver.mjs';
 
 const traverse = _traverse.default ?? _traverse;
 const AA = 4.5;
@@ -51,21 +55,62 @@ const FAMILIES = [...new Set([
 ])].sort((a, b) => b.length - a.length);
 const RAMP = FAMILIES.map((f) => f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
 const CLS = new RegExp(`^(dark:)?(text|bg)-(${RAMP})(?:-(\\d{2,3}))?(?:/(\\d{1,3}))?$`);
-/**
- * Grounds whose real backdrop is not knowable from the markup: a translucent
- * veil sits on whatever the component was dropped onto — a map tile, a hero
- * photo. Scoring a ratio against the page canvas there would be inventing a
- * number, so contrast is not scored. The STRUCTURAL rule below still applies.
- */
-const UNKNOWABLE = /^(?:dark:)?bg-(?:transparent|[a-z0-9-]+\/\d{1,3})$/;
-/** Grounds that are the same colour in both themes. */
-const FIXED_GROUND = /^(?:dark:)?bg-(?:carbon-black|black|white)(?:\/\d+)?$/;
-
-/** Resolve a utility class to a hex in one theme, or null. Shared with the flat scanner. */
-const colorOf = (cls, mode) => {
-  if (cls.startsWith('dark:') && mode !== 'dark') return null;
-  return resolve(cls, mode);
+/* Custom component surfaces that paint a background without a `bg-*` utility.
+ * Keep this list tied to the corresponding rules in apple.css. */
+const CUSTOM_SURFACES = {
+  'ap-card': '--ap-bg-card',
+  'ap-sheet': '--ap-bg-elevated',
+  'ap-tile-light': '--ap-canvas',
+  'ap-tile-parchment': '--ap-parchment',
+  'ap-tile-dark': '--ap-tile-1',
+  'ap-tile-dark-2': '--ap-tile-2',
+  'ap-tile-dark-3': '--ap-tile-3',
 };
+
+/* Cross-file JSX composition cannot see a caller's shell. These shared modules have verified
+ * mount surfaces at their actual call sites. Route modules use the global canvas as their
+ * fallback because App.tsx's <main> is transparent and html/body paint --ap-bg-canvas; inline,
+ * image, and gradient surfaces are still rejected before that fallback is considered. */
+const ROOT_SURFACES = {
+  // Unresolved text sits on the app canvas or on an opaque/white surface that maps to it.
+  'frontend/src/components/ArticlePage.tsx': '--ap-bg-canvas',
+  'frontend/src/components/Breadcrumbs.tsx': '--ap-bg-canvas',
+  'frontend/src/components/alerts/AlertFilters.tsx': '--ap-bg-canvas',
+  'frontend/src/components/alerts/AlertLevelBadge.tsx': '--ap-bg-canvas',
+  'frontend/src/components/alerts/DataSourceBanner.tsx': '--ap-bg-canvas',
+  'frontend/src/components/alerts/EvidenceCard.tsx': '--ap-bg-canvas',
+  'frontend/src/components/auth/AuthLayout.tsx': '--ap-bg-canvas',
+  'frontend/src/components/auth/AuthSocialButtons.tsx': '--ap-bg-canvas',
+  'frontend/src/components/blog/RequireSuperAdmin.tsx': '--ap-bg-canvas',
+  'frontend/src/components/docs/DocsVisuals.tsx': '--ap-bg-canvas',
+  'frontend/src/components/frontdoor/HazardIndex.tsx': '--ap-bg-canvas',
+  'frontend/src/components/frontdoor/RunVisual.tsx': '--ap-bg-canvas',
+  'frontend/src/components/ReportTemplate.tsx': '--ap-bg-canvas',
+  'frontend/src/components/RiskAnalytics.tsx': '--ap-bg-canvas',
+  'frontend/src/components/StoredForecastPanel.tsx': '--ap-bg-canvas',
+  'frontend/src/components/ui/FloatingControlBar.tsx': '--ap-bg-canvas',
+  'frontend/src/components/ui/KeyFigures.tsx': '--ap-bg-canvas',
+  'frontend/src/components/user/dashboard/ProfileDetails.tsx': '--ap-bg-canvas',
+  'frontend/src/components/WeatherPanel.tsx': '--ap-bg-canvas',
+  'frontend/src/components/DataProcessingSkeleton.tsx': '--ap-bg-canvas',
+
+  // Shared UI mounted inside `.ap-card` panels at every production call site.
+  'frontend/src/components/EmdatComparisonChart.tsx': '--ap-bg-card',
+  'frontend/src/components/FirebaseRealtimeStatus.tsx': '--ap-bg-card',
+  'frontend/src/components/IdentityConnections.tsx': '--ap-bg-card',
+  'frontend/src/components/user/UserAvatarField.tsx': '--ap-bg-card',
+  'frontend/src/components/user/dashboard/AccountSection.tsx': '--ap-bg-card',
+  'frontend/src/components/user/dashboard/OverviewSection.tsx': '--ap-bg-card',
+  'frontend/src/components/user/dashboard/ui.tsx': '--ap-bg-card',
+
+  // Keep mixed-context components unmapped: for example, StatusStrip is also placed over
+  // LiveMapView, while StructuredAdvisoryRenderer has severity-colored and print-only regions.
+  // Existing verified component surfaces.
+  'frontend/src/components/alerts/DistrictAlertTable.tsx': '--ap-bg-canvas',
+  'frontend/src/components/district/DistrictBriefBody.tsx': '--ap-bg-canvas',
+  'frontend/src/components/map/DistrictForecastCard.tsx': '--ap-bg-elevated',
+};
+const PAGE_ROOT_SURFACE = '--ap-bg-canvas';
 
 /**
  * Ink that is correct for a given kind of ground.
@@ -149,6 +194,178 @@ const pick = (entries, prop, mode) => {
   return mode === 'dark' ? dark ?? base : base;
 };
 
+const composite = (front, back) => {
+  const alpha = front[3] ?? 1;
+  return [0, 1, 2].map((i) => front[i] * alpha + back[i] * (1 - alpha)).concat(1);
+};
+
+const attributeValue = (node, name) => {
+  const attr = node.openingElement?.attributes?.find(
+    (a) => a.type === 'JSXAttribute' && a.name?.name === name,
+  );
+  if (!attr?.value) return null;
+  if (attr.value.type === 'StringLiteral') return attr.value.value;
+  if (attr.value.type === 'JSXExpressionContainer') {
+    const expression = attr.value.expression;
+    if (expression.type === 'StringLiteral') return expression.value;
+    if (expression.type === 'BooleanLiteral') return expression.value;
+  }
+  return null;
+};
+
+function isAriaHidden(path) {
+  for (let p = path; p; p = p.parentPath) {
+    if (p.node.type !== 'JSXElement') continue;
+    if (attributeValue(p.node, 'aria-hidden') === true || attributeValue(p.node, 'aria-hidden') === 'true') return true;
+  }
+  return false;
+}
+
+/** Inline-painted surfaces are audited by the component-specific check that defines them.
+ * The hero is one such surface: `heroContrast.test.js` composites its --hero-scrim over
+ * a worst-case white photograph. Do not score its descendants against a farther ancestor. */
+function expressionHasInlineBackground(expression) {
+  if (!expression) return false;
+  if (expression.type === 'ObjectExpression') {
+    return expression.properties.some((property) => {
+      if (property.type === 'SpreadElement') return true;
+      const key = property.key?.name ?? property.key?.value;
+      if (key === 'background' || key === 'backgroundColor' || key === 'backgroundImage') return true;
+      return property.computed || key == null;
+    });
+  }
+  if (expression.type === 'ConditionalExpression') {
+    return expressionHasInlineBackground(expression.consequent)
+      || expressionHasInlineBackground(expression.alternate);
+  }
+  if (expression.type === 'LogicalExpression') return expressionHasInlineBackground(expression.right);
+  if (expression.type === 'TSAsExpression' || expression.type === 'TypeCastExpression') {
+    return expressionHasInlineBackground(expression.expression);
+  }
+  if (expression.type === 'NullLiteral' || expression.type === 'StringLiteral'
+      || expression.type === 'NumericLiteral' || expression.type === 'BooleanLiteral'
+      || (expression.type === 'Identifier' && expression.name === 'undefined')) return false;
+  // A variable, call, or spread result can paint a background the source audit cannot see.
+  return true;
+}
+
+function hasInlineBackground(node) {
+  const attr = node.openingElement?.attributes?.find(
+    (a) => a.type === 'JSXAttribute' && a.name?.name === 'style',
+  );
+  if (!attr?.value || attr.value.type !== 'JSXExpressionContainer') return false;
+  return expressionHasInlineBackground(attr.value.expression);
+}
+
+function hasUnknownImageBackground(classes, mode) {
+  return classes.some(({ cls }) => {
+    if (cls.startsWith('dark:') && mode !== 'dark') return false;
+    const base = cls.split(':').pop();
+    return /^bg-(?:gradient|linear)-/.test(base) || /^bg-\[/.test(base);
+  });
+}
+
+function iconComponents(ast) {
+  const names = new Set(['MaterialIcon']);
+  for (const statement of ast.program.body) {
+    if (statement.type !== 'ImportDeclaration' || statement.source.value !== 'lucide-react') continue;
+    for (const specifier of statement.specifiers) {
+      if (specifier.type === 'ImportSpecifier') names.add(specifier.local.name);
+    }
+  }
+  return names;
+}
+
+const hasWords = (text) => /[\p{L}\p{N}]/u.test(text);
+
+function expressionHasVisibleText(expression, icons) {
+  if (!expression || expression.type === 'JSXEmptyExpression') return false;
+  if (expression.type === 'StringLiteral') return hasWords(expression.value);
+  if (expression.type === 'JSXElement' || expression.type === 'JSXFragment') {
+    return nodeHasVisibleText(expression, icons);
+  }
+  if (expression.type === 'ConditionalExpression') {
+    return expressionHasVisibleText(expression.consequent, icons)
+      || expressionHasVisibleText(expression.alternate, icons);
+  }
+  if (expression.type === 'LogicalExpression') return expressionHasVisibleText(expression.right, icons);
+  if (expression.type === 'SequenceExpression') return expression.expressions.some((part) => expressionHasVisibleText(part, icons));
+  if (expression.type === 'ArrayExpression') return expression.elements.some((part) => expressionHasVisibleText(part, icons));
+  // A variable, call, or member expression in the child position can render a label or value.
+  return true;
+}
+
+function nodeHasVisibleText(node, icons) {
+  if (attributeValue(node, 'aria-hidden') === true || attributeValue(node, 'aria-hidden') === 'true') return false;
+  const name = node.openingElement?.name;
+  const tag = name?.type === 'JSXIdentifier' ? name.name : null;
+  if (tag && (icons.has(tag) || tag === 'title' || tag === 'desc')) return false;
+  if (tag && /^(?:input|select|textarea|option)$/.test(tag)) return true;
+  return (node.children ?? []).some((child) => {
+    if (child.type === 'JSXText') return hasWords(child.value);
+    if (child.type === 'JSXElement' || child.type === 'JSXFragment') return nodeHasVisibleText(child, icons);
+    if (child.type === 'JSXExpressionContainer') return expressionHasVisibleText(child.expression, icons);
+    return false;
+  });
+}
+
+/** Resolve and composite every known background layer up to the nearest opaque surface. */
+function backgroundFor(path, mode, file) {
+  const layers = [];
+  let nearestClass = null;
+  let nearestLine = 0;
+  let customSurface = null;
+  let rootSurfaceToken = null;
+
+  for (let p = path; p; p = p.parentPath) {
+    if (p.node.type !== 'JSXElement') continue;
+    if (hasInlineBackground(p.node)) return { unknown: 'inline background', layers };
+    const classes = classesOf(p.node);
+    if (hasUnknownImageBackground(classes, mode)) return { unknown: 'background image/gradient', layers };
+
+    let entry = pick(classes, 'bg', mode);
+    let layer = entry ? resolvePaintColor(entry.cls, mode) : null;
+    if (!entry) {
+      const custom = classes.find(({ cls }) => Object.hasOwn(CUSTOM_SURFACES, cls));
+      if (custom) {
+        customSurface = custom.cls;
+        layer = RESOLVER.evaluate(`var(${CUSTOM_SURFACES[custom.cls]})`, mode);
+        entry = custom;
+      }
+    }
+    if (!entry) continue;
+    if (!layer) return { unknown: `unresolved background ${entry.cls}`, layers };
+    if ((layer[3] ?? 1) <= 0) continue;
+    if (!nearestClass) {
+      nearestClass = entry.cls;
+      nearestLine = entry.node?.loc?.start.line ?? p.node.loc?.start.line ?? 0;
+    }
+    layers.push(layer);
+    if ((layer[3] ?? 1) >= 1) break;
+  }
+
+  // A component can be mounted on a caller-owned surface; do not assume the page canvas
+  // unless its only real route call site has been explicitly verified above. This keeps
+  // shared components conservative while letting route-owned districts use body.css's root.
+  if (!layers.some((layer) => (layer[3] ?? 1) >= 1)) {
+    const rootToken = ROOT_SURFACES[file]
+      ?? (file.startsWith('frontend/src/pages/') ? PAGE_ROOT_SURFACE : null);
+    const rootSurface = rootToken ? RESOLVER.evaluate(`var(${rootToken})`, mode) : null;
+    if (!rootSurface) return { unknown: 'no known opaque ancestor', layers };
+    rootSurfaceToken = rootToken;
+    layers.push(rootSurface);
+    if (!nearestClass) nearestClass = `root surface ${rootToken}`;
+  }
+
+  // Translucent class backgrounds above the opaque surface are blended in CSS order,
+  // farthest ancestor first. The page canvas is only a numerical safety net behind a
+  // known opaque JSX or call-site surface.
+  const canvas = parseColor(RESOLVER.token('bg-canvas', mode) ?? (mode === 'dark' ? '#000000' : '#ffffff'));
+  let color = canvas;
+  for (let i = layers.length - 1; i >= 0; i -= 1) color = composite(layers[i], color);
+  return { color, nearestClass, nearestLine, customSurface, layers, rootSurfaceToken };
+}
+
 const files = execSync("find frontend/src -name '*.tsx' ! -path '*__tests__*'")
   .toString()
   .trim()
@@ -157,6 +374,13 @@ const files = execSync("find frontend/src -name '*.tsx' ! -path '*__tests__*'")
 
 const problems = [];
 const edits = [];
+const stats = {
+  checkedPairs: 0,
+  skippedUnknown: 0,
+  skippedReasons: {},
+  skippedExamples: [],
+  rootSurfaceUsage: {},
+};
 const wantsFix = process.argv.includes('--fix');
 
 for (const file of files) {
@@ -172,90 +396,70 @@ for (const file of files) {
     continue; // a file we cannot parse is not a file we may report on
   }
 
+  const icons = iconComponents(ast);
   traverse(ast, {
     JSXElement(path) {
+      if (isAriaHidden(path) || !nodeHasVisibleText(path.node, icons)) return;
       const classes = classesOf(path.node);
       if (!classes.length) return;
 
       for (const mode of ['light', 'dark']) {
         const fgEntry = pick(classes, 'text', mode);
         if (!fgEntry) continue;
+        const foreground = resolvePaintColor(fgEntry.cls, mode);
+        if (!foreground || foreground[3] <= 0) continue;
 
-        // Nearest ground that actually paints, STARTING WITH THE ELEMENT
-        // ITSELF. Skipping self here is what let an earlier revision of this
-        // codemod rewrite ink on self-painted panels against the modal scrim
-        // behind them, producing white-on-white.
-        let bgEntry = pick(classes, 'bg', mode);
-        let holder = bgEntry ? path.node : null;
-        if (!bgEntry) {
-          for (let p = path.parentPath; p; p = p.parentPath) {
-            if (p.node.type !== 'JSXElement') continue;
-            const cand = pick(classesOf(p.node), 'bg', mode);
-            if (cand) {
-              bgEntry = cand;
-              holder = p.node;
-              break;
-            }
-          }
+        // Include alpha layers all the way to the nearest opaque ancestor. This is the
+        // important distinction from the flat scan: `text-white/70` on `bg-black/40`
+        // over a theme-inverting card is not white-on-black in both themes.
+        const surface = backgroundFor(path, mode, file);
+        if (surface.rootSurfaceToken) {
+          const key = `${file.replace('frontend/src/', '')}|${surface.rootSurfaceToken}`;
+          stats.rootSurfaceUsage[key] = (stats.rootSurfaceUsage[key] ?? 0) + 1;
         }
-        if (!bgEntry) continue;
-
-        const fg = colorOf(fgEntry.cls, mode);
-        const bg = colorOf(bgEntry.cls, mode);
-        if (!fg || !bg) continue;
-
-        // Structural: a ground that is the same colour in both themes cannot
-        // carry ink that flips. Whatever the backdrop actually is, the pair is
-        // wrong in one of the two themes — no ratio needed to know that.
-        if (mode === 'light' && FIXED_GROUND.test(bgEntry.cls)) {
-          const inkLight = colorOf(fgEntry.cls, 'light');
-          const inkDark = colorOf(fgEntry.cls, 'dark');
-          const groundFixed = colorOf(bgEntry.cls, 'light') === colorOf(bgEntry.cls, 'dark');
-          if (groundFixed && inkLight && inkDark && inkLight !== inkDark) {
-            const fix = remedy(fgEntry.cls, bgEntry.cls);
-            problems.push({
+        if (surface.unknown || !surface.color) {
+          stats.skippedUnknown += 1;
+          const reason = surface.unknown ?? 'unresolved surface';
+          stats.skippedReasons[reason] = (stats.skippedReasons[reason] ?? 0) + 1;
+          if (stats.skippedExamples.length < 100) {
+            stats.skippedExamples.push({
               file: file.replace('frontend/src/', ''),
               line: path.node.loc?.start.line ?? 0,
-              mode: 'both',
-              pair: `${fgEntry.cls} inside ${bgEntry.cls}`,
-              detail: `ink flips ${inkLight}→${inkDark} on a ground that never flips`,
-              ancestorLine: holder?.loc?.start.line ?? 0,
-              fix,
+              mode,
+              foreground: fgEntry.cls,
+              reason,
             });
-            if (fix) {
-              edits.push({
-                file, start: fgEntry.node.start, end: fgEntry.node.end,
-                from: fgEntry.cls,
-                to: fgEntry.cls.startsWith('dark:') ? `dark:${fix}` : fix,
-              });
-            }
-            continue;
           }
+          continue;
         }
+        stats.checkedPairs += 1;
+        const paintedForeground = composite(foreground, surface.color);
+        const fgHex = toHex(paintedForeground);
+        const bgHex = toHex(surface.color);
+        const ratio = contrast(fgHex, bgHex);
+        if (ratio === null || ratio >= AA) continue;
 
-        if (UNKNOWABLE.test(bgEntry.cls)) continue;
-
-        const ratio = contrast(fg, bg);
-        if (ratio < AA) {
-          const fix = remedy(fgEntry.cls, bgEntry.cls);
-          problems.push({
-            file: file.replace('frontend/src/', ''),
-            line: path.node.loc?.start.line ?? 0,
-            mode,
-            pair: `${fgEntry.cls} inside ${bgEntry.cls}`,
-            detail: `${fg} on ${bg} = ${ratio.toFixed(2)}:1 (AA needs ${AA})`,
-            ancestorLine: holder?.loc?.start.line ?? 0,
-            fix,
+        const translucentLayer = surface.layers.some((layer) => (layer[3] ?? 1) < 1);
+        const fix = !translucentLayer && surface.nearestClass
+          ? remedy(fgEntry.cls, surface.nearestClass)
+          : null;
+        problems.push({
+          file: file.replace('frontend/src/', ''),
+          line: path.node.loc?.start.line ?? 0,
+          mode,
+          pair: `${fgEntry.cls} over ${surface.nearestClass ?? 'page canvas'}`,
+          detail: `${fgHex} on ${bgHex} = ${ratio.toFixed(2)}:1 (AA needs ${AA})`,
+          ancestorLine: surface.nearestLine ?? 0,
+          fix,
+        });
+        if (fix) {
+          edits.push({
+            file,
+            start: fgEntry.node.start,
+            end: fgEntry.node.end,
+            from: fgEntry.cls,
+            to: fgEntry.cls.startsWith('dark:') ? `dark:${fix}` : fix,
           });
-          if (fix) {
-            edits.push({
-              file,
-              start: fgEntry.node.start,
-              end: fgEntry.node.end,
-              from: fgEntry.cls,
-              to: fgEntry.cls.startsWith('dark:') ? `dark:${fix}` : fix,
-            });
-          }
         }
       }
     },
@@ -290,16 +494,34 @@ if (wantsFix) {
 }
 
 if (process.argv.includes('--json')) {
-  console.log(JSON.stringify({ total: problems.length, problems }, null, 2));
+  console.log(JSON.stringify({
+    total: problems.length,
+    checkedPairs: stats.checkedPairs,
+    skippedUnknown: stats.skippedUnknown,
+    skippedReasons: stats.skippedReasons,
+    skippedExamples: stats.skippedExamples,
+    rootSurfaceUsage: stats.rootSurfaceUsage,
+    problems,
+  }, null, 2));
   process.exit(0);
 }
+
+const skippedSummary = Object.entries(stats.skippedReasons)
+  .map(([reason, count]) => `${count} ${reason}`)
+  .join(', ');
 
 if (!problems.length) {
-  console.log(`✅ ${files.length} components: inherited backgrounds contrast in both themes.`);
+  console.log(`✅ ${files.length} component files: ${stats.checkedPairs} foreground/background pairs checked across both themes; no AA findings.`);
+  if (stats.skippedUnknown) {
+    console.log(`   ${stats.skippedUnknown} candidate pair(s) skipped because the surface could not be modeled: ${skippedSummary}.`);
+  }
   process.exit(0);
 }
 
-console.log(`${problems.length} inherited-background contrast problem(s):\n`);
+console.log(`${problems.length} inherited-background contrast problem(s) among ${stats.checkedPairs} checked pair(s):\n`);
+if (stats.skippedUnknown) {
+  console.log(`${stats.skippedUnknown} candidate pair(s) skipped because the surface could not be modeled: ${skippedSummary}.\n`);
+}
 const byPair = {};
 for (const p of problems) (byPair[p.pair] ??= []).push(p);
 for (const [pair, hits] of Object.entries(byPair).sort((a, b) => b[1].length - a[1].length)) {
