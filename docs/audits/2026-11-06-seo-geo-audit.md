@@ -35,3 +35,18 @@ access), GEO structure, traditional meta templates — applied to the shipped ar
 ## Verification
 
 `tsc` clean; frontend 84/84 suites (792 tests); production build ships the OG image.
+
+## Addendum — full seo-geo checklist pass (references/seo-checklist.md)
+
+- P0: robots allows pages, HTTPS, mobile-responsive, no critical noindex, unique 50–60-char
+  titles on new routes, unique 150–160-char descriptions, single H1 with keyword — all ✅
+- P1: AI bots allowed (wildcard + Content-Signal policy), sitemap submitted in robots.txt,
+  canonicals, FAQPage/Dataset/Organization/WebPage + BreadcrumbList (`breadcrumbNode` in
+  `lib/structuredData.js`) + Article schema on blog posts, dateModified on routes — ✅
+- P2: og:title/description/type/url/image (1424×752 raster card, dims+alt meta), all
+  twitter:* tags, short paragraphs, lists/tables, descriptive image names, external
+  `target="_blank"` links carry `rel="noopener noreferrer"` — ✅
+- GEO: statistics with artifact provenance, answer-first reference pages, llms.txt, no
+  keyword stuffing — ✅
+- Remaining are external/monitoring: Rich Results validation, site: indexing checks, backlink
+  profile, monthly AI-citation tracking.
