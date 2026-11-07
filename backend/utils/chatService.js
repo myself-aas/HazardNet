@@ -13,6 +13,9 @@
  */
 
 import { routeSkills, routeSkillsStructured, GOVT_OFFICE_DIRECTORY, retrieveKnowledge, formatKnowledgeContext } from '../services/knowledge/index.js';
+import { runAgent } from '../agent/loop.js';
+import { detectDistrict } from '../agent/planner.js';
+import { reviewAnswer } from '../agent/review.js';
 import { generateAdvisoryWithFallback } from './ai_fallback_engine.js';
 import { detectGroundingIntent, executeMapsGrounding, executeSearchGrounding } from './gemini_grounding.js';
 import { defaultEnv } from './runtimeEnv.js';
@@ -160,6 +163,34 @@ export function directoryHandler(_req, res) {
 }
 
 /**
+ * The agent trace as the response carries it: what was planned, what ran, what
+ * each call returned, and what it cost. Kept free of raw artifact payloads —
+ * those are large, and the digests are what an operator needs.
+ */
+function agentTrace(agent) {
+  return {
+    enabled: agent.enabled,
+    reason: agent.reason,
+    goal: agent.plan?.goal ?? null,
+    district: agent.plan?.district ?? null,
+    hazard: agent.plan?.hazard ?? null,
+    intents: agent.plan?.intents ?? [],
+    steps: (agent.steps ?? []).map((step) => ({
+      step: step.step,
+      tool: step.tool,
+      args: step.args ?? null,
+      purpose: step.purpose ?? null,
+      ok: Boolean(step.ok),
+      digest: step.digest ?? null,
+      skipped: step.skipped ?? null,
+      error: step.error ?? null,
+      ms: step.ms ?? null,
+    })),
+    tools_called: (agent.steps ?? []).filter((step) => step.ok).map((step) => step.tool),
+  };
+}
+
+/**
  * Project retrieved documents into the response's citation shape, limited to the
  * documents `formatKnowledgeContext` actually placed in the prompt.
  */
@@ -208,14 +239,19 @@ function getDistrictContacts(district = null) {
  * @param {Record<string, unknown>} [env] runtime environment — `process.env` on Node
  *   (the default, so the Express route and the `serverless/*` twins are unchanged)
  *   and `context.env` on the Pages Function (`functions/api/chat/query.ts`), which
- *   has no `process` global.
+ *   has no `process` global. On Pages this also carries the `ASSETS` binding the
+ *   agent's tool pack reads public artifacts through.
+ * @param {{assets?: object}} [options] `assets` is a public artifact reader for
+ *   Node runtimes (`createNodeAssetReader()`), where there is no `ASSETS` binding.
+ *   Without it the agent reports itself disabled and the answer proceeds on the
+ *   knowledge base alone — it never throws.
  * @returns {Promise<object>} JSON body identical to the historical contract:
  *   { query, answer, retrieved_sources, district_baseline, district_contacts,
  *     govt_directory, suggested_followups, provider_source, cached }
  * @throws {Error} message is safe to surface; validation errors carry
  *   `statusCode` (400) so transports can map them to HTTP codes.
  */
-export async function handleChatQuery(input, env = defaultEnv()) {
+export async function handleChatQuery(input, env = defaultEnv(), options = {}) {
   const { query, district, conversationHistory = [], groundingMode = 'auto', userCoordinates } = input || {};
 
   if (!query || typeof query !== 'string' || query.trim() === '') {
@@ -268,6 +304,27 @@ export async function handleChatQuery(input, env = defaultEnv()) {
   contextText += `\n=== OFFICIAL DIRECTORY (verify against these lines, do not invent numbers) ===\n`;
   contextText += JSON.stringify(GOVT_OFFICE_DIRECTORY, null, 2) + '\n';
 
+  // 2b. Agent loop: think, plan, act, check. Reads the published artifacts
+  //     through the same read-only MCP tool pack that serves /mcp, so the agent
+  //     and the public API can never disagree about what the data says. The
+  //     trace goes back in the response — an answer is only checkable if you can
+  //     see which tool produced which number.
+  const agent = await runAgent({
+    query: sanitizedQuery,
+    district: routedSkills.skill === 'Multi-Hazard' ? sanitizedDistrict : (detectDistrict(sanitizedQuery, sanitizedDistrict)),
+    skill: routedSkills.skill,
+    env,
+    assets: options?.assets ?? null,
+    request: options?.request ?? null,
+  });
+
+  if (agent.digest) {
+    contextText += `\n${agent.digest}`;
+    contextText += `Read these figures as the artifacts state them. An empty result means no row was published for that district, hazard and date — never that there is no risk.\n`;
+  } else if (agent.reason) {
+    contextText += `\n=== LIVE DATA ===\nNot read (${agent.reason}). Do not describe current conditions.\n`;
+  }
+
   // 3. Detect Grounding Intent (Maps vs Search vs Standard RAG)
   const intent = detectGroundingIntent(sanitizedQuery, groundingMode);
 
@@ -298,6 +355,7 @@ export async function handleChatQuery(input, env = defaultEnv()) {
             'What is the hotline for livestock emergency?',
             'Find nearest DAE Upazila Agriculture Office'
           ],
+          agent: agentTrace(agent),
           provider_source: mapsRes.provider,
           cached: false,
           prompt: { chars: sanitizedQuery.length, truncated: false }
@@ -334,6 +392,7 @@ export async function handleChatQuery(input, env = defaultEnv()) {
             'What are the active flood danger levels from FFWC?',
             'Recommended recovery steps for submerged crops'
           ],
+          agent: agentTrace(agent),
           provider_source: searchRes.provider,
           cached: false,
           prompt: { chars: sanitizedQuery.length, truncated: false }
@@ -468,6 +527,11 @@ fences, no surrounding prose:
   // 5. Public role directory for the district (no research-derived officer data)
   const districtContacts = getDistrictContacts(targetDistrict);
 
+  // 6. Check the answer against the evidence before it leaves. This flags, it
+  //    does not rewrite: the flags travel in the response so the UI can surface
+  //    them and an operator can see exactly which claim had no source.
+  const review = reviewAnswer({ answer: answerMarkdown, agent, knowledge: promptCitedKnowledge });
+
   return {
     query,
     answer: answerMarkdown,
@@ -482,6 +546,7 @@ fences, no surrounding prose:
       snippet: r.snippet,
       matched: r.matched
     })),
+    agent: { ...agentTrace(agent), review },
     // Which retrieval actually ran — bm25 alone, or bm25 + semantic re-ranking —
     // plus how many retrieved documents made it into the prompt. A degraded
     // retrieval has to be visible, never silent.

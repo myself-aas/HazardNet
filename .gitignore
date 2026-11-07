@@ -112,7 +112,11 @@ manuscript/
 # agent skill installers (npx skills) — tooling artifacts, not product
 .agents/
 .claude/
-agent/
+# Anchored to the repo root on purpose. Unanchored, `agent/` also matched
+# `backend/agent/` — product source for the support agent — so those files were
+# silently untracked and would have vanished from every commit. If an installer
+# ever writes a nested `agent/`, add a rule for that path explicitly.
+/agent/
 data/skills/
 skills/
 skills-lock.json

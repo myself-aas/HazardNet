@@ -54,8 +54,12 @@ describe('chat prompt bounds', () => {
 
     const prompt = promptOfLastCall();
     expect(prompt.length).toBeLessThanOrEqual(MAX_PROMPT_CHARS);
-    // 3000 chars of query plus context/history/instructions — nowhere near 50 000.
-    expect(prompt.length).toBeLessThan(6_000);
+    // 3000 chars of query, plus context, the official directory, instructions and
+    // the agent's live-data digest — nowhere near 50 000. The digest is why this
+    // is not 6 000: the Express route supplies a public artifact reader, so the
+    // agent runs and a short summary of what it read joins the prompt. That is
+    // the intended behaviour; MAX_PROMPT_CHARS above is the bound that matters.
+    expect(prompt.length).toBeLessThan(7_000);
     expect(res.body.prompt.chars).toBe(prompt.length);
   });
 

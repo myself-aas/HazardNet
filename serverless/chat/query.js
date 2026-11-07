@@ -26,12 +26,15 @@ export default async function handler(req, res) {
   // Lazy: the chat service graph (Gemini clients, grounding) never cold-starts for a
   // sample-questions request on the sibling route.
   const { handleChatQuery } = await import('../../backend/utils/chatService.js');
+  // No Cloudflare ASSETS binding here, so the agent's tool pack gets the Node
+  // reader for the same allow-listed public artifacts.
+  const { createNodeAssetReader } = await import('../../backend/mcp/nodeAdapter.js');
 
   try {
     const { query, district, conversationHistory, groundingMode, userCoordinates } = req.body || {};
     const payload = await handleChatQuery({
       query, district, conversationHistory, groundingMode, userCoordinates,
-    });
+    }, undefined, { assets: createNodeAssetReader(process.cwd()) });
     res.setHeader('Cache-Control', 'no-store');
     return res.status(200).json(payload);
   } catch (err) {
