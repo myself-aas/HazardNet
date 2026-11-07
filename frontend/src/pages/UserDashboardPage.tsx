@@ -218,7 +218,7 @@ const UserDashboardPage: React.FC = () => {
             </div>
           )}
           <div className="min-w-0">
-            <h1 className="text-ap-lead font-bold leading-tight tracking-tight text-carbon-90">
+            <h1 className="text-2xl font-bold leading-tight tracking-tight text-carbon-90 sm:text-3xl">
               {userProfile?.displayName || user?.email?.split('@')[0] || 'Welcome'}
             </h1>
             <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm text-carbon-60">

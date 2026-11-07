@@ -10,6 +10,7 @@ import { buildPublicDailySnapshot } from '../backend/utils/dailyAdvisoryPublic.j
 import { projectDailyInput } from '../scripts/build_public_daily_advisories.mjs';
 import { checkPublicDailyAsset } from '../scripts/check_public_daily_asset.mjs';
 import {
+  AUDIT_NAME,
   CSV_NAME, DATASET, RUN_NAME, fetchReadyDailyDataset, pinnedDownloadUrl,
   readyDatasetVersion,
 } from '../scripts/fetch_kaggle_daily_public.mjs';
@@ -105,6 +106,7 @@ describe('version-pinned Kaggle daily public fetch (synthetic HTTP only)', () =>
         `/api/v1/datasets/view/${DATASET}`,
         `/api/v1/datasets/download/${DATASET}/${CSV_NAME}`,
         `/api/v1/datasets/download/${DATASET}/${RUN_NAME}`,
+        `/api/v1/datasets/download/${DATASET}/${AUDIT_NAME}`,
         `/api/v1/datasets/view/${DATASET}`,
       ]);
       assert(calls.every(({ headers }) => headers.authorization === `Basic ${Buffer.from('user:test-secret').toString('base64')}`));

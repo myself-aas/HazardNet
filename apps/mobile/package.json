@@ -27,6 +27,7 @@
     "@tanstack/react-query": "^5.103.2",
     "expo": "~51.0.28",
     "expo-constants": "~16.0.2",
+    "expo-dev-client": "~5.0.15",
     "expo-device": "~6.0.2",
     "expo-file-system": "~17.0.1",
     "expo-haptics": "~12.0.1",

@@ -21,6 +21,7 @@ import { readDailyCsv } from './build_public_daily_advisories.mjs';
 export const DATASET = 'ashifahmedshuvo/hazardnet-weekly-forecasts';
 export const CSV_NAME = 'hazardnet_advisories_latest.csv';
 export const RUN_NAME = 'hazardnet_advisories_latest.run.json';
+export const AUDIT_NAME = 'HazardNet_Audit_Report.md';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const PUBLIC_ASSET = fileURLToPath(new URL('../frontend/public/data/daily-advisories-v1.json', import.meta.url));
 const VERSION_JSON = resolve(ROOT, 'Models/VERSION.json');
@@ -28,6 +29,7 @@ const API_BASE = 'https://www.kaggle.com';
 const MAX_ARCHIVE_BYTES = 15 * 1024 * 1024;
 const MAX_CSV_BYTES = 10 * 1024 * 1024;
 const MAX_RUN_BYTES = 64 * 1024;
+const MAX_AUDIT_BYTES = 512 * 1024;
 
 function canonicalModelVersion() {
   try {
@@ -61,7 +63,7 @@ function datasetVersionTimestamp(metadata) {
 }
 
 export function pinnedDownloadUrl(name, version, { dataset = DATASET, base = API_BASE } = {}) {
-  if (![CSV_NAME, RUN_NAME].includes(name) || !Number.isSafeInteger(version) || version < 1) {
+  if (![CSV_NAME, RUN_NAME, AUDIT_NAME].includes(name) || !Number.isSafeInteger(version) || version < 1) {
     throw new Error('Invalid versioned Kaggle file request');
   }
   return `${base}/api/v1/datasets/download/${dataset}/${encodeURIComponent(name)}?datasetVersionNumber=${version}`;
@@ -163,11 +165,14 @@ export async function fetchReadyDailyDataset({
   }
   if (current?.run.sourceDatasetVersion === version) return { status: 'unchanged', version };
 
-  const [rawCsvBody, rawRunBody] = await Promise.all([
+  const [rawCsvBody, rawRunBody, rawAuditBody] = await Promise.all([
     boundedRequest(pinnedDownloadUrl(CSV_NAME, version, { dataset, base }), {
       fetchImpl, headers, maxBytes: MAX_ARCHIVE_BYTES,
     }),
     boundedRequest(pinnedDownloadUrl(RUN_NAME, version, { dataset, base }), {
+      fetchImpl, headers, maxBytes: MAX_ARCHIVE_BYTES, allowNotFound: true,
+    }),
+    boundedRequest(pinnedDownloadUrl(AUDIT_NAME, version, { dataset, base }), {
       fetchImpl, headers, maxBytes: MAX_ARCHIVE_BYTES, allowNotFound: true,
     }),
   ]);
@@ -218,6 +223,10 @@ export async function fetchReadyDailyDataset({
   }
   writeFileSync(resolve(dir, CSV_NAME), csvBody, { flag: 'wx', mode: 0o600 });
   writeFileSync(resolve(dir, RUN_NAME), runJsonBytes, { flag: 'wx', mode: 0o600 });
+  if (rawAuditBody !== null) {
+    const auditBody = decodeKaggleFile(rawAuditBody, AUDIT_NAME, MAX_AUDIT_BYTES);
+    writeFileSync(resolve(dir, AUDIT_NAME), auditBody, { flag: 'wx', mode: 0o600 });
+  }
   writeFileSync(resolve(dir, 'dataset-version.txt'), `${version}\n`, { flag: 'wx', mode: 0o600 });
   return { status: 'fetched', version, runId: verified.run_id };
 }

@@ -162,6 +162,7 @@ export const DRAWER_SECTIONS: NavSection[] = [
       { id: 'pipeline', title: 'Pipeline', path: '/analytics/pipeline-status', icon: 'alt_route' },
       { id: 'history', title: 'History', path: '/analytics/historical', icon: 'history' },
       { id: 'status', title: 'Status', path: '/status', icon: 'monitor_heart' },
+      { id: 'reports', title: 'Daily reports', path: '/reports', icon: 'article' },
     ],
   },
   {

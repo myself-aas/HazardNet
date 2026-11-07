@@ -144,6 +144,9 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
     setMeta('property', 'og:type', ogType);
     setMeta('property', 'og:url', canonicalUrl);
     setMeta('property', 'og:image', ogImage);
+    setMeta('property', 'og:image:width', '1424');
+    setMeta('property', 'og:image:height', '752');
+    setMeta('property', 'og:image:alt', 'HazardNet: multi-hazard early warning for Bangladesh agriculture');
     setMeta('property', 'og:locale', locale);
     setMeta('property', 'og:locale:alternate', alternateLocale);
     setMeta('property', 'og:site_name', 'HazardNet');

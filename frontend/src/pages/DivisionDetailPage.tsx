@@ -582,7 +582,7 @@ export const DivisionDetailPage: React.FC = () => {
                     }}
                   />
                   <Legend wrapperStyle={{ paddingTop: '8px' }} />
-                  <ReferenceLine y={25} stroke="var(--ap-sev-medium)" strokeDasharray="4 4" />
+                  <ReferenceLine y={25} stroke="var(--ap-sev-moderate)" strokeDasharray="4 4" />
                   <ReferenceLine y={50} stroke="var(--ap-sev-high)" strokeDasharray="4 4" />
                   <Area
                     type="monotone"
@@ -614,7 +614,7 @@ export const DivisionDetailPage: React.FC = () => {
                     }}
                   />
                   <Legend wrapperStyle={{ paddingTop: '8px' }} />
-                  <Bar dataKey="WATCH+ Districts" stackId="tiers" fill="var(--ap-sev-medium)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="WATCH+ Districts" stackId="tiers" fill="var(--ap-sev-moderate)" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="Normal Districts" stackId="tiers" fill="var(--ap-separator-opaque)" />
                 </BarChart>
               ) : (
@@ -704,9 +704,9 @@ export const DivisionDetailPage: React.FC = () => {
                     }}
                   />
                   <Legend wrapperStyle={{ paddingTop: '8px' }} />
-                  <ReferenceLine y={25} stroke="var(--ap-sev-medium)" strokeDasharray="4 4" />
+                  <ReferenceLine y={25} stroke="var(--ap-sev-moderate)" strokeDasharray="4 4" />
                   <Bar dataKey="Published Peak (0-100)" fill="var(--ap-primary)" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Model Index (0-100)" fill="var(--ap-sev-medium)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Model Index (0-100)" fill="var(--ap-sev-moderate)" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="Physics Index (0-100)" fill="var(--ap-sev-low)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>

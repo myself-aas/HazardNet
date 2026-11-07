@@ -15,7 +15,7 @@ import MaterialIcon from './MaterialIcon';
  *     or e-mail and claims nothing until the visitor has actually opened one;
  *   · the one sentence that matters most on an early-warning site — it is not an official warning service, and who to
  *     call — is in every footer, not only on /alerts.
- * The back-to-top button sits bottom-LEFT so it can never cover the chat button.
+ * The back-to-top button sits bottom-LEFT, raised above the full-width chat bar so the two never overlap.
  */
 
 interface FooterLink {
@@ -190,7 +190,7 @@ export const Footer: React.FC = () => {
             const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
             window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
           }}
-          className="fixed bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] left-[max(1rem,env(safe-area-inset-left,0px))] z-[var(--ap-z-sticky)] flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-carbon-20 bg-white text-carbon-80 shadow-md transition-colors hover:bg-carbon-05 sm:left-[max(1.5rem,env(safe-area-inset-left,0px))]"
+          className="fixed bottom-[max(5.75rem,calc(env(safe-area-inset-bottom,0px)+5.75rem))] left-[max(1rem,env(safe-area-inset-left,0px))] z-[var(--ap-z-sticky)] flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-carbon-20 bg-white text-carbon-80 shadow-md transition-colors hover:bg-carbon-05 sm:left-[max(1.5rem,env(safe-area-inset-left,0px))]"
           title="Back to top"
           aria-label="Scroll to top"
         >

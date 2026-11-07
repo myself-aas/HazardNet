@@ -135,8 +135,10 @@ describe('four-state checklist', () => {
       // 2026-10-05: +1 fetch page — the run card moved from the front-door hero to /last-run,
       // which reads the freshness and alert artifacts at the page level.
       // 2026-11-01: +1 fetch page for the public-only daily district outlook.
-      byData: { fetch: 23, mutation: 7, static: 7 },
-      pages: 37,
+      // 2026-11-06: +2 fetch pages — /reports (and /reports/:date) and /reports/archive,
+      // both reading the committed report artifacts.
+      byData: { fetch: 25, mutation: 7, static: 7 },
+      pages: 39,
       absent: 0,
     });
     // No page is allowed to fall back to `absent`: the five cells that used to be open (Dashboard

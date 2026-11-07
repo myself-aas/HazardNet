@@ -49,7 +49,7 @@ describe('the footer on a phone', () => {
     fireEvent.scroll(window);
 
     const button = screen.getByRole('button', { name: /scroll to top/i });
-    expect(button.className).toContain('bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))]');
+    expect(button.className).toContain('bottom-[max(5.75rem,calc(env(safe-area-inset-bottom,0px)+5.75rem))]');
     expect(button.className).toContain('left-[max(1rem,env(safe-area-inset-left,0px))]');
 
     fireEvent.click(button);

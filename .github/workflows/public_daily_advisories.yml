@@ -76,6 +76,10 @@ jobs:
           SNAPSHOT_SOURCE="Kaggle_Daily_Advisory (public_daily_advisories.yml, dataset v$VERSION)" \
             node scripts/sync_daily_to_forecasts.mjs \
               --from-daily-json frontend/public/data/daily-advisories-v1.json
+          node scripts/build_daily_report.mjs \
+            --snapshot frontend/public/data/daily-advisories-v1.json \
+            --audit /tmp/hazardnet-daily-public/HazardNet_Audit_Report.md \
+            --out-dir frontend/public/reports
           node scripts/capture_edge_fixtures.mjs
           npx jest --ci --runInBand --silent \
             __tests__/dailyAdvisoryPublic.test.js \

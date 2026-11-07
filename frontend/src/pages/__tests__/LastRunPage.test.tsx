@@ -82,9 +82,11 @@ describe('the last-run page', () => {
     renderPage();
 
     const card = await screen.findByTestId('last-run-visual');
-    // The snapshot this deployment ships assesses 64 district trajectories and publishes 61
-    // alerts; the card says what the run published, with the evidence chain each one carries.
-    expect(await within(card).findByText(/61 alerts are published from this run/)).toBeInTheDocument();
+    // The snapshot this deployment ships assesses 64 district trajectories and publishes its
+    // WATCH+ alerts; the card says what the run published, with the evidence chain each one carries.
+    const alertCounts = (ALERTS as { counts: Record<string, number> }).counts;
+    const published = (alertCounts.WATCH || 0) + (alertCounts.WARNING || 0) + (alertCounts.SEVERE || 0);
+    expect(await within(card).findByText(new RegExp(`${published} alerts are published from this run`))).toBeInTheDocument();
     expect(within(card).getByText(/each one carries its evidence/)).toBeInTheDocument();
   });
 

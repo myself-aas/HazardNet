@@ -1,0 +1,30 @@
+# HazardNet
+
+HazardNet is a public multi-hazard early-warning service for Bangladesh agriculture. It publishes continuous 15-day daily outlooks for all 64 districts of Bangladesh across 8 hazards (cold wave, drought, fire, flash flood, flood, heat wave, severe local storm, tropical cyclone), with continuous severity scoring, district-level advisories, and full provenance for every published number.
+
+HazardNet is not an official warning service. For emergencies, follow the Bangladesh Meteorological Department and national disaster-management bulletins.
+
+## Key pages
+
+- Live map and forecasts: https://www.hazardnet.live/live
+- Alerts: https://www.hazardnet.live/alerts
+- Daily advisories by sector: https://www.hazardnet.live/advisories
+- Daily reports (auto-published from the verified Kaggle dataset): https://www.hazardnet.live/reports
+- Daily report archive: https://www.hazardnet.live/reports/archive
+- District pages: https://www.hazardnet.live/districts
+- Hazard methodology: https://www.hazardnet.live/hazards
+- Model card and known limitations: https://www.hazardnet.live/model
+- Methodology: https://www.hazardnet.live/methodology
+- Data sources: https://www.hazardnet.live/data-sources
+- FAQ: https://www.hazardnet.live/faq
+- System status and data freshness: https://www.hazardnet.live/status
+
+## Data provenance
+
+Daily advisories are published by an automated pipeline from a versioned Kaggle dataset (ashifahmedshuvo/hazardnet-weekly-forecasts). Every published snapshot records the dataset version, run id, generation time, and input SHA-256. The machine-readable snapshot is served at https://www.hazardnet.live/data/daily-advisories-v1.json and the alert artifact at https://www.hazardnet.live/data/alerts-latest.json.
+
+## For agents
+
+- robots.txt: https://www.hazardnet.live/robots.txt (search discovery allowed; AI training and AI-input uses are opted out via Content-Signal)
+- Sitemap: https://www.hazardnet.live/sitemap.xml
+- All public pages are prerendered to static HTML; no JavaScript is required to read content.
