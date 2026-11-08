@@ -1,5 +1,5 @@
 /* Provenance — required by __tests__/testQuality.test.js; do not remove.
- * # Captured from https://www.hazardnet.live/data/alerts-latest.json (committed as frontend/public/data/alerts-latest.json) on 2026-11-07 by `node scripts/capture_edge_fixtures.mjs`.
+ * # Captured from https://www.hazardnet.live/data/alerts-latest.json (committed as frontend/public/data/alerts-latest.json) on 2026-11-08 by `node scripts/capture_edge_fixtures.mjs`.
  * # Shape: object — hazardnet-alerts/v1 with the stamped policy block; first 2 PUBLISHED rows retained.
  * # To refresh: node scripts/capture_edge_fixtures.mjs (reads the committed artifact after an alert run).
  *
@@ -8,7 +8,7 @@
  */
 module.exports = {
   "schema": "hazardnet-alerts/v1",
-  "generated_at": "2026-11-07T00:54:15.129Z",
+  "generated_at": "2026-11-08T05:55:45.722Z",
   "policy_version": "alert-policy/1.0.0",
   "policy_source": "builder",
   "assessed": 64,
@@ -59,29 +59,116 @@ module.exports = {
       "policy_version": "alert-policy/1.0.0",
       "level": "WATCH",
       "level_rank": 1,
-      "district_id": 40,
-      "district_name": "Bagerhat",
-      "division": "Khulna",
-      "pcode": "5795",
+      "district_id": 63,
+      "district_name": "Rangamati",
+      "division": "Chittagong",
+      "pcode": "5777",
       "horizon": "15_days",
-      "hazard_type": "Flash Flood",
-      "target_date": "2026-11-10",
-      "prediction_date": "2026-11-06",
-      "lead_time_days": 4,
-      "severity_score": 0.3,
-      "confidence": 0.9247,
+      "hazard_type": "Flood",
+      "target_date": "2026-11-12",
+      "prediction_date": "2026-11-07",
+      "lead_time_days": 5,
+      "severity_score": 0.7,
+      "confidence": 0.7075,
       "confidence_kind": "model_softmax_top_class",
       "reasons": [
         {
           "rule": "watch_softmax_proxy",
-          "detail": "uncalibrated softmax 0.9247 ≥ watch threshold 0.4 — treated as a WATCH proxy, not as a calibrated probability",
+          "detail": "uncalibrated softmax 0.7075 ≥ watch threshold 0.4 — treated as a WATCH proxy, not as a calibrated probability",
+          "track": "model"
+        },
+        {
+          "rule": "watch_severity_band",
+          "detail": "severity index 0.7 ≥ watch band 0.4",
           "track": "model"
         }
       ],
       "blockers": [
         {
           "rule": "warning_requires_calibration",
-          "detail": "score 0.9247 ≥ warning threshold 0.65 but confidence_kind is model_softmax_top_class and no calibration accuracy is claimed",
+          "detail": "score 0.7075 ≥ warning threshold 0.65 but confidence_kind is model_softmax_top_class and no calibration accuracy is claimed",
+          "track": "model"
+        }
+      ],
+      "evidence": {
+        "model": {
+          "hazard_type": "Flood",
+          "severity": 0.7,
+          "model_severity": 0.7,
+          "confidence": 0.7075,
+          "confidence_kind": "model_softmax_top_class",
+          "confidence_published": "uncalibrated_model_softmax",
+          "band": "high"
+        },
+        "physics": {
+          "physics_severity": 0.7,
+          "physics_agreement": "high",
+          "divergence": 0,
+          "divergence_source": "abs(model_severity - physics_severity)",
+          "note": null
+        },
+        "official": {
+          "bulletin_score": null,
+          "source": null
+        },
+        "line": [
+          "Rangamati · Flood · 15_days",
+          "lead time 5 d (target 2026-11-12)",
+          "uncalibrated score 0.7075 (model_softmax_top_class)",
+          "independent physics severity 0.7 (divergence 0)"
+        ]
+      },
+      "freshness": {
+        "prediction_date": "2026-11-07",
+        "data_cutoff": "2026-11-07T23:12:51.060Z",
+        "data_cutoff_source": "row.created_at",
+        "age_hours": 6.72,
+        "slo_hours": 48,
+        "within_slo": true,
+        "stale_soon": false
+      },
+      "provenance": {
+        "model_version": "2.1.9+model.0bb5bdaf1789",
+        "dataset_version": null,
+        "pipeline_version": null,
+        "run_id": null
+      },
+      "auto_publishable": true,
+      "requires_human_review": false,
+      "review_rule": "§1.6: WATCH may be published automatically",
+      "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
+      "id": "2026-11-12__15_days__63__flood__p2026-11-07",
+      "state": "PUBLISHED"
+    },
+    {
+      "status": "assessed",
+      "kind": "alert_assessment",
+      "policy_version": "alert-policy/1.0.0",
+      "level": "WATCH",
+      "level_rank": 1,
+      "district_id": 40,
+      "district_name": "Bagerhat",
+      "division": "Khulna",
+      "pcode": "5795",
+      "horizon": "15_days",
+      "hazard_type": "Flash Flood",
+      "target_date": "2026-11-09",
+      "prediction_date": "2026-11-07",
+      "lead_time_days": 2,
+      "severity_score": 0.3,
+      "confidence": 0.9845,
+      "confidence_kind": "model_softmax_top_class",
+      "reasons": [
+        {
+          "rule": "watch_softmax_proxy",
+          "detail": "uncalibrated softmax 0.9845 ≥ watch threshold 0.4 — treated as a WATCH proxy, not as a calibrated probability",
+          "track": "model"
+        }
+      ],
+      "blockers": [
+        {
+          "rule": "warning_requires_calibration",
+          "detail": "score 0.9845 ≥ warning threshold 0.65 but confidence_kind is model_softmax_top_class and no calibration accuracy is claimed",
           "track": "model"
         }
       ],
@@ -90,7 +177,7 @@ module.exports = {
           "hazard_type": "Flash Flood",
           "severity": 0.3,
           "model_severity": 0.3,
-          "confidence": 0.9247,
+          "confidence": 0.9845,
           "confidence_kind": "model_softmax_top_class",
           "confidence_published": "uncalibrated_model_softmax",
           "band": "high"
@@ -108,16 +195,16 @@ module.exports = {
         },
         "line": [
           "Bagerhat · Flash Flood · 15_days",
-          "lead time 4 d (target 2026-11-10)",
-          "uncalibrated score 0.9247 (model_softmax_top_class)",
+          "lead time 2 d (target 2026-11-09)",
+          "uncalibrated score 0.9845 (model_softmax_top_class)",
           "independent physics severity 0.3 (divergence 0)"
         ]
       },
       "freshness": {
-        "prediction_date": "2026-11-06",
-        "data_cutoff": "2026-11-06T23:07:39.823Z",
+        "prediction_date": "2026-11-07",
+        "data_cutoff": "2026-11-07T23:12:51.060Z",
         "data_cutoff_source": "row.created_at",
-        "age_hours": 1.78,
+        "age_hours": 6.72,
         "slo_hours": 48,
         "within_slo": true,
         "stale_soon": false
@@ -132,89 +219,7 @@ module.exports = {
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-10__15_days__40__flash-flood__p2026-11-06",
-      "state": "PUBLISHED"
-    },
-    {
-      "status": "assessed",
-      "kind": "alert_assessment",
-      "policy_version": "alert-policy/1.0.0",
-      "level": "WATCH",
-      "level_rank": 1,
-      "district_id": 64,
-      "district_name": "Bandarban",
-      "division": "Chittagong",
-      "pcode": "5767",
-      "horizon": "15_days",
-      "hazard_type": "Tropical Cyclone",
-      "target_date": "2026-11-09",
-      "prediction_date": "2026-11-06",
-      "lead_time_days": 3,
-      "severity_score": 0.3,
-      "confidence": 0.9533,
-      "confidence_kind": "model_softmax_top_class",
-      "reasons": [
-        {
-          "rule": "watch_softmax_proxy",
-          "detail": "uncalibrated softmax 0.9533 ≥ watch threshold 0.4 — treated as a WATCH proxy, not as a calibrated probability",
-          "track": "model"
-        }
-      ],
-      "blockers": [
-        {
-          "rule": "warning_requires_calibration",
-          "detail": "score 0.9533 ≥ warning threshold 0.65 but confidence_kind is model_softmax_top_class and no calibration accuracy is claimed",
-          "track": "model"
-        }
-      ],
-      "evidence": {
-        "model": {
-          "hazard_type": "Tropical Cyclone",
-          "severity": 0.3,
-          "model_severity": 0.3,
-          "confidence": 0.9533,
-          "confidence_kind": "model_softmax_top_class",
-          "confidence_published": "uncalibrated_model_softmax",
-          "band": "high"
-        },
-        "physics": {
-          "physics_severity": 0.3,
-          "physics_agreement": "high",
-          "divergence": 0,
-          "divergence_source": "abs(model_severity - physics_severity)",
-          "note": null
-        },
-        "official": {
-          "bulletin_score": null,
-          "source": null
-        },
-        "line": [
-          "Bandarban · Tropical Cyclone · 15_days",
-          "lead time 3 d (target 2026-11-09)",
-          "uncalibrated score 0.9533 (model_softmax_top_class)",
-          "independent physics severity 0.3 (divergence 0)"
-        ]
-      },
-      "freshness": {
-        "prediction_date": "2026-11-06",
-        "data_cutoff": "2026-11-06T23:07:39.823Z",
-        "data_cutoff_source": "row.created_at",
-        "age_hours": 1.78,
-        "slo_hours": 48,
-        "within_slo": true,
-        "stale_soon": false
-      },
-      "provenance": {
-        "model_version": "2.1.9+model.0bb5bdaf1789",
-        "dataset_version": null,
-        "pipeline_version": null,
-        "run_id": null
-      },
-      "auto_publishable": true,
-      "requires_human_review": false,
-      "review_rule": "§1.6: WATCH may be published automatically",
-      "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-09__15_days__64__tropical-cyclone__p2026-11-06",
+      "id": "2026-11-09__15_days__40__flash-flood__p2026-11-07",
       "state": "PUBLISHED"
     }
   ]
