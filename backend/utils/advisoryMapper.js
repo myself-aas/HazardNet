@@ -54,8 +54,8 @@ export const VALID_HAZARDS = [
 
 export const DATA_SOURCE_CONSTANT = 'Kaggle_Daily_Advisory';
 
-import { lookupDistrict } from './districtRegistry.js';
-export { DISTRICT_REGISTRY, lookupDistrict, normalizeDistrictKey } from './districtRegistry.js';
+import { lookupDistrict } from '../../packages/core/src/districtRegistry.js';
+export { DISTRICT_REGISTRY, lookupDistrict, normalizeDistrictKey } from '../../packages/core/src/districtRegistry.js';
 
 /**
  * Parse boolean value safely from string or boolean.

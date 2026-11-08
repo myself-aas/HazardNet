@@ -4,8 +4,18 @@ import {
   sampleQuestionsHandler,
   directoryHandler,
 } from '../utils/chatService.js';
+import { createNodeAssetReader } from '../mcp/nodeAdapter.js';
 
 const router = express.Router();
+
+/**
+ * Express has no Cloudflare `ASSETS` binding, so the agent's tool pack gets the
+ * equivalent allow-listed reader: the same `PUBLIC_ASSET_PATHS`, served from the
+ * built frontend when present and `frontend/public` otherwise. Without it the
+ * agent reports itself disabled rather than failing — the answer then rests on
+ * the knowledge base alone and says so.
+ */
+const assets = createNodeAssetReader(process.cwd());
 
 /**
  * POST /api/chat/query
@@ -16,7 +26,7 @@ const router = express.Router();
 router.post('/query', async (req, res) => {
   try {
     const { query, district, conversationHistory, groundingMode, userCoordinates } = req.body || {};
-    const payload = await handleChatQuery({ query, district, conversationHistory, groundingMode, userCoordinates });
+    const payload = await handleChatQuery({ query, district, conversationHistory, groundingMode, userCoordinates }, undefined, { assets });
     res.json(payload);
   } catch (err) {
     if (err.statusCode) {

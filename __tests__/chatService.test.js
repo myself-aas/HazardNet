@@ -62,7 +62,7 @@ describe('handleChatQuery — validation', () => {
 });
 
 describe('handleChatQuery — offline tier (no LLM keys configured)', () => {
-  test('answers from the deterministic tier without retrieval context (knowledge base is research-private)', async () => {
+  test('answers from the deterministic tier grounded in REAL retrieved knowledge-base sources', async () => {
     clearLlmKeys();
     try {
       const res = await handleChatQuery({
@@ -76,13 +76,46 @@ describe('handleChatQuery — offline tier (no LLM keys configured)', () => {
       expect(res.answer).toContain('RAG Knowledge Assessment'); // structured heuristic rendering
       expect(res.suggested_followups).toHaveLength(3);
 
-      // The research knowledge base is not distributed — retrieval returns nothing.
-      expect(res.retrieved_sources).toEqual([]);
+      // Retrieval is live again: the research corpus stays private, but the
+      // PUBLIC support corpus must ground every answer — with no API key
+      // configured this runs on the lexical engine alone.
+      expect(res.retrieved_sources.length).toBeGreaterThan(0);
+      expect(res.retrieved_sources[0]).toMatchObject({
+        id: expect.any(String),
+        title: expect.any(String),
+        authority: expect.any(String),
+        relevanceScore: expect.any(Number),
+      });
+      expect(res.retrieval).toMatchObject({ engine: 'bm25', applied: false });
+      // District baselines were research data; district facts now come from the
+      // live MCP tools, not from a static corpus.
       expect(res.district_baseline).toBeNull();
+      expect(res.district_contacts.district).toBe('Sunamganj');
 
       expect(res.govt_directory).toBeTruthy();
       expect(res.provider_source).toMatch(/Offline Heuristic/i);
       expect(res.cached).toBe(false);
+    } finally {
+      restoreLlmKeys();
+    }
+  });
+
+  test('routes the hazard skill and cites the documents it retrieved', async () => {
+    clearLlmKeys();
+    try {
+      const res = await handleChatQuery({
+        query: 'My paddy is underwater in the haor — what do I do first?',
+        district: 'Sunamganj',
+      });
+
+      // routeSkills() was dead code (it returned [] from the stub), so the
+      // hazard theme went nowhere and every question got the generic prompt.
+      expect(res.routed_skills.skill).toBe('Flash Flood');
+      expect(res.routed_skills.routed).toBe(true);
+      expect(res.routed_skills.owners.join(' ')).toMatch(/FFWC|DAE/);
+      // The skill names documents by id; the retrieval must have supplied them.
+      const retrievedIds = res.retrieved_sources.map((s) => s.id);
+      expect(retrievedIds).toContain('flash-flood-response');
     } finally {
       restoreLlmKeys();
     }
@@ -117,7 +150,7 @@ describe('handleChatQuery — LLM tier (mocked free-tier provider)', () => {
       );
       const body = JSON.parse(fn.mock.calls[0][1].body);
       expect(body.messages[0].role).toBe('system');
-      expect(body.messages[1].content).toContain('RETRIEVED RAG KNOWLEDGE BASE DOCUMENTS');
+      expect(body.messages[1].content).toContain('SUPPORT KNOWLEDGE BASE');
       expect(body.messages[1].content).toContain('{"answer":');
       expect(body.response_format).toEqual({ type: 'json_object' });
     } finally {

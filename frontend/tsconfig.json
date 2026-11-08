@@ -5,6 +5,10 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "strict": true,
+    // packages/core ships the shared agent/retrieval logic as .js with JSDoc. allowJs
+    // lets tsc infer those types (verified: a deliberate mismatch still errors) without
+    // hand-written .d.ts files that would drift. checkJs stays off.
+    "allowJs": true,
     "jsx": "react-jsx",
     "esModuleInterop": true,
     "resolveJsonModule": true,

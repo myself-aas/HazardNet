@@ -8,7 +8,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, ChevronDown, RefreshCw } from 'lucide-react';
 import { ALL_64_DISTRICTS, getDistrictById } from '../data/bangladeshDistricts';
-import { AlertLevelBadge, ADVISORY_TIER_COLOURS } from '../components/alerts/AlertLevelBadge';
+import { AlertLevelBadge, ADVISORY_TIER_COLOUR_VARS } from '../components/alerts/AlertLevelBadge';
 import { HazardGlyph } from '../components/apple/HazardGlyph';
 import { LanguageToggle } from '../components/alerts/LanguageToggle';
 import { Continuous15DayTrajectory } from '../components/district/Continuous15DayTrajectory';
@@ -40,7 +40,7 @@ function DayOutlook({ row, isPeakDay }: { row: DailyAdvisory; isPeakDay: boolean
   const fmt1 = (val: number) => formatNumber(val, { minimumFractionDigits: 0, maximumFractionDigits: 1 });
   const fmt2 = (val: number) => formatNumber(val, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const sevIndex = severityIndexOf(row.severityScore);
-  const tierColour = ADVISORY_TIER_COLOURS[row.tier] ?? ADVISORY_TIER_COLOURS.NORMAL;
+  const tierColour = ADVISORY_TIER_COLOUR_VARS[row.tier] ?? ADVISORY_TIER_COLOUR_VARS.NORMAL;
 
   const weatherItems: { label: string; value: string }[] = [];
   if (w.precipitationMm !== undefined) {
@@ -136,7 +136,7 @@ function DayOutlook({ row, isPeakDay }: { row: DailyAdvisory; isPeakDay: boolean
                 <time dateTime={row.targetDate}>{formatDate(row.targetDate)}</time>
               </p>
               {isPeakDay && (
-                <span className="rounded border border-[var(--ap-separator-opaque)] bg-[var(--ap-canvas)] px-2 py-0.5 text-xs font-bold text-[var(--ap-label)]">
+                <span className="rounded border border-[var(--ap-separator-opaque)] bg-[var(--ap-bg-elevated)] px-2 py-0.5 text-xs font-bold text-[var(--ap-label)]">
                   {t('daily.peakBannerSingle')}
                 </span>
               )}
@@ -322,7 +322,7 @@ const FarmerDistrictDailyPage: React.FC = () => {
                   const qs = searchParams.toString();
                   navigate(`/forecast/district/${e.target.value}${qs ? `?${qs}` : ''}`);
                 }}
-                className="ap-focusable min-h-[44px] rounded-lg border border-[var(--ap-separator-opaque)] bg-[var(--ap-canvas)] px-3 py-1.5 text-sm font-semibold text-[var(--ap-label)]"
+                className="ap-focusable min-h-[44px] rounded-lg border border-[var(--ap-separator-opaque)] bg-[var(--ap-input-fill)] px-3 py-1.5 text-sm font-semibold text-[var(--ap-label)]"
               >
                 {ALL_64_DISTRICTS.map((d) => (
                   <option key={d.id} value={d.id}>
@@ -407,7 +407,7 @@ const FarmerDistrictDailyPage: React.FC = () => {
                       value={dayFilter}
                       onChange={(e) => setDayFilter(e.target.value)}
                       aria-controls="daily-outlook-days"
-                      className="ap-focusable min-h-[44px] rounded-lg border border-[var(--ap-separator-opaque)] bg-[var(--ap-canvas)] px-3 py-1.5 text-sm font-semibold text-[var(--ap-label)]"
+                      className="ap-focusable min-h-[44px] rounded-lg border border-[var(--ap-separator-opaque)] bg-[var(--ap-input-fill)] px-3 py-1.5 text-sm font-semibold text-[var(--ap-label)]"
                     >
                       <option value="all">{t('daily.filterAll')}</option>
                       {summary15.peakRows.length > 0 && (

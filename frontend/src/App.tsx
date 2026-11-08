@@ -36,6 +36,7 @@ const BlogArticlePage = lazy(() => import('./pages/BlogArticlePage'));
 const BlogStudioPage = lazy(() => import('./pages/dashboard/BlogStudioPage'));
 const BlogEditorPage = lazy(() => import('./pages/dashboard/BlogEditorPage'));
 const Contact = lazy(() => import('./pages/Contact'));
+const AssistantPage = lazy(() => import('./pages/AssistantPage'));
 const Terms = lazy(() => import('./pages/Terms'));
 const Privacy = lazy(() => import('./pages/Privacy'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
@@ -168,6 +169,10 @@ const AppRoutes: React.FC<{ location: ReturnType<typeof useLocation> }> = ({ loc
               <Route path="/advisories/:subCategory" element={<AdvisoriesPage />} />
               <Route path="/analytics" element={<AnalyticsPage />} />
               <Route path="/analytics/:subCategory" element={<AnalyticsPage />} />
+              {/* The assistant: the same /api/chat/query contract as the chat
+                  widget, on a page with room to show the agent's tool trace,
+                  citations and review flags. Copy lives in site-routes.json. */}
+              <Route path="/assistant" element={<AssistantPage />} />
               <Route path="/upload" element={<UploadPage />} />
               <Route path="/use-cases" element={<UseCases />} />
               <Route path="/download" element={<DownloadCenter />} />

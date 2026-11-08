@@ -261,8 +261,14 @@ export const DistrictBriefBody: React.FC = () => {
           <div className="rounded-xl bg-carbon-90 text-carbon-05 p-6 sm:p-8 border border-carbon-80 space-y-4 screen-only">
             <div className="flex items-center justify-between border-b border-carbon-80 pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="rounded-full w-8 h-8 bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-700">
-                  <Bot className="w-4 h-4" />
+                {/* This frame sits on the `bg-carbon-90` panel below, which inverts
+                    (#1d1d1f light, #f5f5f7 dark), so the glyph ink has to invert with
+                    it: amber-700 measures 2.08:1 light and 1.33:1 dark against the
+                    20% veil over that panel, amber-300 measures 6.50:1 and 5.87:1.
+                    The colour lives on the icon rather than the frame because the
+                    frame's real ground is an ancestor, not the page canvas. */}
+                <div className="rounded-full w-8 h-8 bg-amber-400/20 border border-amber-400/30 flex items-center justify-center">
+                  <Bot className="w-4 h-4 text-amber-300" />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-ap-on-inverse flex items-center gap-2">

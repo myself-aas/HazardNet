@@ -830,6 +830,29 @@
     "kind": "page",
     "evidence": "archive.entries.map"
    }
+  },
+  "pages/AssistantPage.tsx": {
+   "data": "fetch",
+   "loading": {
+    "kind": "inline",
+    "evidence": "Working…",
+    "retry": null
+   },
+   "empty": {
+    "kind": "inline",
+    "evidence": "Try one of these"
+   },
+   "error": {
+    "kind": "inline",
+    "evidence": "role=\"alert\"",
+    "retry": true,
+    "retry_via": "the question stays in the field, so submitting again retries"
+   },
+   "success": {
+    "kind": "page",
+    "evidence": "{latest && ("
+   },
+   "note": "The page shell is static; the four states apply to the question turn, which is the only thing that reads the network."
   }
  }
 }

@@ -31,6 +31,11 @@ export type SupportedTierOrLevel = AlertLevel | AdvisoryTier | string;
  * a distinct step of the published scale — an earlier pass briefly collapsed
  * WARNING and WATCH onto the same amber, which would have made two different
  * operational states look identical on the map.
+ *
+ * These are HEX values — `APPLE_SEVERITY[*].text`, the arm solved for a light
+ * ground. Use them only where a literal is unavoidable (canvas drawing, an SVG
+ * presentation attribute, a Leaflet path option). For anything the browser paints
+ * through CSS, use `ADVISORY_TIER_COLOUR_VARS` below instead.
  */
 export const ADVISORY_TIER_COLOURS: Record<string, string> = {
   EXTREME: APPLE_SEVERITY.extreme.text,
@@ -39,6 +44,26 @@ export const ADVISORY_TIER_COLOURS: Record<string, string> = {
   WATCH: APPLE_SEVERITY.moderate.text,
   NORMAL: APPLE_SEVERITY.low.text,
   NO_ALERT: APPLE_SEVERITY.low.text,
+};
+
+/**
+ * The same five tiers as CSS custom properties, for inline styles and any other
+ * DOM paint. `--ap-sev-*` re-resolves per appearance (apple.css §6): light keeps
+ * exactly the hexes above, dark swaps in `APPLE_SEVERITY[*].onDark`.
+ *
+ * This is the difference between a severity bar a visitor can see and one they
+ * cannot. Painting the hex on a dark surface measures 1.06–1.86:1 against the
+ * `--ap-separator-opaque` track it sits in — the bar disappears; the same paint
+ * through `var(--ap-sev-*)` measures 3.59–5.59:1 there and 6.10–9.50:1 on the
+ * card, clearing WCAG 1.4.11's 3:1 in both appearances.
+ */
+export const ADVISORY_TIER_COLOUR_VARS: Record<string, string> = {
+  EXTREME: 'var(--ap-sev-extreme)',
+  SEVERE: 'var(--ap-sev-very-high)',
+  WARNING: 'var(--ap-sev-high)',
+  WATCH: 'var(--ap-sev-moderate)',
+  NORMAL: 'var(--ap-sev-low)',
+  NO_ALERT: 'var(--ap-sev-low)',
 };
 
 const LEVEL_TOKENS: Record<string, LevelTokens> = {

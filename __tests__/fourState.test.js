@@ -137,8 +137,10 @@ describe('four-state checklist', () => {
       // 2026-11-01: +1 fetch page for the public-only daily district outlook.
       // 2026-11-06: +2 fetch pages — /reports (and /reports/:date) and /reports/archive,
       // both reading the committed report artifacts.
-      byData: { fetch: 25, mutation: 7, static: 7 },
-      pages: 39,
+      // 2026-11-08: +1 fetch page — /assistant, which reads the network for the question
+      // turn and exposes the agent's evidence trail beside the answer.
+      byData: { fetch: 26, mutation: 7, static: 7 },
+      pages: 40,
       absent: 0,
     });
     // No page is allowed to fall back to `absent`: the five cells that used to be open (Dashboard

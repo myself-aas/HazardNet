@@ -1,7 +1,7 @@
 /** @jest-environment node */
 import { buildPublicDailySnapshot, parsePublicDailySnapshot } from '../backend/utils/dailyAdvisoryPublic.js';
 import { dhakaDate, queryPublicDaily, loadPublicDailyAsset } from '../backend/utils/dailyAdvisoryServe.js';
-import { DISTRICT_REGISTRY } from '../backend/utils/districtRegistry.js';
+import { DISTRICT_REGISTRY } from '../packages/core/src/districtRegistry.js';
 import { respondWithPublicDaily } from '../backend/utils/dailyAdvisoryEdge.js';
 import { readPublishedDailySnapshot } from '../backend/utils/dailyAdvisoryNode.js';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';

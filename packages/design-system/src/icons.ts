@@ -149,7 +149,9 @@ export const ICON_NAMES = [
   "Wifi",
   "WifiOff",
   "Wind",
+  "Wrench",
   "X",
+  "XCircle",
   "ZoomIn",
   "ZoomOut",
 ] as const;
@@ -793,9 +795,17 @@ export const ICON_PATHS: Readonly<Record<IconName, IconNode>> = {
     ["path", {"d":"M17.5 8a2.5 2.5 0 1 1 2 4H2"}],
     ["path", {"d":"M9.8 4.4A2 2 0 1 1 11 8H2"}],
   ],
+  "Wrench": [
+    ["path", {"d":"M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z"}],
+  ],
   "X": [
     ["path", {"d":"M18 6 6 18"}],
     ["path", {"d":"m6 6 12 12"}],
+  ],
+  "XCircle": [
+    ["circle", {"cx":"12","cy":"12","r":"10"}],
+    ["path", {"d":"m15 9-6 6"}],
+    ["path", {"d":"m9 9 6 6"}],
   ],
   "ZoomIn": [
     ["circle", {"cx":"11","cy":"11","r":"8"}],

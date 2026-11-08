@@ -332,7 +332,7 @@ read a file, and each difference is the reason it can exist at the edge at all:
   imported unchanged — which first required making the chat import graph Worker-safe: portable
   SHA-256 (`backend/utils/portableHash.js`) instead of `node:crypto`, Gemini over REST `fetch`
   instead of the `@google/genai` SDK, and secrets from `context.env` via
-  `backend/utils/runtimeEnv.js` instead of `process.env`. The body is bounded at 64 KiB before
+  `packages/core/src/runtimeEnv.js` instead of `process.env`. The body is bounded at 64 KiB before
   parsing and the ai bucket (20/min) is metered per client, mirroring `serverlessGuard.js`. With no
   provider keys in the Pages env vars the cascade ends on the deterministic offline tier, so the
   widget answers instead of erroring. Covered by `__tests__/pagesChat.test.js`; the register rows are

@@ -14,7 +14,7 @@
  * transport differs. Since 2026-11-04 the chat import graph is Worker-safe:
  * portable SHA-256 instead of `node:crypto` (`backend/utils/portableHash.js`),
  * Gemini over REST `fetch` instead of the `@google/genai` SDK, and secrets from
- * `context.env` instead of `process.env` (`backend/utils/runtimeEnv.js`).
+ * `context.env` instead of `process.env` (`packages/core/src/runtimeEnv.js`).
  *
  * With no provider keys set in the Pages project's environment variables the cascade
  * lands on the deterministic offline tier, so the widget still answers — it never

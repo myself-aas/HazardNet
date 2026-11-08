@@ -89,7 +89,16 @@ export const DISTRICT_REGISTRY = [
 /**
  * Normalized alias dictionary for fuzzy/legacy district name matching.
  */
-const DISTRICT_ALIASES = {
+/**
+ * Spelling variants → canonical district name.
+ *
+ * Exported because free-text matching has to recognise what people actually
+ * type: "Chittagong", "Jessore", "Comilla" and "Bogura" are how these districts
+ * are commonly written, and a planner that only matched canonical names silently
+ * resolved none of them. `lookupDistrict()` already understood the aliases; the
+ * agent just could not see them.
+ */
+export const DISTRICT_ALIASES = {
   jessore: 'jashore',
   chittagong: 'chattogram',
   comilla: 'cumilla',

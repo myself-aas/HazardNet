@@ -16,12 +16,22 @@ jest.mock('../../backend/utils/ai_fallback_engine.js', () => ({
 }));
 const { generateAdvisoryWithFallback } = require('../../backend/utils/ai_fallback_engine.js');
 
-jest.mock('../../backend/services/localKnowledge.js', () => ({
-  searchRAG: jest.fn(() => ({ results: [], districtBaseline: null })),
-  routeSkills: jest.fn(() => []),
-  GOVT_OFFICE_DIRECTORY: [],
-}));
-const { searchRAG } = require('../../backend/services/localKnowledge.js');
+// The chat pipeline retrieves from the knowledge module now (not the legacy
+// `localKnowledge.js` adapter), so the mock has to follow it — a mock aimed at a
+// module nobody imports is a test that passes while testing nothing. Everything
+// except `retrieveKnowledge` stays the real implementation, so the budget logic
+// under test is the production code.
+jest.mock('../../packages/core/src/knowledge/index.js', () => {
+  const actual = jest.requireActual('../../packages/core/src/knowledge/index.js');
+  return {
+    ...actual,
+    retrieveKnowledge: jest.fn(async (query, options = {}) => {
+      const results = actual.searchKnowledge(query, { district: options.district, hazard: options.hazard, limit: 6 });
+      return { results, retrieval: { engine: 'bm25', applied: false, reason: 'mocked', candidates: results.length, corpus: { documents: 18, version: 1 } } };
+    }),
+  };
+});
+const { retrieveKnowledge } = require('../../packages/core/src/knowledge/index.js');
 
 const app = require('../../backend/server').default;
 const MAX_PROMPT_CHARS = 12_000;
@@ -34,7 +44,7 @@ function promptOfLastCall() {
 describe('chat prompt bounds', () => {
   beforeEach(() => {
     generateAdvisoryWithFallback.mockClear();
-    searchRAG.mockClear();
+    retrieveKnowledge.mockClear();
   });
 
   it('keeps an oversized query out of the prompt, not just out of retrieval', async () => {
@@ -44,8 +54,12 @@ describe('chat prompt bounds', () => {
 
     const prompt = promptOfLastCall();
     expect(prompt.length).toBeLessThanOrEqual(MAX_PROMPT_CHARS);
-    // 3000 chars of query plus context/history/instructions — nowhere near 50 000.
-    expect(prompt.length).toBeLessThan(6_000);
+    // 3000 chars of query, plus context, the official directory, instructions and
+    // the agent's live-data digest — nowhere near 50 000. The digest is why this
+    // is not 6 000: the Express route supplies a public artifact reader, so the
+    // agent runs and a short summary of what it read joins the prompt. That is
+    // the intended behaviour; MAX_PROMPT_CHARS above is the bound that matters.
+    expect(prompt.length).toBeLessThan(7_000);
     expect(res.body.prompt.chars).toBe(prompt.length);
   });
 
@@ -68,18 +82,32 @@ describe('chat prompt bounds', () => {
   });
 
   it('bounds the whole prompt even when retrieved context is large', async () => {
-    searchRAG.mockImplementationOnce(() => ({
+    retrieveKnowledge.mockImplementationOnce(async () => ({
       results: Array.from({ length: 40 }, (_, i) => ({
-        id: `doc-${i}`, title: `Doc ${i}`, category: 'c', content: 'C'.repeat(2_000), score: 0.5,
+        id: `doc-${i}`, title: `Doc ${i}`, category: 'c', authority: 'A', url: null,
+        basis: 'repo-artifact', body: 'C'.repeat(2_000), score: 0.5, snippet: 'C', matched: ['flood'],
       })),
-      districtBaseline: null,
+      retrieval: { engine: 'bm25', applied: false, reason: 'oversized context', candidates: 40, corpus: { documents: 18, version: 1 } },
     }));
 
     const res = await request(app).post('/api/chat/query').send({ query: 'flood advice' });
     expect(res.status).toBe(200);
     expect(promptOfLastCall().length).toBeLessThanOrEqual(MAX_PROMPT_CHARS);
-    expect(res.body.prompt.truncated).toBe(true);
-    expect(promptOfLastCall()).toContain('retrieved context truncated');
+
+    // The retrieved context is budgeted twice: `formatKnowledgeContext` caps its
+    // own block, and the SEC-11 cap trims whatever is left. Either way the
+    // prompt stays inside the bound.
+    expect(res.body.retrieval.candidates).toBe(40);
+    expect(res.body.retrieval.cited).toBeGreaterThan(0);
+    expect(res.body.retrieval.cited).toBeLessThan(40);
+    expect(res.body.retrieval.omitted).toBe(40 - res.body.retrieval.cited);
+
+    // And the citations the UI renders must be documents the model actually saw.
+    const prompt = promptOfLastCall();
+    for (const source of res.body.retrieved_sources) {
+      expect(prompt).toContain(source.title);
+    }
+    expect(res.body.retrieved_sources).toHaveLength(res.body.retrieval.cited);
   });
 
   it('still answers an ordinary query without truncating anything', async () => {
