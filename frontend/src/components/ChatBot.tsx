@@ -6,6 +6,7 @@ import { LiveVoiceAdvisor } from './LiveVoiceAdvisor';
 import { ExternalLink, Loader2, MapPin, MessageSquare, Mic, Search, Send, X } from 'lucide-react';
 import { HandoffBeam, createSimulatedVoice, type BeamPhase } from '@/components/ui/handoff-beam';
 import { cssVar } from '@/components/ui/handoff-beam-utils/palette';
+import { answerOnDevice } from '../lib/onDeviceAssistant';
 
 interface GroundingFacility {
   title: string;
@@ -120,6 +121,36 @@ export default function ChatBot() {
     setInput('');
     setLoading(true);
 
+    // Same on-device path the /assistant page uses, so the two surfaces cannot
+    // disagree about what an offline answer is. `providerSource` is already rendered
+    // below as "Answered via ...", so the turn is labelled without extra UI.
+    const answerLocally = async () => {
+      const local = await answerOnDevice(text, null);
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: local.answer,
+        providerSource: local.provider_source,
+      }]);
+    };
+
+    // Skip the round trip when the browser already knows it is offline; waiting for a
+    // fetch to fail is a worse experience than answering straight away.
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      try {
+        await answerLocally();
+      } catch (err) {
+        console.error(err);
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: 'HazardNet is offline and the stored knowledge base could not answer this. Please reconnect and try again.',
+          providerSource: 'on-device',
+        }]);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     try {
       const res = await fetch('/api/chat/query', {
         method: 'POST',
@@ -156,7 +187,14 @@ export default function ChatBot() {
       setMessages(prev => [...prev, assistantMsg]);
     } catch (err) {
       console.error(err);
-      setMessages(prev => [...prev, { role: 'assistant', content: 'There was an error communicating with the AI. Please try again later.' }]);
+      // The server was unreachable. The corpus is in the bundle, so answer from it
+      // rather than showing a dead end; the turn is labelled "Answered via on-device".
+      try {
+        await answerLocally();
+      } catch (localErr) {
+        console.error(localErr);
+        setMessages(prev => [...prev, { role: 'assistant', content: 'There was an error communicating with the AI. Please try again later.' }]);
+      }
     } finally {
       setLoading(false);
     }
