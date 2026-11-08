@@ -42,8 +42,10 @@ const ALL_CLEAR_GLOBAL = /\b(no risk|no danger|all clear|completely safe|entirel
 // false positive. "HazardNet does not issue official warnings" is the disclaimer
 // we want, and the denial window below protects it.
 const OFFICIAL_CLAIM = /\b(official warning|official alert|hazardnet (?:has )?issu\w* (?:an? )?warning)\b/gi;
-const OFFICIAL_DENIAL = /\b(not|never|cannot|can't|does not|doesn't|isn't|no such|rather than|instead of)\b/i;
-const LIVE_ASSERTION = /\b(currently|right now|at this moment|today's (?:weather|forecast)|as of today)\b/i;
+// One denial list, shared by the official-warning and live-conditions checks: both
+// ask the same question, which is whether the matched phrase sits inside a denial.
+const DENIAL = /\b(not|never|cannot|can't|does not|doesn't|isn't|no such|rather than|instead of)\b/i;
+const LIVE_ASSERTION = /\b(currently|right now|at this moment|today's (?:weather|forecast)|as of today)\b/gi;
 
 const collectNumbers = (source) => {
   const found = new Set();
@@ -136,18 +138,28 @@ export function reviewAnswer({ answer, agent = null, knowledge = [] } = {}) {
   }
 
   // 3. Claiming current conditions with nothing current read.
+  // Negation-aware for the same reason as checks 2 and 4. The on-device answer
+  // discloses that it "does not tell you what is in force right now" — and "right
+  // now" is exactly what this matcher looks for. Flagging the sentence that states
+  // the limitation would train readers to ignore the flag, which is the one outcome
+  // that makes the whole reviewer worthless.
   const liveRead = (agent?.steps ?? []).some((step) => step.ok);
-  if (!liveRead && LIVE_ASSERTION.test(text)) {
-    flags.push({
-      code: 'live_claim_without_data',
-      detail: 'The answer asserts current conditions, but no live tool call succeeded, so nothing current was read.',
-    });
+  if (!liveRead) {
+    for (const match of text.matchAll(LIVE_ASSERTION)) {
+      const window = text.slice(Math.max(0, match.index - 60), match.index + match[0].length + 20);
+      if (DENIAL.test(window)) continue;
+      flags.push({
+        code: 'live_claim_without_data',
+        detail: 'The answer asserts current conditions, but no live tool call succeeded, so nothing current was read.',
+      });
+      break;
+    }
   }
 
   // 4. HazardNet cannot issue an official warning.
   for (const match of text.matchAll(OFFICIAL_CLAIM)) {
     const window = text.slice(Math.max(0, match.index - 60), match.index + match[0].length + 20);
-    if (OFFICIAL_DENIAL.test(window)) continue;
+    if (DENIAL.test(window)) continue;
     flags.push({
       code: 'official_warning_claim',
       detail: 'The answer implies an official warning was issued. Official warnings come from BMD, FFWC and local administration.',

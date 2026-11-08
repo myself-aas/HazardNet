@@ -30,6 +30,28 @@ import { createIndex, search } from './bm25.js';
 import { rerankResults } from './rerank.js';
 import { defaultEnv } from '../runtimeEnv.js';
 
+/**
+ * @typedef {object} KnowledgeDocument
+ * @property {string} id stable corpus id, also the citation key
+ * @property {string} title
+ * @property {string} category
+ * @property {string} [authority] issuing body, when the document has one
+ * @property {string|null} url
+ * @property {string|null} basis `repo-artifact` | `official-directory` | `general-practice`
+ * @property {number} score BM25 score after hazard/district weighting
+ * @property {string[]} matched query terms this document matched
+ * @property {string} snippet
+ * @property {string} body
+ */
+
+/**
+ * @typedef {object} RetrievalResult
+ * @property {Array<KnowledgeDocument>} results ranked documents, highest score first
+ * @property {{engine: string, applied: boolean, reason: string, candidates: number,
+ *   corpus: {documents: number, version: number}}} retrieval what actually ran, so a
+ *   trace can distinguish a lexical-only answer from a re-ranked one
+ */
+
 export { routeSkills, routeSkillsStructured, resolveSkillKey, urgencyFor, SKILL_CARDS } from './skills.js';
 export { tokenize } from './bm25.js';
 
@@ -65,6 +87,15 @@ export const GOVT_OFFICE_DIRECTORY = Object.freeze([
  * named here but not passed on is silently ignored, which is worse than a
  * missing option because the caller gets no error and no effect. (`relativeFloor`
  * was exactly that until a test caught it.)
+ *
+ * @param {string} query free text, tokenized with the same lexer the index was built with
+ * @param {object} [options]
+ * @param {number} [options.limit] most documents to return
+ * @param {string|null} [options.hazard] hazard enum; matching documents are boosted
+ * @param {string|null} [options.district] district name; locally-scoped documents are boosted
+ * @param {number} [options.minScore] absolute score floor
+ * @param {number} [options.relativeFloor] fraction of the top score a hit must reach
+ * @returns {Array<KnowledgeDocument>} ranked documents, highest score first
  */
 export function searchKnowledge(query, { limit = 6, hazard = null, district = null, minScore, relativeFloor } = {}) {
   return search(INDEX, query, {
@@ -80,6 +111,10 @@ export function searchKnowledge(query, { limit = 6, hazard = null, district = nu
  * Retrieve with optional semantic re-ranking.
  * Returns `{ results, retrieval }` where `retrieval.engine` is `bm25` or
  * `bm25+gemini-embedding-001`, so the trace can say what actually ran.
+ *
+ * @param {string} query free text
+ * @param {object} [options] as `searchKnowledge`, plus `district` and `skill`
+ * @returns {Promise<RetrievalResult>} results plus what ran; re-ranked when an embedding key is configured
  */
 export async function retrieveKnowledge(query, options = {}) {
   const env = options.env ?? defaultEnv();
@@ -112,6 +147,11 @@ export async function retrieveKnowledge(query, options = {}) {
  * the exact lie this whole rewrite exists to remove — the UI renders
  * `retrieved_sources` as citations, so anything named there has to have been in
  * the prompt.
+ *
+ * @param {Array<KnowledgeDocument>} results documents from `retrieveKnowledge`
+ * @param {object} [options]
+ * @param {number} [options.budget] character budget for the assembled context block
+ * @returns {{text: string, includedIds: string[], omitted: string[]}}
  */
 export function formatKnowledgeContext(results, { budget = 6_000 } = {}) {
   if (!results?.length) {

@@ -35,6 +35,17 @@ import { HAZARDS } from '../hazards.js';
  * would fail schema validation, so the mapping is explicit and checked against
  * the enum at import time by `__tests__/agentLoop.test.js`.
  */
+/**
+ * @typedef {object} PlanStep
+ * @property {number} step 1-based position in the plan
+ * @property {string} tool MCP tool name
+ * @property {Record<string, unknown>} args
+ * @property {string} purpose why this step is in the plan, in reader-facing terms
+ * @property {{from: string, fields: string[]}} [needs] value to lift from an earlier
+ *   step's result; this is what makes the plan a loop rather than a fixed batch
+ * @property {string} [skipped] set instead of a tool call when the step cannot run
+ */
+
 export const MCP_HAZARD_BY_SKILL = Object.freeze({
   'Flood': 'flood',
   'Flash Flood': 'flash-flood',
@@ -69,6 +80,10 @@ const INTENT_PATTERNS = Object.freeze([
 ]);
 
 /** All intents that apply, in a stable order — a question can be two things. */
+/**
+ * @param {string} query the reader's question, in English or Bengali
+ * @returns {string[]} intent keys, in the fixed INTENTS order
+ */
 export function detectIntents(query) {
   const text = String(query ?? '');
   const found = INTENT_PATTERNS.filter(([, pattern]) => pattern.test(text)).map(([intent]) => intent);
@@ -97,6 +112,11 @@ function foldPunctuation(text) {
     .replace(/[\u2010-\u2015]/g, '-');
 }
 
+/**
+ * @param {string} query the reader's question, scanned for a district name or alias
+ * @param {string|null} [fallback] district supplied by the caller, used when the question names none
+ * @returns {string|null} canonical registry name, or null when neither source resolves
+ */
 export function detectDistrict(query, fallback = null) {
   const text = foldPunctuation(query ?? '');
   if (fallback) {
@@ -132,6 +152,14 @@ export function detectDistrict(query, fallback = null) {
  *
  * `maxSteps` is a hard ceiling. Every step is a read of a committed artifact or
  * an upstream weather call, so an unbounded plan is both slow and pointless.
+ *
+ * @param {object} [options]
+ * @param {string} options.query the reader's question
+ * @param {string|null} [options.district] caller-supplied district; the question is scanned when absent
+ * @param {string} [options.skill] routed skill label, used to pick the hazard enum
+ * @param {number} [options.maxSteps] hard ceiling on planned steps
+ * @returns {{goal: string, district: string|null, unresolved_district: string|null,
+ *   hazard: string|null, intents: string[], steps: Array<PlanStep>}}
  */
 export function buildPlan({ query, district = null, skill = 'Multi-Hazard', maxSteps = 4 } = {}) {
   const intents = detectIntents(query);

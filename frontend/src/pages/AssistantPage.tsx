@@ -1,8 +1,9 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, CheckCircle2, ChevronRight, Clock, Cpu, Database, Loader2, Search, Send, ShieldAlert, Wrench, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ChevronRight, Clock, Cpu, Database, Loader2, Search, Send, ShieldAlert, WifiOff, Wrench, XCircle } from 'lucide-react';
 import { usePageSeo } from '../hooks/usePageSeo';
+import { answerOnDevice } from '../lib/onDeviceAssistant';
 
 /**
  * The Assistant — the surface for multi-step work.
@@ -112,6 +113,30 @@ export default function AssistantPage() {
     if (!trimmed || busy) return;
     setBusy(true);
     setError(null);
+
+    // Answer from the knowledge base stored in this app, and label the turn as
+    // on-device. Every planned live call is reported as skipped in the trace: an
+    // answer that quietly omits the steps it could not run reads as one that ran them.
+    const answerLocally = async () => {
+      const local = await answerOnDevice(trimmed, district.trim() || null);
+      setTurns((previous) => [...previous, { question: trimmed, response: local }]);
+      setQuestion('');
+    };
+
+    // Skip the round trip when the browser already knows it is offline. Waiting for
+    // a fetch to fail is a worse experience than answering straight away.
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      try {
+        await answerLocally();
+      } catch {
+        setError('The assistant is offline and could not answer from the stored knowledge base.');
+      } finally {
+        setBusy(false);
+        inputRef.current?.focus();
+      }
+      return;
+    }
+
     try {
       const res = await fetch('/api/chat/query', {
         method: 'POST',
@@ -131,7 +156,13 @@ export default function AssistantPage() {
       setTurns((previous) => [...previous, { question: trimmed, response: data }]);
       setQuestion('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'The assistant could not be reached.');
+      // The server was unreachable. That is not a dead end: the corpus is in the
+      // bundle, so answer from it locally instead of showing an error.
+      try {
+        await answerLocally();
+      } catch {
+        setError(err instanceof Error ? err.message : 'The assistant could not be reached.');
+      }
     } finally {
       setBusy(false);
       inputRef.current?.focus();
@@ -240,6 +271,17 @@ export default function AssistantPage() {
             <section aria-labelledby="answer-heading" className="rounded-2xl border border-[var(--ap-separator-opaque)] bg-[var(--ap-bg-elevated)] p-6">
               <h2 id="answer-heading" className="mb-1 text-lg font-semibold text-[var(--ap-label)]">Answer</h2>
               <p className="mb-4 text-sm text-[var(--ap-label-secondary)]">{latest.question}</p>
+
+              {latest.response.provider_source === 'on-device' && (
+                <p className="mb-5 flex items-start gap-2 rounded-xl border border-[var(--ap-sev-moderate)] bg-[var(--ap-bg-card)] px-4 py-3 text-sm text-[var(--ap-label)]">
+                  <WifiOff aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-[var(--ap-sev-moderate)]" />
+                  <span>
+                    <strong className="font-semibold">Answered on your device, with no connection.</strong>{' '}
+                    {latest.response.agent?.reason ??
+                      'No live alert, outlook or weather data was read, so this says nothing about what is in force right now.'}
+                  </span>
+                </p>
+              )}
 
               {latest.response.agent?.review && latest.response.agent.review.flags.length > 0 && (
                 <div className="mb-5 space-y-2">
