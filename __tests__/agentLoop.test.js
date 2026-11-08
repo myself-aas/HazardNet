@@ -19,9 +19,9 @@ import {
   detectIntents,
   detectDistrict,
   buildPlan,
-} from '../backend/agent/planner.js';
+} from '../packages/core/src/agent/planner.js';
 import { runAgent } from '../backend/agent/loop.js';
-import { reviewAnswer } from '../backend/agent/review.js';
+import { reviewAnswer } from '../packages/core/src/agent/review.js';
 import { handleChatQuery } from '../backend/utils/chatService.js';
 
 const assets = createNodeAssetReader(process.cwd());

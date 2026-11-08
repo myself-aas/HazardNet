@@ -31,7 +31,7 @@
  */
 
 import { executeMcpTool } from '../mcp/tools.js';
-import { buildPlan } from './planner.js';
+import { buildPlan } from '../../packages/core/src/agent/planner.js';
 
 const MAX_STEPS = 4;
 const DIGEST_BUDGET = 900;

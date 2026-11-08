@@ -7,7 +7,7 @@
  * No credentials, review actions, model files or research-private inputs cross
  * this boundary. Weather is the only upstream read.
  */
-import { lookupDistrict } from '../utils/districtRegistry.js';
+import { lookupDistrict } from '../../packages/core/src/districtRegistry.js';
 import { loadForecastSnapshot, snapshotRows } from '../utils/forecastSnapshotServe.js';
 import { loadAlertSnapshot, PUBLIC_ALERT_STATE } from '../utils/alertSnapshotServe.js';
 import { publicAlertView } from '../alerts/publicView.js';
@@ -30,9 +30,11 @@ export const SAFETY_NOTICE =
 export const CONFIDENCE_NOTICE =
   'Published confidence is an uncalibrated model softmax, not a probability of harm. Read it with the severity, dates and provenance.';
 
-export const HAZARDS = Object.freeze([
-  'flood', 'flash-flood', 'tropical-cyclone', 'drought', 'heat-wave', 'cold-wave', 'fire', 'severe-local-storm',
-]);
+// The eight published hazard classes live in `@hazardnet/core` (`hazards.js`) so the
+// on-device planner and the server tool pack cannot drift apart. Re-exported here
+// because this module's public surface has always included the name.
+export { HAZARDS } from '../../packages/core/src/hazards.js';
+import { HAZARDS } from '../../packages/core/src/hazards.js';
 const HORIZONS = ['7_days', '15_days'];
 const ALERT_LEVELS = ['WATCH', 'WARNING', 'SEVERE'];
 const HISTORICAL_HAZARDS = [...HAZARDS, 'earthquake'];

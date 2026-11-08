@@ -5,7 +5,7 @@
  * default-deny); the public API continues to serve the deployed public asset.
  */
 import { createHash } from 'node:crypto';
-import { DISTRICT_REGISTRY } from './districtRegistry.js';
+import { DISTRICT_REGISTRY } from '../../packages/core/src/districtRegistry.js';
 import { parsePublicDailySnapshot } from './dailyAdvisoryPublic.js';
 import { validateReleasableDailySnapshot } from '../../scripts/check_public_daily_asset.mjs';
 

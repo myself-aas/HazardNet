@@ -23,7 +23,7 @@
  * lexical order it started from.
  */
 
-import { defaultEnv } from '../../utils/runtimeEnv.js';
+import { defaultEnv } from '../runtimeEnv.js';
 
 const EMBEDDING_MODEL = 'gemini-embedding-001';
 const RERANK_TIMEOUT_MS = 4_000;

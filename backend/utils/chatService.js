@@ -12,13 +12,13 @@
  * split backend/utils/forecastServe.js already uses for the forecast API.
  */
 
-import { routeSkills, routeSkillsStructured, GOVT_OFFICE_DIRECTORY, retrieveKnowledge, formatKnowledgeContext } from '../services/knowledge/index.js';
+import { routeSkills, routeSkillsStructured, GOVT_OFFICE_DIRECTORY, retrieveKnowledge, formatKnowledgeContext } from '../../packages/core/src/knowledge/index.js';
 import { runAgent } from '../agent/loop.js';
-import { detectDistrict } from '../agent/planner.js';
-import { reviewAnswer } from '../agent/review.js';
+import { detectDistrict } from '../../packages/core/src/agent/planner.js';
+import { reviewAnswer } from '../../packages/core/src/agent/review.js';
 import { generateAdvisoryWithFallback } from './ai_fallback_engine.js';
 import { detectGroundingIntent, executeMapsGrounding, executeSearchGrounding } from './gemini_grounding.js';
-import { defaultEnv } from './runtimeEnv.js';
+import { defaultEnv } from '../../packages/core/src/runtimeEnv.js';
 
 export { GOVT_OFFICE_DIRECTORY };
 

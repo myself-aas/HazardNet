@@ -12,7 +12,7 @@
  */
 
 import { getDistrictCoordinates } from './districtCoordinates.js';
-import { defaultEnv } from './runtimeEnv.js';
+import { defaultEnv } from '../../packages/core/src/runtimeEnv.js';
 
 const GROUNDING_MODEL = 'gemini-3.5-flash';
 

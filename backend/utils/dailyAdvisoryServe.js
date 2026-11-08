@@ -1,5 +1,5 @@
 /** Public read contract, shared by the Node and Pages runtimes. No private ledger reads. */
-import { lookupDistrict, DISTRICT_REGISTRY } from './districtRegistry.js';
+import { lookupDistrict, DISTRICT_REGISTRY } from '../../packages/core/src/districtRegistry.js';
 import { DAILY_ADVISORY_SCHEMA, parsePublicDailySnapshot, publicDailyStatus } from './dailyAdvisoryPublic.js';
 
 export const DAILY_PUBLIC_PATH = '/data/daily-advisories-v1.json';

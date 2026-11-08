@@ -24,8 +24,8 @@
  * router's display labels, which are spelled differently.
  */
 
-import { lookupDistrict, DISTRICT_REGISTRY, DISTRICT_ALIASES } from '../utils/districtRegistry.js';
-import { HAZARDS } from '../mcp/tools.js';
+import { lookupDistrict, DISTRICT_REGISTRY, DISTRICT_ALIASES } from '../districtRegistry.js';
+import { HAZARDS } from '../hazards.js';
 
 /**
  * Skill router label → published MCP hazard enum.

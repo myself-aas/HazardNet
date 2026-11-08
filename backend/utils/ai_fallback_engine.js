@@ -17,8 +17,8 @@
  */
 
 import { sha256Hex } from './portableHash.js';
-import { defaultEnv } from './runtimeEnv.js';
-import { routeSkillsStructured, finiteOrNull } from '../services/knowledge/skills.js';
+import { defaultEnv } from '../../packages/core/src/runtimeEnv.js';
+import { routeSkillsStructured, finiteOrNull } from '../../packages/core/src/knowledge/skills.js';
 import { assertAdvisory, createVerifiedCache } from './cacheContract.js';
 
 // In-Memory Cache for Advisory Requests (10-minute TTL).

@@ -1,5 +1,5 @@
 /** @jest-environment node */
-import { DISTRICT_REGISTRY } from '../backend/utils/districtRegistry.js';
+import { DISTRICT_REGISTRY } from '../packages/core/src/districtRegistry.js';
 import { buildPublicDailySnapshot } from '../backend/utils/dailyAdvisoryPublic.js';
 import {
   mirrorApprovedDailySnapshot, readMirroredDailySnapshot,

@@ -28,7 +28,7 @@
 import corpus from './corpus.generated.js';
 import { createIndex, search } from './bm25.js';
 import { rerankResults } from './rerank.js';
-import { defaultEnv } from '../../utils/runtimeEnv.js';
+import { defaultEnv } from '../runtimeEnv.js';
 
 export { routeSkills, routeSkillsStructured, resolveSkillKey, urgencyFor, SKILL_CARDS } from './skills.js';
 export { tokenize } from './bm25.js';

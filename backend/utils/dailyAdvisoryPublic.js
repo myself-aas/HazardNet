@@ -10,7 +10,7 @@
  * Node scripts and Cloudflare Pages Functions bundle this module cleanly.
  */
 import { z } from 'zod';
-import { DISTRICT_REGISTRY, lookupDistrict } from './districtRegistry.js';
+import { DISTRICT_REGISTRY, lookupDistrict } from '../../packages/core/src/districtRegistry.js';
 
 export const VALID_HAZARDS = [
   'Cold Wave', 'Drought', 'Fire', 'Flash Flood', 'Flood', 'Heat Wave',

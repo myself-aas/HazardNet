@@ -29,9 +29,9 @@ import {
   resolveSkillKey,
   urgencyFor,
   tokenize,
-} from '../backend/services/knowledge/index.js';
-import { createIndex } from '../backend/services/knowledge/bm25.js';
-import { rerankResults } from '../backend/services/knowledge/rerank.js';
+} from '../packages/core/src/knowledge/index.js';
+import { createIndex } from '../packages/core/src/knowledge/bm25.js';
+import { rerankResults } from '../packages/core/src/knowledge/rerank.js';
 
 const ids = () => KNOWLEDGE_DOCUMENTS.map((doc) => doc.id);
 const top = (query, options) => searchKnowledge(query, { limit: 5, ...options }).map((r) => r.id);

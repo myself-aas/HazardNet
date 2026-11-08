@@ -27,7 +27,7 @@
  * when it can await, because that is the path that adds semantic re-ranking.
  */
 
-import { GOVT_OFFICE_DIRECTORY, routeSkills, routeSkillsStructured, searchKnowledge } from './knowledge/index.js';
+import { GOVT_OFFICE_DIRECTORY, routeSkills, routeSkillsStructured, searchKnowledge } from '../../packages/core/src/knowledge/index.js';
 
 export { GOVT_OFFICE_DIRECTORY, routeSkills, routeSkillsStructured };
 

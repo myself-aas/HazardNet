@@ -36,11 +36,11 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SKILL_CARDS } from '../backend/services/knowledge/skills.js';
+import { SKILL_CARDS } from '../packages/core/src/knowledge/skills.js';
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const SOURCE = join(ROOT, 'backend/services/knowledge/corpus.json');
-const TARGET = join(ROOT, 'backend/services/knowledge/corpus.generated.js');
+const TARGET = join(ROOT, 'packages/core/src/knowledge/corpus.generated.js');
 
 const ALLOWED_BASIS = ['repo-artifact', 'official-directory', 'general-practice'];
 const REQUIRED_NUMBERS = ['999', '1090', '16123'];

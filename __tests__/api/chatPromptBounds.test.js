@@ -21,8 +21,8 @@ const { generateAdvisoryWithFallback } = require('../../backend/utils/ai_fallbac
 // module nobody imports is a test that passes while testing nothing. Everything
 // except `retrieveKnowledge` stays the real implementation, so the budget logic
 // under test is the production code.
-jest.mock('../../backend/services/knowledge/index.js', () => {
-  const actual = jest.requireActual('../../backend/services/knowledge/index.js');
+jest.mock('../../packages/core/src/knowledge/index.js', () => {
+  const actual = jest.requireActual('../../packages/core/src/knowledge/index.js');
   return {
     ...actual,
     retrieveKnowledge: jest.fn(async (query, options = {}) => {
@@ -31,7 +31,7 @@ jest.mock('../../backend/services/knowledge/index.js', () => {
     }),
   };
 });
-const { retrieveKnowledge } = require('../../backend/services/knowledge/index.js');
+const { retrieveKnowledge } = require('../../packages/core/src/knowledge/index.js');
 
 const app = require('../../backend/server').default;
 const MAX_PROMPT_CHARS = 12_000;
