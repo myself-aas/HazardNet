@@ -162,19 +162,39 @@ describe('readArtifact — the failure taxonomy', () => {
 
   it('does not even open a request when the browser says it is offline', async () => {
     const { fetcher, calls } = recordingFetcher(jsonResponse({}));
-    // Node 22 exposes `navigator` but not `onLine`; the browser does. Define it for this test
-    // and put it back, so the offline branch is exercised rather than assumed.
-    const target = globalThis.navigator ?? (globalThis as { navigator?: object }).navigator;
-    const descriptor = Object.getOwnPropertyDescriptor(target ?? {}, 'onLine');
-    Object.defineProperty(target as object, 'onLine', { configurable: true, value: false });
+    /* `navigator.onLine` is a browser global and this suite is `@jest-environment node`, so it
+       has to be supplied. The two Node versions this repository runs differ in what is already
+       there: Node 22 exposes `navigator` (without `onLine`), Node 20 — which CI pins — does
+       not. The first version of this test handled only the Node 22 shape: it read
+       `globalThis.navigator ?? globalThis.navigator` (the same expression twice), so on Node 20
+       the target was `undefined` and `Object.defineProperty` threw. It passed locally and failed
+       on CI, which is exactly the class of failure a version-pinned runner is for.
+       This version installs the global when absent and removes it again afterwards. */
+    const scope = globalThis as { navigator?: { onLine?: boolean } };
+    const hadNavigator = Object.prototype.hasOwnProperty.call(scope, 'navigator');
+    const previous = scope.navigator;
+    const descriptor = previous
+      ? Object.getOwnPropertyDescriptor(previous, 'onLine')
+      : undefined;
+
+    if (previous) {
+      Object.defineProperty(previous, 'onLine', { configurable: true, value: false });
+    } else {
+      scope.navigator = { onLine: false };
+    }
+
     try {
       const result = await readArtifact('/data/x.json', { fetcher });
       expect(result.ok).toBe(false);
       if (!result.ok) expect(result.reason).toBe('offline');
+      // The point of the branch: an offline reader opens no request at all.
       expect(calls).toHaveLength(0);
     } finally {
-      if (descriptor) Object.defineProperty(target as object, 'onLine', descriptor);
-      else Object.defineProperty(target as object, 'onLine', { configurable: true, value: true });
+      if (previous) {
+        if (descriptor) Object.defineProperty(previous, 'onLine', descriptor);
+        else delete (previous as { onLine?: boolean }).onLine;
+      }
+      if (!hadNavigator) delete scope.navigator;
     }
   });
 });
