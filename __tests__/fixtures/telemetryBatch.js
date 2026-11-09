@@ -1,5 +1,5 @@
 /* Provenance — required by __tests__/testQuality.test.js; do not remove.
- * # Captured from packages/analytics/src/streaming.ts:191 (SendBatch) and its __tests__/streaming.test.ts recorder, as posted to /api/v1/telemetry on 2026-11-08 by `node scripts/capture_edge_fixtures.mjs`.
+ * # Captured from packages/analytics/src/streaming.ts:191 (SendBatch) and its __tests__/streaming.test.ts recorder, as posted to /api/v1/telemetry on 2026-11-09 by `node scripts/capture_edge_fixtures.mjs`.
  * # Shape: object — { sessionId, events: [{event, at, properties}] } — the client request, not an upstream response.
  * # To refresh: node scripts/capture_edge_fixtures.mjs (edit EMBEDDED_TELEMETRY if the tracker shape changes).
  *
