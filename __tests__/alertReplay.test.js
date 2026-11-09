@@ -179,18 +179,40 @@ describe('the run report a pipeline consumes', () => {
 
     const gated = await rehearseAlertEngine({ snapshot: stampedOff, now: NOW });
     expect(gated.persisted.published).toBe(0);
-    expect(gated.persisted.blocked).toBe(gated.rows_total);
     expect(Array.isArray(gated.published_alerts)).toBe(true);
     expect(gated.published_alerts).toEqual([]);
-    const reasons = Object.keys(gated.persisted.blocked_reasons);
-    expect(reasons).toHaveLength(1);
-    expect(reasons[0]).toMatch(/model version/i);
+
+    /* "Everything is blocked" is only true when every row would otherwise have been published.
+       `NO_ALERT` assessments are stored as DRAFT and are never published whatever the gate says
+       (service.js: "NO_ALERT assessments are stored, not published"), so they are neither
+       blocked nor published — they are a third outcome. Asserting `blocked === rows_total` was
+       silently asserting that no district in the snapshot scored below WATCH, which held while
+       every row scored 0.40+ and stopped holding when two districts fell to NO_ALERT.
+       The §1.6 property is narrower and does not depend on the data: **no row that the gate
+       would otherwise have auto-published may escape it**, and every row is accounted for. */
+    const publishable = gated.counts.WATCH + gated.counts.WARNING + gated.counts.SEVERE;
+    expect(publishable).toBeGreaterThan(0);                    // otherwise the gate is untested
+    expect(gated.persisted.blocked).toBe(publishable);
+    expect(gated.persisted.blocked + gated.counts.NO_ALERT).toBe(gated.rows_total);
+    expect(gated.persisted.blocked_reasons).toEqual({
+      '§1.6 requires model version before an alert is published': publishable,
+    });
+
     expect(gated.provenance_note).toMatch(/must not|not.*invent/i);
+
+    // Every publishable row carries the reason on the record; every other row is a stored NO_ALERT.
     const drafts = gated.alerts.filter((doc) => doc.publication_blocked_reason);
-    expect(drafts).toHaveLength(gated.rows_total);
+    expect(drafts).toHaveLength(publishable);
     for (const doc of drafts) {
       expect(doc.state).toBe('DRAFT');
       expect(doc.provenance.model_version ?? null).toBeNull();
+      expect(doc.level).not.toBe('NO_ALERT');
+    }
+    const noAlerts = gated.alerts.filter((doc) => doc.level === 'NO_ALERT');
+    expect(noAlerts).toHaveLength(gated.counts.NO_ALERT);
+    for (const doc of noAlerts) {
+      expect(doc.state).toBe('DRAFT');
+      expect(doc.publication_blocked_reason).toBeUndefined();
     }
   });
 
