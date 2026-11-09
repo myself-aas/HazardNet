@@ -128,7 +128,12 @@ describe('GET /api/v1/forecasts/bulk (Pages Function)', () => {
 
     expect(response.status).toBe(503);
     expect(body.error).toBe('forecast snapshot is unavailable');
-    expect(body.detail).toContain('404');
+    // The diagnostic ("the snapshot asset answered 404") must reach the *log* and not the
+    // caller: a 503 body is served to anonymous readers, and the asset path plus the status it
+    // answered describe the deployment's build output. Until 2026-11-09 this assertion wanted
+    // the detail echoed in the body; `backend/edge/response.ts` now applies the same rule as
+    // `backend/utils/clientError.js` on every edge route, so it is logged instead.
+    expect(body.detail).toBeUndefined();
     expect(errorSpy).toHaveBeenCalledWith(
       expect.stringContaining('[forecasts/bulk]'),
       expect.stringContaining('404')
@@ -146,13 +151,18 @@ describe('GET /api/v1/forecasts/bulk (Pages Function)', () => {
       })
     );
     expect(notJson.status).toBe(503);
-    expect((await notJson.json()).detail).toContain('not JSON');
+    // Logged, not served (same reason as the 404 case above).
+    expect((await notJson.json()).detail).toBeUndefined();
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[forecasts/bulk]'),
+      expect.stringContaining('not JSON')
+    );
 
     const wrongShape = await onRequestGet(
       context('/api/v1/forecasts/bulk?horizon=7_days', { snapshot: { schema: 'something-else' } })
     );
     expect(wrongShape.status).toBe(503);
-    expect((await wrongShape.json()).detail).toContain('hazardnet-forecast-snapshot');
+    expect((await wrongShape.json()).error).toBe('forecast snapshot is unavailable');
   });
 
   test('answers a named 503 when the ASSETS binding is absent', async () => {
@@ -163,7 +173,7 @@ describe('GET /api/v1/forecasts/bulk (Pages Function)', () => {
     });
 
     expect(response.status).toBe(503);
-    expect((await response.json()).detail).toContain('ASSETS binding');
+    expect((await response.json()).error).toBe('forecast snapshot is unavailable');
   });
 
   test('honours FORECAST_DATASET from the Pages environment', async () => {
@@ -225,7 +235,7 @@ describe('GET /api/v1/forecasts/metadata (Pages Function)', () => {
       context('/api/v1/forecasts/metadata', { assetResponse: new Response('', { status: 503 }) })
     );
     expect(response.status).toBe(503);
-    expect((await response.json()).detail).toContain('503');
+    expect((await response.json()).error).toBe('forecast snapshot is unavailable');
   });
 });
 

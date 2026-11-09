@@ -160,7 +160,10 @@ describe('/status', () => {
   it('says the artifact could not be loaded instead of showing an empty table', async () => {
     stubFetch({}, false, 404);
     renderPage();
-    expect(await screen.findByText(/could not be loaded \(HTTP 404\)/)).toBeInTheDocument();
+    // The path is named so an operator's log line points at the artifact, not just the status;
+    // `lib/artifacts` owns that message and "HTTP 404 at <path>" is what it reports for a file
+    // the deployment does not ship.
+    expect(await screen.findByText(/could not be loaded \(HTTP 404 at /)).toBeInTheDocument();
     expect(screen.queryByText('Within SLO')).not.toBeInTheDocument();
     expect(screen.queryByText('Checks failing')).not.toBeInTheDocument();
     // The prose half of the page is still there — the route never goes blank.

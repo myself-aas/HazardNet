@@ -9,6 +9,13 @@ export * from './client';
 export * from './errors';
 export * from './retry';
 export {
+  // The endpoint table. Exported from the package root because the web app needs the paths
+  // without the request plumbing — importing `endpoints` directly would pull zod and the
+  // client into every module that only wants a URL string.
+  API_PATHS,
+  API_PATH_BUILDERS,
+  pathOf,
+  relativePath,
   BulkForecastsResponseSchema,
   AlertsListResponseSchema,
   AppConfigResponseSchema,
@@ -16,6 +23,7 @@ export {
   bindEndpoints,
 } from './endpoints';
 export type {
+  ApiPathName,
   BulkForecastsResponse,
   AlertsListResponse,
   AppConfigResponse,

@@ -95,10 +95,20 @@ describe('the snapshot-to-app district join', () => {
 
   it('keeps the alias table small and explicit', () => {
     // A fuzzy match could attach a forecast row to the wrong district; the map is deliberate.
-    expect(Object.keys(DISTRICT_ALIASES).length).toBeLessThan(12);
-    for (const [from, to] of Object.entries(DISTRICT_ALIASES)) {
-      expect(districts.some((district) => district.id === to)).toBe(true);
-      expect(matchKey(from)).toBe(to);
+    //
+    // The ceiling is 16 rather than 12 since 2026-11-09, when this suite started reading the
+    // one shared table in `packages/core/src/districtRegistry.js` instead of a local copy.
+    // The shared table also carries the spellings the *advisory CSV* uses (`Cox's Bazar`,
+    // `Jhalokathi`), which the content engine never needed while it had its own short list —
+    // and which it does need the moment a snapshot row carries them.
+    expect(Object.keys(DISTRICT_ALIASES).length).toBeLessThan(16);
+
+    // The assertion that does the real work: every entry has to resolve to a page the engine
+    // can build. `matchKey` already emits the app's id direction, so the target of the *join*
+    // — not the alias table's literal value — is what must exist in the district table.
+    for (const from of Object.keys(DISTRICT_ALIASES)) {
+      const joinKey = matchKey(from);
+      expect(districts.some((district) => district.id === joinKey)).toBe(true);
     }
   });
 

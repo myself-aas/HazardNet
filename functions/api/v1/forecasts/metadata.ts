@@ -19,24 +19,10 @@ import {
   metadataEnvelopeFromSnapshot,
   snapshotDataSource,
 } from '../../../../backend/utils/forecastSnapshotServe.js';
+import { respond, type PagesContext } from '../../../../backend/edge/response';
 
-/** The subset of the Pages `EventContext` this route uses. */
-interface PagesContext {
-  request: Request;
-  env: { ASSETS?: { fetch: (input: Request) => Promise<Response> }; FORECAST_DATASET?: string };
-}
-
-function json(body: unknown, status: number): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      // A freshness answer is worth nothing if it is cached: the whole point is to report
-      // the artifact currently deployed, which changes only on a deploy.
-      'cache-control': 'no-store, max-age=0',
-    },
-  });
-}
+// A freshness answer is worth nothing if it is cached: the whole point is to report the
+// artifact currently deployed, which changes only on a deploy. Hence `CACHE.noStore`.
 
 export async function onRequestGet(context: PagesContext): Promise<Response> {
   const { request, env } = context;
@@ -44,16 +30,15 @@ export async function onRequestGet(context: PagesContext): Promise<Response> {
   const loaded = await loadForecastSnapshot(env, request);
   if ('error' in loaded) {
     console.error('[forecasts/metadata] snapshot unavailable:', loaded.error);
-    return json({ error: 'forecast snapshot is unavailable', detail: loaded.error }, 503);
+    return respond({ error: 'forecast snapshot is unavailable' }, { status: 503 });
   }
 
-  return json(
+  return respond(
     metadataEnvelopeFromSnapshot(loaded.snapshot, {
       dataSource: snapshotDataSource(env),
       // Imported from the shared module rather than duplicated: the dataset list carries a
       // content id and a canonical URL, and two copies of an id is one copy too many.
       datasets: metadataDatasets(),
-    }),
-    200
+    })
   );
 }

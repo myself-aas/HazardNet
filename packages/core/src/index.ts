@@ -8,6 +8,18 @@
 export * from './contracts';
 export * from './forecasts';
 export * from './alertPolicy';
+// The advisory tier vocabulary: bands, ceiling, review rule, confidence bins. `confidenceBin`
+// here is the same function `./forecasts` re-exports, so the wildcard is narrowed to the names
+// that do not already exist.
+export {
+  ADVISORY_TIERS,
+  AUTO_PUBLISH_CEILING,
+  CONFIDENCE_THRESHOLDS,
+  TIER_BANDS,
+  confidenceBin,
+  requiresReview,
+  tierForSeverity,
+} from './advisoryTier.js';
 export * from './dataStates';
 export * from './freshness';
 export * from './geo';
@@ -46,6 +58,24 @@ export * from './notificationMatcher';
  * the registry by relative path, so the frontend never needs it here - and naming
  * the exports keeps that near-duplicate from being resolved silently.
  */
+/*
+ * The district table and its alias map are exported by name for the same reason the note above
+ * gives: `districtRegistry.js` has a `normalizeDistrictKey` that is not `forecasts.ts`'s, and a
+ * wildcard would resolve them silently. `DISTRICT_ALIASES` in particular is read by exactly one
+ * module (`agent/planner.js`) and by the identity gate — but it is the *value* the gate counts,
+ * so it has to be reachable through the package, not only by relative path. The three platform
+ * entry points (web, mobile, edge) resolve `@hazardnet/core` here, and none of them should have
+ * to reach into a source file to ask how many spellings a district has.
+ */
+export {
+  DISTRICT_REGISTRY,
+  DISTRICT_ALIASES,
+  districtKey,
+  districtSlug,
+  lookupDistrict,
+  normalizeDistrictKey as normalizeRegistryKey,
+  sameDistrict,
+} from './districtRegistry.js';
 export {
   searchKnowledge,
   retrieveKnowledge,

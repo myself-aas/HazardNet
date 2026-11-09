@@ -26,18 +26,41 @@ describe('TASK-004: Type Definitions & Backward Compatibility', () => {
     assert.ok(content.includes('longitude?: number;'));
   });
 
-  test('frontend/src/lib/forecasts.ts exports matching enums and ForecastRow fields', async () => {
+  test('frontend/src/lib/forecasts.ts re-exports the shared contract instead of restating it', async () => {
+    // Before 2026-11-09 this assertion read the *literals* out of the frontend module — which
+    // is exactly how the copy stayed plausible while it drifted from core (`formatHorizonLabel`
+    // had two answers, the alias table had a dead key, and `ForecastRow` had grown two fields
+    // the shared contract did not have, so a shared Zod parse stripped them). The fields are
+    // defined once, in `packages/core/src/forecasts.ts`, and asserted there by the test above.
+    // What this test now has to prove is that the browser module does not restate them.
     const libForecastsPath = path.join(rootDir, 'frontend/src/lib/forecasts.ts');
     const content = fs.readFileSync(libForecastsPath, 'utf8');
 
-    assert.ok(content.includes("export const ADVISORY_TIERS = ['EXTREME', 'SEVERE', 'WARNING', 'WATCH', 'NORMAL'] as const;"));
-    assert.ok(content.includes('advisory_tier?: AdvisoryTier | string;'));
-    assert.ok(content.includes('physics_override?: boolean;'));
-    assert.ok(content.includes('model_severity_raw?: number;'));
-    assert.ok(content.includes('final_severity?: number;'));
-    assert.ok(content.includes('prob_top1?: number;'));
-    assert.ok(content.includes('prob_top2?: number;'));
-    assert.ok(content.includes('prob_top3?: number;'));
+    // No second definition of the vocabulary…
+    assert.doesNotMatch(content, /export const ADVISORY_TIERS\s*=/,
+      'ADVISORY_TIERS must be re-exported from @hazardnet/core, not redeclared');
+    assert.doesNotMatch(content, /export interface ForecastRow\b/,
+      'ForecastRow must be re-exported from @hazardnet/core, not redeclared');
+    assert.doesNotMatch(content, /export function canonicalKey\b|export const canonicalKey\b/,
+      'canonicalKey must be re-exported from @hazardnet/core, not redeclared');
+    assert.doesNotMatch(content, /DISTRICT_NAME_ALIASES|DISTRICT_ALIASES\s*[:=]/,
+      'the district alias table has one owner: packages/core/src/districtRegistry.js');
+
+    // …and the names every call site imports must still be exported from this path.
+    for (const name of [
+      'ADVISORY_TIERS',
+      'ForecastRow',
+      'AdvisoryTier',
+      'canonicalKey',
+      'buildForecastIndex',
+      'rollupAdm3ToDistricts',
+      'severityBin',
+      'confidenceBin',
+      'formatHorizonLabel',
+      'advisoryTierOf',
+    ]) {
+      assert.ok(content.includes(name), `${name} is no longer re-exported by lib/forecasts.ts`);
+    }
   });
 
   test('frontend/src/types/index.ts re-exports core types and enums', async () => {

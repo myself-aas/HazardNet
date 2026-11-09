@@ -28,6 +28,11 @@ import {
   requiresReview,
   ADVISORY_POLICY,
 } from '../scripts/lib/advisory-tier.mjs';
+/* `alertPolicy.ts` is TypeScript, so it is read as source rather than imported: this file runs
+   under both Jest and `node --test`, and plain Node cannot load a `.ts` specifier. The values
+   still come from the one declaration — the object is read out of `advisoryTier.js`, which Node
+   *can* load, and the spread in `alertPolicy.ts` is asserted to be a spread. */
+import { TIER_BANDS as CORE_BANDS } from '../packages/core/src/advisoryTier.js';
 
 const describe = globalThis.describe ?? nodeTest.describe;
 const test = globalThis.test ?? nodeTest.test;
@@ -43,20 +48,19 @@ describe('advisory tier bands — the manuscript\u2019s numbers, everywhere', ()
   });
 
   test('packages/core SEVERITY_THRESHOLDS agree with the pipeline', () => {
+    /* This used to read the numbers out of `alertPolicy.ts` with a regex, because that file was
+       where they were declared. Since 2026-11-09 they are declared once, in
+       `advisoryTier.js`, and `alertPolicy.ts` spreads that object — so the assertion reads the
+       *value* the browser imports rather than a source block. A spread cannot drift. */
+    assert.deepStrictEqual({ ...CORE_BANDS }, { ...TIER_BANDS },
+      'packages/core declares the bands once; scripts/lib re-exports them');
+    // …and `alertPolicy.ts` spreads that declaration rather than restating it.
     const src = read('packages/core/src/alertPolicy.ts');
     const block = src.match(/export const SEVERITY_THRESHOLDS = \{[\s\S]*?\} as const;/);
     assert.ok(block, 'SEVERITY_THRESHOLDS not found in alertPolicy.ts');
-    const value = (key) => {
-      const m = block[0].match(new RegExp(`${key}:\\s*([\\d.]+)`));
-      assert.ok(m, `${key} not found in SEVERITY_THRESHOLDS`);
-      return Number(m[1]);
-    };
-    assert.strictEqual(value('WATCH'), TIER_BANDS.WATCH);
-    assert.strictEqual(value('WARNING'), TIER_BANDS.WARNING);
-    assert.strictEqual(value('SEVERE'), TIER_BANDS.SEVERE);
-    // One WATCH floor, not two: the second conjunct used to be 0.55, which made a district at
-    // 0.45 WATCH to a reader and NO_ALERT to the engine.
-    assert.strictEqual(value('WATCH_MIN_SEVERITY'), TIER_BANDS.WATCH);
+    assert.match(block[0], /\.\.\.TIER_BANDS/);
+    assert.match(block[0], /WATCH_MIN_SEVERITY: TIER_BANDS\.WATCH/);
+    assert.doesNotMatch(block[0], /:\s*0\.\d+/, 'no band may be re-typed in alertPolicy.ts');
   });
 
   test('the alert engine’s severity route uses the same band', () => {
@@ -68,21 +72,34 @@ describe('advisory tier bands — the manuscript\u2019s numbers, everywhere', ()
 
   test('the auto-publish ceiling is one value, and it is WATCH', () => {
     assert.strictEqual(AUTO_PUBLISH_CEILING, 'WATCH');
-    assert.match(read('packages/core/src/alertPolicy.ts'), /AUTO_PUBLISH_CEILING = 'WATCH'/);
+    // Declared once, in the tier module, and re-exported by the alert policy.
+    assert.match(read('packages/core/src/advisoryTier.js'), /AUTO_PUBLISH_CEILING = 'WATCH'/);
+    assert.match(read('packages/core/src/alertPolicy.ts'),
+      /export \{ AUTO_PUBLISH_CEILING \} from '\.\/advisoryTier\.js'/);
     assert.strictEqual(ADVISORY_POLICY.auto_publish_ceiling, AUTO_PUBLISH_CEILING);
   });
 
   test('the web client derives no higher than the ceiling, from the same band', () => {
-    // `tierFromSeverity` reads SEVERITY_THRESHOLDS.WATCH and stops at WATCH by design; the
-    // assertion is that it still imports the shared constant rather than a literal.
-    const src = read('frontend/src/lib/forecasts.ts');
-    assert.match(src, /import \{ SEVERITY_THRESHOLDS \} from '@hazardnet\/core'/);
-    const body = src.match(/export function tierFromSeverity\([\s\S]*?\n\}/);
-    assert.ok(body, 'tierFromSeverity not found');
+    // `tierFromSeverity` reads SEVERITY_THRESHOLDS.WATCH and stops at WATCH by design. Since
+    // 2026-11-09 it is defined once, in `packages/core`, and the browser module re-exports it —
+    // so the assertion follows the definition to its owner and separately proves the browser
+    // module has not forked it again. (The old version read the frontend copy because that is
+    // where the function used to live; a copy that is re-exported from here on would have made
+    // this test pass while the shared one was edited.)
+    const owner = read('packages/core/src/forecasts.ts');
+    assert.match(owner, /import \{ SEVERITY_THRESHOLDS \} from '\.\/alertPolicy'/);
+    const body = owner.match(/export function tierFromSeverity\([\s\S]*?\n\}/);
+    assert.ok(body, 'tierFromSeverity not found in packages/core/src/forecasts.ts');
     assert.match(body[0], /SEVERITY_THRESHOLDS\.WATCH/);
     // The safety property: a client may never derive a tier that requires a duty officer.
     assert.doesNotMatch(body[0], /SEVERITY_THRESHOLDS\.(WARNING|SEVERE)/);
     assert.doesNotMatch(body[0], /'WARNING'|'SEVERE'/);
+
+    // And the browser module must not grow a second one.
+    const web = read('frontend/src/lib/forecasts.ts');
+    assert.doesNotMatch(web, /export function tierFromSeverity\b/,
+      'tierFromSeverity is defined in packages/core; lib/forecasts.ts re-exports it');
+    assert.match(web, /tierFromSeverity/, 'lib/forecasts.ts must still re-export tierFromSeverity');
   });
 });
 

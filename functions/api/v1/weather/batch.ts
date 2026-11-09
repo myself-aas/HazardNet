@@ -17,6 +17,7 @@
 
 import { fetchCurrentWeatherBatch } from '../../../../backend/utils/openMeteo.js';
 import { parseCoordsQuery, parsePointsBody } from '../../../../backend/utils/weatherQuery.js';
+import { CACHE, respond, respondError, type PagesContext as BasePagesContext } from '../../../../backend/edge/response';
 
 /** The Node entry's declared limit (`config.api.bodyParser.sizeLimit`). */
 const BODY_MAX_BYTES = 256 * 1024;
@@ -27,20 +28,10 @@ interface Point {
   lng: number;
 }
 
-interface PagesContext {
-  request: Request;
-}
+type PagesContext = BasePagesContext;
 
-function json(body: unknown, status: number, extraHeaders: Record<string, string> = {}): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      'cache-control': 'public, max-age=900',
-      ...extraHeaders,
-    },
-  });
-}
+/** 15 minutes, matching the single-point endpoint and the Node handler. */
+const BATCH_CACHE = CACHE.publicFor(900);
 
 export async function onRequest(context: PagesContext): Promise<Response> {
   const { request } = context;
@@ -50,40 +41,43 @@ export async function onRequest(context: PagesContext): Promise<Response> {
   if (request.method === 'POST') {
     const raw = await request.text();
     if (raw.length > BODY_MAX_BYTES) {
-      return json({ error: 'payload too large' }, 413, { 'cache-control': 'no-store' });
+      return respond({ error: 'payload too large' }, { status: 413 });
     }
     let body: { timezone?: string; points?: unknown };
     try {
       body = JSON.parse(raw);
     } catch {
-      return json({ error: 'body must be valid JSON' }, 400, { 'cache-control': 'no-store' });
+      return respond({ error: 'body must be valid JSON' }, { status: 400 });
     }
     timezone = typeof body?.timezone === 'string' && body.timezone ? body.timezone : timezone;
     const parsed = parsePointsBody(body?.points);
     if ('error' in parsed) {
-      return json({ error: parsed.error }, 400, { 'cache-control': 'no-store' });
+      return respond({ error: parsed.error }, { status: 400 });
     }
     points = parsed.points;
   } else if (request.method === 'GET') {
     const coords = new URL(request.url).searchParams.get('coords') ?? '';
     const parsed = parseCoordsQuery(coords);
     if ('error' in parsed) {
-      return json({ error: parsed.error }, 400, { 'cache-control': 'no-store' });
+      return respond({ error: parsed.error }, { status: 400 });
     }
     points = parsed.points;
   } else {
-    return json({ error: 'method not allowed' }, 405, { allow: 'GET, POST', 'cache-control': 'no-store' });
+    return respond({ error: 'method not allowed' }, { status: 405, headers: { allow: 'GET, POST' } });
   }
 
   try {
     const results = await fetchCurrentWeatherBatch(points, { timezone });
-    return json({
+    return respond({
       count: results.length,
       generated_at: new Date().toISOString(),
       points: results,
-    }, 200);
+    }, { cache: BATCH_CACHE });
   } catch (error) {
-    console.error('[weather/batch] lookup failed:', error instanceof Error ? error.message : error);
-    return json({ error: 'Weather lookup failed' }, 502, { 'cache-control': 'no-store' });
+    return respondError(error, {
+      scope: 'api/v1/weather/batch',
+      status: 502,
+      fallback: 'Weather lookup failed',
+    });
   }
 }

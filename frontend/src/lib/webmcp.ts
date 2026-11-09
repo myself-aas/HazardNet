@@ -9,6 +9,7 @@
  * Unsupported browsers do no network work and retain the normal human interface.
  * This module has no import-time side effects; main.tsx owns its lifecycle.
  */
+import { canonicalKey } from '@hazardnet/core';
 import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
 
 interface McpDescriptor {
@@ -157,10 +158,10 @@ function browserTools(session: AbortController): ModelContextTool[] {
         const execution = executionSignal(session, options?.signal);
         const query = input.query.toLowerCase().replace(/[^a-z0-9]/g, '');
         if (!query) throw new Error('Provide a district name in Latin script.');
-        const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
-        const aliases: Record<string, string> = { chittagong: 'chattogram', comilla: 'cumilla', barisal: 'barishal', jessore: 'jashore', bogura: 'bogra', nawabganj: 'chapainawabganj' };
-        const districtKey = aliases[normalize(input.query)] || normalize(input.query);
-        const exact = ALL_64_DISTRICTS.find((place) => normalize(place.name) === districtKey);
+        // One alias table for the whole app: the six-entry literal that used to sit here
+        // was a fifth copy, and any district it did not know resolved nowhere.
+        const districtKey = canonicalKey(input.query);
+        const exact = ALL_64_DISTRICTS.find((place) => canonicalKey(place.name) === districtKey);
         try {
           const index = await jsonRequest('/data/content-index.json', { headers: { Accept: 'application/json' } }, execution.signal) as {
             routes?: Array<{ path: string; title: string }>;

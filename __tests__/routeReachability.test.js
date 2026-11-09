@@ -32,7 +32,13 @@ function walk(dir, extensions, out = []) {
 
 /** Pages' file-based routing: functions/api/v1/alerts/index.ts → /api/v1/alerts. */
 function functionRoutePaths() {
-  return walk(FUNCTIONS_ROOT, ['.ts', '.js']).map((file) => {
+  const files = walk(FUNCTIONS_ROOT, ['.ts', '.js']).filter((file) => {
+    const relative = path.relative(FUNCTIONS_ROOT, file).replace(/\\/g, '/');
+    // Pages wiring, not routes: the middleware (`_middleware.ts`) and the catch-all asset
+    // handler (`[[path]].ts`) answer everything and match no path of their own.
+    return !/^(?:_middleware|\[\[path\]\])\.(ts|js)$/.test(relative);
+  });
+  return files.map((file) => {
     let relative = path.relative(FUNCTIONS_ROOT, file).replace(/\\/g, '/');
     relative = relative.replace(/\.(ts|js)$/, '').replace(/\/index$/, '');
     return `/api/${relative}`;
@@ -43,17 +49,36 @@ function functionRoutePaths() {
  * Every `/api/...` literal in browser source. Template expressions become `*`; external
  * URLs (anything with `://` before the match) are ignored; test files are excluded.
  */
+/* The routes the frontend calls are written once, in `packages/api/src/endpoints.ts`, and the
+   call sites read that table — so the table is part of the frontend's route surface and has to
+   be scanned with it. Scanning `frontend/src` alone still finds the paths this repository names
+   in comments and i18n copy, which is why the guard count below stayed above 20 while the two
+   paths asserted by name went missing. */
+const API_TABLE_ROOT = path.join(ROOT, 'packages', 'api', 'src');
+
 function frontendApiPaths() {
   const found = new Set();
-  for (const file of walk(FRONTEND_ROOT, ['.ts', '.tsx', '.js', '.jsx'])) {
+  for (const file of [
+    ...walk(FRONTEND_ROOT, ['.ts', '.tsx', '.js', '.jsx']),
+    ...walk(API_TABLE_ROOT, ['.ts', '.tsx', '.js']),
+  ]) {
     if (file.includes(`${path.sep}__tests__${path.sep}`)) continue;
+    // `packages/api/src/…` is a path too, and it is not an API route.
+    if (file.includes(`${path.sep}packages${path.sep}`) && !file.endsWith('endpoints.ts')) continue;
     const source = fs.readFileSync(file, 'utf8');
     for (const match of source.matchAll(/\/api\/[A-Za-z0-9_.\-/${}]*/g)) {
       const before = source.slice(Math.max(0, match.index - 40), match.index);
       if (before.includes('://')) continue;   // e.g. https://discord.com/api/webhooks
-      let value = match[0].split('?')[0];
+      if (before.includes('packages')) continue;  // the package's own `packages/api/src/…` paths
+      let raw = match[0];
+      // A path ending in `/` is a prefix (`/api/v1/events/district` + the id), so it is a
+      // wildcard route — the same shape the disposition register records. Read before the
+      // query split, because `/api/v1/kaggle?horizon=` has a query and no trailing slash.
+      const isPrefix = raw.endsWith('/');
+      let value = raw.split('?')[0];
       if (value.includes('${')) value = `${value.slice(0, value.indexOf('${'))}*`;
       value = value.replace(/\/+$/, '');
+      if (isPrefix && value && !value.includes('*')) value = `${value}/*`;
       if (value && value !== '/api/') found.add(value);
     }
   }

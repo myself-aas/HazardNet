@@ -77,12 +77,19 @@ describe('AlertDetailPage (/alerts/:id)', () => {
     // Mount an alert that exists in the committed snapshot so the test stays
     // green as the daily artifact rotates, instead of hardcoding a run date
     // that disappears the next time the snapshot is regenerated.
-    const chandpurFlashFlood = ALERTS_SNAPSHOT.alerts.find(
-      (a: AlertRecord) => Number(a.district_id) === 60 && a.hazard_type === 'Flash Flood'
+    //
+    // The hazard is *not* hardcoded, for the same reason the date is not. It read
+    // `hazard_type === 'Flash Flood'` — true of the 2026-10-24 snapshot, false of the committed
+    // one, where Chandpur's published row is a `Flood`. The lookup then returned undefined, so
+    // this test failed on its own precondition rather than on the page it exists to cover.
+    // The property under test is "Chandpur, whatever hazard the run published for it": one
+    // published alert per district and horizon, which is what the pipeline guarantees.
+    const chandpurAlert = ALERTS_SNAPSHOT.alerts.find(
+      (a: AlertRecord) => Number(a.district_id) === 60
     );
-    expect(chandpurFlashFlood).toBeDefined();
-    const alertId = chandpurFlashFlood!.id;
-    const peakDate = formatDate(chandpurFlashFlood!.target_date, 'en');
+    expect(chandpurAlert).toBeDefined();
+    const alertId = chandpurAlert!.id;
+    const peakDate = formatDate(chandpurAlert!.target_date, 'en');
 
     const { container } = mountAlert(alertId);
 
@@ -124,20 +131,23 @@ describe('AlertDetailPage (/alerts/:id)', () => {
   });
 
   it('resolves a superseded bookmarked alert ID to the district’s current trajectory alert with an update note', async () => {
-    const chandpurFlashFlood = ALERTS_SNAPSHOT.alerts.find(
-      (a: AlertRecord) => Number(a.district_id) === 60 && a.hazard_type === 'Flash Flood'
+    const chandpurAlert = ALERTS_SNAPSHOT.alerts.find(
+      (a: AlertRecord) => Number(a.district_id) === 60
     );
-    expect(chandpurFlashFlood).toBeDefined();
+    expect(chandpurAlert).toBeDefined();
     // A bookmarked id for the same district/hazard that is deliberately absent
-    // from the snapshot, so the page must fall back to the current run.
-    const bookmarkedId = `2026-11-20__15_days__60__flash-flood__p2026-11-02`;
+    // from the snapshot, so the page must fall back to the current run. The hazard
+    // segment comes from the row so the bookmark stays a *stale id for this district*
+    // rather than becoming a bookmark for a hazard Chandpur does not carry.
+    const hazardSlug = String(chandpurAlert!.hazard_type).trim().toLowerCase().replace(/[\s_]+/g, '-');
+    const bookmarkedId = `2026-11-20__15_days__60__${hazardSlug}__p2026-11-02`;
     const { container } = mountAlert(bookmarkedId);
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Evidence card' })).toBeInTheDocument();
     expect(container.querySelector(`#${EVIDENCE_CARD_ID}`)?.textContent).toMatch(/Chandpur/);
     const banner = await screen.findByTestId('superseded-alert-banner');
     expect(banner.textContent).toMatch(/Showing updated forecast run/i);
-    expect(banner.textContent).toMatch(chandpurFlashFlood!.id);
+    expect(banner.textContent).toMatch(chandpurAlert!.id);
     expect(await screen.findByTestId('continuous-15day-trajectory')).toBeInTheDocument();
   });
 });

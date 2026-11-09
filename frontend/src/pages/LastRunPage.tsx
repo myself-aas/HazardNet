@@ -18,6 +18,7 @@ import ArticlePage from '../components/ArticlePage';
 import RunVisual from '../components/frontdoor/RunVisual';
 import { useAlertsData } from '../hooks/useAlertsData';
 import { FRESHNESS_URL, parseFreshness, type FreshnessArtifact } from '../lib/freshness';
+import { readArtifact } from '../lib/artifacts';
 
 /**
  * One fetch, no retries, no polling: the card states what the deployment ships at the moment
@@ -30,18 +31,16 @@ function useFreshnessArtifact(): { freshness: FreshnessArtifact | null; loading:
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      try {
-        const response = await fetch(FRESHNESS_URL, { cache: 'no-cache' });
-        const payload = await response.json();
-        const parsed = parseFreshness(payload);
-        if (!cancelled && parsed) setFreshness(parsed);
-      } catch {
-        /* unreadable stays null — the card says so instead of dressing the gap as a number */
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
+    // unreadable stays null
+    // Through `lib/artifacts`, so this read has the same 6 s deadline and the same definition
+    // of "missing" as every other artifact read on the site. It used to be a bare `fetch` with
+    // no deadline: a slow connection could hold the card open indefinitely.
+    void readArtifact(FRESHNESS_URL, { validate: parseFreshness }).then((result) => {
+      if (cancelled) return;
+      // Unreadable stays null — the card says so instead of dressing the gap as a number.
+      if (result.ok) setFreshness(result.data);
+      setLoading(false);
+    });
     return () => {
       cancelled = true;
     };

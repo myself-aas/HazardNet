@@ -46,27 +46,25 @@ function isOfflineFailure(error: unknown): boolean {
 }
 
 import backendForecasts from '../data/backendForecasts.json';
-import { fetchStaticForecastSnapshot, type ForecastHorizon } from './forecasts';
+import { API_PATHS } from '@hazardnet/api';
+import {
+  canonicalKey,
+  fetchStaticForecastSnapshot,
+  latestRowsByDistrict,
+  type ForecastHorizon,
+} from './forecasts';
 import { loadNationalDailySnapshot, rollupDailyAdvisoriesToForecastRows } from './dailyAdvisories';
 
-const DISTRICT_ALIASES: Record<string, string> = {
-  jessore: 'jashore',
-  chittagong: 'chattogram',
-  comilla: 'cumilla',
-  barishal: 'barisal',
-  khagrachari: 'khagrachhari',
-  bogura: 'bogra',
-  jaipurhat: 'joypurhat',
-  netrakona: 'netrokona',
-  maulvibazar: 'moulvibazar',
-  brahamanbaria: 'brahmanbaria',
-  jhalakathi: 'jhalokati',
-  nawabganj: 'chapainawabganj',
-};
-
+/**
+ * District matching for stored predictions.
+ *
+ * The alias table used to live here, as one of seven copies. It now delegates to
+ * `canonicalKey` in `packages/core` so a district that resolves through the forecast
+ * overlay also resolves through the stored-prediction path — the two used to differ
+ * about `Cox's Bazar` and about which direction the renames ran.
+ */
 function normalizeKey(value: string | number): string {
-  const clean = String(value).toLowerCase().replace(/[^a-z0-9]/g, '');
-  return DISTRICT_ALIASES[clean] || clean;
+  return canonicalKey(String(value));
 }
 
 interface RawForecastRow {
@@ -216,7 +214,12 @@ async function resolveStaticStoredForecast(
     }
   }
 
-  const snapshotRows = await fetchStaticForecastSnapshot(requestedHorizon).catch(() => []);
+  // The served row for a district is `latestRowsByDistrict`'s choice, the same rule /bulk and
+  // the map apply. This branch used to `find` the first name match in file order, so a daily
+  // payload could answer with a different day (and a different severity) than the API did.
+  const snapshotRows = latestRowsByDistrict(
+    await fetchStaticForecastSnapshot(requestedHorizon).catch(() => []),
+  );
   if (snapshotRows.length > 0) {
     const hit = snapshotRows.find((r) =>
       numeric ? String(r.district_id) === districtId.trim() : normalizeKey(r.district_name) === targetKey,
@@ -262,7 +265,7 @@ export async function fetchStoredPrediction(
 
   let response: Response | null = null;
   try {
-    response = await fetch('/api/predict', {
+    response = await fetch(API_PATHS.predict, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ districtId: districtId.trim(), horizon }),

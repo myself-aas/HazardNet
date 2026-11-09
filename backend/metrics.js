@@ -1,4 +1,5 @@
 import client from 'prom-client';
+import { ageHoursFromDate } from '../packages/core/src/freshnessSlo.js';
 const register = client.register;
 
 // Histogram for inference latency in milliseconds
@@ -56,10 +57,11 @@ const forecastAgeHours = new client.Gauge({
  * carries up to ±24h of granularity). Returns null for missing/invalid input.
  */
 export function forecastAgeHoursFromPredictionDate(predictionDate) {
-  if (typeof predictionDate !== 'string') return null;
-  const parsed = Date.parse(`${predictionDate.slice(0, 10)}T00:00:00Z`);
-  if (!Number.isFinite(parsed)) return null;
-  return (Date.now() - parsed) / 3_600_000;
+  // The day-granular convention (measured from that day's UTC midnight) lives in
+  // `packages/core/src/freshnessSlo.js`, with the SLO it is compared against. This file used to
+  // carry its own copy of the arithmetic; the two agreed by inspection only.
+  // `Date.now()` is passed explicitly so a test that shifts the clock sees the shift.
+  return ageHoursFromDate(predictionDate, Date.now());
 }
 
 // Helper setters

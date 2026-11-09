@@ -10,6 +10,12 @@ import {
   parsePublicDailySnapshot,
   rollupDailySnapshotToHorizons,
 } from './dailyAdvisoryPublic.js';
+import { districtKey } from '../../packages/core/src/districtRegistry.js';
+import {
+  buildForecastIndex,
+  effectiveDistrictRows,
+  latestRowsByDistrict as latestRows,
+} from '../../packages/core/src/forecastIndex.js';
 import { VALID_HORIZONS } from './forecastRow.js';
 import { predictFromStore } from './predictFromStore.js';
 
@@ -20,28 +26,14 @@ export const NOTEBOOK_SOURCE = 'hazardnet/forecast-pipeline';
 export const DEFAULT_KAGGLE_DATASET = 'ashifahmedshuvo/hazardnet-weekly-forecasts';
 export const DEFAULT_KAGGLE_FILE = 'hazardnet_advisories_latest.csv';
 
-const DISTRICT_ALIASES = {
-  jessore: 'jashore',
-  chittagong: 'chattogram',
-  comilla: 'cumilla',
-  barishal: 'barisal',
-  barisal: 'barishal',
-  khagrachari: 'khagrachhari',
-  bogura: 'bogra',
-  jaipurhat: 'joypurhat',
-  netrakona: 'netrokona',
-  maulvibazar: 'moulvibazar',
-  brahamanbaria: 'brahmanbaria',
-  jhalakathi: 'jhalokati',
-  nawabganj: 'chapainawabganj',
-  coxsbazar: 'coxsbazar',
-  coxbazar: 'coxsbazar',
-};
-
-function normalizeDistrictLookup(value) {
-  const clean = String(value).toLowerCase().replace(/[^a-z0-9]/g, '');
-  return DISTRICT_ALIASES[clean] || clean;
-}
+/**
+ * District matching for the snapshot-backed read path.
+ *
+ * The alias table used to be a literal here — one of seven copies in the repository.
+ * It now delegates to `packages/core`, which is the only place a GAUL spelling, a
+ * post-2015 rename or an apostrophe variant is resolved.
+ */
+const normalizeDistrictLookup = (value) => districtKey(value);
 
 export function snapshotDataSource(env) {
   const configured = env && typeof env.FORECAST_DATASET === 'string' ? env.FORECAST_DATASET.trim() : '';
@@ -164,8 +156,33 @@ export function snapshotRows(snapshot, horizon) {
   return Array.isArray(rows) ? rows : [];
 }
 
+/**
+ * One row per district for one horizon — the rule `GET /bulk` is named after.
+ *
+ * "One row per district" was true of the committed snapshot (the builder writes one row per
+ * district) and false of every other source: the daily rollup carries up to 15 rows per
+ * district (one per forecast day), so an ADM3-shaped or daily-shaped payload ran straight
+ * through the edge while the Node handler read a store that had already collapsed it. Three
+ * readers therefore each had their own *private* rule — `useForecasts` compared
+ * `rows[0].prediction_date`, `storedPrediction` sorted and took the first match,
+ * `rollupAdm3ToDistricts` kept the max-severity unit — and a fourth (this envelope) had none.
+ *
+ * `buildForecastIndex` is the rule, and it is now the only one: roll ADM3 units up to their
+ * ADM2 parent, then keep the newest row per district. Two behaviours follow, both deliberate:
+ *
+ *   · a daily (15-step) payload yields 64 rows here rather than 960, which is what the endpoint
+ *     name promises and what the map renders;
+ *   · the response carries **promoted rows**, not the committed array. They are the same objects
+ *     the snapshot held — the field names, types and values are unchanged — but a test that
+ *     asserted array *identity* against the file is now asserting something the endpoint never
+ *     promised. `__tests__/pagesForecasts.test.js` compares by content.
+ */
+export function latestRowsByDistrict(rows) {
+  return latestRows(Array.isArray(rows) ? rows : []);
+}
+
 export function bulkEnvelopeFromSnapshot(snapshot, horizon, { dataSource, generatedAt } = {}) {
-  const rows = snapshotRows(snapshot, horizon);
+  const rows = latestRowsByDistrict(snapshotRows(snapshot, horizon));
   return {
     horizon,
     count: rows.length,
@@ -178,6 +195,8 @@ export function bulkEnvelopeFromSnapshot(snapshot, horizon, { dataSource, genera
 export function metadataEnvelopeFromSnapshot(snapshot, { dataSource, generatedAt, datasets } = {}) {
   const horizonRows = Object.values(snapshot && snapshot.horizons ? snapshot.horizons : {})
     .filter((rows) => Array.isArray(rows));
+  // The headline audit is taken over the raw artifact on purpose: `row_count` states how many
+  // rows the deployment holds, while `forecasts` on /bulk states one per district.
   const rowCount = horizonRows.reduce((total, rows) => total + rows.length, 0);
 
   const newestPredictionDate = horizonRows
@@ -229,19 +248,18 @@ export function storedPredictionFromSnapshot(snapshot, body, { now = new Date(),
     return { status: 400, body: { error: 'Invalid horizon. Use: 7_days, 15_days' } };
   }
 
-  const rows = snapshotRows(snapshot, horizon);
+  // Same rule as /bulk: the newest row per district, after the ADM3 rollup. This used to sort
+  // every row of the horizon and take the first name match, so a daily payload could answer
+  // with an upazila row while /bulk answered with the district's dominant one.
   const numeric = /^\d+$/.test(String(district).trim());
   const targetKey = normalizeDistrictLookup(district);
+  const byDistrict = buildForecastIndex(effectiveDistrictRows(snapshotRows(snapshot, horizon)));
+  const selected = [...byDistrict.values()].find((row) => {
+    if (!row || typeof row !== 'object') return false;
+    if (numeric) return String(row.district_id) === String(district).trim();
+    return normalizeDistrictLookup(row.district_name || '') === targetKey;
+  });
 
-  const matching = rows
-    .filter((r) => {
-      if (!r || typeof r !== 'object') return false;
-      if (numeric) return String(r.district_id) === String(district).trim();
-      return normalizeDistrictLookup(r.district_name || '') === targetKey;
-    })
-    .sort((a, b) => String(b.prediction_date || '').localeCompare(String(a.prediction_date || '')));
-
-  const selected = matching[0];
   if (!selected) {
     return { status: 404, body: { error: 'No stored forecast for this district and horizon' } };
   }
@@ -260,7 +278,9 @@ export function storedPredictionFromSnapshot(snapshot, body, { now = new Date(),
  */
 export function kaggleEnvelopeFromSnapshot(snapshot, horizon, options = {}) {
   const { dailyMeta = null, now = new Date() } = options;
-  const rows = snapshotRows(snapshot, horizon);
+  // The Kaggle mirror publishes the same per-district answer the map reads, not the raw
+  // artifact: a consumer comparing it with /bulk must not see 960 rows here and 64 there.
+  const rows = latestRowsByDistrict(snapshotRows(snapshot, horizon));
   const generatedAt = (dailyMeta && dailyMeta.generatedAt)
     || (snapshot && typeof snapshot.generated_at === 'string' ? snapshot.generated_at : null);
   const cutoffMs = dailyMeta && dailyMeta.dataCutoff

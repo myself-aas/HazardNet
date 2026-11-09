@@ -9,22 +9,7 @@ import {
   loadForecastOrDailySnapshot,
 } from '../../../../backend/utils/forecastSnapshotServe.js';
 import { loadPublicDailyAsset, queryPublicDaily } from '../../../../backend/utils/dailyAdvisoryServe.js';
-
-interface PagesContext {
-  request: Request;
-  env: { ASSETS?: { fetch: (input: Request) => Promise<Response> } };
-}
-
-function json(body: unknown, status: number): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      'cache-control': 'no-store, max-age=0',
-      'x-content-type-options': 'nosniff',
-    },
-  });
-}
+import { respond, type PagesContext } from '../../../../backend/edge/response';
 
 export async function onRequestGet(context: PagesContext): Promise<Response> {
   const { request, env } = context;
@@ -32,7 +17,7 @@ export async function onRequestGet(context: PagesContext): Promise<Response> {
   const horizon = url.searchParams.get('horizon') || '7_days';
 
   if (horizon !== '7_days' && horizon !== '15_days' && horizon !== 'daily') {
-    return json({ error: 'horizon must be 7_days, 15_days, or daily' }, 400);
+    return respond({ error: 'horizon must be 7_days, 15_days, or daily' }, { status: 400 });
   }
 
   if (horizon === 'daily') {
@@ -43,12 +28,12 @@ export async function onRequestGet(context: PagesContext): Promise<Response> {
       days: '15',
       ...(district ? { district } : {}),
     });
-    return json(result.body, result.code);
+    return respond(result.body, { status: result.code });
   }
 
   const loaded = await loadForecastOrDailySnapshot(env, request);
   if ('error' in loaded) {
-    return json({
+    return respond({
       status: 'unavailable',
       source: 'kaggle-snapshot',
       dataset: 'ashifahmedshuvo/hazardnet-weekly-forecasts',
@@ -60,11 +45,11 @@ export async function onRequestGet(context: PagesContext): Promise<Response> {
       rowCount: 0,
       lastError: { code: 'SNAPSHOT_UNAVAILABLE', message: loaded.error, at: new Date().toISOString() },
       data: [],
-    }, 503);
+    }, { status: 503 });
   }
 
   const envelope = kaggleEnvelopeFromSnapshot(loaded.snapshot, horizon, {
     dailyMeta: loaded.dailyMeta ?? null,
   });
-  return json(envelope, envelope.status === 'unavailable' ? 503 : 200);
+  return respond(envelope, { status: envelope.status === 'unavailable' ? 503 : 200 });
 }

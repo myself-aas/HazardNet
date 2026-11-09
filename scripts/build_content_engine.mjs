@@ -46,6 +46,8 @@ import { fileURLToPath } from 'node:url';
 // name the module that produced a score). The artifacts keep those paths — they are what
 // makes a number auditable by a script — and the published page drops them, because a
 // visitor cannot open one. See scripts/lib/public-text.mjs and scripts/lib/public-text.mjs.
+import { districtSlug } from '../packages/core/src/districtRegistry.js';
+import { confidenceBin as coreConfidenceBin } from '../packages/core/src/advisoryTier.js';
 import { findRepoPaths, withoutRepoPaths } from './lib/public-text.mjs';
 
 export const GENERATED_SCHEMA = 'hazardnet-generated-routes/v1';
@@ -83,28 +85,21 @@ const ORIGIN = 'https://www.hazardnet.live';
 
 /**
  * Spellings the upstream forecast artifact still uses for districts the application has since
- * renamed, or spelled differently when the record was exported. Keys are what the snapshot
- * carries (lower-cased, punctuation stripped); values are the district **ids** in
- * `frontend/src/data/bangladeshDistricts.ts`.
+ * renamed, or spelled differently when the record was exported.
  *
- * Kept explicit rather than fuzzy-matched: a fuzzy match could silently attach a forecast row to
- * the wrong district, which is the one failure mode a district page must not have. Names the map
- * does not cover are reported in the generated summary as `snapshot_districts_unmatched` instead.
+ * The table itself lives in `packages/core/src/districtRegistry.js` — one owner for the
+ * whole repository since 2026-11-09, when this file's own eight-entry copy became the
+ * eighth and was retired. The content engine needs the *slug* direction (its routes are
+ * keyed by `bangladeshDistricts.ts` ids, and the ids of two districts are the pre-rename
+ * slugs), which is `districtSlug`. It is re-exported under this file's name so
+ * `__tests__/contentEngine.test.js` keeps asserting what it always asserted: the table is
+ * small, explicit and every target is a real district id.
+ *
+ * Kept explicit rather than fuzzy-matched: a fuzzy match could silently attach a forecast
+ * row to the wrong district, which is the one failure mode a district page must not have.
+ * Names the map does not cover are reported as `snapshot_districts_unmatched` instead.
  */
-export const DISTRICT_ALIASES = {
-  chittagong: 'chattogram',
-  comilla: 'cumilla',
-  maulvibazar: 'moulvibazar',
-  netrakona: 'netrokona',
-  nawabganj: 'chapainawabganj',
-  brahamanbaria: 'brahmanbaria',
-  // Present in the forecast CSV from the 2026-10-24 publishing run onward: the upstream
-  // pipeline now emits the districts' post-rename spellings, while the app keeps the older
-  // ids because they are URL segments (see bangladeshDistricts.ts, the comment above
-  // `jessore`: "the id stays 'jessore' because it is the URL segment").
-  barishal: 'barisal',
-  jashore: 'jessore',
-};
+export { DISTRICT_ALIASES } from '../packages/core/src/districtRegistry.js';
 
 /* ─────────────────────────────── small helpers ─────────────────────────────── */
 
@@ -125,12 +120,20 @@ export function titleCase(text) {
     .join(' ');
 }
 
-/** Confidence bin, following the product spec's bands (§1.2, `lib/alerts.ts`). */
+/**
+ * Confidence bin, following the product spec's bands (§1.2, `lib/alerts.ts`).
+ *
+ * The two cut points are `packages/core/src/advisoryTier.js` (`CONFIDENCE_THRESHOLDS`); the
+ * prose around them is this builder's, because the content engine prints it into the
+ * knowledge base. The numbers used to be written twice — once here, once in core — and agreed
+ * by inspection.
+ */
 export function confidenceBin(confidence) {
   const value = num(confidence);
   if (value === null) return 'unknown';
-  if (value >= 0.85) return 'Certain (≥ 0.85)';
-  if (value >= 0.7) return 'Probable (0.70–0.85)';
+  const bin = coreConfidenceBin(value);
+  if (bin === 'Certain') return 'Certain (≥ 0.85)';
+  if (bin === 'Probable') return 'Probable (0.70–0.85)';
   return 'Uncertain (< 0.70)';
 }
 
@@ -144,13 +147,14 @@ export function divergence(modelSeverity, physicsSeverity) {
 
 /**
  * Canonical join key between the snapshot's district names and the app's district table:
- * lower-case, alphanumerics only, then the alias map above.
+ * lower-case, alphanumerics only, then the rename map, then the legacy-slug direction the
+ * app's ids use (`jashore` → `jessore`, `barishal` → `barisal`).
+ *
+ * `districtSlug` is that whole chain, in `packages/core`. It replaced three lines of local
+ * normalization that agreed with the rest of the repository only by luck.
  */
 export function matchKey(name) {
-  const slug = String(name || '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, '');
-  return DISTRICT_ALIASES[slug] ?? slug;
+  return districtSlug(name);
 }
 
 /* ─────────────────────────────── inputs ─────────────────────────────── */

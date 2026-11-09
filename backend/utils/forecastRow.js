@@ -16,8 +16,14 @@
  * default — see `docs/model-ops/CALIBRATION.md`.
  */
 
-// Tactical and strategic forecast horizons shared by the notebook, API, and UI.
-export const VALID_HORIZONS = ['7_days', '15_days'];
+import { FORECAST_HORIZONS, horizonDays } from '../../packages/core/src/horizon.js';
+
+const VALID_HORIZONS = FORECAST_HORIZONS;
+
+// Tactical and strategic forecast horizons shared by the notebook, API, and UI. The keys and
+// their day counts live in `packages/core/src/horizon.js`; this module used to derive the count
+// with `parseInt(horizon.split('_')[0])`, the one place that got it right by construction.
+export { FORECAST_HORIZONS as VALID_HORIZONS, horizonDays } from '../../packages/core/src/horizon.js';
 
 const METEOROLOGICAL_FIELDS = [
   'temperature_mean',
@@ -156,9 +162,8 @@ export function parseCsvForecastRow(row, rowNumber) {
   // fixture used 18.6 MJ/m² and 4.2 mm), so the horizon totals are divided by
   // the horizon length. Without this a real notebook row stores ~30,000 mm of
   // evapotranspiration — about 30 metres of water.
-  const horizonDays = parseInt(String(horizon).split('_')[0], 10);
-  const validDays = Number.isFinite(horizonDays) && horizonDays > 0;
-  const perDay = (total) => (validDays ? Number(total) / horizonDays : undefined);
+  const days = horizonDays(horizon);
+  const perDay = (total) => (days ? Number(total) / days : undefined);
 
   const meteorologicalValues = {
     temperature_mean: row.temperature_mean ?? row.om_temp_2m_k,

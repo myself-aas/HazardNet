@@ -5,6 +5,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
+import { API_PATHS } from '@hazardnet/api';
 import {
   fetchSnapshotMetadata,
   fetchStaticForecastSnapshot,
@@ -72,11 +73,11 @@ async function fallbackFromStaticSnapshots(horizon: ForecastHorizon): Promise<Ka
 }
 
 export async function loadKaggleAdvisories(horizon: ForecastHorizon): Promise<KaggleAdvisorySnapshot> {
-  let res = await fetch(`/api/v1/kaggle?horizon=${encodeURIComponent(horizon)}`, {
+  let res = await fetch(`${API_PATHS.kaggle}?horizon=${encodeURIComponent(horizon)}`, {
     cache: 'no-store',
   }).catch(() => null);
   if (!res || res.status === 404 || (res.headers.get('content-type') || '').includes('text/html')) {
-    const fallback = await fetch(`/api/v1/kaggle/advisories?horizon=${encodeURIComponent(horizon)}`, {
+    const fallback = await fetch(`${API_PATHS.kaggleAdvisories}?horizon=${encodeURIComponent(horizon)}`, {
       cache: 'no-store',
     }).catch(() => null);
     if (fallback && !(fallback.headers.get('content-type') || '').includes('text/html')) {

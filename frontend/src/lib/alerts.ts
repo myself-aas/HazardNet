@@ -25,8 +25,13 @@
  * decided" panel cannot describe thresholds the engine is not using.
  */
 
-export const ALERTS_API_URL = '/api/v1/alerts';
-export const ALERTS_POLICY_URL = '/api/v1/alerts/policy';
+import { districtKey as canonicalDistrictKey, SLO_HOURS } from '@hazardnet/core';
+import { API_PATHS } from '@hazardnet/api';
+import { readArtifact } from './artifacts';
+
+// The paths live in `packages/api/src/endpoints.ts`; these names are what the callers here read.
+export const ALERTS_API_URL = API_PATHS.alerts;
+export const ALERTS_POLICY_URL = API_PATHS.alertsPolicy;
 export const ALERTS_SNAPSHOT_URL = '/data/alerts-latest.json';
 
 /** Snapshot schema this client understands. */
@@ -349,12 +354,16 @@ export function summariseAlerts(alerts: AlertRecord[]): Record<AlertLevel, numbe
   return counts;
 }
 
-/** Slug key used to join an alert to the static district table (`coxsbazar`). */
+/**
+ * Slug key used to join an alert to the district tables (`coxsbazar`).
+ *
+ * This is the canonical district identity from `packages/core`, not a local variant.
+ * It used to strip apostrophes *before* removing non-alphanumerics, which produced a
+ * different answer from every other copy for `Cox’s Bazar` with a typographic
+ * apostrophe — the one spelling the advisory CSV actually uses.
+ */
 export function districtKey(value: string | null | undefined): string {
-  return String(value || '')
-    .toLowerCase()
-    .replace(/['’]/g, '')
-    .replace(/[^a-z0-9]/g, '');
+  return canonicalDistrictKey(value ?? '');
 }
 
 /** Highest-level alert per district, keyed by district slug. */
@@ -378,7 +387,7 @@ export function alertsForDistrict(alerts: AlertRecord[], district: string | null
 /** Is a rendered list still inside the freshness SLO the engine publishes? */
 export function freshnessOf(
   result: Pick<AlertsResult, 'generated_at' | 'alerts'>,
-  { now = new Date(), maxAgeHours = 48 }: { now?: Date; maxAgeHours?: number } = {},
+  { now = new Date(), maxAgeHours = SLO_HOURS.ALERTS }: { now?: Date; maxAgeHours?: number } = {},
 ): { age_hours: number | null; within_slo: boolean | null } {
   const cutoff = result.alerts
     .map((alert) => alert.freshness?.data_cutoff || alert.published?.data_cutoff)
@@ -399,26 +408,34 @@ interface FetchedPayload {
   stale: boolean;
 }
 
+/**
+ * A `{payload, stale}` pair from one read.
+ *
+ * The transport moved to `lib/artifacts` on 2026-11-09 — this module's private `fetchJson`
+ * was one of four hand-rolled readers of the same deployed files, and they disagreed about
+ * the deadline, the cache-buster and what a 404 meant. This wrapper keeps the call sites and
+ * the two behaviours they depend on: an offline-first skip, and the service worker's
+ * `X-HazardNet-Stale` marker (a stale-but-present answer is still an answer here, unlike on
+ * the front door, which must not print a stale number as today's).
+ */
 async function fetchJson(
   url: string,
   { fetcher, timeoutMs = 6000, signal }: { fetcher: typeof fetch; timeoutMs?: number; signal?: AbortSignal },
 ): Promise<FetchedPayload> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  const abort = () => controller.abort();
-  signal?.addEventListener('abort', abort, { once: true });
-  try {
-    const response = await fetcher(`${url}${url.includes('?') ? '&' : '?'}fresh=${Date.now()}`, {
-      cache: 'no-store',
-      signal: controller.signal,
-      headers: { Accept: 'application/json' },
-    });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const stale = response.headers?.get?.('X-HazardNet-Stale') === '1';
-    return { payload: await response.json(), stale };
-  } finally {
-    clearTimeout(timer);
-    signal?.removeEventListener('abort', abort);
+  const result = await readArtifact(url, { fetcher, timeoutMs, signal });
+  if (!result.ok) throw new ArtifactReadError(result);
+  return { payload: result.data, stale: result.stale };
+}
+
+/** Carries the artifact's `reason`, so a caller can tell "absent" from "unreachable". */
+export class ArtifactReadError extends Error {
+  readonly reason: string;
+  readonly status: number | null;
+  constructor(result: { reason: string; status: number | null; error: string }) {
+    super(result.error);
+    this.name = 'ArtifactReadError';
+    this.reason = result.reason;
+    this.status = result.status;
   }
 }
 

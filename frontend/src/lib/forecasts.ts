@@ -1,157 +1,84 @@
 /**
- * Forecast API client library — wires the frontend to the weekly pipeline's
- * pre-computed forecasts served by `GET /api/v1/forecasts/bulk` (backend/
- * routes/forecasts.js).
+ * Forecast access for the browser — the *browser* half of the forecast module.
  *
- * Design notes (see docs/audits/2026-09-12-deployment-verification.md §6.3):
- *  - The API is the live source; the static `ALL_64_DISTRICTS` baseline is
- *    the offline fallback. Merging is additive — districts without a live
- *    forecast keep their static severity/hazard so the map never blanks out.
- *  - The API keys rows by numeric GAUL district_id; the static data keys by
- *    slug. Matching therefore runs on normalized district *names*, with an
- *    alias table covering post-2015 district renames and GAUL spellings.
+ * The vocabulary is not here any more. `ForecastRow`, `ADVISORY_TIERS`,
+ * `FORECAST_HORIZONS`, `severityBin`, `confidenceBin`, `canonicalKey`,
+ * `buildForecastIndex`, `rollupAdm3ToDistricts`, `effectiveDistrictRows`,
+ * `formatHorizonLabel`, `forecastAgeHours`, `tierFromSeverity` and `advisoryTierOf`
+ * all live in `packages/core/src/forecasts.ts`, which is what mobile, the Node
+ * runtimes and the edge Functions read too. This file re-exports them (so no call
+ * site had to move) and owns only what needs a browser or a URL:
+ *
+ *   · parsing a JSON boundary defensively (`parseForecastRow`, `parseBulkResponse`,
+ *     `parseSnapshotResponse`) — the API and the committed snapshot are both "some
+ *     other process's output" and both can be wrong;
+ *   · fetching the committed snapshot (`fetchStaticForecastSnapshot`);
+ *   · the three-stage metadata fallback (`fetchForecastMetadata`);
+ *   · the merge of live rows onto the static 64-district baseline
+ *     (`applyForecastsToDistricts`) — the only function here that knows
+ *     `DistrictData` exists.
+ *
+ * **Why the split matters.** Until 2026-11-09 this file duplicated 21 exports from
+ * core, and they had drifted: `formatHorizonLabel('7_days')` said `Days 1–7 Subset`
+ * here and `Next 7 Days` in core; the alias table here carried a dead
+ * `'chapainawabganj '` key (trailing space) that no normalized lookup can produce,
+ * and did not know `Cox's Bazar`; and `ForecastRow` here had two fields the shared
+ * contract lacked (`forecast_day`, `is_peak_day`), so anything validated through the
+ * shared Zod schema silently stripped the daily-trajectory columns. One owner, one
+ * answer.
  */
 
-import { SEVERITY_THRESHOLDS } from '@hazardnet/core';
 import type { DistrictData } from '../data/bangladeshDistricts';
+import { API_PATHS } from '@hazardnet/api';
+import {
+  ADVISORY_TIERS,
+  buildForecastIndex,
+  canonicalKey,
+  effectiveDistrictRows,
+  severityBin,
+  type AdvisoryTier,
+  type ForecastHorizon,
+  type ForecastRow,
+} from '@hazardnet/core';
 
 // ─────────────────────────────────────────────────────────────────────────
-// Types (mirror backend/routes/forecasts.js GET /bulk response + the stored
-// Firestore doc shape written by POST /update / serverless/ingest.js)
+// Re-exports — the vocabulary callers already import from this path
 // ─────────────────────────────────────────────────────────────────────────
 
-export const ADVISORY_TIERS = ['EXTREME', 'SEVERE', 'WARNING', 'WATCH', 'NORMAL'] as const;
-export type AdvisoryTier = (typeof ADVISORY_TIERS)[number];
+export {
+  ADVISORY_TIERS,
+  HAZARD_CLASSES,
+  FORECAST_HORIZONS,
+  advisoryTierOf,
+  buildForecastIndex,
+  canonicalKey,
+  confidenceBin,
+  districtKey,
+  districtSlug,
+  effectiveDistrictRows,
+  forecastAgeHours,
+  formatHorizonLabel,
+  horizonDays,
+  isForecastHorizon,
+  latestRowsByDistrict,
+  normalizeDistrictKey,
+  rollupAdm3ToDistricts,
+  sameDistrict,
+  severityBin,
+  tierFromSeverity,
+  type AdvisoryTier,
+  type BulkForecastsResponse,
+  type ConfidenceBin,
+  type ForecastHorizon,
+  type ForecastRow,
+  type HazardClass,
+  type SeverityBin,
+} from '@hazardnet/core';
 
-export const HAZARD_CLASSES = [
-  'Cold Wave',
-  'Drought',
-  'Fire',
-  'Flash Flood',
-  'Flood',
-  'Heat Wave',
-  'Severe Local Storm',
-  'Tropical Cyclone',
-] as const;
-export type HazardClass = (typeof HAZARD_CLASSES)[number];
+// ─────────────────────────────────────────────────────────────────────────
+// Advisory derivation that is presentation-shaped, not row-shaped
+// ─────────────────────────────────────────────────────────────────────────
 
-export interface ForecastRow {
-  district_id: number | string;
-  district_name: string;
-  horizon: string;
-  hazard_type: string;
-  severity_score: number;
-  confidence: number;
-  target_date: string;
-  prediction_date: string;
-  /** Forecasted weather values in human-readable units. */
-  temperature_mean?: number;
-  temperature_max?: number;
-  temperature_min?: number;
-  precipitation_mm?: number;
-  wind_max_kmh?: number;
-  dewpoint_mean?: number;
-  solar_radiation_mj_m2?: number;
-  evapotranspiration_mm?: number;
-  created_at?: string;
-  /** Dual-track severity (present when the weekly CSV carried both columns). */
-  model_severity?: number;
-  physics_severity?: number;
-  division?: string;
-  pcode?: string;
-  /**
-   * `dataset_version` — the content hash over the inputs behind this prediction
-   * unit (the scene manifest, PRODUCT_SPEC §5.8). Same inputs, same
-   * version; a new satellite scene or a revised forecast window moves it. Phase 2
-   * puts it on the rows; Phase 5 surfaces it next to each forecast's methodology.
-   */
-  dataset_version?: string;
-  /** ADM3 identity (ADR 0005/0006): admin level + parent ADM2 district. */
-  admin_level?: number;
-  adm2_name?: string;
-  adm2_pcode?: string;
-  // Phase B extensions (TRD §2.2, §2.3)
-  advisory_tier?: AdvisoryTier | string;
-  /**
-   * Where the tier came from: `published` when the upstream advisory CSV carried it,
-   * `derived_final_severity` / `derived_severity_score` when the snapshot builder cut it from
-   * a score. Stamped by `scripts/lib/advisory-tier.mjs` so no client has to invent one.
-   */
-  advisory_tier_source?: string;
-  /**
-   * True when the tier is above the auto-publish ceiling, i.e. this is a severity statement and
-   * NOT a published alert: WARNING and SEVERE require a named duty officer's sign-off before
-   * they are issued (`packages/core/src/alertPolicy.ts`). The card says so.
-   */
-  requires_review?: boolean;
-  physics_override?: boolean;
-  latitude?: number;
-  longitude?: number;
-  model_severity_raw?: number;
-  final_severity?: number;
-  prob_top1?: number;
-  prob_top2?: number;
-  prob_top3?: number;
-  /**
-   * Advisory provenance and calibration. The daily advisory CSV
-   * (`backend/utils/advisoryMapper.js` → `ADVISORY_CSV_COLUMNS`) carries every field
-   * above, and the Kaggle mirror of it
-   * (https://www.kaggle.com/datasets/ashifahmedshuvo/hazardnet-weekly-forecasts) is the
-   * public reference for what the pipeline publishes. Until 2026-10-02 `parseForecastRow`
-   * dropped all of them, so the UI re-derived a tier from `severity_score` while the
-   * published one sat unused in the payload.
-   */
-  data_source?: string;
-  model_version?: string;
-  confidence_raw?: number;
-  confidence_calibrated?: number;
-  confidence_kind?: string;
-  /** 1..15 continuous day index and peak severe date marker from the 960-row daily run. */
-  forecast_day?: number;
-  is_peak_day?: boolean;
-}
-
-/**
- * The tier the advisory published, when it published one.
- *
- * Falls back to the client-side severity bin only when the field is absent — never when it
- * is present but unrecognised, because silently re-labelling a published tier is worse than
- * showing none. Every tier word in the CSV (`SEVERE`/`WARNING`/`WATCH`/`NORMAL`) is in
- * `ADVISORY_TIERS`.
- */
-export function advisoryTierOf(row: Pick<ForecastRow, 'advisory_tier' | 'severity_score'>): AdvisoryTier | null {
-  const published = typeof row.advisory_tier === 'string'
-    ? row.advisory_tier.trim().toUpperCase()
-    : '';
-  if ((ADVISORY_TIERS as readonly string[]).includes(published)) return published as AdvisoryTier;
-  return tierFromSeverity(row.severity_score);
-}
-
-/**
- * The tier for a severity the pipeline did not label.
- *
- * **Capped at WATCH, on purpose.** `packages/core/src/alertPolicy.ts` sets
- * `AUTO_PUBLISH_CEILING = 'WATCH'` and says in as many words that a client must never
- * promote a raw model score to WARNING or SEVERE — those two require a named duty officer,
- * and the reviewer's identity is stored on the published alert. A UI that derives SEVERE
- * from `severity_score` is showing a tier no human approved, which is a safety claim the
- * product is not allowed to make on its own.
- *
- * This function used to do exactly that: `>= 0.67 ? SEVERE : >= 0.34 ? WARNING : NORMAL`
- * against a *third* set of thresholds, so a district with no published tier could be shown
- * SEVERE, and WATCH — the one tier the pipeline may publish without review — could never be
- * shown at all. It now reads the canonical bands and stops at the ceiling.
- */
-export function tierFromSeverity(score: number | null | undefined): AdvisoryTier | null {
-  if (!Number.isFinite(score)) return null;
-  return (score as number) >= SEVERITY_THRESHOLDS.WATCH ? 'WATCH' : 'NORMAL';
-}
-
-/**
- * The three severity tracks the pipeline publishes, in the order they are computed:
- * the raw model output, the calibrated model score, the physics prior, and the blended
- * `final_severity` the advisory tier is cut from. `null` where the row predates them.
- */
 export interface AdvisorySignal {
   raw: number | null;
   calibrated: number | null;
@@ -164,9 +91,10 @@ export interface AdvisorySignal {
 export function advisorySignalOf(row: ForecastRow): AdvisorySignal {
   const unit = (value: unknown): number | null =>
     typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1 ? value : null;
-  const probabilities = ([row.prob_top1, row.prob_top2, row.prob_top3]
+  const probabilities = [row.prob_top1, row.prob_top2, row.prob_top3]
     .map(unit)
-    .filter((value): value is number => value !== null)).map((value, index) => ({
+    .filter((value): value is number => value !== null)
+    .map((value, index) => ({
       label: `Top-${index + 1}`,
       value,
     }));
@@ -178,13 +106,6 @@ export function advisorySignalOf(row: ForecastRow): AdvisorySignal {
     override: row.physics_override === true,
     probabilities,
   };
-}
-
-export interface BulkForecastsResponse {
-  horizon: string;
-  count: number;
-  generated_at: string;
-  forecasts: ForecastRow[];
 }
 
 export interface ForecastMetadata {
@@ -205,11 +126,11 @@ export interface ForecastMetadata {
 export async function fetchForecastMetadata(): Promise<ForecastMetadata> {
   // 1. Live metadata endpoint (Node function / Express backend).
   try {
-    const metadataResponse = await fetch(`/api/v1/forecasts/metadata?fresh=${Date.now()}`, {
+    const metadataResponse = await fetch(`${API_PATHS.forecastsMetadata}?fresh=${Date.now()}`, {
       cache: 'no-store',
     });
     if (metadataResponse.ok) {
-      const payload = await metadataResponse.json() as {
+      const payload = (await metadataResponse.json()) as {
         prediction_date?: unknown;
         ingestion_timestamp?: unknown;
         data_source?: unknown;
@@ -230,22 +151,28 @@ export async function fetchForecastMetadata(): Promise<ForecastMetadata> {
   // 2. Bulk is the authoritative live row endpoint. It also lets the card work
   // against older deployments that do not expose /metadata yet.
   try {
-    const bulkResponse = await fetch(`/api/v1/forecasts/bulk?horizon=7_days&fresh=${Date.now()}`, {
+    const bulkResponse = await fetch(`${API_PATHS.forecastsBulk}?horizon=7_days&fresh=${Date.now()}`, {
       cache: 'no-store',
     });
     if (bulkResponse.ok) {
-      const payload = await bulkResponse.json() as { generated_at?: unknown; data_source?: unknown; forecasts?: unknown };
+      const payload = (await bulkResponse.json()) as {
+        generated_at?: unknown;
+        data_source?: unknown;
+        forecasts?: unknown;
+      };
       const rows = parseBulkResponse(payload);
-      const latestPrediction = rows
-        .map((row) => row.prediction_date)
-        .sort()
-        .at(-1) ?? null;
-      if (latestPrediction) {
-        const latestIngestion = rows
-          .map((row) => row.created_at)
-          .filter((value): value is string => Boolean(value))
+      const latestPrediction =
+        rows
+          .map((row) => row.prediction_date)
           .sort()
           .at(-1) ?? null;
+      if (latestPrediction) {
+        const latestIngestion =
+          rows
+            .map((row) => row.created_at)
+            .filter((value): value is string => Boolean(value))
+            .sort()
+            .at(-1) ?? null;
         return {
           predictionDate: latestPrediction,
           ingestionTimestamp: latestIngestion,
@@ -263,19 +190,12 @@ export async function fetchForecastMetadata(): Promise<ForecastMetadata> {
 
   throw new Error('Forecast metadata unavailable (API and snapshot both unreachable)');
 }
-
-export const FORECAST_HORIZONS = ['7_days', '15_days'] as const;
-export type ForecastHorizon = (typeof FORECAST_HORIZONS)[number];
-
-export const isForecastHorizon = (v: unknown): v is ForecastHorizon =>
-  typeof v === 'string' && (FORECAST_HORIZONS as readonly string[]).includes(v);
-
 // ─────────────────────────────────────────────────────────────────────────
 // Parsing / validation (defensive: the API is a JSON boundary)
 // ─────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────
 
-const isFiniteNumber = (v: unknown): v is number =>
-  typeof v === 'number' && Number.isFinite(v);
+const isFiniteNumber = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 
 /**
  * Bounding box for the 64 districts the registry covers, plus margin. Row coordinates are
@@ -333,7 +253,7 @@ export function parseForecastRow(raw: unknown): ForecastRow | null {
   // the same to the UI: every one of these is a float in [0,1] in the CSV, and a 1.7
   // severity or a 12.0 probability means the payload is wrong, not that it is extreme.
   const unitFloat = (value: unknown): number | undefined =>
-    (isFiniteNumber(value) && value >= 0 && value <= 1 ? value : undefined);
+    isFiniteNumber(value) && value >= 0 && value <= 1 ? value : undefined;
 
   const finalSeverity = unitFloat(r.final_severity);
   if (finalSeverity !== undefined) row.final_severity = finalSeverity;
@@ -353,8 +273,10 @@ export function parseForecastRow(raw: unknown): ForecastRow | null {
   // The advisory tier is a closed vocabulary in the CSV; an unrecognised word is dropped
   // rather than rendered, because a tier badge that says "severe " or "CAT-1" reads as a
   // published decision when it is really a payload we do not understand.
-  if (typeof r.advisory_tier === 'string'
-      && (ADVISORY_TIERS as readonly string[]).includes(r.advisory_tier.trim().toUpperCase())) {
+  if (
+    typeof r.advisory_tier === 'string' &&
+    (ADVISORY_TIERS as readonly string[]).includes(r.advisory_tier.trim().toUpperCase())
+  ) {
     row.advisory_tier = r.advisory_tier.trim().toUpperCase() as AdvisoryTier;
     // Provenance and the review flag travel with the tier, and only with it: a source or a
     // "needs review" mark on a row whose tier was dropped would describe a decision the UI is
@@ -375,7 +297,7 @@ export function parseForecastRow(raw: unknown): ForecastRow | null {
   if (longitude >= BANGLADESH_BBOX.minLon && longitude <= BANGLADESH_BBOX.maxLon) row.longitude = longitude;
 
   const provenance = (value: unknown, max: number): string | undefined =>
-    (typeof value === 'string' && value.trim() && value.trim().length <= max ? value.trim() : undefined);
+    typeof value === 'string' && value.trim() && value.trim().length <= max ? value.trim() : undefined;
   const dataSource = provenance(r.data_source, 120);
   if (dataSource) row.data_source = dataSource;
   const modelVersion = provenance(r.model_version, 80);
@@ -408,10 +330,14 @@ export function parseBulkResponse(payload: unknown): ForecastRow[] {
   if (!Array.isArray(forecasts)) return [];
   return forecasts.map(parseForecastRow).filter((r): r is ForecastRow => r !== null);
 }
-
 // ─────────────────────────────────────────────────────────────────────────
 // Static snapshot — the website's committed fallback data
 // ─────────────────────────────────────────────────────────────────────────
+//
+// `build_forecast_snapshot.mjs` (run by the daily advisory workflow) regenerates
+// `frontend/public/data/forecasts-latest.json` inside the website bundle, so every
+// deployment ships with forecasts at most one day behind the latest run — even when
+// the API and the store are both unreachable.
 // The daily GitHub workflow (daily_forecast.yml) downloads the production
 // notebook's CSV output and regenerates this file inside the website bundle
 // (scripts/build_forecast_snapshot.mjs), so every deployment of the codebase
@@ -507,12 +433,10 @@ export async function fetchSnapshotMetadata(): Promise<ForecastMetadata> {
   try {
     const res = await fetch(`${FORECAST_SNAPSHOT_URL}?fresh=${Date.now()}`, { cache: 'no-store' });
     if (!res.ok) return empty;
-    const payload = await res.json() as ForecastSnapshot;
+    const payload = (await res.json()) as ForecastSnapshot;
     if (!payload || typeof payload !== 'object') return empty;
 
-    let predictionDate = typeof payload.prediction_date === 'string'
-      ? payload.prediction_date.slice(0, 10)
-      : null;
+    let predictionDate = typeof payload.prediction_date === 'string' ? payload.prediction_date.slice(0, 10) : null;
     if (!predictionDate && payload.horizons && typeof payload.horizons === 'object') {
       const rowDates: string[] = [];
       for (const rows of Object.values(payload.horizons)) {
@@ -535,130 +459,9 @@ export async function fetchSnapshotMetadata(): Promise<ForecastMetadata> {
     return empty;
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────
-// Binning — parity with backend/routes/forecasts.js GET /
-// ─────────────────────────────────────────────────────────────────────────
-
-export type SeverityBin = 'Low' | 'Moderate' | 'High';
-
-export const severityBin = (score: number): SeverityBin =>
-  score >= 0.67 ? 'High' : score >= 0.34 ? 'Moderate' : 'Low';
-
-export type ConfidenceBin = 'Certain' | 'Probable' | 'Uncertain';
-
-export const confidenceBin = (confidence: number): ConfidenceBin =>
-  confidence >= 0.85 ? 'Certain' : confidence >= 0.7 ? 'Probable' : 'Uncertain';
-
-// ─────────────────────────────────────────────────────────────────────────
-// District matching — normalized names + official-rename aliases
-// ─────────────────────────────────────────────────────────────────────────
-
-/** Lowercase, strip everything that isn't a letter or digit. */
-export const normalizeDistrictKey = (name: string): string =>
-  name.toLowerCase().replace(/[^a-z0-9]/g, '');
-
-/**
- * Post-2015 renames and FAO GAUL 2015 spellings → current local spellings
- * used by the static district table. Left side = alias (API/GAUL), right side
- * = canonical static-table key.
- */
-const DISTRICT_NAME_ALIASES: Record<string, string> = {
-  jessore: 'jashore',
-  chittagong: 'chattogram',
-  comilla: 'cumilla',
-  barishal: 'barisal',
-  // GAUL/BBS renders Khagrachhari "Khagrachari"; the committed event archive uses
-  // this spelling. Must stay in step with scripts/etl/districts.py ALIASES.
-  khagrachari: 'khagrachhari',
-  bogura: 'bogra',
-  jaipurhat: 'joypurhat',
-  netrakona: 'netrokona',
-  maulvibazar: 'moulvibazar',
-  brahamanbaria: 'brahmanbaria',
-  jhalakathi: 'jhalokati',
-  'chapainawabganj ': 'chapainawabganj', // defensive: trailing-space variants
-  // FAO GAUL 2015 (and so the forecast pipeline) calls Chapainawabganj simply
-  // "Nawabganj". Without this alias that district's forecast row never matched
-  // its card, so the site showed the static baseline despite having a forecast
-  // (found 2026-09-17 while wiring coverage accounting).
-  nawabganj: 'chapainawabganj',
-};
-
-export const canonicalKey = (name: string): string => {
-  const key = normalizeDistrictKey(name);
-  return DISTRICT_NAME_ALIASES[key] ?? key;
-};
-
-/** Index API rows by canonical district key for O(1) lookups. */
-export function buildForecastIndex(rows: ForecastRow[]): Map<string, ForecastRow> {
-  const index = new Map<string, ForecastRow>();
-  for (const row of rows) {
-    const key = canonicalKey(row.district_name);
-    const existing = index.get(key);
-    if (!existing || new Date(row.prediction_date) > new Date(existing.prediction_date)) {
-      index.set(key, row);
-    }
-  }
-  return index;
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// ADM3 → ADM2 rollup (ADR 0006 phase 8d)
-// /bulk returns one row per ADM3 unit (507 Upazilas/City Corporations) since
-// ADR 0005; the static map baseline is the 64 districts. Roll the units up to
-// their parent district so the live overlay keeps covering all 64 districts:
-// district severity/hazard = the max-severity (dominant) unit; confidence =
-// the unit mean. Rows WITHOUT adm2 fields (legacy ADM2-shaped data) pass
-// through untouched and keep matching districts by name directly.
-// ─────────────────────────────────────────────────────────────────────────
-
-/** Roll ADM3 rows up to one row per parent ADM2 district (+ direct passthrough). */
-export function rollupAdm3ToDistricts(rows: ForecastRow[]): ForecastRow[] {
-  const direct: ForecastRow[] = [];
-  const groups = new Map<string, ForecastRow[]>();
-  for (const row of rows) {
-    if (!row.adm2_name) {
-      direct.push(row);
-      continue;
-    }
-    const key = canonicalKey(row.adm2_name);
-    const group = groups.get(key);
-    if (group) group.push(row);
-    else groups.set(key, [row]);
-  }
-
-  const rolled: ForecastRow[] = [];
-  for (const group of groups.values()) {
-    // Dominant unit: the highest severity (ties → latest prediction_date).
-    const dominant = group.reduce((a, b) =>
-      b.severity_score > a.severity_score ||
-      (b.severity_score === a.severity_score && new Date(b.prediction_date) > new Date(a.prediction_date))
-        ? b
-        : a
-    );
-    const meanConfidence = group.reduce((sum, r) => sum + r.confidence, 0) / group.length;
-    rolled.push({
-      ...dominant,
-      // dominant always carries adm2_name here (rows were grouped by it).
-      district_name: dominant.adm2_name ?? dominant.district_name,
-      district_id: dominant.adm2_pcode ?? dominant.district_id,
-      pcode: dominant.adm2_pcode ?? dominant.pcode,
-      confidence: meanConfidence,
-    });
-  }
-  return [...direct, ...rolled];
-}
-
-/** Rows to match against the 64-district baseline: rolled up when ADM3-shaped. */
-export function effectiveDistrictRows(rows: ForecastRow[]): ForecastRow[] {
-  return rows.some((r) => r.adm2_name) ? rollupAdm3ToDistricts(rows) : rows;
-}
-
 // ─────────────────────────────────────────────────────────────────────────
 // Merge — live forecasts over the static district baseline
 // ─────────────────────────────────────────────────────────────────────────
-
 export interface MergedDistricts {
   /** New array; districts without a live forecast keep static values. */
   districts: DistrictData[];
@@ -672,10 +475,7 @@ export interface MergedDistricts {
  * Overlay live forecast severity / hazard onto the static district table.
  * Returns a new array — the input and module-level statics are never mutated.
  */
-export function applyForecastsToDistricts(
-  districts: DistrictData[],
-  rows: ForecastRow[]
-): MergedDistricts {
+export function applyForecastsToDistricts(districts: DistrictData[], rows: ForecastRow[]): MergedDistricts {
   const index = buildForecastIndex(effectiveDistrictRows(rows));
   let matched = 0;
   let predictionDate: string | undefined;
@@ -709,17 +509,3 @@ export function applyForecastsToDistricts(
 
   return { districts: merged, matched, predictionDate };
 }
-
-// ─────────────────────────────────────────────────────────────────────────
-// Display helpers
-// ─────────────────────────────────────────────────────────────────────────
-
-/** Age of a prediction in whole hours (clamped at 0 for future dates). */
-export const forecastAgeHours = (predictionDate: string, now: Date = new Date()): number =>
-  Math.max(0, (now.getTime() - new Date(predictionDate).getTime()) / 3_600_000);
-
-/** Format a horizon for the map and individual forecast views. */
-export const formatHorizonLabel = (horizon: ForecastHorizon): string => {
-  if (horizon === '15_days') return 'Continuous 15 Days';
-  return 'Days 1–7 Subset';
-};

@@ -35,7 +35,8 @@ export const CONFIDENCE_NOTICE =
 // because this module's public surface has always included the name.
 export { HAZARDS } from '../../packages/core/src/hazards.js';
 import { HAZARDS } from '../../packages/core/src/hazards.js';
-const HORIZONS = ['7_days', '15_days'];
+import { FORECAST_HORIZONS, horizonDays as horizonOf } from '../../packages/core/src/horizon.js';
+const HORIZONS = FORECAST_HORIZONS;
 const ALERT_LEVELS = ['WATCH', 'WARNING', 'SEVERE'];
 const HISTORICAL_HAZARDS = [...HAZARDS, 'earthquake'];
 const string = (description, extra = {}) => ({ type: 'string', minLength: 1, maxLength: 100, description, ...extra });
@@ -153,9 +154,9 @@ export const MCP_TOOLS = Object.freeze([
       const place = requireDistrict(args.district);
       const snapshot = parsePublicDailySnapshot(await asset(env, request, '/data/daily-advisories-v1.json'));
       if (!snapshot) fail('The daily outlook artifact is unavailable or failed validation; no current outlook is asserted.');
-      const horizonDays = args.horizon === '7_days' ? 7 : 15;
+      const windowDays = horizonOf(args.horizon) ?? 15;
       const rows = snapshot.advisories.filter((row) => row.districtId === place.district_id
-        && row.forecastDay <= horizonDays && (!args.hazard || key(row.hazard) === args.hazard));
+        && row.forecastDay <= windowDays && (!args.hazard || key(row.hazard) === args.hazard));
       return {
         ...base('/data/daily-advisories-v1.json'),
         district: place.district_name,

@@ -18,6 +18,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   type AlertPolicyView, type AlertsResult, type AlertsSource, freshnessOf, loadAlerts,
 } from '../lib/alerts';
+import { SLO_HOURS } from '@hazardnet/core';
 
 export interface UseAlertsData {
   alerts: AlertsResult['alerts'];
@@ -51,7 +52,7 @@ export interface UseAlertsDataOptions {
   offline?: boolean;
 }
 
-export function useAlertsData({ maxAgeHours = 48, offline = false }: UseAlertsDataOptions = {}): UseAlertsData {
+export function useAlertsData({ maxAgeHours = SLO_HOURS.ALERTS, offline = false }: UseAlertsDataOptions = {}): UseAlertsData {
   const [result, setResult] = useState<AlertsResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [nonce, setNonce] = useState(0);

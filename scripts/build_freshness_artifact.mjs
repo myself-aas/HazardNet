@@ -42,22 +42,25 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { SLO_HOURS, STATE_SEVERITY } from '../packages/core/src/freshnessSlo.js';
 
 export const FRESHNESS_SCHEMA = 'hazardnet-freshness/v1';
 export const PROBE_SCHEMA = 'hazardnet-site-probe/v1';
 export const DAILY_ADVISORIES_SCHEMA = 'hazardnet-daily-advisories/v1';
 
-/** Forecast-age SLO in hours — `monitoring/alerts.yml` (one missed daily run + grace). */
-export const FORECAST_SLO_HOURS = 192;
-/** Public daily district advisories SLO in hours — `backend/utils/dailyAdvisoryPublic.js` `DAILY_EXPIRY_HOURS`. */
-export const DAILY_ADVISORIES_SLO_HOURS = 36;
-/** Alert-snapshot SLO in hours — `frontend/src/lib/alerts.ts` `freshnessOf` default. */
-export const ALERTS_SLO_HOURS = 48;
-/** Probe-age SLO in hours — the probe runs every 30 min, so 2 h = four missed runs. */
-export const PROBE_SLO_HOURS = 2;
+/* The SLOs are not declared here. They are read from `packages/core/src/freshnessSlo.js`, the
+   same module the status page, the alerts hook and mobile read — this file used to declare a
+   second set (192/36/48/2) with a comment pointing at each reader, which is a cross-reference
+   where a dependency belonged. `__tests__/freshnessSlo.test.js` pins the artifact to it. */
+export const {
+  FORECAST: FORECAST_SLO_HOURS,
+  DAILY_ADVISORIES: DAILY_ADVISORIES_SLO_HOURS,
+  ALERTS: ALERTS_SLO_HOURS,
+  HEALTH_PROBE: PROBE_SLO_HOURS,
+} = SLO_HOURS;
 
 /** Severity ranking of the five states; `overall.state` is the worst source state. */
-export const STATE_SEVERITY = { fresh: 0, unknown: 1, stale: 2, failing: 3, missing: 4 };
+export { STATE_SEVERITY };
 
 const DEFAULT_PATHS = {
   snapshot: 'frontend/public/data/forecasts-latest.json',

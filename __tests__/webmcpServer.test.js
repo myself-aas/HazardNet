@@ -198,13 +198,27 @@ describe('public tool values and safety', () => {
     expect(filtered.coverage_note).toContain('not an all-clear');
   });
   test('horizon snapshots filter instead of returning the entire artifact under a district label', async () => {
-    const body = await result(call('list_forecasts', { district: 'Dhaka', horizon: '15_days', hazard: 'flash-flood' }));
+    /* Derived from the artifact rather than hardcoded. The hazard used to be the literal
+       'flash-flood', which made this test a statement about the 2026-10-24 snapshot's hazard
+       mix; when the daily pipeline moved Dhaka to 'Flood' the assertion silently started
+       asking for a district/hazard pair that does not exist, and an empty result was reported
+       as a filtering bug. Reading the row first and filtering by what it actually carries keeps
+       the property under test — one district, one horizon, one row — independent of the data. */
+    const dhaka = forecasts.horizons['15_days'].find((row) => row.district_name === 'Dhaka');
+    // The committed snapshot must carry a Dhaka 15-day row for any of this to mean anything.
+    expect(dhaka).toBeDefined();
+    const hazardArg = String(dhaka.hazard_type).trim().toLowerCase().replace(/[\s_]+/g, '-');
+
+    const body = await result(call('list_forecasts', { district: 'Dhaka', horizon: '15_days', hazard: hazardArg }));
     const data = body.result.structuredContent;
-    const expected = forecasts.horizons['15_days'].find((row) => row.district_name === 'Dhaka');
-    expect(data.records).toEqual([expected]);
+    expect(data.records).toEqual([dhaka]);
     expect(data.total_count).toBe(1);
     expect(data.provenance).toEqual(forecasts.provenance);
-    const empty = (await result(call('list_forecasts', { district: 'Dhaka', hazard: 'fire' }))).result.structuredContent;
+
+    // …and a hazard the district does not carry filters to nothing rather than to everything.
+    const absent = 'fire';
+    expect(String(dhaka.hazard_type).trim().toLowerCase()).not.toBe(absent);
+    const empty = (await result(call('list_forecasts', { district: 'Dhaka', hazard: absent }))).result.structuredContent;
     expect(empty.records).toEqual([]);
     expect(empty.total_count).toBe(0);
   });
@@ -220,7 +234,15 @@ describe('public tool values and safety', () => {
     const draft = { ...alerts.alerts[0], id: 'draft', state: 'DRAFT', review: { reviewer: 'private@example.org' } };
     assets.fetch.mockImplementation(async (req) => new URL(req.url).pathname === '/data/alerts-latest.json'
       ? Response.json({ ...alerts, alerts: [...alerts.alerts, draft] }) : Response.json({}));
-    const body = await result(call('list_alerts', { district: 'Dhaka', hazard: 'flash-flood', level: 'WATCH', horizon: '15_days' }));
+    /* The hazard filter is read off the artifact's own Dhaka row. Hardcoding 'flash-flood' meant
+       this test asserted that Dhaka carries a Flash Flood alert, which was true of the 2026-10-24
+       snapshot and false of every one since — so "every filter applies" was really "this one
+       filter matches a hazard the district may not have". */
+    const dhakaRow = alerts.alerts.find((row) => row.district_name === 'Dhaka' && row.state === 'PUBLISHED');
+    // The committed snapshot must carry a published Dhaka row for any of this to mean anything.
+    expect(dhakaRow).toBeDefined();
+    const hazardArg = String(dhakaRow.hazard_type).trim().toLowerCase().replace(/[\s_]+/g, '-');
+    const body = await result(call('list_alerts', { district: 'Dhaka', hazard: hazardArg, level: 'WATCH', horizon: '15_days' }));
     const data = body.result.structuredContent;
     const expected = alerts.alerts.filter((row) => row.district_name === 'Dhaka' && row.state === 'PUBLISHED');
     expect(data.records).toEqual(expected.map((row) => ({ ...row, history: [] })));

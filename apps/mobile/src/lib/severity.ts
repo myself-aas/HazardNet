@@ -7,7 +7,7 @@
  */
 
 import { useTheme } from '../theme/ThemeProvider';
-import type { AlertItemType } from '@hazardnet/core';
+import { confidenceBin, type AlertItemType } from '@hazardnet/core';
 import type { IconName } from '@hazardnet/design-system';
 
 export type SeverityVisual = {
@@ -35,9 +35,9 @@ export function severityForAlert(a: Pick<AlertItemType, 'level'>): SeverityEdgeN
 }
 
 export function confidenceLabel(confidence: number): string {
-  if (confidence >= 0.85) return 'Certain';
-  if (confidence >= 0.70) return 'Probable';
-  return 'Uncertain';
+  // The cut points are `advisoryTier.js`; this module only owns the word.
+  const bin = confidenceBin(confidence);
+  return bin === 'unknown' ? 'Uncertain' : bin;
 }
 
 export function useSeverityVisual(level: AlertItemType['level']): SeverityVisual {
