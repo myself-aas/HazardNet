@@ -5,6 +5,8 @@
  * and hazardnet_forecasts_latest.csv.
  */
 
+import { districtKey } from '@hazardnet/core';
+import { API_PATH_BUILDERS, API_PATHS } from '@hazardnet/api';
 import { ALL_64_DISTRICTS, type DistrictData } from '../data/bangladeshDistricts';
 
 export interface ClimaticEvent {
@@ -167,31 +169,23 @@ const DIVISION_CANONICAL_BY_NORM: Record<string, string> = {
   mymensingh: 'Mymensingh',
 };
 
-const DISTRICT_ALIAS_TO_ID: Record<string, string> = {
-  chittagong: 'chattogram',
-  comilla: 'cumilla',
-  bogura: 'bogra',
-  jashore: 'jessore',
-  barishal: 'barisal',
-  nawabganj: 'chapainawabganj',
-  chapainawabganj: 'chapainawabganj',
-  maulvibazar: 'moulvibazar',
-  netrakona: 'netrokona',
-  jhalkathi: 'jhalokati',
-  jhalokathi: 'jhalokati',
-  khagrachari: 'khagrachhari',
-  coxsbazar: 'coxsbazar',
-};
-
+/**
+ * District + division resolution for the events catalogue.
+ *
+ * This module used to hold its own alias table, and it was the one copy that ran the
+ * renames **backwards** (`jashore → jessore`, `barishal → barisal`) because the static
+ * district table is keyed by the pre-rename slug. That made the same district resolve
+ * one way through the forecast overlay and the other way through the event catalogue,
+ * decided by which module a page happened to import. `districtSlug` and `districtKey`
+ * in `packages/core` own both directions now.
+ */
 const DISTRICT_BY_NORM_KEY: Map<string, DistrictData> = (() => {
   const map = new Map<string, DistrictData>();
   for (const d of ALL_64_DISTRICTS) {
     map.set(normalizeKey(d.id), d);
     map.set(normalizeKey(d.name), d);
-  }
-  for (const [alias, canonicalId] of Object.entries(DISTRICT_ALIAS_TO_ID)) {
-    const target = map.get(normalizeKey(canonicalId));
-    if (target) map.set(normalizeKey(alias), target);
+    // Canonical spelling → the same row, so "Jashore" and "Jessore" land together.
+    map.set(districtKey(d.name), d);
   }
   return map;
 })();
@@ -204,7 +198,7 @@ export function canonicalDivisionName(raw: string): string {
 export function resolveCanonicalDistrict(raw: string): DistrictData | undefined {
   const norm = normalizeKey(raw);
   if (!norm) return undefined;
-  return DISTRICT_BY_NORM_KEY.get(norm);
+  return DISTRICT_BY_NORM_KEY.get(norm) || DISTRICT_BY_NORM_KEY.get(districtKey(raw));
 }
 
 interface RawCatalogIndexItem {
@@ -345,7 +339,7 @@ export async function fetchEventsSummary(): Promise<EventsSummary> {
 
   // 1. Try backend API
   try {
-    const res = await fetch('/api/v1/events/summary');
+    const res = await fetch(API_PATHS.eventsSummary);
     const ct = res.headers.get('content-type') || '';
     if (res.ok && !ct.includes('text/html')) {
       const json = await res.json();
@@ -394,7 +388,7 @@ export async function fetchEventsSummary(): Promise<EventsSummary> {
 export async function fetchDistrictEvents(districtId: string): Promise<DistrictEventsResponse> {
   // 1. Try backend API
   try {
-    const res = await fetch(`/api/v1/events/district/${encodeURIComponent(districtId)}`);
+    const res = await fetch(API_PATH_BUILDERS.eventsDistrict(districtId));
     const ct = res.headers.get('content-type') || '';
     if (res.ok && !ct.includes('text/html')) {
       const json = await res.json();
@@ -478,7 +472,7 @@ export async function fetchDistrictEvents(districtId: string): Promise<DistrictE
 export async function fetchDivisionEvents(divisionId: string): Promise<DivisionEventsResponse> {
   // 1. Try backend API
   try {
-    const res = await fetch(`/api/v1/events/division/${encodeURIComponent(divisionId)}`);
+    const res = await fetch(API_PATH_BUILDERS.eventsDivision(divisionId));
     const ct = res.headers.get('content-type') || '';
     if (res.ok && !ct.includes('text/html')) {
       const json = await res.json();
@@ -618,7 +612,7 @@ function matchesHazardSlug(hazardName: string, slug: string): boolean {
 export async function fetchHazardEvents(hazardId: string): Promise<HazardEventsResponse> {
   // 1. Try backend API
   try {
-    const res = await fetch(`/api/v1/events/hazard/${encodeURIComponent(hazardId)}`);
+    const res = await fetch(API_PATH_BUILDERS.eventsHazard(hazardId));
     const ct = res.headers.get('content-type') || '';
     if (res.ok && !ct.includes('text/html')) {
       const json = await res.json();

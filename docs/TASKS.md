@@ -250,7 +250,7 @@ and `TRD.md`.
 #### TASK-011: Security P0 Checklist & Headers Hardening `(Done)`
 - **Type**: DevOps · **Effort**: 8h · **Dependencies**: TASK-009, TASK-016
 - **Assigned Agent**: `devops-agent`
-- **Files**: `backend/security/csp.js`, `backend/middleware/securityHeaders.js`, `docs/SECURITY.md`
+- **Files**: `backend/security/csp.js`, `backend/security/httpHeaders.js`, `docs/SECURITY.md`
 - **Acceptance Criteria**:
   1. Strict CSP without `unsafe-inline`; HSTS with `includeSubDomains; preload`.
   2. Outbound GLIDE link security: external links strictly validated, sanitized, and decorated with `rel="noopener noreferrer"`.

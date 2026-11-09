@@ -1,12 +1,25 @@
-export const ADVISORY_TIERS = ['EXTREME', 'SEVERE', 'WARNING', 'WATCH', 'NORMAL'];
+/* The tiers, the bands and the review rule are `packages/core/src/advisoryTier.js`. This file
+   used to declare its own copy and `__tests__/advisoryTierBands.test.js` compared the two — a
+   cross-reference where a dependency belonged. The re-exports keep every existing import
+   working; the `tierForSeverity` below is the only thing this module still owns, because it
+   also accepts a numeric string (the CSV ingest path hands it one). */
+export {
+  ADVISORY_TIERS,
+  AUTO_PUBLISH_CEILING,
+  CONFIDENCE_THRESHOLDS,
+  TIER_BANDS,
+  confidenceBin as coreConfidenceBin,
+  requiresReview,
+  tierForSeverity as coreTierForSeverity,
+} from '../../packages/core/src/advisoryTier.js';
 
-export const TIER_BANDS = {
-  SEVERE: 0.85,
-  WARNING: 0.7,
-  WATCH: 0.4,
-};
-
-export const AUTO_PUBLISH_CEILING = 'WATCH';
+import {
+  AUTO_PUBLISH_CEILING,
+  TIER_BANDS,
+  confidenceBin as coreConfidenceBin,
+  requiresReview,
+  tierForSeverity as deriveTier,
+} from '../../packages/core/src/advisoryTier.js';
 
 export const ADVISORY_POLICY = {
   version: 'advisory-tier/1.0.0',
@@ -17,21 +30,8 @@ export const ADVISORY_POLICY = {
   note: 'Tiers are cut by the pipeline from final_severity when present, else severity_score, on the manuscript’s bands. A tier is a severity statement, not a published alert: rows above the WATCH ceiling carry requires_review and are not an official warning.',
 };
 
-export function tierForSeverity(score) {
-  if (score === null || score === undefined || score === '' || typeof score === 'object') {
-    return null;
-  }
-  const n = Number(score);
-  if (Number.isNaN(n)) return null;
-  if (n >= TIER_BANDS.SEVERE) return 'SEVERE';
-  if (n >= TIER_BANDS.WARNING) return 'WARNING';
-  if (n >= TIER_BANDS.WATCH) return 'WATCH';
-  return 'NORMAL';
-}
-
-export function requiresReview(tier) {
-  return tier === 'EXTREME' || tier === 'SEVERE' || tier === 'WARNING';
-}
+/** Numeric-string tolerant tier derivation. */
+export const tierForSeverity = deriveTier;
 
 export function tierForRow(row) {
   if (!row || typeof row !== 'object') return null;

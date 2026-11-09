@@ -133,14 +133,30 @@ describe('classify', () => {
 });
 
 describe('buildFreshnessArtifact', () => {
-  it('imports only node:* built-ins so site-health.yml runs without npm ci while matching DAILY_ADVISORY_SCHEMA', () => {
+  it('imports nothing that would need `npm ci` before site-health.yml can run it', () => {
     expect(DAILY_ADVISORIES_SCHEMA).toBe(DAILY_ADVISORY_SCHEMA);
-    const src = readFileSync(
-      join(process.cwd(), 'scripts', 'build_freshness_artifact.mjs'),
-      'utf8',
-    );
-    const specifiers = [...src.matchAll(/^\s*import\s+[^'"]*from\s+['"]([^'"]+)['"]/gm)].map((m) => m[1]);
-    expect(specifiers).toEqual(['node:fs', 'node:path', 'node:url']);
+
+    /* The rule is "this script runs on a bare checkout", not "this script names three modules".
+       It used to assert the exact list `['node:fs','node:path','node:url']`, which forbade the
+       script from *reading* the shared SLOs — so it declared its own copy of them and the
+       fixture below kept the two in sync by hand. The property is what matters: every import
+       is either a Node built-in or a first-party module that itself imports nothing. */
+    const root = process.cwd();
+    const importsOf = (file) => {
+      const src = readFileSync(file, 'utf8');
+      return [...src.matchAll(/^\s*(?:export\s+)?[^'"]*from\s+['"]([^'"]+)['"]/gm)].map((m) => m[1]);
+    };
+    const isThirdParty = (specifier) => !specifier.startsWith('node:') && !specifier.startsWith('.');
+
+    const specifiers = importsOf(join(root, 'scripts', 'build_freshness_artifact.mjs'));
+    expect(specifiers.filter(isThirdParty)).toEqual([]);
+
+    // …and each relative import is itself dependency-free, so nothing transitive pulls in zod.
+    for (const specifier of specifiers.filter((s) => s.startsWith('.'))) {
+      const resolved = join(root, 'scripts', specifier);
+      expect({ specifier, thirdParty: importsOf(resolved).filter(isThirdParty) })
+        .toEqual({ specifier, thirdParty: [] });
+    }
   });
 
   it('states the schema, the producer and the five sources it derives from', () => {

@@ -37,7 +37,9 @@ describe('POST /api/chat/query — edge handler', () => {
     const response = await postQuery({ query: 'How do I protect fish ponds during floods?' }, {});
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toContain('application/json');
-    expect(response.headers.get('cache-control')).toBe('no-store');
+    // `CACHE.noStore` in `backend/edge/response.ts`: one name for "this body must never be
+    // cached", instead of a literal retyped per route.
+    expect(response.headers.get('cache-control')).toBe('no-store, max-age=0');
     const body = await response.json();
     expect(body.query).toBe('How do I protect fish ponds during floods?');
     expect(body.answer).toContain('RAG Knowledge Assessment');

@@ -25,20 +25,13 @@
 
 import { fetchWeather, fetchCurrentWeather } from '../../../backend/utils/openMeteo.js';
 import { parsePointQuery } from '../../../backend/utils/weatherQuery.js';
+import { CACHE, respond, respondError, type PagesContext } from '../../../backend/edge/response';
 
-interface PagesContext {
-  request: Request;
-}
-
-function json(body: unknown, status: number, cacheControl: string): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      'cache-control': cacheControl,
-    },
-  });
-}
+/**
+ * 15 minutes, as on the Node runtime: Open-Meteo updates hourly, and this keeps a busy
+ * district panel from turning one page view into one upstream call.
+ */
+const WEATHER_CACHE = CACHE.publicFor(900);
 
 export async function onRequestGet(context: PagesContext): Promise<Response> {
   const params = new URL(context.request.url).searchParams;
@@ -46,7 +39,7 @@ export async function onRequestGet(context: PagesContext): Promise<Response> {
   // handlers. `lng` is canonical, `lon` is accepted; a shape fix must not fork per runtime.
   const parsed = parsePointQuery(params);
   if ('error' in parsed) {
-    return json({ error: parsed.error }, 400, 'no-store');
+    return respond({ error: parsed.error }, { status: 400 });
   }
   const { lat, lng, forecast_days, timezone, mini } = parsed;
 
@@ -54,13 +47,14 @@ export async function onRequestGet(context: PagesContext): Promise<Response> {
     const data = mini
       ? await fetchCurrentWeather(lat, lng, { timezone })
       : await fetchWeather(lat, lng, { forecast_days, timezone });
-    // 15 minutes, as on the Node runtime: Open-Meteo updates hourly, and this keeps a busy
-    // district panel from turning one page view into one upstream call.
-    return json(data, 200, 'public, max-age=900');
+    return respond(data, { cache: WEATHER_CACHE });
   } catch (error) {
-    console.error('[weather] lookup failed:', error instanceof Error ? error.message : error);
     // 502 rather than 500: the failure is upstream's, and the distinction is what tells an
     // operator to check Open-Meteo rather than this deployment.
-    return json({ error: 'Weather lookup failed' }, 502, 'no-store');
+    return respondError(error, {
+      scope: 'api/v1/weather',
+      status: 502,
+      fallback: 'Weather lookup failed',
+    });
   }
 }

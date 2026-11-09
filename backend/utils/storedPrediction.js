@@ -1,29 +1,19 @@
+import { districtKey } from '../../packages/core/src/districtRegistry.js';
 import { VALID_HORIZONS } from './forecastRow.js';
 import { predictFromStore } from './predictFromStore.js';
 import { getForecastStore } from '../forecastStore.js';
 import { clientError } from './clientError.js';
 
-// Same GAUL/current-name aliases used by the forecast overlay.
-const aliases = {
-  jessore: 'jashore',
-  chittagong: 'chattogram',
-  comilla: 'cumilla',
-  barishal: 'barisal',
-  khagrachari: 'khagrachhari',
-  bogura: 'bogra',
-  jaipurhat: 'joypurhat',
-  netrakona: 'netrokona',
-  maulvibazar: 'moulvibazar',
-  brahamanbaria: 'brahmanbaria',
-  jhalakathi: 'jhalokati',
-  nawabganj: 'chapainawabganj',
-};
-const key = (value) => {
-  const normalized = String(value)
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, '');
-  return aliases[normalized] || normalized;
-};
+/**
+ * District matching for stored predictions.
+ *
+ * This file used to carry its own copy of the GAUL/current-name alias table — one of
+ * seven in the repository, and the one the API used while the UI used a different one.
+ * A district could therefore resolve on the stored-prediction path and not in the
+ * forecast overlay (or the reverse) with nothing in the logs to say so. The table now
+ * lives once, in `packages/core/src/districtRegistry.js`.
+ */
+const key = (value) => districtKey(value);
 
 export async function serveStoredPrediction(req, res) {
   res.setHeader('Cache-Control', 'no-store');

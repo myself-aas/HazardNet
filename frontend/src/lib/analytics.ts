@@ -17,6 +17,7 @@
  */
 
 import { envFlag } from './viteEnv';
+import { API_PATHS } from '@hazardnet/api';
 import {
   ANALYTICS_EVENTS,
   createNoopTracker,
@@ -24,7 +25,7 @@ import {
   type Tracker,
 } from '@hazardnet/analytics';
 
-const ENDPOINT = '/api/v1/telemetry';
+const ENDPOINT = API_PATHS.telemetry;
 
 let tracker: Tracker = createNoopTracker();
 let initialised = false;

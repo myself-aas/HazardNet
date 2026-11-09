@@ -13,6 +13,7 @@
  */
 
 import { useMemo } from 'react';
+import { API_PATHS } from '@hazardnet/api';
 import { useQuery } from '@tanstack/react-query';
 import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
 import {
@@ -38,7 +39,7 @@ import {
 export async function loadForecasts(horizon: ForecastHorizon): Promise<ForecastRow[]> {
   let candidateRows: ForecastRow[] = [];
   try {
-    const res = await fetch(`/api/v1/forecasts/bulk?horizon=${encodeURIComponent(horizon)}&fresh=${Date.now()}`, { cache: 'no-store' });
+    const res = await fetch(`${API_PATHS.forecastsBulk}?horizon=${encodeURIComponent(horizon)}&fresh=${Date.now()}`, { cache: 'no-store' });
     if (res.ok) {
       candidateRows = parseBulkResponse(await res.json());
     }

@@ -87,9 +87,6 @@ export const DISTRICT_REGISTRY = [
 ];
 
 /**
- * Normalized alias dictionary for fuzzy/legacy district name matching.
- */
-/**
  * Spelling variants → canonical district name.
  *
  * Exported because free-text matching has to recognise what people actually
@@ -97,8 +94,25 @@ export const DISTRICT_REGISTRY = [
  * are commonly written, and a planner that only matched canonical names silently
  * resolved none of them. `lookupDistrict()` already understood the aliases; the
  * agent just could not see them.
+ *
+ * THIS IS THE ONLY ALIAS TABLE IN THE REPOSITORY. Before 2026-11-09 seven copies
+ * existed — `packages/core/src/forecasts.ts`, `frontend/src/lib/forecasts.ts`,
+ * `frontend/src/lib/storedPrediction.ts`, `backend/utils/storedPrediction.js`,
+ * `backend/utils/forecastSnapshotServe.js`, `frontend/src/lib/eventsClient.ts`
+ * (mapping in the *opposite* direction), and a six-entry subset inside
+ * `frontend/src/lib/webmcp.ts` — and they had already drifted:
+ *
+ *   · only some copies knew `Cox's Bazar`, so a row spelled the GAUL way resolved
+ *     on the API and not in the UI;
+ *   · one copy carried a `'chapainawabganj '` key with a trailing space that no
+ *     lookup could ever produce (keys are normalized first), so it was dead;
+ *   · `eventsClient` mapped modern → legacy because the static district table uses
+ *     legacy slugs, while every other copy mapped legacy → modern. Same district,
+ *     two directions, decided by which module you happened to call.
+ *
+ * `__tests__/districtIdentity.test.js` now fails if a second table reappears.
  */
-export const DISTRICT_ALIASES = {
+export const DISTRICT_ALIASES = Object.freeze({
   jessore: 'jashore',
   chittagong: 'chattogram',
   comilla: 'cumilla',
@@ -110,10 +124,25 @@ export const DISTRICT_ALIASES = {
   maulvibazar: 'moulvibazar',
   brahamanbaria: 'brahmanbaria',
   jhalakathi: 'jhalokati',
+  jhalokathi: 'jhalokati',
   nawabganj: 'chapainawabganj',
-  coxsbazar: "cox's bazar",
-  coxbazar: "cox's bazar",
-};
+  coxsbazar: 'coxsbazar',
+  coxbazar: 'coxsbazar',
+});
+
+/**
+ * Static district-table slugs that are not the canonical spelling.
+ *
+ * `frontend/src/data/bangladeshDistricts.ts` is the editorial table (crops,
+ * elevation, map geometry) and it keys districts by a legacy slug — `jessore`,
+ * `barisal`. The canonical vocabulary is the current spelling (`jashore`,
+ * `barishal`). Both spellings are legitimate, so the direction flip lives here
+ * instead of being re-decided at every call site.
+ */
+const LEGACY_SLUGS = Object.freeze({
+  jashore: 'jessore',
+  barishal: 'barisal',
+});
 
 /**
  * Normalizes a district name to clean lowercase alphanumeric key.
@@ -127,6 +156,53 @@ export function normalizeDistrictKey(name) {
 }
 
 /**
+ * The canonical key for any spelling of a district name.
+ *
+ * This is the one function every layer should match districts with: the API, the
+ * snapshot reader, the static baseline overlay, the map, the content engine and
+ * the agent's free-text detector all end up comparing district names, and they
+ * only agree if they normalize the same way.
+ *
+ * @param {unknown} name any spelling — "Jessore", "JASHORE", "jashore"
+ * @returns {string} canonical key, or '' when the input cannot be a name
+ */
+export function districtKey(name) {
+  const normalized = normalizeDistrictKey(typeof name === 'string' ? name : String(name ?? ''));
+  if (!normalized) return '';
+  return DISTRICT_ALIASES[normalized] || normalized;
+}
+
+/**
+ * Do two values name the same district?
+ *
+ * Both sides go through `districtKey`, so aliases, case, punctuation and
+ * apostrophes cannot make two spellings of one district look like two districts.
+ *
+ * @param {unknown} a
+ * @param {unknown} b
+ * @returns {boolean}
+ */
+export function sameDistrict(a, b) {
+  const left = districtKey(a);
+  return left !== '' && left === districtKey(b);
+}
+
+/**
+ * Canonical key → `frontend/src/data/bangladeshDistricts.ts` slug.
+ *
+ * The static table predates the renames, so lookups against it need the legacy
+ * slug. Callers that only hold a display name should use `districtKey` for
+ * comparisons and this function only when they need the table row.
+ *
+ * @param {unknown} name
+ * @returns {string}
+ */
+export function districtSlug(name) {
+  const key = districtKey(name);
+  return LEGACY_SLUGS[key] || key;
+}
+
+/**
  * Resolve district details from name with alias handling.
  *
  * @param {string} districtName
@@ -134,14 +210,23 @@ export function normalizeDistrictKey(name) {
  */
 export function lookupDistrict(districtName) {
   if (!districtName) return null;
-  const rawKey = normalizeDistrictKey(districtName);
-  const canonicalLookup = DISTRICT_ALIASES[rawKey] ? normalizeDistrictKey(DISTRICT_ALIASES[rawKey]) : rawKey;
+  const canonicalLookup = districtKey(districtName);
+  if (!canonicalLookup) return null;
 
   for (const item of DISTRICT_REGISTRY) {
-    const itemKey = normalizeDistrictKey(item.district_name);
-    if (itemKey === canonicalLookup || itemKey === rawKey) {
-      return item;
-    }
+    if (districtKey(item.district_name) === canonicalLookup) return item;
   }
   return null;
+}
+
+/**
+ * The registry row for a district id, for readers that hold `district_id`.
+ *
+ * @param {unknown} id numeric district id (1..64) or its numeric string
+ * @returns {typeof DISTRICT_REGISTRY[0] | null}
+ */
+export function districtById(id) {
+  const numeric = Number(id);
+  if (!Number.isInteger(numeric)) return null;
+  return DISTRICT_REGISTRY.find((item) => item.district_id === numeric) || null;
 }

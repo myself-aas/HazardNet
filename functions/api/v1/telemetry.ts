@@ -45,6 +45,7 @@ import {
   BODY_MAX_BYTES,
   validateTelemetryBatch,
 } from '../../../backend/utils/telemetryBatch.js';
+import { CACHE, respond } from '../../../backend/edge/response';
 
 /** The `writeDataPoint` shape this route uses; kept local so it can be stubbed in tests. */
 interface AnalyticsEngineDataset {
@@ -55,10 +56,13 @@ interface AnalyticsEngineDataset {
   }) => void;
 }
 
+/**
+ * `env` is optional: a Pages Function can be invoked in a context without bindings (unit
+ * tests, local dev, a Preview deployment with no Production bindings). Never dereference it
+ * blindly. The shape stays local because this is the only route that reads a binding.
+ */
 interface PagesContext {
   request: Request;
-  // Optional: a Page Function can be invoked in a context without bindings (unit tests,
-  // local dev, a Preview deployment with no Production bindings). Never dereference blindly.
   env?: { ANALYTICS?: AnalyticsEngineDataset };
 }
 
@@ -82,16 +86,6 @@ function isProductionRequest(request: Request): boolean {
   return PRODUCTION_HOSTS.has(requestHostname(request));
 }
 
-function json(body: unknown, status: number, extraHeaders: Record<string, string> = {}): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      'cache-control': 'no-store',
-      ...extraHeaders,
-    },
-  });
-}
 
 /**
  * Write one event to Analytics Engine, or to the log when there is no binding.
@@ -145,26 +139,26 @@ export async function onRequest(context: PagesContext): Promise<Response> {
   const env = context.env ?? {};
 
   if (request.method !== 'POST') {
-    return json({ error: 'method not allowed' }, 405, { allow: 'POST' });
+    return respond({ error: 'method not allowed' }, { status: 405, headers: { allow: 'POST' } });
   }
 
   // Read as text and bound *before* parsing: `await request.json()` would buffer a body of
   // any size, and this is the one endpoint a stranger can post to without credentials.
   const raw = await request.text();
   if (raw.length > BODY_MAX_BYTES) {
-    return json({ error: 'payload too large' }, 413);
+    return respond({ error: 'payload too large' }, { status: 413 });
   }
 
   let payload: unknown;
   try {
     payload = JSON.parse(raw);
   } catch {
-    return json({ error: 'body must be valid JSON' }, 400);
+    return respond({ error: 'body must be valid JSON' }, { status: 400 });
   }
 
   const result = validateTelemetryBatch(payload);
   if (!result.ok) {
-    return json({ error: result.error }, 400);
+    return respond({ error: result.error }, { status: 400 });
   }
 
   // Production-only guard: a Preview deployment with an accidentally shared binding must
@@ -182,5 +176,8 @@ export async function onRequest(context: PagesContext): Promise<Response> {
   // 204 with no body, matching the Node runtime and the beacon's expectations. The middleware
   // in `functions/_middleware.ts` drops the body for this status deliberately — constructing
   // a `Response` with one throws.
-  return new Response(null, { status: 204, headers: { 'cache-control': 'no-store' } });
+  // A 204 has no body to build, so it is the one response that does not go through
+  // `respond()` — but the cache policy still comes from the same named constant rather than a
+  // literal that can drift from the other routes.
+  return new Response(null, { status: 204, headers: { 'cache-control': CACHE.noStore } });
 }

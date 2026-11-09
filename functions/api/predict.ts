@@ -7,22 +7,7 @@ import {
   loadForecastOrDailySnapshot,
   storedPredictionFromSnapshot,
 } from '../../backend/utils/forecastSnapshotServe.js';
-
-interface PagesContext {
-  request: Request;
-  env: { ASSETS?: { fetch: (input: Request) => Promise<Response> } };
-}
-
-function json(body: unknown, status: number): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      'cache-control': 'no-store, max-age=0',
-      'x-content-type-options': 'nosniff',
-    },
-  });
-}
+import { respond, respondError, type PagesContext } from '../../backend/edge/response';
 
 export async function onRequestPost(context: PagesContext): Promise<Response> {
   const { request, env } = context;
@@ -32,22 +17,28 @@ export async function onRequestPost(context: PagesContext): Promise<Response> {
   try {
     payload = await request.json();
   } catch {
-    return json({ error: 'District payload required' }, 422);
+    return respond({ error: 'District payload required' }, { status: 422 });
   }
 
   const loaded = await loadForecastOrDailySnapshot(env, request);
   if ('error' in loaded) {
-    console.error('[predict] snapshot unavailable:', loaded.error);
-    return json({ error: 'Stored forecast unavailable', detail: loaded.error }, 503);
+    return respondError(new Error(loaded.error), {
+      scope: 'api/predict',
+      status: 503,
+      fallback: 'Stored forecast unavailable',
+    });
   }
 
   try {
     const result = storedPredictionFromSnapshot(loaded.snapshot, payload, {
       storeLatencyMs: Date.now() - started,
     });
-    return json(result.body, result.status);
+    return respond(result.body, { status: result.status });
   } catch (error) {
-    console.error('[predict] envelope error:', error instanceof Error ? error.message : error);
-    return json({ error: 'Stored forecast unavailable' }, 500);
+    return respondError(error, {
+      scope: 'api/predict',
+      status: 500,
+      fallback: 'Stored forecast unavailable',
+    });
   }
 }

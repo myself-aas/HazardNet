@@ -9,6 +9,8 @@
  * levels from 1000 hPa down to 30 hPa.
  */
 
+import { API_PATHS } from '@hazardnet/api';
+
 export interface WeatherMeta {
   source: 'open-meteo';
   license: string;
@@ -203,7 +205,7 @@ export async function fetchWeather(
     params.set('forecast_days', String(Math.min(Math.max(opts.forecast_days, 1), 16)));
   }
   if (opts.timezone) params.set('timezone', opts.timezone);
-  const resp = await fetch(`/api/v1/weather?${params.toString()}`, {
+  const resp = await fetch(`${API_PATHS.weather}?${params.toString()}`, {
     signal: opts.signal,
     cache: 'no-store',
   });
@@ -228,7 +230,7 @@ export async function fetchCurrentWeather(
     mini: '1',
   });
   if (opts.timezone) params.set('timezone', opts.timezone);
-  const resp = await fetch(`/api/v1/weather?${params.toString()}`, {
+  const resp = await fetch(`${API_PATHS.weather}?${params.toString()}`, {
     signal: opts.signal,
     cache: 'no-store',
   });
@@ -247,7 +249,7 @@ export async function fetchCurrentWeatherBatch(
   points: ReadonlyArray<{ id: string; lat: number; lng: number }>,
   opts: { timezone?: string; signal?: AbortSignal } = {},
 ): Promise<BatchWeatherResponse> {
-  const resp = await fetch('/api/v1/weather/batch', {
+  const resp = await fetch(API_PATHS.weatherBatch, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ points, timezone: opts.timezone || 'Asia/Dhaka' }),

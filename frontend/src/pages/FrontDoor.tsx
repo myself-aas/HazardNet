@@ -80,6 +80,7 @@ import { useAlertsData } from '../hooks/useAlertsData';
 import { useHazardLabel } from '../hooks/useHazardLabel';
 import { useI18n } from '../hooks/useI18n';
 import { FRESHNESS_URL, parseFreshness, type FreshnessArtifact } from '../lib/freshness';
+import { readArtifacts } from '../lib/artifacts';
 import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
 import hazardMethodology from '../content/hazard-methodology.json';
 import attribution from '../content/attribution.json';
@@ -123,37 +124,29 @@ function useLiveFacts(): LiveFacts {
   useEffect(() => {
     let cancelled = false;
 
-    const loadFreshness = async () => {
-      try {
-        const response = await fetch(FRESHNESS_URL, { cache: 'no-cache' });
-        const payload = await response.json();
-        const parsed = parseFreshness(payload);
-        if (!cancelled) {
-          if (parsed) setFreshness(parsed);
-          else setFailed(true);
-        }
-      } catch {
-        if (!cancelled) setFailed(true);
-      }
-    };
-
-    const loadScorecard = async () => {
-      try {
-        const response = await fetch('/data/model-performance.json', { cache: 'no-cache' });
-        const payload = await response.json();
-        if (cancelled) return;
-        const episodes = Array.isArray(payload?.episodes) ? payload.episodes.length : null;
-        setScorecard({
-          episodes,
-          generatedAt: typeof payload?.generated_at === 'string' ? payload.generated_at : null,
-        });
-      } catch {
-        if (!cancelled) setFailed(true);
-      }
-    };
-
-    void Promise.all([loadFreshness(), loadScorecard()]).finally(() => {
-      if (!cancelled) setLoading(false);
+    // Both reads go through `lib/artifacts` — one deadline, one cache-busting rule, one
+    // definition of "missing" vs "unreachable". This hook used to hand-roll both fetches with
+    // no timeout at all, so a visitor on a slow connection waited on the browser's own
+    // connect deadline. The two artifacts are read together and reported separately: the page
+    // can say *which* one failed instead of one `failed` flag for both.
+    void readArtifacts({
+      freshness: { url: FRESHNESS_URL, validate: parseFreshness },
+      scorecard: {
+        url: '/data/model-performance.json',
+        validate: (payload: unknown) => {
+          const value = payload as { episodes?: unknown; generated_at?: unknown } | null;
+          return {
+            episodes: Array.isArray(value?.episodes) ? value.episodes.length : null,
+            generatedAt: typeof value?.generated_at === 'string' ? value.generated_at : null,
+          } as ScorecardFacts;
+        },
+      },
+    }).then((results) => {
+      if (cancelled) return;
+      if (results.freshness.ok) setFreshness(results.freshness.data);
+      if (results.scorecard.ok) setScorecard(results.scorecard.data);
+      if (!results.freshness.ok || !results.scorecard.ok) setFailed(true);
+      setLoading(false);
     });
 
     return () => {

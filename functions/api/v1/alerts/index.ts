@@ -37,6 +37,17 @@ import {
   listEnvelopeFromSnapshot,
   loadAlertSnapshot,
 } from '../../../../backend/utils/alertSnapshotServe.js';
+import { CACHE, respond, respondError } from '../../../../backend/edge/response';
+import { pathOf } from '../../../../packages/api/src/endpoints';
+
+/** The Node handler's anonymous branch window, kept as a named constant. */
+const LIST_CACHE = CACHE.publicFor(60);
+
+/** The subset of the Pages `EventContext` this route uses (see `backend/edge/response.js`). */
+interface PagesContext {
+  request: Request;
+  env: { ASSETS?: { fetch: (input: Request) => Promise<Response> } };
+}
 
 interface AlertRow {
   state?: string;
@@ -48,32 +59,17 @@ interface AlertRow {
   [key: string]: unknown;
 }
 
-interface PagesContext {
-  request: Request;
-  env: { ASSETS?: { fetch: (input: Request) => Promise<Response> } };
-}
-
-function json(body: unknown, status: number, cacheControl: string): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      'cache-control': cacheControl,
-    },
-  });
-}
-
 export async function onRequestGet(context: PagesContext): Promise<Response> {
   const { request, env } = context;
 
   const params = new URL(request.url).searchParams;
   const requestedState = params.get('state') ? String(params.get('state')).toUpperCase() : null;
   if (requestedState && !ALERT_STATES.includes(requestedState)) {
-    return json({ error: `unknown state ${requestedState}` }, 400, 'no-store');
+    return respond({ error: `unknown state ${requestedState}` }, { status: 400 });
   }
   const level = params.get('level') ? String(params.get('level')).toUpperCase() : null;
   if (level && !ALERT_LEVELS.includes(level)) {
-    return json({ error: `unknown level ${level}` }, 400, 'no-store');
+    return respond({ error: `unknown level ${level}` }, { status: 400 });
   }
 
   const horizon = params.get('horizon') || null;
@@ -83,8 +79,11 @@ export async function onRequestGet(context: PagesContext): Promise<Response> {
 
   const loaded = await loadAlertSnapshot(env, request);
   if ('error' in loaded) {
-    console.error('[alerts] snapshot unavailable:', loaded.error);
-    return json({ error: 'alerts snapshot is unavailable', detail: loaded.error }, 503, 'no-store');
+    return respondError(new Error(loaded.error), {
+      scope: 'api/v1/alerts',
+      status: 503,
+      fallback: 'alerts snapshot is unavailable',
+    });
   }
 
   const rows = (loaded.snapshot.alerts as AlertRow[]).filter(
@@ -106,7 +105,7 @@ export async function onRequestGet(context: PagesContext): Promise<Response> {
   // `public, max-age=60` matches the Node handler's anonymous branch: the payload carries a
   // per-response `generated_at`, and a minute of staleness on a list that only changes when
   // a human reviews an alert is the deliberate trade for not invoking a Function per view.
-  return json(
+  return respond(
     listEnvelopeFromSnapshot(loaded.snapshot, {
       alerts: view,
       // The Node handler echoes the *effective* state, not the requested one: an anonymous
@@ -114,7 +113,9 @@ export async function onRequestGet(context: PagesContext): Promise<Response> {
       // answer (that is what it was served). Caught by `pagesAlerts` parity, not by review.
       filters: { state: PUBLIC_ALERT_STATE, level, horizon, district_id: params.get('district_id') },
     }),
-    200,
-    'public, max-age=60'
+    { cache: LIST_CACHE }
   );
 }
+
+/** The path this file answers. The table is `packages/api/src/endpoints.ts`. */
+export const ROUTE_PATH = pathOf('alerts');

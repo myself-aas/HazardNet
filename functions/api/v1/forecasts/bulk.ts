@@ -23,27 +23,12 @@ import {
   loadForecastSnapshot,
   snapshotDataSource,
 } from '../../../../backend/utils/forecastSnapshotServe.js';
+import { CACHE, respond, type PagesContext } from '../../../../backend/edge/response';
 
-/** The subset of the Pages `EventContext` this route uses. */
-interface PagesContext {
-  request: Request;
-  env: { ASSETS?: { fetch: (input: Request) => Promise<Response> }; FORECAST_DATASET?: string };
-}
-
-/** JSON response with the cache policy the Node handler uses for this endpoint. */
-function json(body: unknown, status: number): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      // Parity with `serverless/v1/forecasts/bulk.js`: the payload carries a per-response
-      // `generated_at`, so a cached copy would report a time that is not this response's.
-      // If Function invocations ever become the constraint, this is the single line to
-      // revisit — the rows themselves only change when a new snapshot is deployed.
-      'cache-control': 'no-store, max-age=0',
-    },
-  });
-}
+// The payload carries a per-response `generated_at`, so a cached copy would report a time
+// that is not this response's — parity with `serverless/v1/forecasts/bulk.js`. If Function
+// invocations ever become the constraint, `CACHE.revalidate` is the single line to revisit;
+// the rows themselves only change when a new snapshot is deployed.
 
 export async function onRequestGet(context: PagesContext): Promise<Response> {
   const { request, env } = context;
@@ -51,21 +36,22 @@ export async function onRequestGet(context: PagesContext): Promise<Response> {
   const query = Object.fromEntries(new URL(request.url).searchParams.entries());
   const parsed = parseBulkQuery(query);
   if ('error' in parsed) {
-    return json({ error: parsed.error }, 400);
+    return respond({ error: parsed.error }, { status: 400 });
   }
 
   const loaded = await loadForecastSnapshot(env, request);
   if ('error' in loaded) {
-    // Named, not generic: a probe log that says "snapshot asset answered 404" points at the
-    // build output, while "Internal server error" points at nothing.
+    // Logged, not echoed: a probe log that says "snapshot asset answered 404" points at the
+    // build output, while "Internal server error" points at nothing — but the asset error
+    // also names a path on the deployment, which a stranger may not read.
     console.error('[forecasts/bulk] snapshot unavailable:', loaded.error);
-    return json({ error: 'forecast snapshot is unavailable', detail: loaded.error }, 503);
+    return respond({ error: 'forecast snapshot is unavailable' }, { status: 503 });
   }
 
-  return json(
+  return respond(
     bulkEnvelopeFromSnapshot(loaded.snapshot, parsed.horizon, {
       dataSource: snapshotDataSource(env),
     }),
-    200
+    { cache: CACHE.noStore }
   );
 }

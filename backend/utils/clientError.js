@@ -17,7 +17,13 @@
  *   clientError(res, err, { scope: 'api/v1/forecasts/bulk', fallback: '…' });
  */
 
-/** Logs with the scope tag so the full detail survives in the server logs. */
+/**
+ * One line for the server log, with the scope tag so the full detail survives.
+ *
+ * Callers: `clientError` (Express/Docker), `backend/edge/response.ts` (Cloudflare Pages
+ * Functions), `backend/mcp/nodeAdapter.js`. Three runtimes, one log shape — which is what
+ * makes a single alerting query find a 5xx regardless of which deployment produced it.
+ */
 export function logServerError(scope, err) {
   const detail = err instanceof Error ? err.stack ?? err.message : String(err);
   console.error(`[${scope}] ${detail}`);

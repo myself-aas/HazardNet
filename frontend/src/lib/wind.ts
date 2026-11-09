@@ -17,11 +17,13 @@
  * UNAVAILABLE, never an invented breeze.
  */
 
+import { SLO_HOURS } from '@hazardnet/core';
+
 export const WIND_ARTIFACT_URL = '/data/live/wind.json';
 export const WIND_SCHEMA = 'hazardnet-wind/v1';
 
 /** The workflow runs every 6 h; one missed run stays fresh, two do not. */
-export const WIND_FRESH_SLO_HOURS = 9;
+export const WIND_FRESH_SLO_HOURS = SLO_HOURS.WIND;
 
 export type WindModel = 'open-meteo' | 'gfs' | 'ecmwf'; // gfs/ecmwf: legacy artifacts only
 

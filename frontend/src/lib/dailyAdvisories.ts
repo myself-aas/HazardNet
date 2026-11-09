@@ -5,13 +5,15 @@
  * private columns. Also provides horizon rollup helpers so `/live`, `/advisories`,
  * and district panels stay unified with the daily Kaggle run.
  */
-import { canonicalKey, type ForecastHorizon, type ForecastRow } from './forecasts';
+import { canonicalKey, horizonDays, type ForecastHorizon, type ForecastRow } from './forecasts';
 import { ACTION_HAZARD_CLASSES } from './advisoryActions';
+import { API_PATHS } from '@hazardnet/api';
+import { requiresReview } from '@hazardnet/core';
 import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
 
-export const DAILY_API_URL = '/api/v1/advisories';
+export const DAILY_API_URL = API_PATHS.advisories;
 export const DAILY_SNAPSHOT_URL = '/data/daily-advisories-v1.json';
-export const DAILY_KAGGLE_URL = '/api/v1/kaggle?horizon=daily';
+export const DAILY_KAGGLE_URL = `${API_PATHS.kaggle}?horizon=daily`;
 export const DAILY_SCHEMA = 'hazardnet-daily-advisories/v1';
 
 export const DAILY_TIERS = ['NORMAL', 'WATCH', 'WARNING', 'SEVERE', 'EXTREME'] as const;
@@ -21,7 +23,9 @@ export type DailyQualityNote = 'official_update_unverified' | 'limited_forecast_
 export type DailyActionId = typeof ACTION_IDS[number];
 export type DailyStatus = 'fresh' | 'stale' | 'offline' | 'unavailable';
 
-const REVIEW_TIERS: readonly DailyTier[] = ['WARNING', 'SEVERE', 'EXTREME'];
+// The review rule is `packages/core/src/advisoryTier.js`; this is its answer for the five daily
+// tiers, so a click-through cannot disagree with the artifact it validates.
+const REVIEW_TIERS: readonly string[] = DAILY_TIERS.filter((tier) => requiresReview(tier));
 const TIER_RANK: Record<DailyTier, number> = {
   NORMAL: 0,
   WATCH: 1,
@@ -475,7 +479,9 @@ export function rollupDailyAdvisoriesToForecastRows(
   run: DailyRun,
   horizon: ForecastHorizon,
 ): ForecastRow[] {
-  const maxDay = horizon === '7_days' ? 7 : 15;
+  // `horizonDays` answers null for an unknown horizon; this function's contract is one of the
+  // two keys, so the 15-day window is the documented fallback and the caller is at fault.
+  const maxDay = horizonDays(horizon) ?? 15;
   const byDistrict = new Map<number, DailyAdvisory[]>();
   for (const row of advisories) {
     if (row.forecastDay > maxDay) continue;
@@ -552,7 +558,7 @@ export function dailyAdvisoriesToDistrictForecastRows(
   run: DailyRun,
   horizon: ForecastHorizon,
 ): ForecastRow[] {
-  const maxDay = horizon === '7_days' ? 7 : 15;
+  const maxDay = horizonDays(horizon) ?? 15;
   const predictionDate = run.generatedAt.slice(0, 10);
   const summary = summarizeContinuous15Days(advisories);
 

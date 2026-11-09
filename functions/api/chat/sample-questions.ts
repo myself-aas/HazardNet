@@ -13,27 +13,14 @@
  */
 
 import { SAMPLE_QUESTIONS } from '../../../backend/utils/chatService.js';
+import { CACHE, respond, type PagesContext } from '../../../backend/edge/response';
 
-interface PagesContext {
-  request: Request;
-  env?: Record<string, unknown>;
-}
-
-function json(body: unknown, status: number, extraHeaders: Record<string, string> = {}): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      'cache-control': 'public, max-age=300',
-      'x-content-type-options': 'nosniff',
-      ...extraHeaders,
-    },
-  });
-}
+/** The question list changes only when the deployment does. */
+const SAMPLE_CACHE = CACHE.publicFor(300);
 
 export async function onRequest(context: PagesContext): Promise<Response> {
   if (context.request.method !== 'GET') {
-    return json({ error: 'method not allowed' }, 405, { allow: 'GET' });
+    return respond({ error: 'method not allowed' }, { status: 405, headers: { allow: 'GET' } });
   }
-  return json(SAMPLE_QUESTIONS, 200);
+  return respond(SAMPLE_QUESTIONS, { cache: SAMPLE_CACHE });
 }

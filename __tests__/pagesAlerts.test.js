@@ -309,17 +309,19 @@ describe('GET /api/v1/alerts — the edge list is the Node list', () => {
       edgeContext('/api/v1/alerts', { assetResponse: new Response('', { status: 404 }) })
     );
     expect(missing.status).toBe(503);
-    expect((await missing.json()).detail).toContain('404');
+    // A 5xx body is generic on every edge route since 2026-11-09 (`backend/edge/response.ts`),
+    // so the asset status is in the log, not in what an anonymous reader receives.
+    expect((await missing.json()).detail).toBeUndefined();
 
     const wrongShape = await edgeList.onRequestGet(
       edgeContext('/api/v1/alerts', { snapshot: { schema: 'nope' } })
     );
     expect(wrongShape.status).toBe(503);
-    expect((await wrongShape.json()).detail).toContain('alerts');
+    expect((await wrongShape.json()).error).toBe('alerts snapshot is unavailable');
 
     const noBinding = await edgeList.onRequestGet({ request: new Request(`${URL_BASE}/api/v1/alerts`), env: {} });
     expect(noBinding.status).toBe(503);
-    expect((await noBinding.json()).detail).toContain('ASSETS binding');
+    expect((await noBinding.json()).error).toBe('alerts snapshot is unavailable');
   });
 
   test('caches for 60 s, like the Node handler\'s anonymous branch', async () => {

@@ -102,7 +102,10 @@ provided you:
 
 ### 4.1 Strict Content Security Policy (CSP) & Security Headers
 HazardNet enforces a centralized, strict header suite implemented in `backend/security/csp.js`
-and `backend/middleware/securityHeaders.js`:
+(the policy) and `backend/security/httpHeaders.js` (the five headers around it, as data). The
+served copies — `frontend/public/_headers` for static assets, `functions/_middleware.ts` for
+every Pages Function response, and helmet in `backend/server.js` — all derive from that pair and
+are pinned value-by-value by `__tests__/securityHeadersParity.test.js`.
 - **Content-Security-Policy**:
   - Eliminates `unsafe-inline` and `unsafe-eval` for scripts.
   - Restricts `default-src 'self'`.

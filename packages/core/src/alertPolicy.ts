@@ -1,3 +1,6 @@
+import { SLO_HOURS } from './freshnessSlo.js';
+import { AUTO_PUBLISH_CEILING, TIER_BANDS } from './advisoryTier.js';
+
 /**
  * Alert policy constants and helpers.
  *
@@ -28,29 +31,41 @@
 export const ALERT_POLICY_VERSION = 'alert-policy/1.0.0' as const;
 
 /** Automatic publishing ceiling — engine may publish at or below this level without human review. */
-export const AUTO_PUBLISH_CEILING = 'WATCH' as const;
+export { AUTO_PUBLISH_CEILING } from './advisoryTier.js';
 
-/** Severity thresholds for client-side display bucketing (when the API does not provide a level). */
+/**
+ * Severity thresholds for client-side display bucketing (when the API does not provide a level).
+ *
+ * The bands live in `advisoryTier.js`, with the tiers they cut and the review rule that follows
+ * from them. This object is the name every existing import reads; `WATCH_MIN_SEVERITY` is the
+ * same number under the second name it was once given (the manuscript defines one WATCH floor,
+ * not two).
+ */
 export const SEVERITY_THRESHOLDS = {
-  WATCH: 0.4,
-  /** Kept for callers that read it: the manuscript defines one WATCH floor, not two. */
-  WATCH_MIN_SEVERITY: 0.4,
-  WARNING: 0.7,
-  SEVERE: 0.85,
+  ...TIER_BANDS,
+  WATCH_MIN_SEVERITY: TIER_BANDS.WATCH,
 } as const;
 
-/** Confidence bins (matches confidenceBin in forecasts.ts — re-exported for co-location). */
-export const CONFIDENCE_THRESHOLDS = {
-  CERTAIN: 0.85,
-  PROBABLE: 0.7,
-} as const;
+/** Confidence bins — from `advisoryTier.js`, beside the tier bands. */
+export { CONFIDENCE_THRESHOLDS } from './advisoryTier.js';
 
-/** SLOs in hours — match the /status page and api freshness artifact. */
-export const SLO_HOURS = {
-  FORECAST: 192,    // 8 days — matches the web status page
-  ALERT_SNAPSHOT: 48,
-  HEALTH_PROBE: 2,
-} as const;
+/**
+ * SLOs in hours — the numbers themselves live in `freshnessSlo.js`.
+ *
+ * They used to be declared here, and the pipeline declared a different set in
+ * `scripts/build_freshness_artifact.mjs`. Nothing compared them, so both were "right".
+ * `freshnessSlo.js` is the owner; this re-export keeps the name every existing import uses.
+ */
+export { SLO_HOURS };
+
+/**
+ * The alert-snapshot SLO under the name this module used before it was shared.
+ *
+ * `SLO_HOURS.ALERTS` is the owner's spelling; `ALERT_SNAPSHOT` is the alias every existing call
+ * site and test already reads. Both name the same number because both are the same object — this is a
+ * rename in progress, not a second declaration.
+ */
+export const ALERT_SNAPSHOT_SLO_HOURS = SLO_HOURS.ALERT_SNAPSHOT;
 
 /** Cache TTLs by hazard type (in milliseconds). See mobile audit §7. */
 export const CACHE_TTL_MS = {

@@ -24,7 +24,9 @@
  */
 
 import { handleChatQuery } from '../../../backend/utils/chatService.js';
+import { respond, respondError } from '../../../backend/edge/response';
 
+/** The subset of the Pages `EventContext` this route uses (see `backend/edge/response.js`). */
 interface PagesContext {
   request: Request;
   env?: Record<string, string | undefined>;
@@ -54,17 +56,6 @@ function clientKey(request: Request): string {
   return 'unknown';
 }
 
-function json(body: unknown, status: number, extraHeaders: Record<string, string> = {}): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      'cache-control': 'no-store',
-      'x-content-type-options': 'nosniff',
-      ...extraHeaders,
-    },
-  });
-}
 
 export async function onRequest(context: PagesContext): Promise<Response> {
   const { request } = context;
@@ -79,50 +70,51 @@ export async function onRequest(context: PagesContext): Promise<Response> {
     hits.set(key, { count: 1, resetAt: now + WINDOW_MS });
   } else if (entry.count >= AI_LIMIT) {
     const retryAfter = Math.max(1, Math.ceil((entry.resetAt - now) / 1000));
-    return json(
+    return respond(
       { error: 'Too many requests. Slow down and retry shortly.', retry_after_seconds: retryAfter },
-      429,
-      { 'retry-after': String(retryAfter) }
+      { status: 429, headers: { 'retry-after': String(retryAfter) } }
     );
   } else {
     entry.count += 1;
   }
 
   if (request.method !== 'POST') {
-    return json({ error: 'method not allowed' }, 405, { allow: 'POST' });
+    return respond({ error: 'method not allowed' }, { status: 405, headers: { allow: 'POST' } });
   }
 
   // Read as text and bound *before* parsing, as `functions/api/v1/telemetry.ts` does:
   // `await request.json()` would buffer a body of any size.
   const raw = await request.text();
   if (raw.length > BODY_MAX_BYTES) {
-    return json({ error: 'payload too large' }, 413);
+    return respond({ error: 'payload too large' }, { status: 413 });
   }
 
   let payload: unknown;
   try {
     payload = JSON.parse(raw);
   } catch {
-    return json({ error: 'body must be valid JSON' }, 400);
+    return respond({ error: 'body must be valid JSON' }, { status: 400 });
   }
 
   try {
     // One shared implementation with the Express route and the Node twin; `env` is
     // `context.env` here because a Worker has no `process.env`.
     const result = await handleChatQuery(payload as { query: string }, env);
-    return json(result, 200);
+    return respond(result);
   } catch (err) {
     const statusCode = typeof (err as { statusCode?: unknown } | null)?.statusCode === 'number'
       ? (err as { statusCode: number }).statusCode
       : null;
     if (statusCode) {
       // Validation errors carry `statusCode` (400) so transports map them as-is.
-      return json({ error: (err as Error).message }, statusCode);
+      return respond({ error: (err as Error).message }, { status: statusCode });
     }
-    console.error('[chat/query] error:', err instanceof Error ? err.message : err);
-    return json(
-      { error: 'Failed to process RAG chat query', message: err instanceof Error ? err.message : String(err) },
-      500
-    );
+    // The raw error is logged, never echoed: it can name an upstream provider, a key
+    // variable or a request id, and this endpoint is anonymous.
+    return respondError(err, {
+      scope: 'api/chat/query',
+      status: 500,
+      fallback: 'Failed to process RAG chat query',
+    });
   }
 }

@@ -35,25 +35,31 @@ export interface DailyAdvisory {
   severityScore: number;
 }
 
+import { ARTIFACT_TIMEOUT_MS, readArtifact } from './artifacts';
+
 export interface DailySnapshot {
   run: { id: string; generatedAt: string; modelVersion: string; sourceDatasetVersion?: number };
   coverage: { districts: number; forecastDays: number; publishedRows: number };
   advisories: DailyAdvisory[];
 }
 
+/**
+ * The report files are deployed artifacts, so they are read through `lib/artifacts`: one
+ * deadline, one cache rule, and — the reason this module needed it — one place that knows a
+ * 404 ("this deployment has no report for that date") is not a network failure ("we could not
+ * reach the server"). Both used to collapse into `null` here.
+ *
+ * A report body is markdown, not JSON, so the text read keeps its own small helper; it shares
+ * the deadline and the 404 distinction through the same module.
+ */
 async function fetchJson<T>(url: string): Promise<T | null> {
-  try {
-    const response = await fetch(url, { cache: 'no-cache' });
-    if (!response.ok) return null;
-    return (await response.json()) as T;
-  } catch {
-    return null;
-  }
+  const result = await readArtifact<T>(url);
+  return result.ok ? result.data : null;
 }
 
 async function fetchText(url: string): Promise<string | null> {
   try {
-    const response = await fetch(url, { cache: 'no-cache' });
+    const response = await fetch(url, { cache: 'no-cache', signal: AbortSignal.timeout(ARTIFACT_TIMEOUT_MS) });
     if (!response.ok) return null;
     return await response.text();
   } catch {

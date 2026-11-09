@@ -24,20 +24,16 @@
 import { ALERT_LEVELS } from '../../../../backend/alerts/policy.js';
 import { ALERT_STATES } from '../../../../backend/alerts/lifecycle.js';
 import { loadAlertSnapshot, policyEnvelopeFromSnapshot } from '../../../../backend/utils/alertSnapshotServe.js';
+import { CACHE, respond, respondError } from '../../../../backend/edge/response';
+import { pathOf } from '../../../../packages/api/src/endpoints';
 
+/** The Node handler's window: thresholds change only when a deployment changes. */
+const POLICY_CACHE = CACHE.publicFor(300);
+
+/** The subset of the Pages `EventContext` this route uses (see `backend/edge/response.js`). */
 interface PagesContext {
   request: Request;
   env: { ASSETS?: { fetch: (input: Request) => Promise<Response> } };
-}
-
-function json(body: unknown, status: number, cacheControl: string): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      'cache-control': cacheControl,
-    },
-  });
 }
 
 export async function onRequestGet(context: PagesContext): Promise<Response> {
@@ -45,8 +41,11 @@ export async function onRequestGet(context: PagesContext): Promise<Response> {
 
   const loaded = await loadAlertSnapshot(env, request);
   if ('error' in loaded) {
-    console.error('[alerts/policy] snapshot unavailable:', loaded.error);
-    return json({ error: 'alerts snapshot is unavailable', detail: loaded.error }, 503, 'no-store');
+    return respondError(new Error(loaded.error), {
+      scope: 'api/v1/alerts/policy',
+      status: 503,
+      fallback: 'alerts snapshot is unavailable',
+    });
   }
 
   const body = policyEnvelopeFromSnapshot(loaded.snapshot, {
@@ -54,19 +53,19 @@ export async function onRequestGet(context: PagesContext): Promise<Response> {
     states: ALERT_STATES,
   });
   if (!body) {
-    console.error('[alerts/policy] the snapshot carries no policy block');
-    return json(
-      {
-        error: 'the alerts snapshot carries no policy block',
-        detail: 're-run scripts/build_alert_snapshot.mjs (it stamps the effective policy) and redeploy',
-      },
-      503,
-      'no-store'
-    );
+    // The remedy is an operator instruction, so it is logged rather than served: a 503 body
+    // that names a build script is a hint about the deployment's internals.
+    return respondError(new Error('the alerts snapshot carries no policy block'), {
+      scope: 'api/v1/alerts/policy',
+      status: 503,
+      fallback: 'the alerts snapshot carries no policy block',
+    });
   }
 
-  // Same cache window as the Node handler: the policy changes only when a deployment changes
-  // its environment, and five minutes of staleness on thresholds nobody edits by hand is
-  // cheaper than a Function invocation per reader.
-  return json(body, 200, 'public, max-age=300');
+  // Same cache window as the Node handler: five minutes of staleness on thresholds nobody
+  // edits by hand is cheaper than a Function invocation per reader.
+  return respond(body, { cache: POLICY_CACHE });
 }
+
+/** The path this file answers. The table is `packages/api/src/endpoints.ts`. */
+export const ROUTE_PATH = pathOf('alertsPolicy');

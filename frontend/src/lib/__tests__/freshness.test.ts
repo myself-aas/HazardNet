@@ -175,12 +175,17 @@ describe('loadFreshness', () => {
       fetcher: (async () => response({}, false, 404)) as unknown as typeof fetch,
     });
     expect(notFound.artifact).toBeNull();
-    expect(notFound.error).toBe('HTTP 404');
+    // The message names the path so a log line points at the artifact, not just the status.
+    // (`lib/artifacts` owns these messages now — the four hand-rolled readers each had their
+    // own wording, which is how "unreadable" came to mean three different things.)
+    expect(notFound.error).toContain('HTTP 404');
 
     const wrongSchema = await loadFreshness({
       fetcher: (async () => response({ schema: 'something-else' })) as unknown as typeof fetch,
     });
-    expect(wrongSchema.error).toMatch(/unrecognised payload/);
+    // The vocabulary for "JSON, but not this artifact" now lives in `lib/artifacts`; the
+    // sentence a *reader* sees comes from `describeArtifactFailure`, not from this message.
+    expect(wrongSchema.error).toMatch(/not the expected shape/);
 
     const thrown = await loadFreshness({
       fetcher: (async () => {

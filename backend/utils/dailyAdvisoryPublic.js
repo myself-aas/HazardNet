@@ -11,6 +11,9 @@
  */
 import { z } from 'zod';
 import { DISTRICT_REGISTRY, lookupDistrict } from '../../packages/core/src/districtRegistry.js';
+import { SLO_HOURS } from '../../packages/core/src/freshnessSlo.js';
+import { FORECAST_HORIZONS, horizonDays } from '../../packages/core/src/horizon.js';
+import { requiresReview } from '../../packages/core/src/advisoryTier.js';
 
 export const VALID_HAZARDS = [
   'Cold Wave', 'Drought', 'Fire', 'Flash Flood', 'Flood', 'Heat Wave',
@@ -19,9 +22,17 @@ export const VALID_HAZARDS = [
 
 export const DAILY_ADVISORY_SCHEMA = 'hazardnet-daily-advisories/v1';
 export const DAILY_ADVISORY_DAYS = 15;
-export const DAILY_ADVISORY_MAX_AGE_HOURS = 36;
+// From `packages/core/src/freshnessSlo.js`, so the artifact builder, the expiry check and the
+// status page's SLO are one number. It was 36 in three files, stated three times.
+export const DAILY_ADVISORY_MAX_AGE_HOURS = SLO_HOURS.DAILY_ADVISORIES;
 export const DAILY_PUBLIC_TIERS = ['NORMAL', 'WATCH', 'WARNING', 'SEVERE', 'EXTREME'];
-export const REQUIRES_REVIEW_TIERS = ['WARNING', 'SEVERE', 'EXTREME'];
+/**
+ * The tiers that need a named reviewer — derived from the one review rule in
+ * `packages/core/src/advisoryTier.js`, not declared beside it. This list is what the artifact
+ * validator and the builder both consult; the browser derives the same answer from the same
+ * rule when it parses the artifact.
+ */
+export const REQUIRES_REVIEW_TIERS = DAILY_PUBLIC_TIERS.filter((tier) => requiresReview(tier));
 const ALL_TIERS = DAILY_PUBLIC_TIERS;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const UTC = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/;
@@ -688,7 +699,8 @@ export function rollupDailySnapshotToHorizons(snapshotInput) {
       .sort((a, b) => a.forecastDay - b.forecastDay);
     if (districtRows.length === 0) continue;
 
-    for (const [horizon, maxDay] of [['7_days', 7], ['15_days', 15]]) {
+    for (const horizon of FORECAST_HORIZONS) {
+      const maxDay = horizonDays(horizon);
       const windowRows = districtRows.filter((r) => r.forecastDay <= maxDay);
       if (windowRows.length === 0) continue;
 

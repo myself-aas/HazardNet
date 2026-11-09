@@ -24,7 +24,7 @@ import { useConnectivity } from './useConnectivity';
 import { useAppStateStore } from '../state/appStateStore';
 import { useAlerts } from './useAlerts';
 
-const ALERT_SLO_MS = SLO_HOURS.ALERT_SNAPSHOT * 60 * 60 * 1000;
+const ALERT_SLO_MS = SLO_HOURS.ALERTS * 60 * 60 * 1000;
 
 export interface DataStateInfo {
   state: DataState;

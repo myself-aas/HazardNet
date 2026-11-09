@@ -16,9 +16,17 @@
  *     `0 h`, and a state string that is not one of the five known states becomes `unknown`.
  */
 
-export const FRESHNESS_URL = '/data/freshness.json';
+import { readArtifact } from './artifacts';
+import { API_PATHS } from '@hazardnet/api';
+
+export const FRESHNESS_URL = API_PATHS.freshnessArtifact;
 export const FRESHNESS_SCHEMA = 'hazardnet-freshness/v1';
-export const DAILY_ADVISORIES_SLO_HOURS = 36;
+// From `packages/core/src/freshnessSlo.js`: the pipeline's artifact build reads the same
+// constant, so the number the status page states and the number the artifact was built with
+// cannot drift apart.
+export { SLO_HOURS as FRESHNESS_SLO_HOURS } from '@hazardnet/core';
+import { SLO_HOURS as FRESHNESS_SLO_HOURS } from '@hazardnet/core';
+export const DAILY_ADVISORIES_SLO_HOURS = FRESHNESS_SLO_HOURS.DAILY_ADVISORIES;
 
 export type FreshnessState = 'fresh' | 'stale' | 'failing' | 'missing' | 'unknown';
 
@@ -250,25 +258,15 @@ export async function loadFreshness(
     timeoutMs = 6000,
   }: { fetcher?: typeof fetch; url?: string; timeoutMs?: number } = {},
 ): Promise<FreshnessLoad> {
-  const fetchedAt = new Date().toISOString();
-  if (typeof fetcher !== 'function') {
-    return { artifact: null, error: 'no fetch implementation available', fetchedAt };
-  }
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const response = await fetcher(`${url}${url.includes('?') ? '&' : '?'}fresh=${Date.now()}`, {
-      cache: 'no-store',
-      signal: controller.signal,
-      headers: { Accept: 'application/json' },
-    });
-    if (!response.ok) return { artifact: null, error: `HTTP ${response.status}`, fetchedAt };
-    const artifact = parseFreshness(await response.json());
-    if (!artifact) return { artifact: null, error: `unrecognised payload at ${url}`, fetchedAt };
-    return { artifact, error: null, fetchedAt };
-  } catch (error) {
-    return { artifact: null, error: (error as Error).message || 'fetch failed', fetchedAt };
-  } finally {
-    clearTimeout(timer);
-  }
+  // The transport is `lib/artifacts`, not a fourth hand-rolled fetch: one deadline, one
+  // cache-busting rule, one answer to "is a 404 the same as an outage" (it is not).
+  // The shape of this module's result is unchanged, because the status page and its tests
+  // read `{artifact, error, fetchedAt}`.
+  const result = await readArtifact<FreshnessArtifact>(url, {
+    fetcher,
+    timeoutMs,
+    validate: parseFreshness,
+  });
+  if (result.ok) return { artifact: result.data, error: null, fetchedAt: result.fetchedAt };
+  return { artifact: null, error: result.error, fetchedAt: result.fetchedAt };
 }
