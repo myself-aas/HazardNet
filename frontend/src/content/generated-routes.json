@@ -1,6 +1,6 @@
 {
   "schema": "hazardnet-generated-routes/v1",
-  "generated_at": "2026-11-12T07:05:16.742Z",
+  "generated_at": "2026-11-12T23:34:20.924Z",
   "generated_by": "scripts/build_content_engine.mjs",
   "origin": "https://www.hazardnet.live",
   "inputs": {
@@ -8,8 +8,8 @@
     "district_table": "frontend/src/data/bangladeshDistricts.ts",
     "forecast_snapshot": {
       "path": "frontend/public/data/forecasts-latest.json",
-      "prediction_date": "2026-11-11",
-      "generated_at": "2026-11-12T07:05:16.479Z"
+      "prediction_date": "2026-11-12",
+      "generated_at": "2026-11-12T23:34:20.627Z"
     },
     "event_archive": null,
     "model_performance": {
@@ -42,7 +42,7 @@
         "priority": 0.8
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "Hazard reference",
@@ -101,15 +101,15 @@
         {
           "h2": "Current run at a glance",
           "paragraphs": [
-            "Prediction date 2026-11-11; 64 district trajectories classified across 64 districts (Days 1 to 15)."
+            "Prediction date 2026-11-12; 64 district trajectories classified across 64 districts (Days 1 to 15)."
           ],
           "bullets": [
             "Riverine and monsoon flooding, scored from how much rain falls and how hard it falls. Current run: 3 district trajectories classified as Flood.",
             "Short-duration, high-intensity flooding: the burst case of the rainfall proxy. Current run: 52 district trajectories classified as Flash Flood.",
-            "Wind-driven coastal hazard: sustained wind above 50 km/h, with the rain it carries. Current run: 9 district trajectories classified as Tropical Cyclone.",
+            "Wind-driven coastal hazard: sustained wind above 50 km/h, with the rain it carries. Current run: 8 district trajectories classified as Tropical Cyclone.",
             "Heat load against the rainfall expected across the 15-day forecast window. Current run: 0 district trajectories classified as Drought.",
             "Exceedance above 30 °C, plus persistence. Current run: 0 district trajectories classified as Heat Wave.",
-            "How far the minimum falls below 16 °C, plus persistence. Current run: 0 district trajectories classified as Cold Wave.",
+            "How far the minimum falls below 16 °C, plus persistence. Current run: 1 district trajectory classified as Cold Wave.",
             "Vegetation and burn risk from heat, wind and drying. Current run: 0 district trajectories classified as Fire.",
             "Squall wind plus a convective downpour. Current run: 0 district trajectories classified as Severe Local Storm."
           ]
@@ -401,7 +401,7 @@
         "priority": 0.7
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "Hazard reference",
@@ -443,8 +443,8 @@
         {
           "h2": "What the current run says about Flood",
           "paragraphs": [
-            "In the run this deployment ships (prediction date 2026-11-11), 3 district trajectories are classified as Flood across the continuous 15-day window (Days 1 to 15).",
-            "Highest model severity: Noakhali (0.90, Days 1 to 15), Jhalokati (0.50, Days 1 to 15), Rangamati (0.30, Days 1 to 15).",
+            "In the run this deployment ships (prediction date 2026-11-12), 3 district trajectories are classified as Flood across the continuous 15-day window (Days 1 to 15).",
+            "Highest model severity: Jhalokati (0.30, Days 1 to 15), Noakhali (0.30, Days 1 to 15), Rangamati (0.30, Days 1 to 15).",
             "These are classifications from the current run, not a forecast of impact. Advisory levels follow the published escalation gate alongside official Bangladesh authorities."
           ],
           "links": [
@@ -509,7 +509,7 @@
         "priority": 0.7
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "Hazard reference",
@@ -551,8 +551,8 @@
         {
           "h2": "What the current run says about Flash Flood",
           "paragraphs": [
-            "In the run this deployment ships (prediction date 2026-11-11), 52 district trajectories are classified as Flash Flood across the continuous 15-day window (Days 1 to 15).",
-            "Highest model severity: Bagerhat (0.90, Days 1 to 15), Barguna (0.90, Days 1 to 15), Barishal (0.90, Days 1 to 15), Bhola (0.90, Days 1 to 15), Brahmanbaria (0.90, Days 1 to 15).",
+            "In the run this deployment ships (prediction date 2026-11-12), 52 district trajectories are classified as Flash Flood across the continuous 15-day window (Days 1 to 15).",
+            "Highest model severity: Barishal (0.90, Days 1 to 15), Chandpur (0.90, Days 1 to 15), Feni (0.90, Days 1 to 15), Lakshmipur (0.90, Days 1 to 15), Narail (0.70, Days 1 to 15).",
             "These are classifications from the current run, not a forecast of impact. Advisory levels follow the published escalation gate alongside official Bangladesh authorities."
           ],
           "links": [
@@ -617,7 +617,7 @@
         "priority": 0.7
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "Hazard reference",
@@ -659,8 +659,8 @@
         {
           "h2": "What the current run says about Tropical Cyclone",
           "paragraphs": [
-            "In the run this deployment ships (prediction date 2026-11-11), 9 district trajectories are classified as Tropical Cyclone across the continuous 15-day window (Days 1 to 15).",
-            "Highest model severity: Bandarban (0.30, Days 1 to 15), Khulna (0.30, Days 1 to 15), Kurigram (0.30, Days 1 to 15), Lalmonirhat (0.30, Days 1 to 15), Manikganj (0.30, Days 1 to 15).",
+            "In the run this deployment ships (prediction date 2026-11-12), 8 district trajectories are classified as Tropical Cyclone across the continuous 15-day window (Days 1 to 15).",
+            "Highest model severity: Khulna (0.30, Days 1 to 15), Kurigram (0.30, Days 1 to 15), Lalmonirhat (0.30, Days 1 to 15), Manikganj (0.30, Days 1 to 15), Meherpur (0.30, Days 1 to 15).",
             "These are classifications from the current run, not a forecast of impact. Advisory levels follow the published escalation gate alongside official Bangladesh authorities."
           ],
           "links": [
@@ -725,7 +725,7 @@
         "priority": 0.7
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "Hazard reference",
@@ -767,7 +767,7 @@
         {
           "h2": "What the current run says about Drought",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) classifies no district trajectory as Drought across Days 1 to 15. An absence of drought in one run is not a statement that the hazard cannot occur this season."
+            "The run this deployment ships (prediction date 2026-11-12) classifies no district trajectory as Drought across Days 1 to 15. An absence of drought in one run is not a statement that the hazard cannot occur this season."
           ],
           "links": [
             {
@@ -831,7 +831,7 @@
         "priority": 0.7
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "Hazard reference",
@@ -873,7 +873,7 @@
         {
           "h2": "What the current run says about Heat Wave",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) classifies no district trajectory as Heat Wave across Days 1 to 15. An absence of heat wave in one run is not a statement that the hazard cannot occur this season."
+            "The run this deployment ships (prediction date 2026-11-12) classifies no district trajectory as Heat Wave across Days 1 to 15. An absence of heat wave in one run is not a statement that the hazard cannot occur this season."
           ],
           "links": [
             {
@@ -937,7 +937,7 @@
         "priority": 0.7
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "Hazard reference",
@@ -979,7 +979,9 @@
         {
           "h2": "What the current run says about Cold Wave",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) classifies no district trajectory as Cold Wave across Days 1 to 15. An absence of cold wave in one run is not a statement that the hazard cannot occur this season."
+            "In the run this deployment ships (prediction date 2026-11-12), 1 district trajectory is classified as Cold Wave across the continuous 15-day window (Days 1 to 15).",
+            "Highest model severity: Bandarban (0.30, Days 1 to 15).",
+            "These are classifications from the current run, not a forecast of impact. Advisory levels follow the published escalation gate alongside official Bangladesh authorities."
           ],
           "links": [
             {
@@ -1042,7 +1044,7 @@
         "priority": 0.7
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "Hazard reference",
@@ -1084,7 +1086,7 @@
         {
           "h2": "What the current run says about Fire",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) classifies no district trajectory as Fire across Days 1 to 15. An absence of fire in one run is not a statement that the hazard cannot occur this season."
+            "The run this deployment ships (prediction date 2026-11-12) classifies no district trajectory as Fire across Days 1 to 15. An absence of fire in one run is not a statement that the hazard cannot occur this season."
           ],
           "links": [
             {
@@ -1148,7 +1150,7 @@
         "priority": 0.7
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "Hazard reference",
@@ -1190,7 +1192,7 @@
         {
           "h2": "What the current run says about Severe Local Storm",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) classifies no district trajectory as Severe Local Storm across Days 1 to 15. An absence of severe local storm in one run is not a statement that the hazard cannot occur this season."
+            "The run this deployment ships (prediction date 2026-11-12) classifies no district trajectory as Severe Local Storm across Days 1 to 15. An absence of severe local storm in one run is not a statement that the hazard cannot occur this season."
           ],
           "links": [
             {
@@ -1254,7 +1256,7 @@
         "priority": 0.8
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -1272,7 +1274,7 @@
         {
           "h2": "Coverage of the run this deployment ships",
           "paragraphs": [
-            "Prediction date 2026-11-11. 64 of 64 districts carry a continuous 15-day trajectory in this run. Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete).",
+            "Prediction date 2026-11-12. 64 of 64 districts carry a continuous 15-day trajectory in this run. Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete).",
             "All 64 districts carry a continuous 15-day trajectory in this run."
           ]
         },
@@ -1333,7 +1335,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -1371,10 +1373,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Kurigram across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Kurigram across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-18): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-27): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -1424,7 +1426,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -1439,7 +1441,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -1477,10 +1479,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Rangpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Rangpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-13): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-16): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -1530,7 +1532,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -1545,7 +1547,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -1583,10 +1585,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Gaibandha across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Gaibandha across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-13): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-27): Flash Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -1636,7 +1638,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -1651,7 +1653,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -1689,10 +1691,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Nilphamari across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Nilphamari across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-14): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-27): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -1742,7 +1744,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -1757,7 +1759,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -1795,10 +1797,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Dinajpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Dinajpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-13): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-15): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -1848,7 +1850,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -1863,7 +1865,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -1901,7 +1903,7 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Panchagarh across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Panchagarh across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
             "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-16): Flash Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
@@ -1954,7 +1956,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -1969,7 +1971,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -2007,10 +2009,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Thakurgaon across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Thakurgaon across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-14): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-15): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -2060,7 +2062,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -2075,7 +2077,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -2113,10 +2115,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Lalmonirhat across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Lalmonirhat across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-18): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-16): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -2166,7 +2168,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -2181,7 +2183,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -2219,10 +2221,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Rajshahi across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Rajshahi across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-22): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -2272,7 +2274,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -2287,7 +2289,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -2325,10 +2327,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Bogra across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Bogra across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-13): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-16): Flash Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -2378,7 +2380,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -2393,7 +2395,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -2431,10 +2433,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Sirajganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Sirajganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -2484,7 +2486,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -2499,7 +2501,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -2537,10 +2539,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Pabna across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Pabna across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Flash Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -2590,7 +2592,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -2605,7 +2607,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -2643,10 +2645,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Naogaon across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Naogaon across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-26): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-16): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -2696,7 +2698,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -2711,7 +2713,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -2749,10 +2751,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Natore across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Natore across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-26): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-23): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -2802,7 +2804,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -2817,7 +2819,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -2855,7 +2857,7 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Chapainawabganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Chapainawabganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
             "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-14): Flash Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
@@ -2908,7 +2910,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -2923,7 +2925,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -2961,10 +2963,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Joypurhat across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Joypurhat across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-13): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-14): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -3014,7 +3016,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -3029,7 +3031,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -3067,10 +3069,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Mymensingh across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Mymensingh across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-27): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -3120,7 +3122,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -3135,7 +3137,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -3173,10 +3175,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Netrokona across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Netrokona across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-27): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -3226,7 +3228,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -3241,7 +3243,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -3279,10 +3281,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Jamalpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Jamalpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-27): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -3332,7 +3334,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -3347,7 +3349,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -3385,10 +3387,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Sherpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Sherpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-13): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-27): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -3438,7 +3440,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -3453,7 +3455,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -3491,10 +3493,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Sylhet across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Sylhet across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -3544,7 +3546,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -3559,7 +3561,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -3597,10 +3599,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Sunamganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Sunamganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flash Flood, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-27): Flash Flood, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -3650,7 +3652,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -3665,7 +3667,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -3703,10 +3705,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Habiganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Habiganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -3756,7 +3758,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -3771,7 +3773,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -3809,10 +3811,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Moulvibazar across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Moulvibazar across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -3862,7 +3864,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -3877,7 +3879,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -3915,10 +3917,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Dhaka across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Dhaka across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Flash Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -3968,7 +3970,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -3983,7 +3985,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -4021,10 +4023,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Gazipur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Gazipur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -4074,7 +4076,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -4089,7 +4091,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -4127,10 +4129,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Narayanganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Narayanganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -4180,7 +4182,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -4195,7 +4197,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -4233,10 +4235,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Tangail across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Tangail across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-27): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -4286,7 +4288,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -4301,7 +4303,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -4339,10 +4341,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Kishoreganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Kishoreganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-27): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -4392,7 +4394,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -4407,7 +4409,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -4445,10 +4447,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Manikganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Manikganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-18): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -4498,7 +4500,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -4513,7 +4515,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -4551,10 +4553,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Munshiganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Munshiganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -4604,7 +4606,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -4619,7 +4621,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -4657,10 +4659,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Narsingdi across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Narsingdi across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -4710,7 +4712,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -4725,7 +4727,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -4763,10 +4765,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Faridpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Faridpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.90, confidence Certain (≥ 0.85); physics cross-check 0.90, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -4816,7 +4818,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -4831,7 +4833,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -4869,7 +4871,7 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Gopalganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Gopalganj across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
             "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
@@ -4922,7 +4924,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -4937,7 +4939,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -4975,10 +4977,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Madaripur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Madaripur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Flash Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -5028,7 +5030,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -5043,7 +5045,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -5081,10 +5083,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Rajbari across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Rajbari across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -5134,7 +5136,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -5149,7 +5151,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -5187,7 +5189,7 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Shariatpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Shariatpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
             "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
@@ -5240,7 +5242,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -5255,7 +5257,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -5293,10 +5295,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Khulna across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Khulna across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -5346,7 +5348,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -5361,7 +5363,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -5399,7 +5401,7 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Satkhira across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Satkhira across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
             "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.50, confidence Certain (≥ 0.85); physics cross-check 0.50, divergence 0.00."
@@ -5452,7 +5454,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -5467,7 +5469,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -5505,10 +5507,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Bagerhat across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Bagerhat across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Flash Flood, severity 0.90, confidence Certain (≥ 0.85); physics cross-check 0.90, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-14): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -5558,7 +5560,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -5573,7 +5575,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -5611,10 +5613,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Jashore across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Jashore across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.90, confidence Certain (≥ 0.85); physics cross-check 0.90, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -5664,7 +5666,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -5679,7 +5681,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -5717,10 +5719,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Jhenaidah across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Jhenaidah across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.90, confidence Certain (≥ 0.85); physics cross-check 0.90, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Flash Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -5770,7 +5772,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -5785,7 +5787,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -5823,10 +5825,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Magura across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Magura across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.90, confidence Certain (≥ 0.85); physics cross-check 0.90, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -5876,7 +5878,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -5891,7 +5893,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -5929,10 +5931,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Narail across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Narail across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.70, confidence Certain (≥ 0.85); physics cross-check 0.70, divergence 0.00."
           ]
         },
         {
@@ -5982,7 +5984,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -5997,7 +5999,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -6035,10 +6037,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Chuadanga across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Chuadanga across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.90, confidence Certain (≥ 0.85); physics cross-check 0.90, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -6088,7 +6090,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -6103,7 +6105,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -6141,10 +6143,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Kushtia across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Kushtia across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -6194,7 +6196,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -6209,7 +6211,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -6247,10 +6249,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Meherpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Meherpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-26): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -6300,7 +6302,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -6315,7 +6317,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -6353,7 +6355,7 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Barisal across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Barisal across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
             "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Flash Flood, severity 0.90, confidence Certain (≥ 0.85); physics cross-check 0.90, divergence 0.00."
@@ -6406,7 +6408,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -6421,7 +6423,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -6459,10 +6461,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Bhola across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Bhola across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flash Flood, severity 0.90, confidence Probable (0.70–0.85); physics cross-check 0.90, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Flash Flood, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -6512,7 +6514,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -6527,7 +6529,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -6565,10 +6567,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Jhalokati across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Jhalokati across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Flood, severity 0.50, confidence Uncertain (< 0.70); physics cross-check 0.50, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -6618,7 +6620,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -6633,7 +6635,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -6671,7 +6673,7 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Patuakhali across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Patuakhali across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
             "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
@@ -6724,7 +6726,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -6739,7 +6741,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -6777,10 +6779,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Pirojpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Pirojpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Flash Flood, severity 0.90, confidence Certain (≥ 0.85); physics cross-check 0.90, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flash Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -6830,7 +6832,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -6845,7 +6847,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -6883,10 +6885,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Barguna across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Barguna across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Flash Flood, severity 0.90, confidence Certain (≥ 0.85); physics cross-check 0.90, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -6936,7 +6938,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -6951,7 +6953,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -6989,10 +6991,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Chattogram across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Chattogram across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flash Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Flash Flood, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -7042,7 +7044,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -7057,7 +7059,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -7095,7 +7097,7 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Cox's Bazar across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Cox's Bazar across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
             "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-18): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
@@ -7148,7 +7150,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -7163,7 +7165,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -7201,10 +7203,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Cumilla across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Cumilla across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Flash Flood, severity 0.90, confidence Probable (0.70–0.85); physics cross-check 0.90, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -7254,7 +7256,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -7269,7 +7271,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -7307,10 +7309,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Feni across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Feni across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flash Flood, severity 0.90, confidence Certain (≥ 0.85); physics cross-check 0.90, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Flash Flood, severity 0.90, confidence Probable (0.70–0.85); physics cross-check 0.90, divergence 0.00."
           ]
         },
         {
@@ -7360,7 +7362,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -7375,7 +7377,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -7413,10 +7415,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Noakhali across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Noakhali across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flood, severity 0.90, confidence Probable (0.70–0.85); physics cross-check 0.90, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -7466,7 +7468,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -7481,7 +7483,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -7519,10 +7521,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Lakshmipur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Lakshmipur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flash Flood, severity 0.90, confidence Probable (0.70–0.85); physics cross-check 0.90, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Flash Flood, severity 0.90, confidence Probable (0.70–0.85); physics cross-check 0.90, divergence 0.00."
           ]
         },
         {
@@ -7572,7 +7574,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -7587,7 +7589,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -7625,10 +7627,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Chandpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Chandpur across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flash Flood, severity 0.30, confidence Probable (0.70–0.85); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.90, confidence Probable (0.70–0.85); physics cross-check 0.90, divergence 0.00."
           ]
         },
         {
@@ -7678,7 +7680,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -7693,7 +7695,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -7731,10 +7733,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Brahmanbaria across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Brahmanbaria across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.90, confidence Certain (≥ 0.85); physics cross-check 0.90, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flash Flood, severity 0.30, confidence Certain (≥ 0.85); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -7784,7 +7786,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -7799,7 +7801,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -7837,10 +7839,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Khagrachhari across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Khagrachhari across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flash Flood, severity 0.90, confidence Uncertain (< 0.70); physics cross-check 0.90, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-20): Flash Flood, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -7890,7 +7892,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -7905,7 +7907,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -7943,10 +7945,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Rangamati across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Rangamati across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-21): Flood, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-19): Flood, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -7996,7 +7998,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     },
@@ -8011,7 +8013,7 @@
         "priority": 0.6
       },
       "appShell": true,
-      "updated": "2026-11-11",
+      "updated": "2026-11-12",
       "breadcrumb": [
         {
           "name": "District outlooks",
@@ -8049,10 +8051,10 @@
         {
           "h2": "Current outlook from the model run",
           "paragraphs": [
-            "The run this deployment ships (prediction date 2026-11-11) covers Bandarban across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
+            "The run this deployment ships (prediction date 2026-11-12) covers Bandarban across the continuous 15-day trajectory (Days 1 to 15). Coverage of that run: covering 64 of 64 districts across the continuous 15-day daily trajectory (Days 1 to 15) (coverage status: complete)."
           ],
           "bullets": [
-            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-18): Tropical Cyclone, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
+            "Continuous 15-day trajectory (Days 1 to 15, peak/target date 2026-11-26): Cold Wave, severity 0.30, confidence Uncertain (< 0.70); physics cross-check 0.30, divergence 0.00."
           ]
         },
         {
@@ -8102,7 +8104,7 @@
         },
         {
           "question": "How current is this page?",
-          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-11), and the /status page states the age of each source against the SLO it is measured against."
+          "answer": "Every page here is generated at build time from the artifacts the deployment ships. The forecast section states the prediction date it came from (2026-11-12), and the /status page states the age of each source against the SLO it is measured against."
         }
       ]
     }
