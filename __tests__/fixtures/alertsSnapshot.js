@@ -1,5 +1,5 @@
 /* Provenance — required by __tests__/testQuality.test.js; do not remove.
- * # Captured from https://www.hazardnet.live/data/alerts-latest.json (committed as frontend/public/data/alerts-latest.json) on 2026-11-10 by `node scripts/capture_edge_fixtures.mjs`.
+ * # Captured from https://www.hazardnet.live/data/alerts-latest.json (committed as frontend/public/data/alerts-latest.json) on 2026-11-12 by `node scripts/capture_edge_fixtures.mjs`.
  * # Shape: object — hazardnet-alerts/v1 with the stamped policy block; first 2 PUBLISHED rows retained.
  * # To refresh: node scripts/capture_edge_fixtures.mjs (reads the committed artifact after an alert run).
  *
@@ -8,7 +8,7 @@
  */
 module.exports = {
   "schema": "hazardnet-alerts/v1",
-  "generated_at": "2026-11-10T23:15:47.295Z",
+  "generated_at": "2026-11-12T07:05:16.312Z",
   "policy_version": "alert-policy/1.0.0",
   "policy_source": "builder",
   "assessed": 64,
@@ -65,38 +65,43 @@ module.exports = {
       "pcode": "5795",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-12",
-      "prediction_date": "2026-11-10",
-      "lead_time_days": 2,
-      "severity_score": 0.3,
-      "confidence": 0.9895,
+      "target_date": "2026-11-19",
+      "prediction_date": "2026-11-11",
+      "lead_time_days": 8,
+      "severity_score": 0.9,
+      "confidence": 0.9878,
       "confidence_kind": "model_softmax_top_class",
       "reasons": [
         {
           "rule": "watch_softmax_proxy",
-          "detail": "uncalibrated softmax 0.9895 ≥ watch threshold 0.4 — treated as a WATCH proxy, not as a calibrated probability",
+          "detail": "uncalibrated softmax 0.9878 ≥ watch threshold 0.4 — treated as a WATCH proxy, not as a calibrated probability",
+          "track": "model"
+        },
+        {
+          "rule": "watch_severity_band",
+          "detail": "severity index 0.9 ≥ watch band 0.4",
           "track": "model"
         }
       ],
       "blockers": [
         {
           "rule": "warning_requires_calibration",
-          "detail": "score 0.9895 ≥ warning threshold 0.65 but confidence_kind is model_softmax_top_class and no calibration accuracy is claimed",
+          "detail": "score 0.9878 ≥ warning threshold 0.65 but confidence_kind is model_softmax_top_class and no calibration accuracy is claimed",
           "track": "model"
         }
       ],
       "evidence": {
         "model": {
           "hazard_type": "Flash Flood",
-          "severity": 0.3,
-          "model_severity": 0.3,
-          "confidence": 0.9895,
+          "severity": 0.9,
+          "model_severity": 0.9,
+          "confidence": 0.9878,
           "confidence_kind": "model_softmax_top_class",
           "confidence_published": "uncalibrated_model_softmax",
           "band": "high"
         },
         "physics": {
-          "physics_severity": 0.3,
+          "physics_severity": 0.9,
           "physics_agreement": "high",
           "divergence": 0,
           "divergence_source": "abs(model_severity - physics_severity)",
@@ -108,16 +113,16 @@ module.exports = {
         },
         "line": [
           "Bagerhat · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-12)",
-          "uncalibrated score 0.9895 (model_softmax_top_class)",
-          "independent physics severity 0.3 (divergence 0)"
+          "lead time 8 d (target 2026-11-19)",
+          "uncalibrated score 0.9878 (model_softmax_top_class)",
+          "independent physics severity 0.9 (divergence 0)"
         ]
       },
       "freshness": {
-        "prediction_date": "2026-11-10",
-        "data_cutoff": "2026-11-10T22:56:40.397Z",
+        "prediction_date": "2026-11-11",
+        "data_cutoff": "2026-11-11T23:02:43.637Z",
         "data_cutoff_source": "row.created_at",
-        "age_hours": 0.32,
+        "age_hours": 8.04,
         "slo_hours": 48,
         "within_slo": true,
         "stale_soon": false
@@ -132,7 +137,7 @@ module.exports = {
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-12__15_days__40__flash-flood__p2026-11-10",
+      "id": "2026-11-19__15_days__40__flash-flood__p2026-11-11",
       "state": "PUBLISHED"
     },
     {
@@ -147,38 +152,43 @@ module.exports = {
       "pcode": "5761",
       "horizon": "15_days",
       "hazard_type": "Flash Flood",
-      "target_date": "2026-11-12",
-      "prediction_date": "2026-11-10",
-      "lead_time_days": 2,
-      "severity_score": 0.3,
-      "confidence": 0.9816,
+      "target_date": "2026-11-19",
+      "prediction_date": "2026-11-11",
+      "lead_time_days": 8,
+      "severity_score": 0.9,
+      "confidence": 0.9802,
       "confidence_kind": "model_softmax_top_class",
       "reasons": [
         {
           "rule": "watch_softmax_proxy",
-          "detail": "uncalibrated softmax 0.9816 ≥ watch threshold 0.4 — treated as a WATCH proxy, not as a calibrated probability",
+          "detail": "uncalibrated softmax 0.9802 ≥ watch threshold 0.4 — treated as a WATCH proxy, not as a calibrated probability",
+          "track": "model"
+        },
+        {
+          "rule": "watch_severity_band",
+          "detail": "severity index 0.9 ≥ watch band 0.4",
           "track": "model"
         }
       ],
       "blockers": [
         {
           "rule": "warning_requires_calibration",
-          "detail": "score 0.9816 ≥ warning threshold 0.65 but confidence_kind is model_softmax_top_class and no calibration accuracy is claimed",
+          "detail": "score 0.9802 ≥ warning threshold 0.65 but confidence_kind is model_softmax_top_class and no calibration accuracy is claimed",
           "track": "model"
         }
       ],
       "evidence": {
         "model": {
           "hazard_type": "Flash Flood",
-          "severity": 0.3,
-          "model_severity": 0.3,
-          "confidence": 0.9816,
+          "severity": 0.9,
+          "model_severity": 0.9,
+          "confidence": 0.9802,
           "confidence_kind": "model_softmax_top_class",
           "confidence_published": "uncalibrated_model_softmax",
           "band": "high"
         },
         "physics": {
-          "physics_severity": 0.3,
+          "physics_severity": 0.9,
           "physics_agreement": "high",
           "divergence": 0,
           "divergence_source": "abs(model_severity - physics_severity)",
@@ -190,16 +200,16 @@ module.exports = {
         },
         "line": [
           "Barguna · Flash Flood · 15_days",
-          "lead time 2 d (target 2026-11-12)",
-          "uncalibrated score 0.9816 (model_softmax_top_class)",
-          "independent physics severity 0.3 (divergence 0)"
+          "lead time 8 d (target 2026-11-19)",
+          "uncalibrated score 0.9802 (model_softmax_top_class)",
+          "independent physics severity 0.9 (divergence 0)"
         ]
       },
       "freshness": {
-        "prediction_date": "2026-11-10",
-        "data_cutoff": "2026-11-10T22:56:40.397Z",
+        "prediction_date": "2026-11-11",
+        "data_cutoff": "2026-11-11T23:02:43.637Z",
         "data_cutoff_source": "row.created_at",
-        "age_hours": 0.32,
+        "age_hours": 8.04,
         "slo_hours": 48,
         "within_slo": true,
         "stale_soon": false
@@ -214,7 +224,7 @@ module.exports = {
       "requires_human_review": false,
       "review_rule": "§1.6: WATCH may be published automatically",
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
-      "id": "2026-11-12__15_days__53__flash-flood__p2026-11-10",
+      "id": "2026-11-19__15_days__53__flash-flood__p2026-11-11",
       "state": "PUBLISHED"
     }
   ]
