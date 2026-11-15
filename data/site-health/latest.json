@@ -1,10 +1,10 @@
 {
   "schema": "hazardnet-site-probe/v1",
-  "ran_at": "2026-11-15T16:41:13Z",
-  "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/43736805311",
+  "ran_at": "2026-11-15T21:24:07Z",
+  "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/43763426323",
   "site_url": "https://hazardnet.live",
   "edge_challenged": false,
-  "outcome": "fail",
+  "outcome": "pass",
   "checks": [
     {
       "id": "homepage",
@@ -43,8 +43,8 @@
     },
     {
       "id": "runtime_paths",
-      "outcome": "failure",
-      "detail": "runtime sibling paths failed — weather_full_shape: expected the full shape with current.temperature_2m and daily.temperature_2m_max[0], got 502 (missing: daily.temperature_2m_max[0]) "
+      "outcome": "success",
+      "detail": "11 sibling runtime paths passed"
     },
     {
       "id": "status_page",
