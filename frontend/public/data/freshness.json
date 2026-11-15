@@ -1,18 +1,19 @@
 {
   "schema": "hazardnet-freshness/v1",
-  "built_at": "2026-11-15T02:14:57.000Z",
+  "built_at": "2026-11-15T16:41:13.232Z",
   "generated_by": "scripts/build_freshness_artifact.mjs",
   "what_this_is": "A derived statement about the committed data artifacts this deployment ships. It is not a live probe and it does not measure the running services — the site-health probe result it carries is whatever the last scheduled run published.",
   "overall": {
     "state": "failing",
     "counts": {
-      "fresh": 4,
-      "stale": 0,
+      "fresh": 3,
+      "stale": 1,
       "failing": 1,
       "missing": 0,
       "unknown": 0
     },
     "not_fresh": [
+      "daily_advisories",
       "site_probe"
     ]
   },
@@ -25,8 +26,8 @@
       "reason": null,
       "generated_at": "2026-11-13T22:56:08.230Z",
       "prediction_date": "2026-11-13",
-      "age_hours": 50.2,
-      "run_age_hours": 27.3,
+      "age_hours": 64.7,
+      "run_age_hours": 41.8,
       "slo_hours": 192,
       "detail": {
         "source": "Kaggle_Daily_Advisory (hazardnet_advisories_latest.csv)",
@@ -42,8 +43,8 @@
       "reason": null,
       "generated_at": "2026-11-13T23:30:33.907Z",
       "prediction_date": "2026-11-13",
-      "age_hours": 50.2,
-      "run_age_hours": 26.7,
+      "age_hours": 64.7,
+      "run_age_hours": 41.2,
       "slo_hours": 192,
       "detail": {
         "schema": "hazardnet-forecast-snapshot/v2",
@@ -55,7 +56,7 @@
       "label": "Daily district advisories (15-day)",
       "artifact": "frontend/public/data/daily-advisories-v1.json",
       "generated_at": "2026-11-13T22:56:08.230Z",
-      "age_hours": 27.3,
+      "age_hours": 41.8,
       "slo_hours": 36,
       "detail": {
         "run_id": "kaggle-v54-36077adc7fdb",
@@ -64,8 +65,8 @@
         "model_version": "2.1.9+model.0bb5bdaf1789",
         "advisory_count": 960
       },
-      "state": "fresh",
-      "reason": null
+      "state": "stale",
+      "reason": "daily advisory run passed expiresAt 2026-11-15T10:56:08.230Z (age 41.8 h, SLO 36 h)"
     },
     {
       "id": "alert_engine",
@@ -74,7 +75,7 @@
       "state": "fresh",
       "reason": null,
       "generated_at": "2026-11-13T23:30:33.805Z",
-      "age_hours": 26.7,
+      "age_hours": 41.2,
       "slo_hours": 48,
       "detail": {
         "schema": "hazardnet-alerts/v1",
@@ -89,11 +90,11 @@
       "id": "site_probe",
       "label": "Site-health probe (every 30 min)",
       "artifact": "data/site-health/latest.json",
-      "generated_at": "2026-11-15T02:14:56Z",
+      "generated_at": "2026-11-15T16:41:13Z",
       "age_hours": 0,
       "slo_hours": 2,
       "detail": {
-        "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/43666797575",
+        "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/43736805311",
         "site_url": "https://hazardnet.live",
         "passed": 10,
         "failed": 1,
@@ -158,7 +159,7 @@
       "state": "failing",
       "outcome": "fail",
       "reason": "the last probe run reported 1 failed check(s): runtime_paths",
-      "ran_at": "2026-11-15T02:14:56Z"
+      "ran_at": "2026-11-15T16:41:13Z"
     }
   ],
   "gauges": {
@@ -167,7 +168,7 @@
     "series": [
       {
         "name": "hazardnet_forecast_age_hours",
-        "value": 50.2,
+        "value": 64.7,
         "unit": "hours",
         "source": "forecast_snapshot.age_hours",
         "slo_hours": 192,
@@ -175,7 +176,7 @@
       },
       {
         "name": "hazardnet_alert_snapshot_age_hours",
-        "value": 26.7,
+        "value": 41.2,
         "unit": "hours",
         "source": "alert_engine.age_hours",
         "slo_hours": 48,
@@ -191,7 +192,7 @@
       },
       {
         "name": "hazardnet_daily_advisories_age_hours",
-        "value": 27.3,
+        "value": 41.8,
         "unit": "hours",
         "source": "daily_advisories.age_hours",
         "slo_hours": 36,
@@ -250,7 +251,7 @@
     },
     "site_probe": {
       "path": "data/site-health/latest.json",
-      "ran_at": "2026-11-15T02:14:56Z"
+      "ran_at": "2026-11-15T16:41:13Z"
     }
   }
 }
