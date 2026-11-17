@@ -124,14 +124,22 @@ keeps the metadata available when the runtime fails open.
    commits carry `[skip ci]` (see below).
 2. **The daily public publisher triggers the build explicitly.** `public_daily_advisories.yml`
    polls for a new Ready Kaggle dataset version and its matching notebook-generated UTC
-   record. It commits **only** `frontend/public/data/daily-advisories-v1.json` with `[skip ci]`
-   after automated freshness, completeness and public-field checks. No person approves each
-   run; incomplete/missing input leaves the public result unchanged. The older 128-row
-   `daily_advisory_ingest.yml` is manual-only and never imports this daily export or stamps
-   its provenance onto older forecasts/alerts. Pages honours `[skip ci]`, so the publisher
-   POSTs the deploy hook, retried 3× and failing loudly on a non-2xx or an unset
-   `CF_PAGES_DEPLOY_HOOK`. The hook confirms a build was **triggered**, not that a live
-   deployment succeeded; verify the Pages deployment separately.
+   record. It commits the daily export `frontend/public/data/daily-advisories-v1.json` **and the
+   artifacts synchronised from it** (forecast and alert snapshots, freshness, content index,
+   generated routes, `backend/data/forecasts/*` and four `__tests__/fixtures/*` captures — the
+   `git add` list in the workflow is authoritative) with `[skip ci]`, after automated
+   freshness, completeness and public-field checks. No person approves each run; all five
+   advisory tiers are published, and the site attributes `WARNING`-and-above rows to
+   HazardNet AI with the run timestamp (owner decision 2026-11-17). Incomplete/missing input
+   leaves the public result unchanged. The older 128-row `daily_advisory_ingest.yml` is
+   manual-only and never imports this daily export or stamps its provenance onto older
+   forecasts/alerts. Pages honours `[skip ci]`, so the publisher POSTs the deploy hook, retried
+   3×. **The step is soft by owner decision (2026-11-17):** an unset `CF_PAGES_DEPLOY_HOOK`
+   writes a step-summary note and exits 0, and a non-2xx answer is a `::warning::`, not a
+   failure. Consequence to know: with the hook unset, the `[skip ci]` commit triggers **no**
+   Pages build, so the repository is fresher than the live site until the next ordinary
+   build. The hook confirms a build was **triggered**, not that a live deployment succeeded;
+   verify the Pages deployment separately.
 3. **The site-health probe never deploys.** Its commit also carries `[skip ci]`, and
    `data/site-health/**` is excluded from the watch paths as a second guard. Phase 5 adds a
    third consequence: because no build runs, the *served* copy of the record at

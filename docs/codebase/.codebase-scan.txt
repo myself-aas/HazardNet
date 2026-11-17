@@ -1,205 +1,205 @@
 
 === DIRECTORY TREE (max depth 3, source files only) ===
 .aistudio
-.aistudio/artifacts
-.aistudio/artifacts/brain
-.aistudio/artifacts/brain/1e4aab7e-e9d0-4af4-a743-b9676b8d5b1e
-.aistudio/artifacts/brain/78b75460-48f1-49ff-a593-2dbbdfc1225d
+.aistudio\artifacts
+.aistudio\artifacts\brain
+.aistudio\artifacts\brain\1e4aab7e-e9d0-4af4-a743-b9676b8d5b1e
+.aistudio\artifacts\brain\78b75460-48f1-49ff-a593-2dbbdfc1225d
 .codex
-.codex/hooks.json
+.codex\hooks.json
 .env.example
 .firebaserc
 .github
-.github/agents
-.github/agents/impeccable-asset-producer.agent.md
-.github/agents/impeccable-documenter.agent.md
-.github/agents/impeccable-finish-reviewer.agent.md
-.github/agents/impeccable-manual-edit-applier.agent.md
-.github/dependabot.yml
-.github/hooks
-.github/hooks/impeccable.json
-.github/workflow-templates
-.github/workflow-templates/README.md
-.github/workflow-templates/hazardnet-daemon-cli-linux.yml
-.github/workflow-templates/hazardnet-field-agent-android.yml
-.github/workflow-templates/hazardnet-gis-workstation-windows.yml
-.github/workflow-templates/hazardnet-npm-package.yml
-.github/workflow-templates/hazardnet-python-package.yml
-.github/workflows
-.github/workflows/Firebase-Store-Verify.yml
-.github/workflows/android_release.yml
-.github/workflows/app-releases.yml
-.github/workflows/ci.yml
-.github/workflows/daily_advisory_ingest.yml
-.github/workflows/live-wind-update.yml
-.github/workflows/secret-rotation-audit.yml
-.github/workflows/site-health.yml
-.github/workflows/verify-secrets.yml
-.github/workflows/windows-compile.yml
+.github\agents
+.github\agents\impeccable-asset-producer.agent.md
+.github\agents\impeccable-documenter.agent.md
+.github\agents\impeccable-finish-reviewer.agent.md
+.github\agents\impeccable-manual-edit-applier.agent.md
+.github\dependabot.yml
+.github\hooks
+.github\hooks\impeccable.json
+.github\workflow-templates
+.github\workflow-templates\hazardnet-daemon-cli-linux.yml
+.github\workflow-templates\hazardnet-field-agent-android.yml
+.github\workflow-templates\hazardnet-gis-workstation-windows.yml
+.github\workflow-templates\hazardnet-mobile-android-release.yml
+.github\workflow-templates\hazardnet-npm-package.yml
+.github\workflow-templates\hazardnet-ops-slack-notify.yml
+.github\workflow-templates\hazardnet-python-package.yml
+.github\workflow-templates\hazardnet-windows-msix-release.yml
+.github\workflow-templates\README.md
+.github\workflows
+.github\workflows\ci.yml
+.github\workflows\daily_advisory_ingest.yml
+.github\workflows\Firebase-Store-Verify.yml
+.github\workflows\live-wind-update.yml
+.github\workflows\public_daily_advisories.yml
+.github\workflows\secret-rotation-audit.yml
+.github\workflows\site-health.yml
+.github\workflows\verify-secrets.yml
+.github\workflows\windows-compile.yml
 .gitignore
 .impeccable
-.impeccable/config.json
+.impeccable\config.json
+.impeccable\critique
+.impeccable\critique\2026-10-26T03-37-17Z__frontend-src-pages-frontdoor-tsx.md
+.impeccable\critique\2026-10-26T03-56-28Z__frontend-src-pages-dashboard-tsx.md
+.impeccable\critique\2026-10-26T03-56-29Z__frontend-src-pages-alertspage-tsx.md
+.impeccable\critique\2026-10-26T03-56-29Z__frontend-src-pages-analyticspage-tsx.md
+.impeccable\critique\2026-10-26T03-56-29Z__frontend-src-pages-uploadpage-tsx.md
+.impeccable\critique\2026-10-26T03-56-30Z__frontend-src-pages-loginpage-tsx.md
+.impeccable\critique\2026-10-26T03-56-30Z__frontend-src-pages-notfoundpage-tsx.md
+.impeccable\critique\2026-10-26T03-56-30Z__frontend-src-pages-userprofilepage-tsx.md
+.impeccable\critique\2026-10-26T05-49-55Z__frontend-src-pages-hazardspage-tsx.md
+.impeccable\critique\2026-10-26T05-49-56Z__frontend-src-pages-districtdetailpage-tsx.md
+.impeccable\critique\2026-10-26T05-49-56Z__frontend-src-pages-documentation-tsx.md
+.impeccable\critique\2026-10-26T05-49-56Z__frontend-src-pages-historicalcatalogpage-tsx.md
+.impeccable\critique\2026-10-26T05-49-56Z__frontend-src-pages-lastrunpage-tsx.md
+.impeccable\critique\2026-10-26T05-49-57Z__frontend-src-pages-blogs-tsx.md
+.impeccable\critique\2026-10-26T06-03-31Z__frontend-src-pages-about-tsx.md
+.impeccable\critique\2026-10-28T04-38-09Z__frontend-src-pages-frontdoor-tsx.md
+.impeccable\critique\2026-11-02T14-00-00Z__frontend-src-pages-districtdailypage-tsx.md
+.impeccable\critique\2026-11-06T00-00-00Z__frontend-full-audit.md
+.impeccable\critique\2026-11-06T01-00-00Z__frontend-design-system-skill-audit.md
+.impeccable\critique\2026-11-06T02-00-00Z__mobile-responsiveness-audit.md
+.impeccable\design.json
+.impeccable\surfaces
+.impeccable\surfaces\about-legal.md
+.impeccable\surfaces\account.md
+.impeccable\surfaces\alerts-advisories.md
+.impeccable\surfaces\archive-history.md
+.impeccable\surfaces\auth.md
+.impeccable\surfaces\blog.md
+.impeccable\surfaces\daily-reports.md
+.impeccable\surfaces\districts-divisions.md
+.impeccable\surfaces\docs-methodology.md
+.impeccable\surfaces\forecast-console.md
+.impeccable\surfaces\front-door.md
+.impeccable\surfaces\hazards.md
+.impeccable\surfaces\last-run-status.md
+.impeccable\surfaces\live-map.md
+.impeccable\surfaces\not-found.md
+.impeccable\surfaces\upload.md
 .npmrc
 .prettierrc
-CITATION.cff
-CLAIMS.md
-CppProperties.json
-DESIGN.md
-LICENSE
-MONITORING_SETUP_GUIDE.md
-Models
-Models/README.md
-Models/REGISTRY.json
-Models/VERSION.json
-Models/calibration
-Models/calibration/confidence_map.template.json
-Models/inference_example.py
-Models/labels.json
-Models/normalization_stats.json
-Models/preprocessing_config.json
-PRODUCT.md
-README.md
-SECURITY.md
 __tests__
-__tests__/__mocks__
-__tests__/__mocks__/async-storage.js
-__tests__/__mocks__/empty-string.js
-__tests__/__mocks__/expo-location.js
-__tests__/__mocks__/expo-modules.js
-__tests__/__mocks__/expo-notifications.js
-__tests__/__mocks__/netinfo.js
-__tests__/__mocks__/react-native-gesture-handler.js
-__tests__/__mocks__/react-native-reanimated.js
-__tests__/__mocks__/react-native-safe-area-context.js
-__tests__/__mocks__/react-native-screens.js
-__tests__/__mocks__/react-native-svg.js
-__tests__/__mocks__/react-native.js
-__tests__/__mocks__/react-navigation.js
-__tests__/__mocks__/tanstack-react-query.js
-__tests__/advisoryPipeline.test.js
-__tests__/advisoryTierBands.test.js
-__tests__/advisoryTierStamp.test.js
-__tests__/aiCatalog.test.js
-__tests__/alertReplay.test.js
-__tests__/alertSnapshot.test.js
-__tests__/alerts
-__tests__/alerts/assess.test.js
-__tests__/alerts/calibration.test.js
-__tests__/alerts/channels.test.js
-__tests__/alerts/digest.test.js
-__tests__/alerts/lifecycle.test.js
-__tests__/alerts/notify.test.js
-__tests__/alerts/policy.test.js
-__tests__/alerts/report.test.js
-__tests__/alerts/service.test.js
-__tests__/api
-__tests__/api/alerts.test.js
-__tests__/api/chatPromptBounds.test.js
-__tests__/api/forecasts.test.js
-__tests__/api/predict.test.js
-__tests__/api/security.test.js
-__tests__/api/serverlessGuard.test.js
-__tests__/api/serverlessRouting.test.js
-__tests__/api/telemetry.test.js
-__tests__/appleMotion.test.js
-__tests__/appleParity.test.js
-__tests__/brandAssets.test.js
-__tests__/brandPalette.test.js
-__tests__/chatService.test.js
-__tests__/climaticHazardsSummary.test.js
-__tests__/colourDiscipline.test.js
-__tests__/contentEngine.test.js
-__tests__/conversions.test.js
-__tests__/cors.test.js
-__tests__/csvSafety.test.js
-__tests__/darkTheme.test.js
-__tests__/designSignature.test.js
-__tests__/designTypography.test.js
-__tests__/fetchKaggleAdvisory.integration.test.js
-__tests__/fetchKaggleAdvisory.test.js
-__tests__/firebaseAuth.test.js
-__tests__/firestoreRules.test.js
-__tests__/forecastFreshness.test.js
-__tests__/forecastPersistence.test.js
-__tests__/forecastRow.test.js
-__tests__/forecastServe.test.js
-__tests__/forecastStore.test.js
-__tests__/forecastsHistory.test.js
-__tests__/forecastsUpdate.test.js
-__tests__/fourState.test.js
-__tests__/freshnessArtifact.test.js
-__tests__/grounding.test.js
-__tests__/iconFamily.test.js
-__tests__/ingest.test.js
-__tests__/kaggleAdvisoryClient.test.js
-__tests__/liveVoice.test.js
-__tests__/mapPalette.test.js
-__tests__/metricsApi.test.js
-__tests__/mobile
-__tests__/mobile/alertsStates.test.js
-__tests__/mobile/noScrollViewCollections.test.js
-__tests__/mobile/offlineState.test.js
-__tests__/modelArtifactsNotServed.test.js
-__tests__/noRepoPaths.test.js
-__tests__/paletteTokens.test.js
-__tests__/phase1Packages.test.js
-__tests__/phase2MobileShell.test.js
-__tests__/phase2MotionComponents.test.js
-__tests__/phase3RemotionHero.test.js
-__tests__/phase3WindowsApp.test.js
-__tests__/phase4PageSurfaceRedesign.test.js
-__tests__/phase5GisMobileErgonomics.test.js
-__tests__/phase6FinalReadinessGate.test.js
-__tests__/phaseBFrontend.test.js
-__tests__/phaseCBackend.test.js
-__tests__/phaseDHardening.test.js
-__tests__/phaseEHistorical.test.js
-__tests__/pluginManifest.test.js
-__tests__/predict.test.js
-__tests__/predictFromStore.test.js
-__tests__/primaryActionContrast.test.js
-__tests__/publicText.test.js
-__tests__/push.test.js
-__tests__/routeSeo.test.js
-__tests__/runtimeDependencies.test.js
-__tests__/secretRotation.test.js
-__tests__/security.test.js
-__tests__/securityHeadersParity.test.js
-__tests__/securityTxt.test.js
-__tests__/seoFoundations.test.js
-__tests__/serviceWorker.test.js
-__tests__/staticShellContrast.test.js
-__tests__/statusPagePrerender.test.js
-__tests__/structuredData.test.js
-__tests__/tableStack.test.js
-__tests__/themeVariantParity.test.js
-__tests__/tokenCompliance.test.js
-__tests__/vercelForecasts.test.js
-__tests__/windPipeline.test.js
-api
-api/[endpoint].js
-api/chat
-api/chat/[action].js
-api/v1
-api/v1/[resource].js
-api/v1/alerts
-api/v1/alerts/[action].js
-api/v1/forecasts
-api/v1/forecasts/[action].js
-api/v1/weather
-api/v1/weather/batch.js
-apple
-apple/DESIGN.md
-apps
-apps/mobile
-apps/mobile/.maestro
-apps/mobile/.maestro/offline-cache-flow.yaml
-apps/mobile/.maestro/perf-scenario.yaml
-apps/mobile/.maestro/tap-call-flow.yaml
-apps/mobile/.maestro/today-alerts-flow.yaml
-apps/mobile/App.tsx
-apps/mobile/PHASE0_STATUS.md
-apps/mobile/__tests__
+__tests__\__mocks__
+__tests__\__mocks__\async-storage.js
+__tests__\__mocks__\empty-string.js
+__tests__\__mocks__\expo-location.js
+__tests__\__mocks__\expo-modules.js
+__tests__\__mocks__\expo-notifications.js
+__tests__\__mocks__\netinfo.js
+__tests__\__mocks__\react-native-gesture-handler.js
+__tests__\__mocks__\react-native-reanimated.js
+__tests__\__mocks__\react-native-safe-area-context.js
+__tests__\__mocks__\react-native-screens.js
+__tests__\__mocks__\react-native-svg.js
+__tests__\__mocks__\react-native.js
+__tests__\__mocks__\react-navigation.js
+__tests__\__mocks__\tanstack-react-query.js
+__tests__\advisoryPipeline.test.js
+__tests__\advisoryTierBands.test.js
+__tests__\advisoryTierStamp.test.js
+__tests__\advisoryTierVocabulary.test.js
+__tests__\agentLoop.test.js
+__tests__\agentReadinessScan.test.js
+__tests__\aiCatalog.test.js
+__tests__\alertReplay.test.js
+__tests__\alerts
+__tests__\alerts\assess.test.js
+__tests__\alerts\calibration.test.js
+__tests__\alerts\channels.test.js
+__tests__\alerts\digest.test.js
+__tests__\alerts\lifecycle.test.js
+__tests__\alerts\notify.test.js
+__tests__\alerts\policy.test.js
+__tests__\alerts\report.test.js
+__tests__\alerts\service.test.js
+__tests__\alertSnapshot.test.js
+__tests__\analyticsEngineBinding.test.js
+__tests__\api
+__tests__\api\alerts.test.js
+__tests__\api\chatPromptBounds.test.js
+__tests__\api\forecasts.test.js
+__tests__\api\predict.test.js
+__tests__\api\security.test.js
+__tests__\api\serverlessGuard.test.js
+__tests__\api\serverlessRouting.test.js
+__tests__\api\telemetry.test.js
+__tests__\apiPathTable.test.js
+__tests__\appleMotion.test.js
+__tests__\appleParity.test.js
+__tests__\brandAssets.test.js
+__tests__\brandPalette.test.js
+__tests__\cacheContract.test.js
+__tests__\chatService.test.js
+__tests__\climaticHazardsSummary.test.js
+__tests__\colourDiscipline.test.js
+__tests__\contentEngine.test.js
+__tests__\conversions.test.js
+__tests__\cors.test.js
+__tests__\csvSafety.test.js
+__tests__\dailyAdvisoryPublic.test.js
+__tests__\dailyAdvisoryServe.test.js
+__tests__\dailyReport.test.js
+__tests__\darkTheme.test.js
+__tests__\designSignature.test.js
+__tests__\designTypography.test.js
+__tests__\districtIdentity.test.js
+__tests__\dnsAid.test.js
+__tests__\docsStaticTypography.test.js
+__tests__\edgeResponseContract.test.js
+__tests__\fetchKaggleAdvisory.integration.test.js
+__tests__\fetchKaggleAdvisory.test.js
+__tests__\firebaseAuth.test.js
+__tests__\firestoreRules.test.js
+__tests__\fixtures
+__tests__\fixtures\alertsSnapshot.js
+__tests__\fixtures\forecasts-snapshot.fixture.json
+__tests__\fixtures\forecasts-snapshot.fixture.provenance.md
+__tests__\fixtures\forecastsSnapshot.js
+__tests__\fixtures\site-health
+__tests__\fixtures\site-health\fixture.provenance.md
+__tests__\fixtures\site-health\healthy-freshness.json
+__tests__\fixtures\site-health\healthy-record.json
+__tests__\fixtures\site-health\healthy-summary.md
+__tests__\fixtures\telemetryBatch.js
+__tests__\fixtures\weatherFullObject.js
+__tests__\forecastFreshness.test.js
+__tests__\forecastHandlers.test.js
+__tests__\forecastHorizons.test.js
+__tests__\forecastPersistence.test.js
+__tests__\forecastRow.test.js
+__tests__\forecastRowIdentity.test.js
+__tests__\forecastServe.test.js
+__tests__\forecastsHistory.test.js
+__tests__\forecastStore.test.js
+__tests__\forecastsUpdate.test.js
+__tests__\fourState.test.js
+__tests__\freshnessArtifact.test.js
+__tests__\freshnessGauges.test.js
+__tests__\freshnessSlo.test.js
+__tests__\grounding.test.js
+__tests__\heroContrast.test.js
+__tests__\iconFamily.test.js
+__tests__\ingest.test.js
+__tests__\kaggleAdvisoryClient.test.js
+__tests__\kaggleDailyPublic.test.js
+__tests__\knowledgeBase.test.js
+__tests__\liveVoice.test.js
+__tests__\mapPalette.test.js
+__tests__\markdownNegotiation.test.js
+__tests__\markdownPagesFunction.test.js
+__tests__\mobile
+__tests__\mobile\alertsStates.test.js
+__tests__\mobile\noScrollViewCollections.test.js
+__tests__\mobile\offlineState.test.js
+__tests__\modelArtifactsNotServed.test.js
+__tests__\noRepoPaths.test.js
+__tests__\oauthProtectedResource.test.js
+__tests__\pagesAlerts.test.js
+__tests__\pagesChat.test.js
 
 === STACK DETECTION (manifest files) ===
 
@@ -213,6 +213,12 @@ apps/mobile/__tests__
     "": {
       "name": "hazardnet",
       "version": "3.2.0",
+      "license": "MIT",
+      "workspaces": [
+        "frontend",
+        "packages/*",
+        "apps/*"
+      ],
       "dependencies": {
         "@google-cloud/firestore": "^7.11.6",
         "@google/genai": "^2.15.0",
@@ -231,21 +237,55 @@ apps/mobile/__tests__
         "web-push": "^3.6.7",
         "ws": "^8.21.3",
         "zod": "^3.23.0"
+      },
+      "devDependencies": {
+        "@babel/core": "^7.22.11",
+        "@babel/preset-env": "^7.22.11",
+        "@babel/preset-react": "^7.22.6",
+        "@babel/preset-typescript": "^7.22.5",
+        "@eslint/js": "^9.39.5",
+        "@playwright/test": "^1.62.1",
+        "@testing-library/jest-dom": "^6.9.1",
+        "@testing-library/react": "^14.3.1",
+        "@types/jest": "^29.5.14",
+        "@types/jest-axe": "^3.5.9",
+        "@types/supertest": "^7.2.1",
+        "@types/ws": "^8.18.1",
+        "@vitejs/plugin-react": "^6.1.1",
+        "babel-jest": "^30.4.1",
+        "babel-plugin-transform-import-meta": "^2.3.3",
+        "eslint": "^9.39.0",
+        "eslint-plugin-react-hooks": "^5.2.0",
+        "globals": "^17.11.0",
+        "impeccable": "^4.7.0",
+        "jest": "^29.7.0",
+        "jest-axe": "^9.0.0",
+        "jest-environment-jsdom": "^30.4.1",
+        "js-yaml": "^5.5.0",
+        "node-mocks-http": "^1.11.0",
+        "prettier": "^3.6.2",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-test-renderer": "^18.2.0",
+        "supertest": "^7.2.2",
+        "ts-jest": "^29.4.12",
+        "typescript": "^5.4.5",
+        "typescript-eslint": "^8.46.0",
+        "vite": "^8.3.0"
+      },
+      "engines": {
+        "node": ">=20"
       }
     },
-    "node_modules/@google-cloud/firestore": {
-      "version": "7.11.6",
-      "dev": false,
-      "optional": false
-    },
-    "node_modules/firebase-admin": {
-      "version": "13.10.0",
-      "dev": false,
-      "optional": false
-    }
-  }
-}
+    "apps/mobile": {
+      "name": "@hazardnet/mobile",
+      "version": "2.2.0",
+      "dependencies": {
+        "@hazardnet/core": "*",
+        "@hazardnet/design-system": "*",
+        "@react-native-async-storage/async-storage": "~2.1.2",
 
+[TRUNCATED] Showing first 80 of 33959 lines.
 --- package.json ---
 {
   "name": "hazardnet",
@@ -286,20 +326,27 @@ apps/mobile/__tests__
     "start": "node backend/server.js",
     "build": "npm run build:frontend && node scripts/copy-dist.mjs",
     "build:frontend": "npm --prefix frontend run build",
+    "build:knowledge": "node scripts/build_knowledge_base.mjs",
+    "check:knowledge": "node scripts/build_knowledge_base.mjs --check",
     "build:frontend:copy": "npm run build",
     "build:events-summary": "node scripts/build_climatic_hazards_summary.mjs",
     "check:events-summary": "node scripts/build_climatic_hazards_summary.mjs --check",
-    "check:device": "npm run check:tokens && npm run check:prose && npm run icons:check && npm run check:events-summary && npm run check:important && npm run check:contrast && npm run check:contrast:css && npm run check:residue && npm run check:svg-tokens",
-    "lint": "tsc -p frontend/tsconfig.json --noEmit",
+    "check:device": "npm run check:tokens && npm run check:prose && npm run icons:check && npm run check:events-summary && npm run check:important && npm run check:contrast:resolver && npm run check:contrast && npm run check:contrast:tree && npm run check:contrast:tree:test && npm run check:contrast:css && npm run check:residue && npm run check:svg-tokens && npm run check:knowledge && npm run check:craft",
+    "lint": "tsc -p frontend/tsconfig.json --noEmit && tsc -p functions/tsconfig.json --noEmit",
     "test": "jest --passWithNoTests",
     "lint:eslint": "eslint . --max-warnings 685",
     "format": "prettier --write \"frontend/src/**/*.{ts,tsx}\" \"backend/**/*.js\" \"api/**/*.js\"",
     "alerts:rehearse": "node scripts/rehearse_alert_engine.mjs --out /tmp/alert-run.json",
     "alerts:snapshot": "node scripts/rehearse_alert_engine.mjs --out /tmp/alert-run.json --quiet && node scripts/build_alert_snapshot.mjs --in /tmp/alert-run.json",
     "check:bundle": "node scripts/check-bundle.mjs",
-    "check:functions": "node scripts/check-vercel-functions.mjs",
     "check:rotation": "node scripts/check-secret-rotation.mjs",
     "check:design": "node scripts/check-design-quality.mjs",
+    "check:craft": "node scripts/check-craft-floor.mjs",
+    "audit:pages": "node scripts/audit-pages.mjs",
+    "audit:pages:strict": "node scripts/audit-pages.mjs --strict",
+    "protocol:status": "node scripts/protocol.mjs",
+    "protocol:check": "node scripts/protocol.mjs --check",
+    "protocol:ledger": "node scripts/protocol.mjs --write docs/design/protocol-ledger.md",
     "check:tokens": "node scripts/check-token-compliance.mjs",
     "check:brand": "node scripts/check-brand-palette.mjs --scope pages",
     "fetch:advisory": "node scripts/fetch_kaggle_advisory.mjs",
@@ -310,6 +357,7 @@ apps/mobile/__tests__
     "design:help": "impeccable help",
     "check:env": "node scripts/validate_env.mjs",
     "check:claims": "node scripts/verify_claims.mjs",
+    "publish:dns-aid": "node scripts/publish-dns-aid.mjs",
     "test:phases": "node --test __tests__/advisoryPipeline.test.js __tests__/phaseBFrontend.test.js __tests__/phaseCBackend.test.js __tests__/phaseDHardening.test.js __tests__/phaseEHistorical.test.js",
     "check:fonts": "node scripts/check-font-payload.mjs",
     "icons:build": "node scripts/generate-icon-glyphs.mjs",
@@ -319,16 +367,8 @@ apps/mobile/__tests__
     "check:important:report": "node scripts/check-css-important.mjs --report",
     "check:contrast": "node scripts/check-contrast.mjs",
     "check:contrast:report": "node scripts/check-contrast.mjs --report",
-    "check:contrast:css": "node scripts/check-contrast.mjs --check-css",
-    "check:residue": "node scripts/check-design-residue.mjs",
-    "check:residue:report": "node scripts/check-design-residue.mjs --report",
-    "check:svg-tokens": "node scripts/check-svg-tokens.mjs",
-    "check:svg-tokens:report": "node scripts/check-svg-tokens.mjs --report"
-  },
-  "dependencies": {
-    "@google-cloud/firestore": "^7.11.6",
 
-[TRUNCATED] Showing first 80 of 141 lines.
+[TRUNCATED] Showing first 80 of 151 lines.
 
 === ENTRY POINTS ===
 No common entry points found. Check 'main' or 'scripts.start' in manifest files above.
@@ -376,36 +416,57 @@ VITE_FIREBASE_MESSAGING_SENDER_ID=
 VITE_FIREBASE_PROJECT_ID=
 VITE_FIREBASE_STORAGE_BUCKET=
 VITE_VAPID_PUBLIC_KEY=
-VITE_VERCEL_ANALYTICS=
 WEB_PUSH_CONTACT=
 
 === TODO / FIXME / HACK (production code only, test dirs excluded) ===
-None found.
+backend\utils\dailyAdvisoryPublic.js:48: && !/^(?:TBD|TODO|UNKNOWN|N\/A)(?:\b|_)/i.test(value);
+backend\utils\dailyAdvisoryPublic.js:60: value === value.trim() && !/^(?:TBD|TODO|UNKNOWN|N\/A)(?:\b|_)/i.test(value));
+backend\utils\dailyAdvisoryPublic.js:401: if (!result.success || /^(?:TBD|TODO|UNKNOWN)(?:\b|_)/i.test(result.data?.run.run_id || '')) {
+docs\ops\route-register.json:4: "what_this_is": "Phase 1's route table and disposition list. `__tests__/routeReachability.test.js` fails if a route called from frontend/src is neither a file under functions/api/ nor listed here with a dated disposition. A dated disposition is a decision, not a TODO: it names the runtime property that keeps the route unhosted and the command that would disprove it. Non-API agent endpoints are listed separately in agentRoutes so the /api cutover history stays intact.",
 
 === GIT RECENT COMMITS (last 20) ===
-8a7d0e5 build: configure automatic Android APK releases on main
+3e7da64 chore(ops): site-health probe fail 2026-11-16T01:12Z [skip ci]
+39c5922 chore(advisory): publish daily Kaggle advisories and forecast snapshots
+363d050 chore(ops): site-health probe pass 2026-11-15T21:24Z [skip ci]
+99b7668 chore(ops): site-health probe fail 2026-11-15T16:41Z [skip ci]
+7a0f01b chore(ops): site-health probe fail 2026-11-15T02:14Z [skip ci]
+a9a122a chore(ops): site-health probe pass 2026-11-14T22:37Z [skip ci]
+091b062 chore(ops): site-health probe fail 2026-11-14T18:21Z [skip ci]
+6874048 chore(ops): site-health probe pass 2026-11-14T05:21Z [skip ci]
+3c64ec9 chore(advisory): publish daily Kaggle advisories and forecast snapshots
+96cd9be chore(ops): site-health probe fail 2026-11-13T18:37Z [skip ci]
+9dc4bd1 chore(ops): site-health probe pass 2026-11-13T03:00Z [skip ci]
+6d90714 chore(advisory): publish daily Kaggle advisories and forecast snapshots
+db1e96b chore(ops): site-health probe fail 2026-11-12T22:48Z [skip ci]
+bccfd08 chore(ops): site-health probe pass 2026-11-12T08:30Z [skip ci]
+41542b5 chore(advisory): publish daily Kaggle advisories and forecast snapshots
+1b42141 chore(ops): site-health probe fail 2026-11-11T18:57Z [skip ci]
+d75dc19 chore(ops): site-health probe pass 2026-11-11T03:32Z [skip ci]
+e70305c chore(ops): site-health probe fail 2026-11-10T23:55Z [skip ci]
+727a5ac chore(advisory): publish daily Kaggle advisories and forecast snapshots
+4cb5747 chore(ops): site-health probe pass 2026-11-10T11:55Z [skip ci]
 
 === HIGH-CHURN FILES (last 90 days, top 20) ===
-   1 .aistudio/artifacts/brain/1e4aab7e-e9d0-4af4-a743-b9676b8d5b1e/implementation_plan.md
-   1 .aistudio/artifacts/brain/1e4aab7e-e9d0-4af4-a743-b9676b8d5b1e/implementation_plan.md.metadata.json
-   1 .aistudio/artifacts/brain/78b75460-48f1-49ff-a593-2dbbdfc1225d/implementation_plan.md
-   1 .aistudio/artifacts/brain/78b75460-48f1-49ff-a593-2dbbdfc1225d/implementation_plan.md.metadata.json
-   1 .codex/hooks.json
-   1 .env.example
-   1 .firebaserc
-   1 .github/agents/impeccable-asset-producer.agent.md
-   1 .github/agents/impeccable-documenter.agent.md
-   1 .github/agents/impeccable-finish-reviewer.agent.md
-   1 .github/agents/impeccable-manual-edit-applier.agent.md
-   1 .github/dependabot.yml
-   1 .github/hooks/impeccable.json
-   1 .github/workflow-templates/README.md
-   1 .github/workflow-templates/hazardnet-daemon-cli-linux.yml
-   1 .github/workflow-templates/hazardnet-field-agent-android.yml
-   1 .github/workflow-templates/hazardnet-gis-workstation-windows.yml
-   1 .github/workflow-templates/hazardnet-npm-package.yml
-   1 .github/workflow-templates/hazardnet-python-package.yml
-   1 .github/workflows/Firebase-Store-Verify.yml
+ 148 frontend/public/data/freshness.json
+ 123 data/site-health/latest.json
+  31 frontend/public/data/content-index.json
+  31 frontend/src/index.css
+  29 package.json
+  28 frontend/src/components/LiveMapView.tsx
+  27 docs/ops/owner-actions.md
+  26 frontend/src/content/generated-routes.json
+  26 frontend/src/pages/FrontDoor.tsx
+  25 package-lock.json
+  24 frontend/public/data/forecasts-latest.json
+  24 .github/workflows/site-health.yml
+  23 frontend/public/data/alerts-latest.json
+  23 frontend/src/App.tsx
+  23 frontend/src/pages/Dashboard.tsx
+  21 .github/workflows/ci.yml
+  20 docs/codebase/CONCERNS.md
+  20 frontend/src/components/ChatBot.tsx
+  20 frontend/src/lib/i18n.ts
+  19 backend/data/forecasts/hazardnet_forecasts_latest.csv
 
 === MONOREPO SIGNALS ===
 Sub-package directory found: packages/
@@ -413,29 +474,29 @@ Sub-package directory found: apps/
 package.json has 'workspaces' field (npm/yarn workspaces monorepo)
 
 === CODE METRICS ===
-Total files scanned: 996
-Total lines of code: 173947
+Total files scanned: 1265
+Total lines of code: 208979
 
 Files by language:
-  Other: 325
-  TypeScript/React: 259
-  TypeScript: 218
-  JavaScript: 183
+  Other: 440
+  TypeScript/React: 283
+  JavaScript: 275
+  TypeScript: 256
   C++: 5
   C Header: 5
   Python: 1
 
 Top 10 largest files:
-data/historical-sources/HazardNet_Events_For_GEE.csv: 9024.0KB
-data/historical-sources/hazardnet_with_severity.csv: 7092.5KB
-data/historical-sources/BGD_climatic_hazards_dataset_2000_2026.csv: 7056.2KB
-frontend/public/data/historical/hazard-catalog-index.json: 1484.6KB
-frontend/src/content/generated-routes.json: 439.3KB
-frontend/public/img/hero-delta-dawn.jpg: 343.5KB
-frontend/public/data/alerts-latest.json: 342.4KB
-frontend/public/hero-carousel/hero-flood-delta-portrait-2x.jpg: 296.2KB
-frontend/public/hero-carousel/hero-flood-delta.jpg: 263.9KB
-frontend/public/hero-carousel/hero-cyclone-orbit-portrait-2x.jpg: 256.1KB
+data\historical-sources\HazardNet_Events_For_GEE.csv: 9056.4KB
+data\historical-sources\hazardnet_with_severity.csv: 7115.2KB
+data\historical-sources\BGD_climatic_hazards_dataset_2000_2026.csv: 7079.7KB
+frontend\public\hazardnet-og.png: 1575.9KB
+frontend\public\data\historical\hazard-catalog-index.json: 1532.4KB
+package-lock.json: 1272.7KB
+frontend\public\data\daily-advisories-v1.json: 557.4KB
+frontend\src\content\generated-routes.json: 457.0KB
+frontend\public\img\hero-delta-dawn.jpg: 343.5KB
+frontend\public\hero-carousel\hero-flood-delta-portrait-2x.jpg: 296.2KB
 
 === CI/CD PIPELINES ===
 CI/CD: GitHub Actions
