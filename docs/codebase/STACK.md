@@ -44,7 +44,7 @@ Functions):
 | `firebase` | 12.19.0 | Client SDK, used **on the server too** for Firestore reads/writes | `backend/db.js` |
 | `firebase-admin`, `@google-cloud/firestore` | 13.10.0 / — | Admin SDK (ID-token verification) | `backend/middleware/firebaseAuth.js` |
 | `@google/genai` | 2.31.0 | Gemini SDK (grounding, chat) | `backend/utils/gemini_grounding.js`, `backend/utils/chatService.js` |
-| `zod` | 3.25.76 | Contract validation (`packages/core/src/contracts.ts`, `backend/utils/dailyAdvisoryPublic.js`) | those files |
+| `zod` | 4.6.7 (migrated from 3.25.76 on 2026-11-17) | Contract validation (`packages/core/src/contracts.ts`, `backend/utils/dailyAdvisoryPublic.js`) | those files |
 | `web-push` | — | VAPID web push | `backend/routes/push.js`, `backend/utils/vapid.js` |
 | `ws` | — | WebSocket voice advisor | `backend/routes/liveVoice.js` |
 | `prom-client` | — | `/metrics` exposition | `backend/metrics.js` |

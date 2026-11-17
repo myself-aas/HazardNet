@@ -248,9 +248,9 @@
     },
     {
       "ghsa": "GHSA-mrhx-c7xc-m3w5",
-      "package": "zod",
+      "package": "zod (build-time copy only, nested under babel-plugin-react-compiler via babel-preset-expo 11)",
       "severity": "high",
-      "reason": "Memory-exhaustion DoS requires attacker-controlled oversized collections reaching a zod parse. On the deployed surface (Pages Functions + browser) zod parses only the project's own committed artifacts and API responses; attacker-supplied bodies reach zod only through Node ingest routes, which are unhosted (docs/ops/route-register.json). The only fix is zod 4.6.7+, a semver-major migration across 6 files including the public advisory validator and the mobile app via @hazardnet/core. Re-reviewed and renewed by the owner on 2026-11-17 (rationale in docs/codebase/CONCERNS.md). Exit: that migration.",
+      "reason": "Every runtime copy of zod was migrated to 4.6.7 on 2026-11-17 (web, Pages Functions, Node, mobile via @hazardnet/core). npm still nests zod 3.25.76 under babel-plugin-react-compiler, a Babel plugin that babel-preset-expo 11 loads only when experiments.reactCompiler is set; apps/mobile/app.json does not set it, so this copy never runs. Exit: the Expo SDK upgrade that also unblocks React Navigation 7 (babel-preset-expo moves off this plugin build), then remove this exception.",
       "expires": "2026-12-17"
     }
   ]
