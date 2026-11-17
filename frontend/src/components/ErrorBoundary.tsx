@@ -51,8 +51,8 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
               </div>
             <h1 className="hn-h2">Something went wrong</h1>
             <p className="hn-body text-carbon-60">
-              The HazardNet dashboard hit an unexpected error. Your saved data is safe —
-              reload the app to continue monitoring hazards.
+              The HazardNet dashboard hit an unexpected error. Your saved data is safe.
+              Reload the app to continue monitoring hazards.
             </p>
             {this.state.error && (
               <pre className="text-left text-xs font-mono bg-carbon-10 border border-carbon-20 rounded-xl p-3 overflow-x-auto text-carbon-60">

@@ -30,7 +30,9 @@ import { SECURITY_HEADERS, securityHeaderMap } from '../backend/security/httpHea
 
 const root = process.cwd();
 const readJson = (rel) => JSON.parse(readFileSync(join(root, rel), 'utf8'));
-const readText = (rel) => readFileSync(join(root, rel), 'utf8');
+// LF-normalised: git stores these files with LF and that is what Cloudflare and the browser
+// receive; a CRLF working copy (Windows, core.autocrlf) must not change what is parsed or hashed.
+const readText = (rel) => readFileSync(join(root, rel), 'utf8').replace(/\r\n/g, '\n');
 
 /**
  * Parse a Cloudflare `_headers` file into `matcher -> { header: value }`, ignoring `#`
@@ -247,7 +249,9 @@ describe('security header parity', () => {
   it('keeps shared code out of functions/, so no helper becomes a public route', () => {
     const walk = (dir) =>
       readdirSync(join(root, dir), { withFileTypes: true }).flatMap((entry) => {
-        const rel = join(dir, entry.name);
+        // POSIX separators on every platform: the assertions below match `/`-delimited paths,
+        // and `path.join` would hand them `functions\…` on Windows.
+        const rel = `${dir}/${entry.name}`;
         return entry.isDirectory() ? walk(rel) : [rel];
       });
 
@@ -397,7 +401,7 @@ describe('security header parity', () => {
     const { INLINE_THEME_SCRIPT_HASH, cspDirectivesFromString } = await import(
       '../backend/security/csp.js'
     );
-    const html = readFileSync(join(root, 'frontend/index.html'), 'utf8');
+    const html = readText('frontend/index.html');
 
     // Only executable inline scripts are gated by script-src. The built page also carries
     // a `<script type="application/ld+json">` data block; browsers never run it, so it

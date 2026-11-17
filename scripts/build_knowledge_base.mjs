@@ -124,7 +124,9 @@ export default ${JSON.stringify(corpus, null, 2)};
 
 if (process.argv.includes('--check')) {
   if (!existsSync(TARGET)) fail(`${TARGET} is missing — run \`npm run build:knowledge\``);
-  const current = readFileSync(TARGET, 'utf8');
+  // Compare as LF: git stores the artifact with LF, and a CRLF working copy (Windows,
+  // core.autocrlf) is the same content, not a stale one.
+  const current = readFileSync(TARGET, 'utf8').replace(/\r\n/g, '\n');
   if (current !== generated) {
     fail(`${TARGET} is stale — run \`npm run build:knowledge\` and commit it`);
   }

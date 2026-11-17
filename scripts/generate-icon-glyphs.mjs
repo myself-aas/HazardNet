@@ -196,7 +196,9 @@ async function main() {
   for (const name of registry.names) glyphs[name] = await resolveGlyph(index, name);
 
   const next = emit(registry, version, glyphs);
-  const current = readFileSync(GENERATED, 'utf8');
+  // LF-normalised: a CRLF working copy (Windows, core.autocrlf) is the same content as the
+  // LF blob git stores, so it must not read as out of sync.
+  const current = readFileSync(GENERATED, 'utf8').replace(/\r\n/g, '\n');
 
   if (CHECK_ONLY) {
     if (next !== current) {
