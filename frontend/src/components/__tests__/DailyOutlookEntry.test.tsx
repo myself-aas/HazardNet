@@ -102,3 +102,25 @@ test('abort prevents a late district response from replacing a different distric
     .toHaveAttribute('href', '/forecast/district/dhaka');
   expect(screen.getByText(/Unknown does not mean safe/)).toBeTruthy();
 });
+
+test('a stale run names when it was last updated and carries the under-development flag', async () => {
+  mockLoad.mockResolvedValue({ ...base, status: 'stale', source: 'snapshot',
+    run: { id: 'synthetic-run-3', generatedAt: '2026-11-01T10:00:00Z',
+      dataCutoff: '2026-11-01T08:00:00Z', expiresAt: '2026-11-02T20:00:00Z', modelVersion: 'test' },
+  });
+  renderEntry('kurigram');
+  expect(await screen.findByText('Under development')).toBeTruthy();
+  expect(screen.getByText(/Last updated/)).toBeTruthy();
+  expect(document.querySelector('time[datetime="2026-11-01T10:00:00Z"]')).toBeTruthy();
+  expect(screen.getByText(/older than its 36-hour update window/)).toBeTruthy();
+});
+
+test('an offline copy past its window gets the same flag and last-updated time', async () => {
+  mockLoad.mockResolvedValue({ ...base, status: 'offline', source: 'offline',
+    run: { id: 'synthetic-run-4', generatedAt: '2020-01-01T10:00:00Z',
+      dataCutoff: '2020-01-01T08:00:00Z', expiresAt: '2020-01-02T20:00:00Z', modelVersion: 'test' },
+  });
+  renderEntry('kurigram');
+  expect(await screen.findByText('Under development')).toBeTruthy();
+  expect(document.querySelector('time[datetime="2020-01-01T10:00:00Z"]')).toBeTruthy();
+});

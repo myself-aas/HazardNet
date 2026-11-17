@@ -28,7 +28,7 @@ another.
 HazardNet publishes **multi-hazard early outlooks for Bangladesh agriculture**: for all 64
 districts, across 8 hazard classes (Cold Wave, Drought, Fire, Flash Flood, Flood, Heat Wave,
 Severe Local Storm, Tropical Cyclone), at 7-day and 15-day horizons, with an advisory tier
-(SEVERE / WARNING / WATCH / NORMAL), a severity score and a confidence value per district and
+(EXTREME / SEVERE / WARNING / WATCH / NORMAL), a severity score and a confidence value per district and
 forecast date.
 
 Success means a district-level decision — on a farm, in a parishad office, or in a review —
@@ -93,11 +93,21 @@ smoothed into looking more certain than it is.
   must carry the BMD/FFWC/999 boundary.
 - Trained model files in `Models/` are retained unadvertised and are not offered for download.
 
+**Decided by the owner (2026-11-17)**
+
+- The daily outlook publishes all five advisory tiers (NORMAL, WATCH, WARNING, SEVERE,
+  EXTREME) without per-run human approval. Every tier that needs review (WARNING and above)
+  is attributed on the page to **HazardNet AI** with the run timestamp, and keeps the
+  BMD/FFWC/DDM confirmation line.
+- A daily run past its update window shows when it was **last updated** and an
+  **Under development** flag, beside the existing "not current advice" warning.
+
 **Explicitly undecided**
 
 - Alert thresholds in `backend/alerts/policy.js` are placeholders pending Phase 9 validation;
-  nearly every district currently lands at WATCH.
-- Alert publication is blocked until the ingest pipeline stamps a model version.
+  nearly every district currently lands at WATCH. The 2026-11-16 alert snapshot assessed 64
+  districts and published 62 WATCH alerts, 0 WARNING and 0 SEVERE, under model version
+  `2.1.9+model.0bb5bdaf1789`.
 
 ## Brand Commitments
 

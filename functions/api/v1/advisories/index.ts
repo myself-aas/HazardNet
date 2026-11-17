@@ -1,4 +1,8 @@
-/** Public-only district/day advisories. Unpublished higher tiers are never in ASSETS. */
+/**
+ * Public district/day advisories. All five tiers are published (owner decision 2026-11-17);
+ * rows at WARNING and above carry `requiresReview: true` and the site attributes them to
+ * HazardNet AI with the run timestamp. Private columns never reach ASSETS.
+ */
 import { respondWithPublicDaily } from '../../../../backend/utils/dailyAdvisoryEdge.js';
 
 interface PagesContext {
