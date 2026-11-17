@@ -1,6 +1,6 @@
 {
   "name": "hazardnet",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "private": true,
   "description": "Multi-Hazard AI Classification & Severity Quantification for Bangladesh Agricultural Disaster Risk",
   "keywords": [
@@ -45,7 +45,7 @@
     "check:device": "npm run check:tokens && npm run check:prose && npm run icons:check && npm run check:events-summary && npm run check:important && npm run check:contrast:resolver && npm run check:contrast && npm run check:contrast:tree && npm run check:contrast:tree:test && npm run check:contrast:css && npm run check:residue && npm run check:svg-tokens && npm run check:knowledge && npm run check:craft",
     "lint": "tsc -p frontend/tsconfig.json --noEmit && tsc -p functions/tsconfig.json --noEmit",
     "test": "jest --passWithNoTests",
-    "lint:eslint": "eslint . --max-warnings 685",
+    "lint:eslint": "eslint . --max-warnings 600",
     "format": "prettier --write \"frontend/src/**/*.{ts,tsx}\" \"backend/**/*.js\" \"api/**/*.js\"",
     "alerts:rehearse": "node scripts/rehearse_alert_engine.mjs --out /tmp/alert-run.json",
     "alerts:snapshot": "node scripts/rehearse_alert_engine.mjs --out /tmp/alert-run.json --quiet && node scripts/build_alert_snapshot.mjs --in /tmp/alert-run.json",
