@@ -16,7 +16,7 @@
  * Exit codes: 0 pass · 1 unlisted or expired advisories · 2 audit itself failed to run.
  */
 
-import { execFileSync } from 'node:child_process';
+import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -28,7 +28,15 @@ const BLOCKING = new Set(['high', 'critical']);
 let report;
 try {
   // `npm audit` exits non-zero when vulnerabilities exist; the JSON is still the payload.
-  const out = execFileSync('npm', ['audit', '--json'], { cwd: ROOT, encoding: 'utf8' });
+  // On Windows `npm` is `npm.cmd`, which execFile cannot start without a shell (ENOENT, and
+  // EINVAL since Node's CVE-2024-27980 fix). One fixed command string through the platform
+  // shell works on both, takes no outside input, and avoids Node's DEP0190 warning about
+  // passing an argument array together with `shell: true`.
+  const out = execSync('npm audit --json', {
+    cwd: ROOT,
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  });
   report = JSON.parse(out);
 } catch (error) {
   if (error.stdout) {
