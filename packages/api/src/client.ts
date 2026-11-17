@@ -259,7 +259,14 @@ export function createClient(config: ClientConfig): ApiClient {
         if (opts.schema) {
           const parsed = await opts.schema.safeParseAsync(data);
           if (!parsed.success) {
-            throw new ValidationError(parsed.error.issues.map((i) => ({ path: i.path, message: i.message })));
+            // zod 4 types a path segment as PropertyKey; a parsed JSON payload never has symbol
+            // keys, but stringify one rather than widen ValidationError's public shape.
+            throw new ValidationError(
+              parsed.error.issues.map((i) => ({
+                path: i.path.map((p) => (typeof p === 'symbol' ? String(p) : p)),
+                message: i.message,
+              })),
+            );
           }
           return parsed.data;
         }
