@@ -1,18 +1,20 @@
 {
   "schema": "hazardnet-freshness/v1",
-  "built_at": "2026-11-18T01:45:41.659Z",
+  "built_at": "2026-11-18T18:15:41.933Z",
   "generated_by": "scripts/build_freshness_artifact.mjs",
   "what_this_is": "A derived statement about the committed data artifacts this deployment ships. It is not a live probe and it does not measure the running services — the site-health probe result it carries is whatever the last scheduled run published.",
   "overall": {
-    "state": "fresh",
+    "state": "stale",
     "counts": {
-      "fresh": 5,
-      "stale": 0,
+      "fresh": 4,
+      "stale": 1,
       "failing": 0,
       "missing": 0,
       "unknown": 0
     },
-    "not_fresh": []
+    "not_fresh": [
+      "daily_advisories"
+    ]
   },
   "sources": [
     {
@@ -23,8 +25,8 @@
       "reason": null,
       "generated_at": "2026-11-16T22:58:24.727Z",
       "prediction_date": "2026-11-16",
-      "age_hours": 49.8,
-      "run_age_hours": 26.8,
+      "age_hours": 66.3,
+      "run_age_hours": 43.3,
       "slo_hours": 192,
       "detail": {
         "source": "Kaggle_Daily_Advisory (hazardnet_advisories_latest.csv)",
@@ -40,8 +42,8 @@
       "reason": null,
       "generated_at": "2026-11-17T07:50:16.357Z",
       "prediction_date": "2026-11-16",
-      "age_hours": 49.8,
-      "run_age_hours": 17.9,
+      "age_hours": 66.3,
+      "run_age_hours": 34.4,
       "slo_hours": 192,
       "detail": {
         "schema": "hazardnet-forecast-snapshot/v2",
@@ -53,7 +55,7 @@
       "label": "Daily district advisories (15-day)",
       "artifact": "frontend/public/data/daily-advisories-v1.json",
       "generated_at": "2026-11-16T22:58:24.727Z",
-      "age_hours": 26.8,
+      "age_hours": 43.3,
       "slo_hours": 36,
       "detail": {
         "run_id": "kaggle-v56-b2bcaa0f5868",
@@ -62,8 +64,8 @@
         "model_version": "2.1.9+model.0bb5bdaf1789",
         "advisory_count": 960
       },
-      "state": "fresh",
-      "reason": null
+      "state": "stale",
+      "reason": "daily advisory run passed expiresAt 2026-11-18T10:58:24.727Z (age 43.3 h, SLO 36 h)"
     },
     {
       "id": "alert_engine",
@@ -72,7 +74,7 @@
       "state": "fresh",
       "reason": null,
       "generated_at": "2026-11-17T07:50:16.216Z",
-      "age_hours": 17.9,
+      "age_hours": 34.4,
       "slo_hours": 48,
       "detail": {
         "schema": "hazardnet-alerts/v1",
@@ -87,11 +89,11 @@
       "id": "site_probe",
       "label": "Site-health probe (every 30 min)",
       "artifact": "data/site-health/latest.json",
-      "generated_at": "2026-11-18T01:45:41Z",
+      "generated_at": "2026-11-18T18:15:41Z",
       "age_hours": 0,
       "slo_hours": 2,
       "detail": {
-        "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/44218159547",
+        "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/44367495604",
         "site_url": "https://hazardnet.live",
         "passed": 11,
         "failed": 0,
@@ -156,7 +158,7 @@
       "state": "fresh",
       "outcome": "pass",
       "reason": null,
-      "ran_at": "2026-11-18T01:45:41Z"
+      "ran_at": "2026-11-18T18:15:41Z"
     }
   ],
   "gauges": {
@@ -165,7 +167,7 @@
     "series": [
       {
         "name": "hazardnet_forecast_age_hours",
-        "value": 49.8,
+        "value": 66.3,
         "unit": "hours",
         "source": "forecast_snapshot.age_hours",
         "slo_hours": 192,
@@ -173,7 +175,7 @@
       },
       {
         "name": "hazardnet_alert_snapshot_age_hours",
-        "value": 17.9,
+        "value": 34.4,
         "unit": "hours",
         "source": "alert_engine.age_hours",
         "slo_hours": 48,
@@ -189,7 +191,7 @@
       },
       {
         "name": "hazardnet_daily_advisories_age_hours",
-        "value": 26.8,
+        "value": 43.3,
         "unit": "hours",
         "source": "daily_advisories.age_hours",
         "slo_hours": 36,
@@ -247,7 +249,7 @@
     },
     "site_probe": {
       "path": "data/site-health/latest.json",
-      "ran_at": "2026-11-18T01:45:41Z"
+      "ran_at": "2026-11-18T18:15:41Z"
     }
   }
 }
