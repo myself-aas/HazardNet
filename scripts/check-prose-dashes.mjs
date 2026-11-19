@@ -152,7 +152,9 @@ for (const dir of SCAN) {
     let code = blankOutComments(readFileSync(file, 'utf8'));
     // JSON may carry a dash as an escape; a reader sees the dash, so the scan has to as well.
     if (file.endsWith('.json')) code = code.replace(/\\u2014/gi, EM).replace(/\\u2013/gi, EN);
-    code.split('\n').forEach((raw, index) => {
+    // `\r?\n`: on a CRLF checkout a lone empty-value glyph is followed by `\r`, which read as
+    // padding and reported the glyph as a sentence dash; CI (LF) never saw it.
+    code.split(/\r?\n/).forEach((raw, index) => {
       if (!raw.includes(EM) && !raw.includes(EN)) return;
       // A documented exception: the dash is data or a transformation, not authored copy.
       if (raw.includes('prose-dash:')) return;

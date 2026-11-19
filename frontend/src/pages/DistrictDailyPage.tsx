@@ -13,6 +13,7 @@ import { HazardGlyph } from '../components/apple/HazardGlyph';
 import { LanguageToggle } from '../components/alerts/LanguageToggle';
 import { Continuous15DayTrajectory } from '../components/district/Continuous15DayTrajectory';
 import { useI18n } from '../hooks/useI18n';
+import { stateTone } from '../lib/freshness';
 import { hazardLabel } from '../hooks/useHazardLabel';
 import {
   dhakaCalendarDate,
@@ -32,7 +33,7 @@ const EMPTY: DistrictDailyResult = {
   status: 'unavailable', source: 'none', run: null, advisories: [], fetchedAt: null,
 };
 
-function DayOutlook({ row, isPeakDay }: { row: DailyAdvisory; isPeakDay: boolean }) {
+function DayOutlook({ row, isPeakDay, issuedAt }: { row: DailyAdvisory; isPeakDay: boolean; issuedAt: string | null }) {
   const { language, t, formatDate, formatNumber } = useI18n();
   const w = row.weather || {};
   const m = row.metrics;
@@ -179,6 +180,12 @@ function DayOutlook({ row, isPeakDay }: { row: DailyAdvisory; isPeakDay: boolean
 
         {row.requiresReview && (
           <p className="mt-3 rounded-lg border border-amber-300 bg-amber-50/80 px-3 py-2 text-xs font-medium text-amber-950">
+            {issuedAt && (
+              <span className="block font-semibold">
+                {t('daily.aiGenerated')} ·{' '}
+                <time dateTime={issuedAt}>{formatDate(issuedAt, { withTime: true })}</time>
+              </span>
+            )}
             {t('daily.reviewNotice')}
           </p>
         )}
@@ -304,6 +311,9 @@ const FarmerDistrictDailyPage: React.FC = () => {
     return rows;
   }, [dayFilter, rows, summary15.peakRows]);
   const expiredOffline = status === 'offline' && outlook.run && now.getTime() > Date.parse(outlook.run.expiresAt);
+  // Owner decision 2026-11-17: a run past its update window shows when it was last updated
+  // and an "Under development" flag, beside (never instead of) the not-current warning.
+  const pastWindow = status === 'stale' || Boolean(expiredOffline);
 
   return (
     <div className="mx-auto w-full max-w-4xl min-w-0 space-y-7 px-4 pb-16 pt-4 text-[var(--ap-label)] sm:px-6">
@@ -355,9 +365,22 @@ const FarmerDistrictDailyPage: React.FC = () => {
       ) : (
         <>
           <section aria-live="polite" aria-busy={loading} className="space-y-2">
-            <h2 className="text-lg font-semibold text-[var(--ap-label)]">
-              {loading ? t('daily.loading') : t(`daily.${status}`)}
-            </h2>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-lg font-semibold text-[var(--ap-label)]">
+                {loading ? t('daily.loading') : t(`daily.${status}`)}
+              </h2>
+              {!loading && pastWindow && (
+                <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide ${stateTone('stale')}`}>
+                  {t('daily.underDevelopment')}
+                </span>
+              )}
+            </div>
+            {!loading && pastWindow && outlook.run && (
+              <p className="max-w-prose font-semibold text-[var(--ap-label)]">
+                {t('daily.lastUpdated')}{' '}
+                <time dateTime={outlook.run.generatedAt}>{formatDate(outlook.run.generatedAt, { withTime: true })}</time>
+              </p>
+            )}
             {!loading && status === 'stale' && <p className="max-w-prose text-[var(--ap-label)]">{t('daily.staleWarning')}</p>}
             {!loading && status === 'offline' && (
               <p className="max-w-prose text-[var(--ap-label)]">
@@ -381,7 +404,8 @@ const FarmerDistrictDailyPage: React.FC = () => {
             {!loading && outlook.run && (
               <div className="space-y-1 text-sm text-[var(--ap-label-secondary)]">
                 <p>{t('daily.cutoff', { date: formatDate(outlook.run.dataCutoff, { withTime: true }) })}</p>
-                <p>{t('daily.issued', { date: formatDate(outlook.run.generatedAt, { withTime: true }) })}</p>
+                {/* Past the window, the same time is already shown as "Last updated" above. */}
+                {!pastWindow && <p>{t('daily.issued', { date: formatDate(outlook.run.generatedAt, { withTime: true }) })}</p>}
                 {status !== 'offline' && <p>{t(outlook.source === 'api' ? 'daily.api' : 'daily.snapshot')}</p>}
               </div>
             )}
@@ -437,6 +461,7 @@ const FarmerDistrictDailyPage: React.FC = () => {
                         key={row.advisoryId}
                         row={row}
                         isPeakDay={summary15.peakDateSet.has(row.targetDate)}
+                        issuedAt={outlook.run?.generatedAt ?? null}
                       />
                     ))}
                   </ol>

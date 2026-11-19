@@ -18,6 +18,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { ADVISORY_TIERS, requiresReview } from '../packages/core/src/advisoryTier.js';
 
 const describe = globalThis.describe ?? nodeTest.describe;
 const test = globalThis.test ?? nodeTest.test;
@@ -151,11 +152,13 @@ describe('the committed artifact carries the stamp', () => {
     const rows = allRows(artifact);
     assert.ok(rows.length > 0, 'committed snapshot has no rows');
     for (const r of rows) {
-      assert.match(r.advisory_tier, /^(SEVERE|WARNING|WATCH|NORMAL)$/, `${r.district_name}: ${r.advisory_tier}`);
+      // All five tiers are public (owner decision 2026-11-17); the list and the review rule
+      // come from their one owner rather than being restated here.
+      assert.ok(ADVISORY_TIERS.includes(r.advisory_tier), `${r.district_name}: ${r.advisory_tier}`);
       assert.match(r.advisory_tier_source, /^(published|derived_final_severity|derived_severity_score)$/);
       assert.strictEqual(typeof r.requires_review, 'boolean');
       // The flag must agree with the tier it describes.
-      assert.strictEqual(r.requires_review, r.advisory_tier === 'SEVERE' || r.advisory_tier === 'WARNING');
+      assert.strictEqual(r.requires_review, requiresReview(r.advisory_tier));
     }
     assert.deepStrictEqual(artifact.advisory_policy.bands, { SEVERE: 0.85, WARNING: 0.7, WATCH: 0.4 });
   });

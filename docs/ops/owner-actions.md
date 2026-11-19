@@ -118,6 +118,14 @@ Reopen this action (as a new ID) for any Bangla surface added after that date.
 | **Why** | Action 6c closed on 2026-09-19 for the then-current surface and instructs a new ID for anything added later. This is that addition (2026-10-04), so it ships as transliterations (`অ্যাপিয়ারেন্স`, `সিস্টেম`, `লাইট`, `ডার্ক`) matching how the operating systems name the same settings, pending review. |
 | **Verify** | A native speaker confirms or replaces the four strings in `frontend/src/lib/i18n.ts`; `__tests__/phaseBFrontend.test.js` keeps EN/BN parity either way. |
 
+## Action 6e · Bangla copy review for the daily-outlook attribution and expiry flag (opened 2026-11-17)
+
+| | |
+|---|---|
+| **Status** | **Open**. Three Bangla strings ship with the owner decisions of 2026-11-17 (AI attribution on review-tier days; last-updated time and flag on runs past their window), used by `frontend/src/pages/DistrictDailyPage.tsx` and `frontend/src/components/DailyOutlookEntry.tsx` |
+| **Why** | Action 6c closed for the then-current surface and instructs a new ID for later additions. Strings: `daily.aiGenerated` = `HazardNet AI দ্বারা তৈরি` (product name kept in Latin script, as every other Bangla string does), `daily.lastUpdated` = `সর্বশেষ হালনাগাদ`, `daily.underDevelopment` = `উন্নয়নাধীন` (reused from the existing `daily.researchShort` copy). |
+| **Verify** | A native speaker confirms or replaces the three strings in `frontend/src/lib/i18n.ts`; `__tests__/phaseBFrontend.test.js` keeps EN/BN parity either way. |
+
 ## Action 7 · *not reconstructed*
 
 No citation in the tree identifies this action.

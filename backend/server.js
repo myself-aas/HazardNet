@@ -5,6 +5,7 @@ import { execSync } from 'child_process';
 import { corsMiddleware } from './middleware/cors.js';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 import { fileURLToPath } from 'url';
 import forecastRoutes from './routes/forecasts.js';
 import chatRoutes from './routes/chat.js';
@@ -178,31 +179,33 @@ app.get('/.well-known/http-message-signatures-directory', (req, res) => {
   // For the static/CDN case, the pre-computed signature from build time is used.
   // The scanner validates the presence and format of these headers.
   const sigBase = `"@authority": ${host}`;
-  let signatureValue;
-  try {
-    // Try to sign dynamically if the private key is available at runtime
-    const privKeyPath = path.resolve(process.cwd(), '.bot-private-key.pem');
-    if (fs.existsSync(privKeyPath)) {
-      const { execSync } = require('child_process');
-      const sigBasePath = `/tmp/sig-base-${process.pid}.txt`;
+  // Sign only when the private key is present. A missing key or a failed signing omits the
+  // Signature headers entirely: a placeholder that cannot verify would be a published claim
+  // that is not true. (This branch used `require` inside an ES module, so it always threw and
+  // always served a placeholder; `execSync` is imported at the top of this file.)
+  let signatureValue = null;
+  const privKeyPath = path.resolve(process.cwd(), '.bot-private-key.pem');
+  if (fs.existsSync(privKeyPath)) {
+    const sigBasePath = path.join(os.tmpdir(), `sig-base-${process.pid}.txt`);
+    try {
       fs.writeFileSync(sigBasePath, sigBase);
       const sig = execSync(
         `openssl pkeyutl -sign -inkey "${privKeyPath}" -in "${sigBasePath}" -rawin`,
         { encoding: 'buffer' }
       );
-      fs.unlinkSync(sigBasePath);
       signatureValue = `sig1=:${sig.toString('base64')}:`;
-    } else {
-      // Fall back to a placeholder signature (scanner checks format, not crypto validity)
-      signatureValue = `sig1=:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==:`;
+    } catch (err) {
+      console.warn('[http-message-signatures] signing failed; serving the directory unsigned:', err?.message || err);
+    } finally {
+      fs.rmSync(sigBasePath, { force: true });
     }
-  } catch {
-    signatureValue = `sig1=:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==:`;
   }
 
   res.setHeader('Content-Type', 'application/http-message-signatures-directory+json');
-  res.setHeader('Signature', signatureValue);
-  res.setHeader('Signature-Input', sigInput);
+  if (signatureValue) {
+    res.setHeader('Signature', signatureValue);
+    res.setHeader('Signature-Input', sigInput);
+  }
   res.setHeader('Cache-Control', 'public, max-age=86400');
   res.status(200).send(jwksBody);
 });

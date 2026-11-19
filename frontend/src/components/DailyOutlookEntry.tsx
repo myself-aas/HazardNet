@@ -9,6 +9,7 @@ import { getDistrictById } from '../data/bangladeshDistricts';
 import { AlertLevelBadge } from './alerts/AlertLevelBadge';
 import { useI18n } from '../hooks/useI18n';
 import { hazardLabel } from '../hooks/useHazardLabel';
+import { stateTone } from '../lib/freshness';
 import {
   loadDistrictDaily,
   severityIndexOf,
@@ -51,6 +52,11 @@ export function DailyOutlookEntry({ districtId }: { districtId?: string | null }
   }, [result.advisories]);
   const peakRow = summary15.primaryPeak;
 
+  // Owner decision 2026-11-17: past its update window (stale, or an offline copy that has
+  // expired) the entry names when it was last updated and carries an "Under development" flag.
+  const pastWindow = result.status === 'stale'
+    || (result.status === 'offline' && !!result.run && Date.now() > Date.parse(result.run.expiresAt));
+
   let state: string;
   if (!district) state = t('daily.nav.choose');
   else if (loading) state = t('daily.loading');
@@ -65,7 +71,20 @@ export function DailyOutlookEntry({ districtId }: { districtId?: string | null }
   return (
     <section className="screen-only border-t border-[var(--ap-separator-opaque)] py-4 text-sm text-[var(--ap-label)]"
       aria-label={t('daily.nav.open')}>
-      <p aria-live={district ? 'polite' : 'off'}>{state}</p>
+      <p aria-live={district ? 'polite' : 'off'}>
+        {!loading && pastWindow && (
+          <span className={`mr-2 inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide ${stateTone('stale')}`}>
+            {t('daily.underDevelopment')}
+          </span>
+        )}
+        {!loading && pastWindow && result.run && (
+          <>
+            {t('daily.lastUpdated')}{' '}
+            <time dateTime={result.run.generatedAt}>{formatDate(result.run.generatedAt, { withTime: true })}</time>.{' '}
+          </>
+        )}
+        {state}
+      </p>
       {peakRow && (
         <div className="mt-2 flex flex-wrap items-center gap-2.5 text-xs">
           <AlertLevelBadge level={peakRow.tier} label={t(`alerts.tier.${peakRow.tier}`)} size="sm" />

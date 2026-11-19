@@ -236,8 +236,8 @@
       "ghsa": "GHSA-qr28-fpjm-wq7f",
       "package": "decode-uri-component (transitive via React Navigation 6 / query-string 7, mobile only)",
       "severity": "high",
-      "reason": "React Navigation 6 requires CommonJS query-string 7, which requires the CommonJS decoder 0.2.2. The patched decoder 0.5.1 is ESM-only and cannot safely replace its synchronous CommonJS dependency. The mobile app has no React Navigation linking config; its separate deep-link parser does not call query-string, and the web/API do not use this path. Migrate the mobile navigation stack to v7 with a compatible Expo/react-native-screens upgrade, then remove this exception.",
-      "expires": "2026-11-16"
+      "reason": "React Navigation 6 requires CommonJS query-string 7, which requires the CommonJS decoder 0.2.2. The patched decoder 0.5.1 is ESM-only (type: module) and cannot replace its synchronous require (verified 2026-11-17). The mobile app has no React Navigation linking config; its separate deep-link parser does not call query-string, and the web/API do not use this path. Re-reviewed and renewed by the owner on 2026-11-17 (rationale in docs/codebase/CONCERNS.md). Exit: migrate the mobile navigation stack to v7 with a compatible Expo/react-native-screens upgrade, then remove this exception.",
+      "expires": "2026-12-17"
     },
     {
       "ghsa": "GHSA-vfj7-8cjw-p6xm",
@@ -248,10 +248,10 @@
     },
     {
       "ghsa": "GHSA-mrhx-c7xc-m3w5",
-      "package": "zod",
+      "package": "zod (build-time copy only, nested under babel-plugin-react-compiler via babel-preset-expo 11)",
       "severity": "high",
-      "reason": "Memory-exhaustion DoS requires an attacker to push oversized constrained collections through a zod-parsed payload; every zod parse sits behind the 10mb body limit and the 20/min AI rate bucket, and the only fix is zod 4.x — a semver-major migration (3.25.76 is the last 3.x) across packages/core contracts and packages/api. Migration tracked as a follow-up after the CI repair batch; this window is deliberately short.",
-      "expires": "2026-11-15"
+      "reason": "Every runtime copy of zod was migrated to 4.6.7 on 2026-11-17 (web, Pages Functions, Node, mobile via @hazardnet/core). npm still nests zod 3.25.76 under babel-plugin-react-compiler, a Babel plugin that babel-preset-expo 11 loads only when experiments.reactCompiler is set; apps/mobile/app.json does not set it, so this copy never runs. Exit: the Expo SDK upgrade that also unblocks React Navigation 7 (babel-preset-expo moves off this plugin build), then remove this exception.",
+      "expires": "2026-12-17"
     }
   ]
 }

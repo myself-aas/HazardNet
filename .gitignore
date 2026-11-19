@@ -132,3 +132,10 @@ skills-lock.json
 .dev.vars
 .dev.vars.*
 .wrangler/
+
+# Generated documentation portal (HTML pages, their *_sections.json parse trees, and
+# generated summaries). Owner decision 2026-11-17: this portal must not publish anything;
+# docs/PUBLICATION_POLICY.md item 5 keeps decision records, ledgers and process docs private.
+docs/*.html
+docs/*_sections.json
+docs/*-summary.md

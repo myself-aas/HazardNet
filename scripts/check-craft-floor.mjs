@@ -220,7 +220,9 @@ for (const file of files) {
   for (const rule of RULES) {
     // `allow` is a documented escape on the rule itself, never a per-hit waiver: the
     // reason has to live next to the rule, where the next reader will find it.
-    if (rule.allow && rule.allow(file)) continue;
+    // Rules match on POSIX separators (`'/remotion/'`); normalise so a Windows checkout
+    // applies the same exemptions as CI instead of reporting them as violations.
+    if (rule.allow && rule.allow(file.split('\\').join('/'))) continue;
     for (const hit of rule.test(file, body)) {
       findings.push({
         rule: rule.id,

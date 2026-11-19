@@ -30,8 +30,11 @@
  */
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+// `fileURLToPath`, not `URL.pathname`: on Windows the pathname is `/G:/…`, which `join`
+// turned into `G:\G:\…` and crashed the gate before it read a file.
+const ROOT = fileURLToPath(new URL('..', import.meta.url)).replace(/[\\/]$/, '');
 const SRC = join(ROOT, 'frontend/src');
 /**
  * Known backlog, same shape the other design ledgers use. The rule is enforced
