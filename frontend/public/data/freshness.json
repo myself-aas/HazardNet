@@ -1,20 +1,18 @@
 {
   "schema": "hazardnet-freshness/v1",
-  "built_at": "2026-11-19T23:42:07.948Z",
+  "built_at": "2026-11-20T02:17:01.205Z",
   "generated_by": "scripts/build_freshness_artifact.mjs",
   "what_this_is": "A derived statement about the committed data artifacts this deployment ships. It is not a live probe and it does not measure the running services — the site-health probe result it carries is whatever the last scheduled run published.",
   "overall": {
     "state": "failing",
     "counts": {
-      "fresh": 2,
-      "stale": 2,
+      "fresh": 4,
+      "stale": 0,
       "failing": 1,
       "missing": 0,
       "unknown": 0
     },
     "not_fresh": [
-      "daily_advisories",
-      "alert_engine",
       "site_probe"
     ]
   },
@@ -25,15 +23,15 @@
       "artifact": "backend/data/forecasts/manifest.json",
       "state": "fresh",
       "reason": null,
-      "generated_at": "2026-11-16T22:58:24.727Z",
-      "prediction_date": "2026-11-16",
-      "age_hours": 95.7,
-      "run_age_hours": 72.7,
+      "generated_at": "2026-11-19T22:59:20.420Z",
+      "prediction_date": "2026-11-19",
+      "age_hours": 26.3,
+      "run_age_hours": 3.3,
       "slo_hours": 192,
       "detail": {
         "source": "Kaggle_Daily_Advisory (hazardnet_advisories_latest.csv)",
         "row_count": 128,
-        "csv_sha256": "9ad70c5aeeccb9d26b453684cb3816aa4301788590c2891e1ee14f7f0cf5fb05"
+        "csv_sha256": "26c6fcc7e423d726e0da56c15be77e7c23c9f4008c3c514f026a4d427b43ce84"
       }
     },
     {
@@ -42,41 +40,41 @@
       "artifact": "frontend/public/data/forecasts-latest.json",
       "state": "fresh",
       "reason": null,
-      "generated_at": "2026-11-17T07:50:16.357Z",
-      "prediction_date": "2026-11-16",
-      "age_hours": 95.7,
-      "run_age_hours": 63.9,
+      "generated_at": "2026-11-20T02:17:00.995Z",
+      "prediction_date": "2026-11-19",
+      "age_hours": 26.3,
+      "run_age_hours": 0,
       "slo_hours": 192,
       "detail": {
         "schema": "hazardnet-forecast-snapshot/v2",
-        "source": "Kaggle_Daily_Advisory (public_daily_advisories.yml, dataset v56)"
+        "source": "Kaggle_Daily_Advisory (public_daily_advisories.yml, dataset v57)"
       }
     },
     {
       "id": "daily_advisories",
       "label": "Daily district advisories (15-day)",
       "artifact": "frontend/public/data/daily-advisories-v1.json",
-      "generated_at": "2026-11-16T22:58:24.727Z",
-      "age_hours": 72.7,
+      "generated_at": "2026-11-19T22:59:20.420Z",
+      "age_hours": 3.3,
       "slo_hours": 36,
       "detail": {
-        "run_id": "kaggle-v56-b2bcaa0f5868",
-        "data_cutoff": "2026-11-16T22:58:24.727Z",
-        "expires_at": "2026-11-18T10:58:24.727Z",
+        "run_id": "kaggle-v57-1af3de0f6588",
+        "data_cutoff": "2026-11-19T22:59:20.420Z",
+        "expires_at": "2026-11-21T10:59:20.420Z",
         "model_version": "2.1.9+model.0bb5bdaf1789",
         "advisory_count": 960
       },
-      "state": "stale",
-      "reason": "daily advisory run passed expiresAt 2026-11-18T10:58:24.727Z (age 72.7 h, SLO 36 h)"
+      "state": "fresh",
+      "reason": null
     },
     {
       "id": "alert_engine",
       "label": "Alert snapshot",
       "artifact": "frontend/public/data/alerts-latest.json",
-      "state": "stale",
-      "reason": "the snapshot was built 63.9 h ago (SLO 48 h)",
-      "generated_at": "2026-11-17T07:50:16.216Z",
-      "age_hours": 63.9,
+      "state": "fresh",
+      "reason": null,
+      "generated_at": "2026-11-20T02:17:00.847Z",
+      "age_hours": 0,
       "slo_hours": 48,
       "detail": {
         "schema": "hazardnet-alerts/v1",
@@ -92,7 +90,7 @@
       "label": "Site-health probe (every 30 min)",
       "artifact": "data/site-health/latest.json",
       "generated_at": "2026-11-19T23:42:07Z",
-      "age_hours": 0,
+      "age_hours": 2.6,
       "slo_hours": 2,
       "detail": {
         "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/44639707448",
@@ -169,7 +167,7 @@
     "series": [
       {
         "name": "hazardnet_forecast_age_hours",
-        "value": 95.7,
+        "value": 26.3,
         "unit": "hours",
         "source": "forecast_snapshot.age_hours",
         "slo_hours": 192,
@@ -177,7 +175,7 @@
       },
       {
         "name": "hazardnet_alert_snapshot_age_hours",
-        "value": 63.9,
+        "value": 0,
         "unit": "hours",
         "source": "alert_engine.age_hours",
         "slo_hours": 48,
@@ -185,7 +183,7 @@
       },
       {
         "name": "hazardnet_site_probe_age_hours",
-        "value": 0,
+        "value": 2.6,
         "unit": "hours",
         "source": "site_probe.age_hours",
         "slo_hours": 2,
@@ -193,7 +191,7 @@
       },
       {
         "name": "hazardnet_daily_advisories_age_hours",
-        "value": 72.7,
+        "value": 3.3,
         "unit": "hours",
         "source": "daily_advisories.age_hours",
         "slo_hours": 36,
@@ -236,19 +234,19 @@
   "inputs": {
     "forecast_snapshot": {
       "path": "frontend/public/data/forecasts-latest.json",
-      "generated_at": "2026-11-17T07:50:16.357Z"
+      "generated_at": "2026-11-20T02:17:00.995Z"
     },
     "forecast_manifest": {
       "path": "backend/data/forecasts/manifest.json",
-      "generated_at": "2026-11-16T22:58:24.727Z"
+      "generated_at": "2026-11-19T22:59:20.420Z"
     },
     "daily_advisories": {
       "path": "frontend/public/data/daily-advisories-v1.json",
-      "generated_at": "2026-11-16T22:58:24.727Z"
+      "generated_at": "2026-11-19T22:59:20.420Z"
     },
     "alerts_snapshot": {
       "path": "frontend/public/data/alerts-latest.json",
-      "generated_at": "2026-11-17T07:50:16.216Z"
+      "generated_at": "2026-11-20T02:17:00.847Z"
     },
     "site_probe": {
       "path": "data/site-health/latest.json",
