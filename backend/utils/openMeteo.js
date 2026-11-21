@@ -222,7 +222,7 @@ const DAILY_VARS = [
 // directions are now guarded by `assertComplete` in `cacheContract.js`: a write without a
 // numeric reading is refused, and a read of a hollow entry is treated as a miss.
 const CACHE_TTL_MS = 15 * 60 * 1000;
-export const UPSTREAM_TIMEOUT_MS = 10_000;
+export const UPSTREAM_TIMEOUT_MS = 25_000;
 export const STALE_FALLBACK_MAX_MS = 2 * 60 * 60 * 1000;
 const cache = createVerifiedCache({
   ttlMs: CACHE_TTL_MS,
@@ -247,6 +247,14 @@ export function peekCacheEntry(key) {
 }
 
 // ── Internal helpers ───────────────────────────────────────────────────────
+// The full 16-day shape is an ~5.5 KB URL asking for 29 current + 189 hourly + 26 daily
+// variables; Open-Meteo occasionally answers it with a transient 5xx/429 (or does not answer
+// within the old 10 s budget) while mini/batch requests sail through. That is what the
+// 2026-11-21 17:41Z probe run saw as `weather_full_shape: got 502` (run 44931353125), with
+// the mini and batch scenarios green in the same run. A single 250 ms retry was not enough
+// to ride it out, so the timeout is 25 s and transient failures back off exponentially (and
+// honour a numeric Retry-After, capped at 5 s so a wedged upstream cannot hold the Pages
+// Function hostage) instead of retrying once at a fixed delay.
 function _makeTimeoutSignal(timeoutMs) {
   if (typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function') {
     return { signal: AbortSignal.timeout(timeoutMs), cleanup: () => {} };
@@ -265,7 +273,16 @@ function _isRetryableError(err) {
   return true; // network / timeout / AbortError
 }
 
-async function _fetchUpstream(params, { timeoutMs = UPSTREAM_TIMEOUT_MS, maxAttempts = 2, retryDelayMs = 250 } = {}) {
+/** Milliseconds to wait before the next attempt — exponential backoff, but never less
+ *  than what a numeric `Retry-After` asked for, and never more than 5 s. */
+function _retryDelayMs(err, attempt, baseRetryDelayMs) {
+  const backoff = baseRetryDelayMs * 2 ** (attempt - 1);
+  const retryAfter = /** @type {any} */ (err)?.retryAfterMs;
+  const requested = Number.isFinite(retryAfter) ? retryAfter : 0;
+  return Math.min(5_000, Math.max(backoff, requested));
+}
+
+async function _fetchUpstream(params, { timeoutMs = UPSTREAM_TIMEOUT_MS, maxAttempts = 3, retryDelayMs = 400 } = {}) {
   const fetchImpl = await __getFetch();
   const url = `${OPEN_METEO_BASE}?${params.toString()}`;
   let lastError;
@@ -282,6 +299,10 @@ async function _fetchUpstream(params, { timeoutMs = UPSTREAM_TIMEOUT_MS, maxAtte
         const err = /** @type {any} */ (new Error(`Open-Meteo upstream HTTP ${resp.status}: ${body.slice(0, 200)}`));
         err.status = 502;
         err.upstreamStatus = resp.status;
+        const retryAfter = resp.headers?.get?.('retry-after');
+        if (retryAfter && /^\d+$/.test(retryAfter.trim())) {
+          err.retryAfterMs = Number(retryAfter.trim()) * 1000;
+        }
         throw err;
       }
       return await resp.json();
@@ -293,7 +314,7 @@ async function _fetchUpstream(params, { timeoutMs = UPSTREAM_TIMEOUT_MS, maxAtte
         }
         throw err;
       }
-      await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+      await new Promise((resolve) => setTimeout(resolve, _retryDelayMs(lastError, attempt, retryDelayMs)));
     } finally {
       cleanup();
     }
